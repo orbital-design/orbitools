@@ -77,6 +77,22 @@ class Typography_Presets_Admin extends Module_Admin {
                         'label' => __('Output CSS for Presets', 'orbital-editor-suite'),
                         'description' => __('Automatically include CSS for presets on frontend and in editor.', 'orbital-editor-suite'),
                         'default' => true
+                    ),
+                    'allowed_blocks' => array(
+                        'type' => 'multi_checkbox',
+                        'label' => __('Allowed Blocks', 'orbital-editor-suite'),
+                        'description' => __('Select which blocks should have typography preset controls.', 'orbital-editor-suite'),
+                        'options' => array(
+                            'core/paragraph' => __('Paragraph', 'orbital-editor-suite'),
+                            'core/heading' => __('Heading', 'orbital-editor-suite'),
+                            'core/list' => __('List', 'orbital-editor-suite'),
+                            'core/quote' => __('Quote', 'orbital-editor-suite'),
+                            'core/button' => __('Button', 'orbital-editor-suite'),
+                            'core/pullquote' => __('Pullquote', 'orbital-editor-suite'),
+                            'core/group' => __('Group', 'orbital-editor-suite'),
+                            'core/column' => __('Column', 'orbital-editor-suite')
+                        ),
+                        'default' => array('core/paragraph', 'core/heading', 'core/list', 'core/quote', 'core/button')
                     )
                 )
             ),

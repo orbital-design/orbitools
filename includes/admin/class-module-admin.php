@@ -187,6 +187,9 @@ abstract class Module_Admin {
             case 'checkbox':
                 $this->render_checkbox_field($field_id, $field, $name, $value);
                 break;
+            case 'multi_checkbox':
+                $this->render_multi_checkbox_field($field_id, $field, $name, $value);
+                break;
             case 'select':
                 $this->render_select_field($field_id, $field, $name, $value);
                 break;
@@ -215,6 +218,108 @@ abstract class Module_Admin {
             <input type="checkbox" name="<?php echo esc_attr($name); ?>" value="1" <?php checked($value, true); ?>>
             <span class="orbital-checkbox-text"><?php echo esc_html($field['label']); ?></span>
         </label>
+        <?php
+    }
+
+    /**
+     * Render multi-checkbox field.
+     */
+    protected function render_multi_checkbox_field($field_id, $field, $name, $value) {
+        if (!empty($field['label'])) {
+            echo '<label>' . esc_html($field['label']) . '</label>';
+        }
+        
+        // Ensure value is an array
+        if (!is_array($value)) {
+            $value = !empty($value) ? array($value) : array();
+        }
+        
+        // Hidden field to ensure something is submitted even if no checkboxes are checked
+        echo '<input type="hidden" name="' . esc_attr($name) . '[_dummy]" value="">';
+        
+        ?>
+        <div class="orbital-multi-checkbox-grid">
+            <?php foreach ($field['options'] as $option_value => $option_label) : ?>
+                <label class="orbital-checkbox-item">
+                    <input type="checkbox" 
+                           name="<?php echo esc_attr($name); ?>[]" 
+                           value="<?php echo esc_attr($option_value); ?>" 
+                           <?php checked(in_array($option_value, $value)); ?>>
+                    <span class="orbital-checkbox-text"><?php echo esc_html($option_label); ?></span>
+                </label>
+            <?php endforeach; ?>
+        </div>
+        
+        <style>
+        .orbital-multi-checkbox-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 12px;
+            margin: 15px 0;
+            padding: 20px;
+            background: #fff;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .orbital-checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 15px;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: #fafbfc;
+            position: relative;
+        }
+        .orbital-checkbox-item:hover {
+            background-color: #f0f6ff;
+            border-color: #0073aa;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(0,115,170,0.15);
+        }
+        .orbital-checkbox-item:has(input[type="checkbox"]:checked) {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-color: #667eea;
+            color: #fff;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+        .orbital-checkbox-item:has(input[type="checkbox"]:checked)::before {
+            content: "✓";
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #fff;
+            font-weight: bold;
+            font-size: 16px;
+        }
+        .orbital-checkbox-item input[type="checkbox"] {
+            margin: 0;
+            transform: scale(1.3);
+            accent-color: #667eea;
+            cursor: pointer;
+        }
+        .orbital-checkbox-item:has(input[type="checkbox"]:checked) input[type="checkbox"] {
+            accent-color: #fff;
+        }
+        .orbital-checkbox-text {
+            font-weight: 600;
+            color: #1d2327;
+            font-size: 14px;
+            user-select: none;
+        }
+        .orbital-checkbox-item:has(input[type="checkbox"]:checked) .orbital-checkbox-text {
+            color: #fff;
+        }
+        .orbital-multi-checkbox-grid .orbital-checkbox-item:has(input[type="checkbox"]:checked):hover {
+            background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(102, 126, 234, 0.4);
+        }
+        </style>
         <?php
     }
 

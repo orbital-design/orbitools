@@ -155,7 +155,9 @@ class Admin_Pages {
                     'show_categories' => !empty($settings['show_categories']),
                     'custom_css_output' => !empty($settings['custom_css_output']),
                     'allowed_blocks' => isset($settings['allowed_blocks']) ? 
-                        array_map('sanitize_text_field', (array) $settings['allowed_blocks']) : array()
+                        $this->sanitize_allowed_blocks($settings['allowed_blocks']) : array(
+                            'core/paragraph', 'core/heading', 'core/list', 'core/quote', 'core/button'
+                        )
                 );
                 break;
             
@@ -174,6 +176,32 @@ class Admin_Pages {
         }
         
         return $sanitized;
+    }
+
+    /**
+     * Sanitize allowed blocks array.
+     */
+    private function sanitize_allowed_blocks($blocks) {
+        if (!is_array($blocks)) {
+            return array();
+        }
+        
+        // Remove the dummy field if present
+        if (isset($blocks['_dummy'])) {
+            unset($blocks['_dummy']);
+        }
+        
+        // Sanitize and filter valid block names
+        $sanitized = array();
+        foreach ($blocks as $block) {
+            $block = sanitize_text_field($block);
+            // Only allow valid core block names
+            if (strpos($block, 'core/') === 0) {
+                $sanitized[] = $block;
+            }
+        }
+        
+        return array_values($sanitized); // Re-index array
     }
 
     /**
