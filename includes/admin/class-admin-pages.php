@@ -146,7 +146,7 @@ class Admin_Pages {
                 $sanitized = array(
                     'replace_core_controls' => !empty($settings['replace_core_controls']),
                     'show_groups' => !empty($settings['show_groups']),
-                    'custom_css_output' => !empty($settings['custom_css_output']),
+                    'output_preset_css' => !empty($settings['output_preset_css']),
                     'allowed_blocks' => isset($settings['allowed_blocks']) ? 
                         $this->sanitize_allowed_blocks($settings['allowed_blocks']) : array(
                             'core/paragraph', 'core/heading', 'core/list', 'core/quote', 'core/button'

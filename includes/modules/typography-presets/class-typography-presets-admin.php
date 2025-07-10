@@ -63,13 +63,13 @@ class Typography_Presets_Admin extends Module_Admin {
                     'show_groups' => array(
                         'type' => 'checkbox',
                         'label' => __('Show Groups in Dropdown', 'orbital-editor-suite'),
-                        'description' => __('Group presets by group in the block editor dropdown.', 'orbital-editor-suite'),
+                        'description' => __('Organize presets into groups in the block editor dropdown.', 'orbital-editor-suite'),
                         'default' => true
                     ),
-                    'custom_css_output' => array(
+                    'output_preset_css' => array(
                         'type' => 'checkbox',
-                        'label' => __('Output CSS for Presets', 'orbital-editor-suite'),
-                        'description' => __('Automatically include CSS for presets on frontend and in editor.', 'orbital-editor-suite'),
+                        'label' => __('Output Preset CSS', 'orbital-editor-suite'),
+                        'description' => __('Automatically generate and include CSS for all presets.', 'orbital-editor-suite'),
                         'default' => true
                     ),
                     'allowed_blocks' => array(

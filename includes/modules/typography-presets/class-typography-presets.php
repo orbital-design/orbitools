@@ -235,7 +235,7 @@ class Typography_Presets {
                 'core/button'
             ),
             'show_groups' => true,
-            'custom_css_output' => true
+            'output_preset_css' => true
         ));
     }
 
