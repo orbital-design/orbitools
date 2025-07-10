@@ -11,11 +11,20 @@ if (!defined('ABSPATH')) {
 class OES_Admin_Panel {
     
     private $options;
+    private $github_updater;
     
     public function __construct() {
         add_action('admin_init', array($this, 'page_init'));
         add_action('admin_enqueue_scripts', array($this, 'enqueue_admin_assets'));
         $this->options = get_option('oes_options');
+        
+        // Initialize GitHub updater for admin panel
+        if (class_exists('OES_GitHub_Updater')) {
+            $this->github_updater = new OES_GitHub_Updater(
+                OES_PLUGIN_FILE,
+                '1.0.0'
+            );
+        }
     }
     
     public function render_admin_page() {
@@ -25,6 +34,8 @@ class OES_Admin_Panel {
             $this->save_settings();
         }
         
+        $active_tab = isset($_GET['tab']) ? $_GET['tab'] : 'settings';
+        
         ?>
         <div class="tuc-admin-wrap">
             <div class="tuc-admin-header">
@@ -32,11 +43,35 @@ class OES_Admin_Panel {
                 <h1>Orbital Editor Suite</h1>
             </div>
             
+            <nav class="nav-tab-wrapper">
+                <a href="?page=orbital-editor-suite&tab=settings" class="nav-tab <?php echo $active_tab === 'settings' ? 'nav-tab-active' : ''; ?>">
+                    <span class="dashicons dashicons-admin-settings"></span> Settings
+                </a>
+                <a href="?page=orbital-editor-suite&tab=updates" class="nav-tab <?php echo $active_tab === 'updates' ? 'nav-tab-active' : ''; ?>">
+                    <span class="dashicons dashicons-update"></span> Updates
+                </a>
+            </nav>
+            
             <div class="tuc-admin-content">
-                <form method="post" action="">
-                    <?php wp_nonce_field('oes_save_settings', 'oes_nonce'); ?>
-                    
-                    <div class="tuc-settings-grid">
+                <?php
+                if ($active_tab === 'updates') {
+                    $this->render_updates_tab();
+                } else {
+                    $this->render_settings_tab();
+                }
+                ?>
+            </div>
+        </div>
+        <?php
+    }
+    
+    private function render_settings_tab() {
+        ?>
+        <div class="tuc-settings-content">
+            <form method="post" action="">
+                <?php wp_nonce_field('oes_save_settings', 'oes_nonce'); ?>
+                
+                <div class="tuc-settings-grid">
                         <!-- General Settings -->
                         <div class="tuc-settings-card">
                             <h3><span class="dashicons dashicons-admin-settings"></span> General Settings</h3>
@@ -203,31 +238,118 @@ class OES_Admin_Panel {
                         </button>
                     </div>
                 </form>
-            </div>
-            
-            <!-- Help Section -->
-            <div class="tuc-help-section">
-                <h3><span class="dashicons dashicons-editor-help"></span> How to Use</h3>
-                <div class="tuc-help-grid">
-                    <div class="tuc-help-item">
-                        <strong>1. Enable Plugin</strong>
-                        <p>Toggle the plugin on in General Settings</p>
-                    </div>
-                    <div class="tuc-help-item">
-                        <strong>2. Select Blocks</strong>
-                        <p>Choose which blocks get typography controls</p>
-                    </div>
-                    <div class="tuc-help-item">
-                        <strong>3. Choose Categories</strong>
-                        <p>Enable utility categories you want to use</p>
-                    </div>
-                    <div class="tuc-help-item">
-                        <strong>4. Edit Blocks</strong>
-                        <p>Find "Typography Utilities" in the block inspector</p>
+                
+                <!-- Help Section -->
+                <div class="tuc-help-section">
+                    <h3><span class="dashicons dashicons-editor-help"></span> How to Use</h3>
+                    <div class="tuc-help-grid">
+                        <div class="tuc-help-item">
+                            <strong>1. Enable Plugin</strong>
+                            <p>Toggle the plugin on in General Settings</p>
+                        </div>
+                        <div class="tuc-help-item">
+                            <strong>2. Select Blocks</strong>
+                            <p>Choose which blocks get typography controls</p>
+                        </div>
+                        <div class="tuc-help-item">
+                            <strong>3. Choose Categories</strong>
+                            <p>Enable utility categories you want to use</p>
+                        </div>
+                        <div class="tuc-help-item">
+                            <strong>4. Edit Blocks</strong>
+                            <p>Find "Typography Utilities" in the block inspector</p>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
+            <?php
+        }
+        
+        private function render_updates_tab() {
+            $update_info = null;
+            if ($this->github_updater) {
+                $update_info = $this->github_updater->get_update_info();
+            }
+            
+            $checked_message = isset($_GET['checked']) ? 'Update check completed!' : '';
+            ?>
+            <div class="tuc-updates-content">
+                <?php if ($checked_message): ?>
+                    <div class="notice notice-success is-dismissible">
+                        <p><?php echo esc_html($checked_message); ?></p>
+                    </div>
+                <?php endif; ?>
+                
+                <div class="tuc-settings-grid">
+                    <div class="tuc-settings-card">
+                        <h3><span class="dashicons dashicons-info"></span> Current Version</h3>
+                        <div class="tuc-version-info">
+                            <div class="tuc-version-current">
+                                <strong>Installed Version:</strong> 
+                                <span class="version-number"><?php echo esc_html($update_info ? $update_info['current_version'] : '1.0.0'); ?></span>
+                            </div>
+                            
+                            <?php if ($update_info): ?>
+                                <div class="tuc-version-remote">
+                                    <strong>Latest Version:</strong> 
+                                    <span class="version-number"><?php echo esc_html($update_info['remote_version']); ?></span>
+                                </div>
+                                
+                                <div class="tuc-version-status">
+                                    <?php if ($update_info['has_update']): ?>
+                                        <span class="update-available">
+                                            <span class="dashicons dashicons-warning"></span>
+                                            Update Available
+                                        </span>
+                                    <?php else: ?>
+                                        <span class="update-current">
+                                            <span class="dashicons dashicons-yes"></span>
+                                            You're up to date!
+                                        </span>
+                                    <?php endif; ?>
+                                </div>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                    
+                    <div class="tuc-settings-card">
+                        <h3><span class="dashicons dashicons-update"></span> Update Actions</h3>
+                        <div class="tuc-update-actions">
+                            <a href="?page=orbital-editor-suite&tab=updates&oes_check_update=1" class="button button-secondary">
+                                <span class="dashicons dashicons-update"></span>
+                                Check for Updates
+                            </a>
+                            
+                            <?php if ($update_info && $update_info['has_update']): ?>
+                                <div class="tuc-update-notice">
+                                    <p><strong>New version available!</strong></p>
+                                    <p>Go to <a href="<?php echo admin_url('plugins.php'); ?>">Plugins</a> page to update.</p>
+                                </div>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                    
+                    <div class="tuc-settings-card">
+                        <h3><span class="dashicons dashicons-admin-links"></span> Repository Information</h3>
+                        <div class="tuc-repo-info">
+                            <?php if ($update_info): ?>
+                                <p><strong>Repository:</strong> <a href="<?php echo esc_url($update_info['github_url']); ?>" target="_blank"><?php echo esc_url($update_info['github_url']); ?></a></p>
+                                <p><strong>Last Checked:</strong> <?php echo esc_html($update_info['last_checked']); ?></p>
+                            <?php endif; ?>
+                            
+                            <div class="tuc-repo-instructions">
+                                <h4>How Auto-Updates Work:</h4>
+                                <ol>
+                                    <li>Plugin is configured for <strong>orbital-design/orbital-editor-suite</strong> repository</li>
+                                    <li>Create releases on GitHub with version tags (e.g., v1.0.1, v1.0.2)</li>
+                                    <li>Updates will be automatically detected and offered through WordPress</li>
+                                    <li>Users can update directly from the WordPress admin plugins page</li>
+                                </ol>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         <?php
     }
     

@@ -43,6 +43,40 @@
     z-index: 1;
 }
 
+.nav-tab-wrapper {
+    margin: 0;
+    padding: 0 40px;
+    background: #f8f9fa;
+    border-bottom: 1px solid #e2e4e7;
+}
+
+.nav-tab {
+    background: transparent;
+    border: none;
+    border-bottom: 3px solid transparent;
+    color: #646970;
+    padding: 15px 20px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.nav-tab:hover {
+    color: #667eea;
+    background: rgba(102, 126, 234, 0.05);
+}
+
+.nav-tab-active {
+    color: #667eea;
+    border-bottom-color: #667eea;
+    background: white;
+}
+
+.nav-tab .dashicons {
+    margin-right: 8px;
+    font-size: 16px;
+    vertical-align: middle;
+}
+
 .tuc-admin-content {
     padding: 40px;
 }
@@ -476,4 +510,117 @@
 .tuc-reset-button:focus {
     outline: none;
     box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.3);
+}
+
+/* Updates Tab Styles */
+.tuc-updates-content {
+    animation: fadeInUp 0.5s ease-out;
+}
+
+.tuc-version-info {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 20px;
+    margin: 15px 0;
+}
+
+.tuc-version-current,
+.tuc-version-remote {
+    margin-bottom: 10px;
+    font-size: 14px;
+}
+
+.version-number {
+    font-family: 'Courier New', monospace;
+    background: #667eea;
+    color: white;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+}
+
+.tuc-version-status {
+    margin-top: 15px;
+    padding: 10px;
+    border-radius: 6px;
+    font-weight: 500;
+}
+
+.update-available {
+    background: #fff3cd;
+    color: #856404;
+    border: 1px solid #ffeaa7;
+}
+
+.update-current {
+    background: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.update-available .dashicons,
+.update-current .dashicons {
+    margin-right: 8px;
+}
+
+.tuc-update-actions {
+    padding: 20px;
+    text-align: center;
+}
+
+.tuc-update-actions .button {
+    margin: 10px;
+    padding: 10px 20px;
+    font-size: 14px;
+}
+
+.tuc-update-actions .dashicons {
+    margin-right: 8px;
+}
+
+.tuc-update-notice {
+    background: #fff3cd;
+    border: 1px solid #ffeaa7;
+    border-radius: 6px;
+    padding: 15px;
+    margin: 15px 0;
+    text-align: left;
+}
+
+.tuc-repo-info {
+    padding: 20px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    margin: 15px 0;
+}
+
+.tuc-repo-instructions {
+    margin-top: 20px;
+    padding: 15px;
+    background: #e3f2fd;
+    border-radius: 6px;
+    border-left: 4px solid #2196f3;
+}
+
+.tuc-repo-instructions h4 {
+    margin-top: 0;
+    color: #1976d2;
+}
+
+.tuc-repo-instructions ol {
+    margin: 10px 0;
+    padding-left: 20px;
+}
+
+.tuc-repo-instructions li {
+    margin-bottom: 8px;
+    line-height: 1.5;
+}
+
+.tuc-repo-instructions code {
+    background: #333;
+    color: #fff;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 12px;
 }

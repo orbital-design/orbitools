@@ -19,6 +19,7 @@ define('OES_PLUGIN_FILE', __FILE__);
 
 // Include modern admin panel
 require_once OES_PLUGIN_DIR . 'inc/admin-panel.php';
+require_once OES_PLUGIN_DIR . 'inc/github-updater.php';
 
 function oes_enqueue_editor_assets() {
     $script_url = plugin_dir_url(__FILE__) . 'typography-controls-full.js';
@@ -75,3 +76,11 @@ function oes_plugin_activate() {
     update_option('oes_options', $default_options);
 }
 register_activation_hook(__FILE__, 'oes_plugin_activate');
+
+// Initialize GitHub updater
+if (is_admin()) {
+    $github_updater = new OES_GitHub_Updater(
+        __FILE__,
+        '1.0.0'  // Current version
+    );
+}
