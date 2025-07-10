@@ -65,239 +65,173 @@
     );
 })();
 
-wp.domReady(function() {
-    // Get localized data first
-    const { presets, categories, settings, strings } = window.orbitalTypographyPresets || {};
-    
-    // Debug logging function - check global debug setting
+// Register editor controls filter immediately when script loads (after dependencies)
+(function() {
+    const { addFilter } = wp.hooks;
+    const { createHigherOrderComponent } = wp.compose;
+    const { Fragment } = wp.element;
+    const { InspectorControls } = wp.blockEditor;
+    const { __experimentalToolsPanel: ToolsPanel, __experimentalToolsPanelItem: ToolsPanelItem, SelectControl } = wp.components;
+
+    // Debug function for early editor filter
     function debugLog(...args) {
         const globalSettings = window.orbitalEditorSuiteGlobal?.settings || {};
         if (globalSettings.enable_debug) {
             console.log('[Typography Presets Debug]', ...args);
         }
     }
-    
-    function debugWarn(...args) {
-        const globalSettings = window.orbitalEditorSuiteGlobal?.settings || {};
-        if (globalSettings.enable_debug) {
-            console.warn('[Typography Presets Debug]', ...args);
-        }
-    }
-    
-    function debugError(...args) {
-        const globalSettings = window.orbitalEditorSuiteGlobal?.settings || {};
-        if (globalSettings.enable_debug) {
-            console.error('[Typography Presets Debug]', ...args);
-        }
-    }
-    
-    debugLog('Script loading...');
 
-    if (!wp.hooks || !wp.compose || !wp.element || !wp.blockEditor || !wp.components) {
-        debugError('Missing WordPress dependencies');
-        return;
-    }
-
-    const { addFilter, removeFilter } = wp.hooks;
-    const { createHigherOrderComponent } = wp.compose;
-    const { Fragment, useState } = wp.element;
-    const { InspectorControls } = wp.blockEditor;
-    const { __experimentalToolsPanel: ToolsPanel, __experimentalToolsPanelItem: ToolsPanelItem, SelectControl } = wp.components;
-
-    debugLog('All dependencies loaded');
-
-    // Debug: List all registered filters
-    debugLog('Checking existing filters...');
-    if (wp.hooks.filters && wp.hooks.filters['blocks.registerBlockType']) {
-        debugLog('blocks.registerBlockType filters:', wp.hooks.filters['blocks.registerBlockType']);
-    }
-    if (wp.hooks.filters && wp.hooks.filters['editor.BlockEdit']) {
-        debugLog('editor.BlockEdit filters:', wp.hooks.filters['editor.BlockEdit']);
-    }
-
-    // Debug logging
-    debugLog('Data loaded:', {
-        hasData: !!window.orbitalTypographyPresets,
-        presetsCount: presets ? Object.keys(presets).length : 0,
-        settings,
-        enabled: settings?.enabled
-    });
-
-    if (!presets || !settings || !settings.enabled) {
-        debugLog('Not enabled or missing data');
-        return;
-    }
-
-    // Define which blocks should have the preset control
-    let allowedBlocks = settings.allowed_blocks || [
-        'core/paragraph',
-        'core/heading',
-        'core/list',
-        'core/quote',
-        'core/button'
-    ];
-
-    // Ensure allowedBlocks is always an array
-    if (!Array.isArray(allowedBlocks)) {
-        debugWarn('allowed_blocks is not an array, using defaults');
-        allowedBlocks = [
-            'core/paragraph',
-            'core/heading',
-            'core/list',
-            'core/quote',
-            'core/button'
-        ];
-    }
-
-    debugLog('Allowed blocks:', allowedBlocks);
-
-    /**
-     * Convert presets object to array suitable for SelectControl
-     */
-    function getPresetsForSelect() {
-        const options = [
-            { label: strings?.noPreset || 'No Preset', value: '' }
-        ];
-
-        // Group by category if enabled
-        if (settings.show_categories) {
-            const grouped = {};
-
-            Object.keys(presets).forEach(id => {
-                const preset = presets[id];
-                const category = preset.category || 'other';
-
-                if (!grouped[category]) {
-                    grouped[category] = [];
-                }
-
-                grouped[category].push({
-                    label: preset.label,
-                    value: id
-                });
-            });
-
-            // Add grouped options
-            Object.keys(grouped).forEach(category => {
-                options.push({
-                    label: `--- ${category.charAt(0).toUpperCase() + category.slice(1)} ---`,
-                    value: '',
-                    disabled: true
-                });
-
-                options.push(...grouped[category]);
-            });
-        } else {
-            // Simple flat list
-            Object.keys(presets).forEach(id => {
-                const preset = presets[id];
-                options.push({
-                    label: preset.label,
-                    value: id
-                });
-            });
-        }
-
-        return options;
-    }
-
-    /**
-     * Apply preset styles to block
-     */
-    function applyPresetToBlock(preset, presetId, attributes, setAttributes) {
-        if (!preset || !preset.properties) {
-            // Clear preset styles
-            setAttributes({
-                orbitalTypographyPreset: '',
-                style: {
-                    ...attributes.style,
-                    typography: undefined
-                }
-            });
-            return;
-        }
-
-        const typography = {};
-        const spacing = {};
-
-        // Map preset properties to block attributes
-        Object.keys(preset.properties).forEach(property => {
-            const value = preset.properties[property];
-
-            switch (property) {
-                case 'font-size':
-                    typography.fontSize = value;
-                    break;
-                case 'line-height':
-                    typography.lineHeight = value;
-                    break;
-                case 'font-weight':
-                    typography.fontWeight = value;
-                    break;
-                case 'letter-spacing':
-                    typography.letterSpacing = value;
-                    break;
-                case 'text-transform':
-                    typography.textTransform = value;
-                    break;
-                case 'text-decoration':
-                    typography.textDecoration = value;
-                    break;
-                case 'margin-bottom':
-                    spacing.margin = { ...spacing.margin, bottom: value };
-                    break;
-                case 'margin-top':
-                    spacing.margin = { ...spacing.margin, top: value };
-                    break;
-                case 'padding':
-                    spacing.padding = value;
-                    break;
-            }
-        });
-
-        // Update block attributes
-        const newStyle = {
-            ...attributes.style,
-            typography: Object.keys(typography).length > 0 ? typography : undefined,
-            spacing: Object.keys(spacing).length > 0 ? spacing : undefined
-        };
-
-        setAttributes({
-            orbitalTypographyPreset: presetId || '',
-            style: newStyle,
-            className: `${attributes.className || ''} orbital-preset-${presetId || ''}`.trim()
-        });
-    }
-
-    // Add custom attribute
-    function addTypographyPresetAttribute(settings, name) {
-        if (allowedBlocks.includes(name)) {
-            debugLog('Adding attribute to', name);
-            settings.attributes = {
-                ...settings.attributes,
-                orbitalTypographyPreset: {
-                    type: 'string',
-                    default: ''
-                }
-            };
-        }
-        return settings;
-    }
-
-    // Add inspector control
+    // Add inspector control - needs to be registered early
     const withTypographyPresetControl = createHigherOrderComponent(function(BlockEdit) {
         return function(props) {
+            // Get data from localized script
+            const { presets, settings, strings } = window.orbitalTypographyPresets || {};
+            
+            if (!presets || !settings || !settings.enabled) {
+                return wp.element.createElement(BlockEdit, props);
+            }
+
+            // Define allowed blocks (with fallback)
+            const allowedBlocks = settings.allowed_blocks || [
+                'core/paragraph', 'core/heading', 'core/list', 'core/quote', 'core/button'
+            ];
+
             if (!allowedBlocks.includes(props.name)) {
                 return wp.element.createElement(BlockEdit, props);
             }
 
-            debugLog('Adding controls for', props.name);
-
             const { attributes, setAttributes } = props;
             const { orbitalTypographyPreset } = attributes;
 
+            debugLog('Adding controls for', props.name);
+            debugLog('All attributes:', attributes);
+            debugLog('Current orbitalTypographyPreset attribute:', orbitalTypographyPreset);
+            debugLog('Type of orbitalTypographyPreset:', typeof orbitalTypographyPreset);
+            debugLog('Available presets keys:', Object.keys(presets));
+
             const currentPreset = orbitalTypographyPreset && presets[orbitalTypographyPreset] ?
                 presets[orbitalTypographyPreset] : null;
+                
+            debugLog('Current preset object:', currentPreset);
+            debugLog('SelectControl value (orbitalTypographyPreset || ""):', orbitalTypographyPreset || '');
+
+            /**
+             * Convert presets object to array suitable for SelectControl
+             */
+            function getPresetsForSelect() {
+                const options = [
+                    { label: strings?.noPreset || 'No Preset', value: '' }
+                ];
+
+                // Group by category if enabled
+                if (settings.show_categories) {
+                    const grouped = {};
+
+                    Object.keys(presets).forEach(id => {
+                        const preset = presets[id];
+                        const category = preset.category || 'other';
+
+                        if (!grouped[category]) {
+                            grouped[category] = [];
+                        }
+
+                        grouped[category].push({
+                            label: preset.label,
+                            value: id
+                        });
+                    });
+
+                    // Add grouped options
+                    Object.keys(grouped).forEach(category => {
+                        options.push({
+                            label: `--- ${category.charAt(0).toUpperCase() + category.slice(1)} ---`,
+                            value: '',
+                            disabled: true
+                        });
+
+                        options.push(...grouped[category]);
+                    });
+                } else {
+                    // Simple flat list
+                    Object.keys(presets).forEach(id => {
+                        const preset = presets[id];
+                        options.push({
+                            label: preset.label,
+                            value: id
+                        });
+                    });
+                }
+
+                return options;
+            }
+
+            /**
+             * Apply preset styles to block
+             */
+            function applyPresetToBlock(preset, presetId, attributes, setAttributes) {
+                if (!preset || !preset.properties) {
+                    // Clear preset styles
+                    setAttributes({
+                        orbitalTypographyPreset: '',
+                        style: {
+                            ...attributes.style,
+                            typography: undefined
+                        }
+                    });
+                    return;
+                }
+
+                const typography = {};
+                const spacing = {};
+
+                // Map preset properties to block attributes
+                Object.keys(preset.properties).forEach(property => {
+                    const value = preset.properties[property];
+
+                    switch (property) {
+                        case 'font-size':
+                            typography.fontSize = value;
+                            break;
+                        case 'line-height':
+                            typography.lineHeight = value;
+                            break;
+                        case 'font-weight':
+                            typography.fontWeight = value;
+                            break;
+                        case 'letter-spacing':
+                            typography.letterSpacing = value;
+                            break;
+                        case 'text-transform':
+                            typography.textTransform = value;
+                            break;
+                        case 'text-decoration':
+                            typography.textDecoration = value;
+                            break;
+                        case 'margin-bottom':
+                            spacing.margin = { ...spacing.margin, bottom: value };
+                            break;
+                        case 'margin-top':
+                            spacing.margin = { ...spacing.margin, top: value };
+                            break;
+                        case 'padding':
+                            spacing.padding = value;
+                            break;
+                    }
+                });
+
+                // Update block attributes
+                const newStyle = {
+                    ...attributes.style,
+                    typography: Object.keys(typography).length > 0 ? typography : undefined,
+                    spacing: Object.keys(spacing).length > 0 ? spacing : undefined
+                };
+
+                setAttributes({
+                    orbitalTypographyPreset: presetId || '',
+                    style: newStyle,
+                    className: `${attributes.className || ''} orbital-preset-${presetId || ''}`.trim()
+                });
+            }
 
             return wp.element.createElement(
                 Fragment,
@@ -388,89 +322,39 @@ wp.domReady(function() {
         };
     }, 'withTypographyPresetControl');
 
-    /**
-     * Add preset class to block wrapper
-     */
-    function addPresetClassToSave(props, blockType, attributes) {
-        if (!allowedBlocks.includes(blockType.name)) {
-            return props;
-        }
-
-        const { orbitalTypographyPreset } = attributes;
-
-        if (orbitalTypographyPreset) {
-            const presetClass = `orbital-preset-${orbitalTypographyPreset}`;
-            const existingClasses = props.className || '';
-            props.className = (existingClasses + ' ' + presetClass).trim();
-            debugLog('Adding class to frontend:', props.className);
-        }
-
-        return props;
-    }
-
-    /**
-     * Remove core typography controls if setting is enabled
-     */
-    debugLog('replace_core_controls setting:', settings.replace_core_controls);
-    
-    if (settings.replace_core_controls) {
-        debugLog('Removing core typography controls');
-
-        // Define typography controls to remove for allowed blocks
-        const typographyControlsToRemove = [
-            'fontSize', 'fontFamily', 'fontWeight', 'lineHeight',
-            'letterSpacing', 'textDecoration', 'textTransform',
-            '__experimentalFontFamily', '__experimentalFontSize',
-            '__experimentalFontWeight', '__experimentalLineHeight',
-            '__experimentalLetterSpacing', '__experimentalTextDecoration',
-            '__experimentalTextTransform', '__experimentalWritingMode'
-        ];
-
-        /**
-         * Applies typography control restrictions to block settings
-         */
-        function removeTypographyControls(settings, blockName) {
-            debugLog('fn: removeTypographyControls')
-            if (!settings || !blockName || !allowedBlocks.includes(blockName)) {
-                return settings;
-            }
-
-            debugLog('Removing typography controls from', blockName);
-
-            if (!settings.supports) {
-                settings.supports = {};
-            }
-debugLog('typography supports:', settings.supports.typography)
-            // Remove individual typography controls
-            if (settings.supports.typography) {
-                typographyControlsToRemove.forEach(control => {
-                    if (settings.supports.typography[control] !== undefined) {
-                        settings.supports.typography[control] = false;
-                    }
-                });
-            }
-
-            // Also remove top-level typography supports
-            typographyControlsToRemove.forEach(control => {
-                if (settings.supports[control] !== undefined) {
-                    settings.supports[control] = false;
-                }
-            });
-
+    // Add custom attribute registration
+    function addTypographyPresetAttribute(settings, name) {
+        // Get data from localized script
+        const { settings: moduleSettings } = window.orbitalTypographyPresets || {};
+        
+        if (!moduleSettings || !moduleSettings.enabled) {
             return settings;
         }
 
-        debugLog('Core typography removal handled by early filter');
+        // Define allowed blocks (with fallback)
+        const allowedBlocks = moduleSettings.allowed_blocks || [
+            'core/paragraph', 'core/heading', 'core/list', 'core/quote', 'core/button'
+        ];
+
+        if (allowedBlocks.includes(name)) {
+            debugLog('Adding attribute to', name);
+            settings.attributes = {
+                ...settings.attributes,
+                orbitalTypographyPreset: {
+                    type: 'string',
+                    default: ''
+                }
+            };
+        }
+        return settings;
     }
 
-    // Register all filters
-    debugLog('Registering filters');
-
+    // Register all filters immediately
     addFilter(
         'blocks.registerBlockType',
         'orbital-editor-suite/add-preset-attribute',
         addTypographyPresetAttribute,
-        20  // Higher priority than core typography removal
+        20
     );
 
     addFilter(
@@ -479,13 +363,16 @@ debugLog('typography supports:', settings.supports.typography)
         withTypographyPresetControl,
         20  // Higher priority to ensure our controls show
     );
+})();
 
-    addFilter(
-        'blocks.getSaveContent.extraProps',
-        'orbital-editor-suite/add-preset-class',
-        addPresetClassToSave,
-        20
-    );
+wp.domReady(function() {
+    // Debug logging function
+    function debugLog(...args) {
+        const globalSettings = window.orbitalEditorSuiteGlobal?.settings || {};
+        if (globalSettings.enable_debug) {
+            console.log('[Typography Presets Debug]', ...args);
+        }
+    }
 
-    debugLog('Setup complete');
+    debugLog('Setup complete - all filters registered by early IIFEs');
 });
