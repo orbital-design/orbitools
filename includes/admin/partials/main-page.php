@@ -20,6 +20,8 @@ if (isset($_POST['submit']) && check_admin_referer('orbital_editor_suite_setting
     
     // Process form data
     $new_settings['enable_debug'] = !empty($_POST['enable_debug']);
+    $new_settings['enabled_modules'] = isset($_POST['enabled_modules']) ? 
+        array_map('sanitize_text_field', $_POST['enabled_modules']) : array();
     
     // Update options
     $options['settings'] = $new_settings;
@@ -42,10 +44,98 @@ if (isset($_POST['submit']) && check_admin_referer('orbital_editor_suite_setting
             <?php wp_nonce_field('orbital_editor_suite_settings'); ?>
             
             <div class="orbital-settings-grid">
+                <!-- Available Features -->
+                <div class="orbital-settings-card">
+                    <h3><span class="dashicons dashicons-admin-plugins"></span> <?php _e('Available Features', 'orbital-editor-suite'); ?></h3>
+                    
+                    <div class="orbital-field">
+                        <label><strong><?php _e('Choose Features', 'orbital-editor-suite'); ?></strong></label>
+                        <p class="orbital-help-text"><?php _e('Select which features you want to use. Only checked features will be available in your editor and admin menu.', 'orbital-editor-suite'); ?></p>
+                        
+                        <div class="orbital-checkbox-grid">
+                            <?php
+                            $available_modules = array(
+                                'typography-presets' => array(
+                                    'name' => __('Typography Presets', 'orbital-editor-suite'),
+                                    'description' => __('Preset-based typography system with CSS classes', 'orbital-editor-suite')
+                                )
+                            );
+                            
+                            $enabled_modules = isset($settings['enabled_modules']) ? $settings['enabled_modules'] : array();
+                            
+                            foreach ($available_modules as $module_id => $module_info) {
+                                $checked = in_array($module_id, $enabled_modules);
+                                ?>
+                                <label class="orbital-checkbox-item">
+                                    <input type="checkbox" name="enabled_modules[]" value="<?php echo esc_attr($module_id); ?>" <?php checked($checked, true); ?>>
+                                    <span class="orbital-checkmark"></span>
+                                    <div class="orbital-checkbox-text">
+                                        <strong><?php echo esc_html($module_info['name']); ?></strong>
+                                        <small style="display: block; color: #666; font-weight: normal;"><?php echo esc_html($module_info['description']); ?></small>
+                                    </div>
+                                </label>
+                                <?php
+                            }
+                            ?>
+                        </div>
+                    </div>
+                </div>
+                
+                <style>
+                /* Enhanced prominence for checked features */
+                .orbital-settings-card .orbital-checkbox-item:has(input[type="checkbox"]:checked) {
+                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+                    border: 3px solid #4f46e5 !important;
+                    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4) !important;
+                    transform: scale(1.02) !important;
+                    position: relative;
+                }
+                
+                .orbital-settings-card .orbital-checkbox-item:has(input[type="checkbox"]:checked)::after {
+                    content: "ACTIVE";
+                    position: absolute;
+                    top: -8px;
+                    right: -8px;
+                    background: #10b981;
+                    color: white;
+                    padding: 2px 8px;
+                    border-radius: 12px;
+                    font-size: 10px;
+                    font-weight: bold;
+                    text-transform: uppercase;
+                    letter-spacing: 0.5px;
+                    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+                }
+                
+                .orbital-settings-card .orbital-checkbox-item:has(input[type="checkbox"]:checked) .orbital-checkbox-text {
+                    color: #fff !important;
+                    text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+                }
+                
+                .orbital-settings-card .orbital-checkbox-item:has(input[type="checkbox"]:checked) small {
+                    color: rgba(255,255,255,0.9) !important;
+                    text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+                }
+                
+                .orbital-settings-card .orbital-checkbox-item:has(input[type="checkbox"]:checked):hover {
+                    transform: scale(1.03) translateY(-2px) !important;
+                    box-shadow: 0 12px 35px rgba(102, 126, 234, 0.5) !important;
+                }
+                
+                /* Pulse animation for active features */
+                .orbital-settings-card .orbital-checkbox-item:has(input[type="checkbox"]:checked) {
+                    animation: feature-glow 2s ease-in-out infinite alternate;
+                }
+                
+                @keyframes feature-glow {
+                    from { box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4); }
+                    to { box-shadow: 0 8px 25px rgba(102, 126, 234, 0.6); }
+                }
+                </style>
+                
                 <!-- General Settings -->
                 <div class="orbital-settings-card">
                     <h3><span class="dashicons dashicons-admin-settings"></span> <?php _e('General Settings', 'orbital-editor-suite'); ?></h3>
-                    
                     
                     <div class="orbital-field">
                         <label class="orbital-toggle-switch">

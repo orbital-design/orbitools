@@ -113,16 +113,9 @@ class Admin_Pages {
             $settings = $options['settings'];
             
             $sanitized['settings'] = array(
-                'enable_plugin' => !empty($settings['enable_plugin']),
-                'enable_search' => !empty($settings['enable_search']),
-                'allowed_blocks' => isset($settings['allowed_blocks']) ? 
-                    array_map('sanitize_text_field', (array) $settings['allowed_blocks']) : array(),
-                'utility_categories' => isset($settings['utility_categories']) ? 
-                    array_map('sanitize_text_field', (array) $settings['utility_categories']) : array(),
-                'custom_css' => isset($settings['custom_css']) ? 
-                    wp_kses_post($settings['custom_css']) : '',
-                'load_custom_css' => !empty($settings['load_custom_css']),
-                'enable_debug' => !empty($settings['enable_debug'])
+                'enable_debug' => !empty($settings['enable_debug']),
+                'enabled_modules' => isset($settings['enabled_modules']) ? 
+                    array_map('sanitize_text_field', (array) $settings['enabled_modules']) : array()
             );
         }
 

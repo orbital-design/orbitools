@@ -56,10 +56,26 @@ class Typography_Presets {
      * Initialize the module.
      */
     public function __construct() {
+        // Check if module is enabled before initializing
+        if (!$this->is_module_enabled()) {
+            return;
+        }
+        
         $this->load_default_presets();
         $this->load_settings();
         $this->load_presets();
         $this->init_hooks();
+    }
+
+    /**
+     * Check if this module is enabled in global settings.
+     */
+    private function is_module_enabled() {
+        $global_options = get_option('orbital_editor_suite_options', array());
+        $global_settings = isset($global_options['settings']) ? $global_options['settings'] : array();
+        $enabled_modules = isset($global_settings['enabled_modules']) ? $global_settings['enabled_modules'] : array();
+        
+        return in_array(self::MODULE_SLUG, $enabled_modules);
     }
 
     /**
@@ -518,6 +534,11 @@ class Typography_Presets {
      * Called via orbital_editor_suite_admin_pages hook.
      */
     public function register_admin_pages() {
+        // Only register admin pages if module is enabled
+        if (!$this->is_module_enabled()) {
+            return;
+        }
+        
         // Load admin class
         if (!class_exists('\Orbital\Editor_Suite\Admin\Module_Admin')) {
             require_once plugin_dir_path(dirname(dirname(__FILE__))) . 'admin/class-module-admin.php';
