@@ -243,7 +243,7 @@
                     wp.element.createElement(
                         ToolsPanel,
                         {
-                            label: 'Typography Presets',
+                            label: 'Typography',
                             resetAll: function() {
                                 applyPresetToBlock(null, '', attributes, setAttributes);
                             }
@@ -252,14 +252,14 @@
                             ToolsPanelItem,
                             {
                                 hasValue: function() { return !!orbitalTypographyPreset; },
-                                label: 'Typography Preset',
+                                label: 'Preset',
                                 onDeselect: function() {
                                     applyPresetToBlock(null, '', attributes, setAttributes);
                                 },
                                 isShownByDefault: true
                             },
                             wp.element.createElement(SelectControl, {
-                                label: 'Typography Preset',
+                                label: 'Preset',
                                 value: orbitalTypographyPreset || '',
                                 options: getPresetsForSelect(),
                                 onChange: function(presetId) {
