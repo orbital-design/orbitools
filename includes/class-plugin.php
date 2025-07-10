@@ -61,6 +61,10 @@ class Plugin {
         require_once plugin_dir_path(dirname(__FILE__)) . 'includes/admin/class-admin.php';
         require_once plugin_dir_path(dirname(__FILE__)) . 'includes/blocks/class-block-enhancements.php';
         require_once plugin_dir_path(dirname(__FILE__)) . 'includes/updater/class-github-updater.php';
+        
+        // Load modules
+        require_once plugin_dir_path(dirname(__FILE__)) . 'includes/modules/typography-presets/class-typography-presets.php';
+        require_once plugin_dir_path(dirname(__FILE__)) . 'includes/modules/typography-presets/admin/class-admin-interface.php';
 
         $this->loader = new Loader();
     }
@@ -98,6 +102,17 @@ class Plugin {
                 $this->version
             );
         }
+        
+        // Initialize modules
+        $this->init_modules();
+    }
+    
+    /**
+     * Initialize plugin modules.
+     */
+    private function init_modules() {
+        // Initialize Typography Presets module
+        new Modules\Typography_Presets\Typography_Presets();
     }
 
     /**

@@ -78,6 +78,15 @@ class Admin_Pages {
 
         add_submenu_page(
             'orbital-editor-suite',
+            __('Typography Presets', 'orbital-editor-suite'),
+            __('Typography Presets', 'orbital-editor-suite'),
+            'manage_options',
+            'orbital-editor-suite-typography',
+            array($this, 'render_typography_page')
+        );
+
+        add_submenu_page(
+            'orbital-editor-suite',
             __('Updates', 'orbital-editor-suite'),
             __('Updates', 'orbital-editor-suite'),
             'manage_options',
@@ -149,6 +158,21 @@ class Admin_Pages {
      */
     public function render_main_page() {
         require_once plugin_dir_path(__FILE__) . 'partials/main-page.php';
+    }
+
+    /**
+     * Render the typography presets page.
+     */
+    public function render_typography_page() {
+        $typography_presets = new \Orbital\Editor_Suite\Modules\Typography_Presets\Typography_Presets();
+        $admin_interface = new \Orbital\Editor_Suite\Modules\Typography_Presets\Admin\Admin_Interface($typography_presets);
+        
+        ?>
+        <div class="wrap">
+            <h1><?php _e('Typography Presets', 'orbital-editor-suite'); ?></h1>
+            <?php $admin_interface->render_admin_section(); ?>
+        </div>
+        <?php
     }
 
     /**
