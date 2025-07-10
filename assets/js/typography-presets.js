@@ -228,8 +228,7 @@
 
                 setAttributes({
                     orbitalTypographyPreset: presetId || '',
-                    style: newStyle,
-                    className: `${attributes.className || ''} orbital-preset-${presetId || ''}`.trim()
+                    style: newStyle
                 });
             }
 
