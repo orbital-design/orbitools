@@ -158,7 +158,7 @@ wp.domReady(function() {
                 wp.element.createElement(BlockEdit, props),
                 wp.element.createElement(
                     InspectorControls,
-                    {},
+                    { group: 'styles' },
                     wp.element.createElement(
                         PanelBody,
                         {
