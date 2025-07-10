@@ -59,12 +59,10 @@ class Plugin {
     private function load_dependencies() {
         require_once plugin_dir_path(dirname(__FILE__)) . 'includes/class-loader.php';
         require_once plugin_dir_path(dirname(__FILE__)) . 'includes/admin/class-admin.php';
-        require_once plugin_dir_path(dirname(__FILE__)) . 'includes/blocks/class-block-enhancements.php';
         require_once plugin_dir_path(dirname(__FILE__)) . 'includes/updater/class-github-updater.php';
         
         // Load modules
         require_once plugin_dir_path(dirname(__FILE__)) . 'includes/modules/typography-presets/class-typography-presets.php';
-        require_once plugin_dir_path(dirname(__FILE__)) . 'includes/modules/typography-presets/admin/class-admin-interface.php';
 
         $this->loader = new Loader();
     }
@@ -84,9 +82,7 @@ class Plugin {
      * Register all of the hooks related to the public-facing functionality.
      */
     private function define_public_hooks() {
-        $block_enhancements = new Blocks\Block_Enhancements($this->get_plugin_name(), $this->get_version());
-
-        $this->loader->add_action('enqueue_block_editor_assets', $block_enhancements, 'enqueue_editor_assets');
+        // Public hooks are now handled by individual modules
     }
 
     /**
