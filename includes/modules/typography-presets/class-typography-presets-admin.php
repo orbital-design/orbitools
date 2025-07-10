@@ -60,10 +60,10 @@ class Typography_Presets_Admin extends Module_Admin {
                         'description' => __('Remove WordPress core typography controls and replace with preset system.', 'orbital-editor-suite'),
                         'default' => true
                     ),
-                    'show_categories' => array(
+                    'show_groups' => array(
                         'type' => 'checkbox',
-                        'label' => __('Show Categories in Dropdown', 'orbital-editor-suite'),
-                        'description' => __('Group presets by category in the block editor dropdown.', 'orbital-editor-suite'),
+                        'label' => __('Show Groups in Dropdown', 'orbital-editor-suite'),
+                        'description' => __('Group presets by group in the block editor dropdown.', 'orbital-editor-suite'),
                         'default' => true
                     ),
                     'custom_css_output' => array(
@@ -157,8 +157,8 @@ class Typography_Presets_Admin extends Module_Admin {
             </div>
 
             <div class="orbital-field">
-                <label for="preset-category"><?php _e('Category', 'orbital-editor-suite'); ?></label>
-                <select id="preset-category" name="category">
+                <label for="preset-group"><?php _e('Group', 'orbital-editor-suite'); ?></label>
+                <select id="preset-group" name="group">
                     <option value="headings"><?php _e('Headings', 'orbital-editor-suite'); ?></option>
                     <option value="body"><?php _e('Body Text', 'orbital-editor-suite'); ?></option>
                     <option value="utility"><?php _e('Utility', 'orbital-editor-suite'); ?></option>

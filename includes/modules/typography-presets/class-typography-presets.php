@@ -118,7 +118,7 @@ class Typography_Presets {
                     'letter-spacing' => '-0.02em',
                     'margin-bottom' => '1.5rem'
                 ),
-                'category' => 'headings',
+                'group' => 'headings',
                 'is_default' => true
             ),
             'heading-lg' => array(
@@ -131,7 +131,7 @@ class Typography_Presets {
                     'letter-spacing' => '-0.01em',
                     'margin-bottom' => '1.25rem'
                 ),
-                'category' => 'headings',
+                'group' => 'headings',
                 'is_default' => true
             ),
             'heading-md' => array(
@@ -144,7 +144,7 @@ class Typography_Presets {
                     'letter-spacing' => '0',
                     'margin-bottom' => '1rem'
                 ),
-                'category' => 'headings',
+                'group' => 'headings',
                 'is_default' => true
             ),
             'body-lg' => array(
@@ -157,7 +157,7 @@ class Typography_Presets {
                     'letter-spacing' => '0',
                     'margin-bottom' => '1rem'
                 ),
-                'category' => 'body',
+                'group' => 'body',
                 'is_default' => true
             ),
             'body-base' => array(
@@ -170,7 +170,7 @@ class Typography_Presets {
                     'letter-spacing' => '0',
                     'margin-bottom' => '1rem'
                 ),
-                'category' => 'body',
+                'group' => 'body',
                 'is_default' => true
             ),
             'body-sm' => array(
@@ -183,7 +183,7 @@ class Typography_Presets {
                     'letter-spacing' => '0',
                     'margin-bottom' => '0.75rem'
                 ),
-                'category' => 'body',
+                'group' => 'body',
                 'is_default' => true
             ),
             'caption' => array(
@@ -197,7 +197,7 @@ class Typography_Presets {
                     'text-transform' => 'uppercase',
                     'color' => '#6b7280'
                 ),
-                'category' => 'utility',
+                'group' => 'utility',
                 'is_default' => true
             ),
             'button' => array(
@@ -210,7 +210,7 @@ class Typography_Presets {
                     'letter-spacing' => '0.025em',
                     'text-transform' => 'uppercase'
                 ),
-                'category' => 'utility',
+                'group' => 'utility',
                 'is_default' => true
             )
         );
@@ -234,7 +234,7 @@ class Typography_Presets {
                 'core/quote',
                 'core/button'
             ),
-            'show_categories' => true,
+            'show_groups' => true,
             'custom_css_output' => true
         ));
     }
@@ -280,29 +280,29 @@ class Typography_Presets {
     }
 
     /**
-     * Get presets by category.
+     * Get presets by group.
      */
-    public function get_presets_by_category($category = null) {
-        if (!$category) {
+    public function get_presets_by_group($group = null) {
+        if (!$group) {
             return $this->presets;
         }
         
-        return array_filter($this->presets, function($preset) use ($category) {
-            return isset($preset['category']) && $preset['category'] === $category;
+        return array_filter($this->presets, function($preset) use ($group) {
+            return isset($preset['group']) && $preset['group'] === $group;
         });
     }
 
     /**
-     * Get preset categories.
+     * Get preset groups.
      */
-    public function get_categories() {
-        $categories = array();
+    public function get_groups() {
+        $groups = array();
         foreach ($this->presets as $preset) {
-            if (isset($preset['category'])) {
-                $categories[$preset['category']] = $preset['category'];
+            if (isset($preset['group'])) {
+                $groups[$preset['group']] = $preset['group'];
             }
         }
-        return $categories;
+        return $groups;
     }
 
     /**
@@ -313,7 +313,7 @@ class Typography_Presets {
             'label' => '',
             'description' => '',
             'properties' => array(),
-            'category' => 'custom',
+            'group' => 'custom',
             'is_default' => false
         ));
         
@@ -395,7 +395,7 @@ class Typography_Presets {
             'orbitalTypographyPresets',
             array(
                 'presets' => $this->get_presets(),
-                'categories' => $this->get_categories(),
+                'groups' => $this->get_groups(),
                 'settings' => $this->settings,
                 'strings' => array(
                     'selectPreset' => __('Select Typography Preset', 'orbital-editor-suite'),

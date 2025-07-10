@@ -123,33 +123,33 @@
                     { label: strings?.noPreset || 'No Preset', value: '' }
                 ];
 
-                // Group by category if enabled
-                if (settings.show_categories) {
+                // Group by group if enabled
+                if (settings.show_groups) {
                     const grouped = {};
 
                     Object.keys(presets).forEach(id => {
                         const preset = presets[id];
-                        const category = preset.category || 'other';
+                        const group = preset.group || 'other';
 
-                        if (!grouped[category]) {
-                            grouped[category] = [];
+                        if (!grouped[group]) {
+                            grouped[group] = [];
                         }
 
-                        grouped[category].push({
+                        grouped[group].push({
                             label: preset.label,
                             value: id
                         });
                     });
 
                     // Add grouped options
-                    Object.keys(grouped).forEach(category => {
+                    Object.keys(grouped).forEach(group => {
                         options.push({
-                            label: `--- ${category.charAt(0).toUpperCase() + category.slice(1)} ---`,
+                            label: `--- ${group.charAt(0).toUpperCase() + group.slice(1)} ---`,
                             value: '',
                             disabled: true
                         });
 
-                        options.push(...grouped[category]);
+                        options.push(...grouped[group]);
                     });
                 } else {
                     // Simple flat list

@@ -145,7 +145,7 @@ class Admin_Pages {
             case 'typography-presets':
                 $sanitized = array(
                     'replace_core_controls' => !empty($settings['replace_core_controls']),
-                    'show_categories' => !empty($settings['show_categories']),
+                    'show_groups' => !empty($settings['show_groups']),
                     'custom_css_output' => !empty($settings['custom_css_output']),
                     'allowed_blocks' => isset($settings['allowed_blocks']) ? 
                         $this->sanitize_allowed_blocks($settings['allowed_blocks']) : array(
