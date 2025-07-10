@@ -12,7 +12,7 @@ wp.domReady(function() {
     const { createHigherOrderComponent } = wp.compose;
     const { Fragment, useState } = wp.element;
     const { InspectorControls } = wp.blockEditor;
-    const { PanelBody, SelectControl, TextControl } = wp.components;
+    const { __experimentalToolsPanel: ToolsPanel, __experimentalToolsPanelItem: ToolsPanelItem, SelectControl, TextControl } = wp.components;
     
     // console.log('Typography Utility Controls: All dependencies loaded');
     
@@ -160,33 +160,54 @@ wp.domReady(function() {
                     InspectorControls,
                     { group: 'styles' },
                     wp.element.createElement(
-                        PanelBody,
+                        ToolsPanel,
                         {
-                            title: 'Typography Utilities',
-                            initialOpen: false
+                            label: 'Typography Utilities',
+                            resetAll: function() {
+                                setAttributes({ typographyUtilityClass: '' });
+                                setSearchTerm('');
+                            }
                         },
-                        wp.element.createElement(TextControl, {
-                            label: 'Search utilities',
-                            value: searchTerm,
-                            onChange: setSearchTerm,
-                            placeholder: 'Type to filter...',
-                            __nextHasNoMarginBottom: true,
-                            __next40pxDefaultSize: true
-                        }),
-                        wp.element.createElement(SelectControl, {
-                            label: 'Select Typography Utility',
-                            value: typographyUtilityClass || '',
-                            options: filteredOptions,
-                            onChange: function(newValue) {
-                                // console.log('Typography Utility Controls: Setting class to:', newValue);
-                                // console.log('Typography Utility Controls: Current attributes:', attributes);
-                                setAttributes({ typographyUtilityClass: newValue });
-                                setSearchTerm(''); // Clear search after selection
+                        wp.element.createElement(
+                            ToolsPanelItem,
+                            {
+                                hasValue: function() { return !!searchTerm; },
+                                label: 'Search',
+                                onDeselect: function() { setSearchTerm(''); },
+                                isShownByDefault: true
                             },
-                            help: filteredOptions.length + ' utilities available',
-                            __nextHasNoMarginBottom: true,
-                            __next40pxDefaultSize: true
-                        })
+                            wp.element.createElement(TextControl, {
+                                label: 'Search Typography Utilities',
+                                value: searchTerm,
+                                onChange: setSearchTerm,
+                                placeholder: 'Type to filter...',
+                                __nextHasNoMarginBottom: true,
+                                __next40pxDefaultSize: true
+                            })
+                        ),
+                        wp.element.createElement(
+                            ToolsPanelItem,
+                            {
+                                hasValue: function() { return !!typographyUtilityClass; },
+                                label: 'Typography Utility',
+                                onDeselect: function() { setAttributes({ typographyUtilityClass: '' }); },
+                                isShownByDefault: true
+                            },
+                            wp.element.createElement(SelectControl, {
+                                label: 'Typography Utility',
+                                value: typographyUtilityClass || '',
+                                options: filteredOptions,
+                                onChange: function(newValue) {
+                                    // console.log('Typography Utility Controls: Setting class to:', newValue);
+                                    // console.log('Typography Utility Controls: Current attributes:', attributes);
+                                    setAttributes({ typographyUtilityClass: newValue });
+                                    setSearchTerm(''); // Clear search after selection
+                                },
+                                help: filteredOptions.length + ' utilities available',
+                                __nextHasNoMarginBottom: true,
+                                __next40pxDefaultSize: true
+                            })
+                        )
                     )
                 )
             );
