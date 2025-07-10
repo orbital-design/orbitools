@@ -169,66 +169,9 @@
              * Apply preset styles to block
              */
             function applyPresetToBlock(preset, presetId, attributes, setAttributes) {
-                if (!preset || !preset.properties) {
-                    // Clear preset styles
-                    setAttributes({
-                        orbitalTypographyPreset: '',
-                        style: {
-                            ...attributes.style,
-                            typography: undefined
-                        }
-                    });
-                    return;
-                }
-
-                const typography = {};
-                const spacing = {};
-
-                // Map preset properties to block attributes
-                Object.keys(preset.properties).forEach(property => {
-                    const value = preset.properties[property];
-
-                    switch (property) {
-                        case 'font-size':
-                            typography.fontSize = value;
-                            break;
-                        case 'line-height':
-                            typography.lineHeight = value;
-                            break;
-                        case 'font-weight':
-                            typography.fontWeight = value;
-                            break;
-                        case 'letter-spacing':
-                            typography.letterSpacing = value;
-                            break;
-                        case 'text-transform':
-                            typography.textTransform = value;
-                            break;
-                        case 'text-decoration':
-                            typography.textDecoration = value;
-                            break;
-                        case 'margin-bottom':
-                            spacing.margin = { ...spacing.margin, bottom: value };
-                            break;
-                        case 'margin-top':
-                            spacing.margin = { ...spacing.margin, top: value };
-                            break;
-                        case 'padding':
-                            spacing.padding = value;
-                            break;
-                    }
-                });
-
-                // Update block attributes
-                const newStyle = {
-                    ...attributes.style,
-                    typography: Object.keys(typography).length > 0 ? typography : undefined,
-                    spacing: Object.keys(spacing).length > 0 ? spacing : undefined
-                };
-
+                // Simply set the preset ID - styling will be handled by CSS classes
                 setAttributes({
-                    orbitalTypographyPreset: presetId || '',
-                    style: newStyle
+                    orbitalTypographyPreset: presetId || ''
                 });
             }
 
@@ -349,6 +292,76 @@
     }
 
     // Register all filters immediately
+    // Add preset classes to editor blocks
+    const addPresetClassToEditor = createHigherOrderComponent(function(BlockListBlock) {
+        return function(props) {
+            // Get data from localized script
+            const { settings: moduleSettings } = window.orbitalTypographyPresets || {};
+            
+            if (!moduleSettings || !moduleSettings.enabled) {
+                return wp.element.createElement(BlockListBlock, props);
+            }
+
+            // Define allowed blocks (with fallback)
+            const allowedBlocks = moduleSettings.allowed_blocks || [
+                'core/paragraph', 'core/heading', 'core/list', 'core/quote', 'core/button'
+            ];
+
+            if (!allowedBlocks.includes(props.name)) {
+                return wp.element.createElement(BlockListBlock, props);
+            }
+
+            const { orbitalTypographyPreset } = props.attributes;
+
+            if (orbitalTypographyPreset) {
+                const existingClasses = props.className || '';
+                const presetClasses = `has-type-preset has-type-preset-${orbitalTypographyPreset}`;
+                const newClassName = (existingClasses + ' ' + presetClasses).trim();
+                
+                debugLog('Adding preset classes to editor:', newClassName);
+                
+                const newProps = {
+                    ...props,
+                    className: newClassName
+                };
+                
+                return wp.element.createElement(BlockListBlock, newProps);
+            }
+
+            return wp.element.createElement(BlockListBlock, props);
+        };
+    }, 'addPresetClassToEditor');
+
+    // Add preset classes to block wrapper
+    function addPresetClassToSave(props, blockType, attributes) {
+        // Get data from localized script
+        const { settings: moduleSettings } = window.orbitalTypographyPresets || {};
+        
+        if (!moduleSettings || !moduleSettings.enabled) {
+            return props;
+        }
+
+        // Define allowed blocks (with fallback)
+        const allowedBlocks = moduleSettings.allowed_blocks || [
+            'core/paragraph', 'core/heading', 'core/list', 'core/quote', 'core/button'
+        ];
+
+        if (!allowedBlocks.includes(blockType.name)) {
+            return props;
+        }
+
+        const { orbitalTypographyPreset } = attributes;
+
+        if (orbitalTypographyPreset) {
+            const existingClasses = props.className || '';
+            const presetClasses = `has-type-preset has-type-preset-${orbitalTypographyPreset}`;
+            props.className = (existingClasses + ' ' + presetClasses).trim();
+            debugLog('Adding preset classes to frontend:', props.className);
+        }
+
+        return props;
+    }
+
     addFilter(
         'blocks.registerBlockType',
         'orbital-editor-suite/add-preset-attribute',
@@ -361,6 +374,20 @@
         'orbital-editor-suite/add-preset-control',
         withTypographyPresetControl,
         20  // Higher priority to ensure our controls show
+    );
+
+    addFilter(
+        'editor.BlockListBlock',
+        'orbital-editor-suite/add-preset-editor-class',
+        addPresetClassToEditor,
+        20
+    );
+
+    addFilter(
+        'blocks.getSaveContent.extraProps',
+        'orbital-editor-suite/add-preset-class',
+        addPresetClassToSave,
+        20
     );
 })();
 

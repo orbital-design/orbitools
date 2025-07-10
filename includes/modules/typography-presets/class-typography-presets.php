@@ -398,21 +398,21 @@ class Typography_Presets {
             )
         );
 
-        // Enqueue CSS for editor
-        if (!empty($this->settings['custom_css_output'])) {
-            wp_add_inline_style('wp-edit-blocks', $this->generate_css());
-        }
+        // CSS output disabled - using CSS classes instead of inline styles
+        // if (!empty($this->settings['custom_css_output'])) {
+        //     wp_add_inline_style('wp-edit-blocks', $this->generate_css());
+        // }
     }
 
     /**
      * Enqueue frontend styles.
      */
     public function enqueue_frontend_styles() {
-        if (!$this->is_enabled() || empty($this->settings['custom_css_output'])) {
-            return;
-        }
-
-        wp_add_inline_style('wp-block-library', $this->generate_css());
+        // CSS output disabled - using CSS classes instead of inline styles
+        // if (!$this->is_enabled() || empty($this->settings['custom_css_output'])) {
+        //     return;
+        // }
+        // wp_add_inline_style('wp-block-library', $this->generate_css());
     }
 
     /**
