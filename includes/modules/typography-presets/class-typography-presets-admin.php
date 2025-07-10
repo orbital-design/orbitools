@@ -54,6 +54,16 @@ class Typography_Presets_Admin extends Module_Admin {
                 'icon' => 'admin-generic',
                 'description' => __('Configure how the Typography Presets module behaves.', 'orbital-editor-suite'),
                 'fields' => array(
+                    'preset_generation_method' => array(
+                        'type' => 'select',
+                        'label' => __('Preset Generation Method', 'orbital-editor-suite'),
+                        'description' => __('Choose how presets are defined and managed.', 'orbital-editor-suite'),
+                        'options' => array(
+                            'admin' => __('Admin Interface (User-friendly)', 'orbital-editor-suite'),
+                            'theme_json' => __('theme.json (Developer/Advanced)', 'orbital-editor-suite')
+                        ),
+                        'default' => 'admin'
+                    ),
                     'replace_core_controls' => array(
                         'type' => 'checkbox',
                         'label' => __('Replace Core Typography Controls', 'orbital-editor-suite'),
@@ -101,6 +111,12 @@ class Typography_Presets_Admin extends Module_Admin {
                 'icon' => 'editor-code',
                 'description' => __('View and copy the CSS generated for your presets.', 'orbital-editor-suite'),
                 'callback' => array($this, 'render_css_output')
+            ),
+            'theme_json_instructions' => array(
+                'title' => __('theme.json Instructions', 'orbital-editor-suite'),
+                'icon' => 'media-code',
+                'description' => __('How to configure presets using theme.json (Advanced users only).', 'orbital-editor-suite'),
+                'callback' => array($this, 'render_theme_json_instructions')
             )
         );
     }
@@ -302,5 +318,278 @@ class Typography_Presets_Admin extends Module_Admin {
         }
         </style>
         <?php
+    }
+
+    /**
+     * Render theme.json instructions section.
+     */
+    public function render_theme_json_instructions() {
+        ?>
+        <div class="orbital-theme-json-instructions">
+            <div class="orbital-form-card">
+                <h4>
+                    <span class="dashicons dashicons-warning"></span>
+                    <?php _e('Developer Instructions', 'orbital-editor-suite'); ?>
+                </h4>
+                
+                <div style="background: #fff3cd; border: 1px solid #ffeaa7; padding: 15px; border-radius: 6px; margin-bottom: 20px;">
+                    <strong><?php _e('⚠️ Advanced Users Only', 'orbital-editor-suite'); ?></strong><br>
+                    <?php _e('This method requires coding experience and direct theme file editing. Only use this if you are comfortable with JSON syntax and theme development.', 'orbital-editor-suite'); ?>
+                </div>
+
+                <h5><?php _e('How to Configure Presets in theme.json', 'orbital-editor-suite'); ?></h5>
+                
+                <p><?php _e('Add the following structure to your theme\'s <code>theme.json</code> file:', 'orbital-editor-suite'); ?></p>
+                
+                <h6><?php _e('1. With Groups (Organized Presets)', 'orbital-editor-suite'); ?></h6>
+                <textarea class="orbital-code-example" readonly><?php echo esc_textarea($this->get_grouped_example()); ?></textarea>
+                
+                <h6><?php _e('2. Without Groups (Flat Structure)', 'orbital-editor-suite'); ?></h6>
+                <textarea class="orbital-code-example" readonly><?php echo esc_textarea($this->get_flat_example()); ?></textarea>
+                
+                <h5><?php _e('Important Notes', 'orbital-editor-suite'); ?></h5>
+                <ul style="margin-left: 20px;">
+                    <li><?php _e('The structure must be: <code>plugins</code> → <code>oes</code> → <code>Typography_Presets</code>', 'orbital-editor-suite'); ?></li>
+                    <li><?php _e('Settings in theme.json will override admin interface settings', 'orbital-editor-suite'); ?></li>
+                    <li><?php _e('Preset IDs should use kebab-case (e.g., "termina-16-400")', 'orbital-editor-suite'); ?></li>
+                    <li><?php _e('CSS properties can use camelCase or kebab-case', 'orbital-editor-suite'); ?></li>
+                    <li><?php _e('Changes require clearing any caching plugins', 'orbital-editor-suite'); ?></li>
+                </ul>
+                
+                <button type="button" class="button button-secondary" onclick="this.previousElementSibling.previousElementSibling.select(); document.execCommand('copy');">
+                    <?php _e('Copy Grouped Example', 'orbital-editor-suite'); ?>
+                </button>
+                
+                <button type="button" class="button button-secondary" onclick="this.previousElementSibling.previousElementSibling.previousElementSibling.previousElementSibling.select(); document.execCommand('copy');">
+                    <?php _e('Copy Flat Example', 'orbital-editor-suite'); ?>
+                </button>
+            </div>
+        </div>
+        
+        <style>
+        .orbital-code-example {
+            width: 100%;
+            height: 200px;
+            font-family: 'Monaco', 'Consolas', 'Courier New', monospace;
+            font-size: 12px;
+            background: #2b2b2b;
+            color: #f8f8f2;
+            padding: 15px;
+            border: none;
+            border-radius: 6px;
+            margin: 10px 0;
+            resize: vertical;
+        }
+        .orbital-theme-json-instructions h5 {
+            margin: 25px 0 10px 0;
+            color: #1d2327;
+        }
+        .orbital-theme-json-instructions h6 {
+            margin: 20px 0 5px 0;
+            color: #50575e;
+        }
+        .orbital-theme-json-instructions ul {
+            background: #f6f7f7;
+            padding: 15px;
+            border-radius: 6px;
+        }
+        </style>
+        
+        <script>
+        jQuery(document).ready(function($) {
+            function toggleFieldsByMethod() {
+                var method = $('select[name*="preset_generation_method"]').val();
+                var isThemeJson = method === 'theme_json';
+                
+                // Fields to disable when using theme.json
+                var fieldsToDisable = [
+                    'input[name*="replace_core_controls"]',
+                    'input[name*="show_groups"]', 
+                    'input[name*="output_preset_css"]'
+                ];
+                
+                fieldsToDisable.forEach(function(selector) {
+                    var $field = $(selector);
+                    var $container = $field.closest('.orbital-field');
+                    
+                    if (isThemeJson) {
+                        $field.prop('disabled', true);
+                        $container.css('opacity', '0.5');
+                        $container.find('label').append(' <small style="color: #d63638;">(Controlled by theme.json)</small>');
+                    } else {
+                        $field.prop('disabled', false);
+                        $container.css('opacity', '1');
+                        $container.find('small').remove();
+                    }
+                });
+                
+                // Show/hide preset management and CSS output sections
+                var $presetSection = $('.orbital-admin-section-preset_management');
+                var $cssSection = $('.orbital-admin-section-css_output');
+                var $themeJsonSection = $('.orbital-admin-section-theme_json_instructions');
+                
+                if (isThemeJson) {
+                    $presetSection.hide();
+                    $cssSection.hide();
+                    $themeJsonSection.show();
+                } else {
+                    $presetSection.show();
+                    $cssSection.show();
+                    $themeJsonSection.hide();
+                }
+            }
+            
+            // Initial toggle
+            toggleFieldsByMethod();
+            
+            // Toggle on change
+            $('select[name*="preset_generation_method"]').on('change', function() {
+                toggleFieldsByMethod();
+            });
+        });
+        </script>
+        <?php
+    }
+    
+    /**
+     * Get unified theme.json example with groups.
+     */
+    private function get_grouped_example() {
+        return json_encode(array(
+            'plugins' => array(
+                'oes' => array(
+                    'Typography_Presets' => array(
+                        'settings' => array(
+                            'replace_core_controls' => true,
+                            'show_groups' => true,
+                            'output_preset_css' => true
+                        ),
+                        'groups' => array(
+                            'headings' => array(
+                                'title' => 'Headings & Standouts'
+                            ),
+                            'body' => array(
+                                'title' => 'Body Text'
+                            )
+                        ),
+                        'items' => array(
+                            'termina-16-400' => array(
+                                'label' => 'Termina 16 Regular',
+                                'description' => 'Clean heading style',
+                                'group' => 'headings',
+                                'properties' => array(
+                                    'font-family' => 'Termina',
+                                    'font-weight' => 400,
+                                    'font-size' => '16px',
+                                    'line-height' => '20px',
+                                    'letter-spacing' => '0'
+                                )
+                            ),
+                            'termina-24-500' => array(
+                                'label' => 'Termina 24 Medium',
+                                'description' => 'Large heading style',
+                                'group' => 'headings',
+                                'properties' => array(
+                                    'font-family' => 'Termina',
+                                    'font-weight' => 500,
+                                    'font-size' => '24px',
+                                    'line-height' => '32px',
+                                    'letter-spacing' => '0'
+                                )
+                            ),
+                            'montserrat-14-400' => array(
+                                'label' => 'Montserrat 14 Regular',
+                                'description' => 'Small body text',
+                                'group' => 'body',
+                                'properties' => array(
+                                    'font-family' => 'Montserrat',
+                                    'font-weight' => 400,
+                                    'font-size' => '14px',
+                                    'line-height' => '1.6',
+                                    'letter-spacing' => '0'
+                                )
+                            ),
+                            'montserrat-16-400' => array(
+                                'label' => 'Montserrat 16 Regular',
+                                'description' => 'Standard body text',
+                                'group' => 'body',
+                                'properties' => array(
+                                    'font-family' => 'Montserrat',
+                                    'font-weight' => 400,
+                                    'font-size' => '16px',
+                                    'line-height' => '1.6',
+                                    'letter-spacing' => '0'
+                                )
+                            )
+                        )
+                    )
+                )
+            )
+        ), JSON_PRETTY_PRINT);
+    }
+    
+    /**
+     * Get unified theme.json example without groups.
+     */
+    private function get_flat_example() {
+        return json_encode(array(
+            'plugins' => array(
+                'oes' => array(
+                    'Typography_Presets' => array(
+                        'settings' => array(
+                            'replace_core_controls' => true,
+                            'show_groups' => false,
+                            'output_preset_css' => true
+                        ),
+                        'items' => array(
+                            'termina-16-400' => array(
+                                'label' => 'Termina 16 Regular',
+                                'description' => 'Clean heading style',
+                                'properties' => array(
+                                    'font-family' => 'Termina',
+                                    'font-weight' => 400,
+                                    'font-size' => '16px',
+                                    'line-height' => '20px',
+                                    'letter-spacing' => '0'
+                                )
+                            ),
+                            'termina-24-500' => array(
+                                'label' => 'Termina 24 Medium',
+                                'description' => 'Large heading style',
+                                'properties' => array(
+                                    'font-family' => 'Termina',
+                                    'font-weight' => 500,
+                                    'font-size' => '24px',
+                                    'line-height' => '32px',
+                                    'letter-spacing' => '0'
+                                )
+                            ),
+                            'montserrat-14-400' => array(
+                                'label' => 'Montserrat 14 Regular',
+                                'description' => 'Small body text',
+                                'properties' => array(
+                                    'font-family' => 'Montserrat',
+                                    'font-weight' => 400,
+                                    'font-size' => '14px',
+                                    'line-height' => '1.6',
+                                    'letter-spacing' => '0'
+                                )
+                            ),
+                            'montserrat-16-400' => array(
+                                'label' => 'Montserrat 16 Regular',
+                                'description' => 'Standard body text',
+                                'properties' => array(
+                                    'font-family' => 'Montserrat',
+                                    'font-weight' => 400,
+                                    'font-size' => '16px',
+                                    'line-height' => '1.6',
+                                    'letter-spacing' => '0'
+                                )
+                            )
+                        )
+                    )
+                )
+            )
+        ), JSON_PRETTY_PRINT);
     }
 }

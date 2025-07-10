@@ -144,6 +144,8 @@ class Admin_Pages {
         switch ($module_slug) {
             case 'typography-presets':
                 $sanitized = array(
+                    'preset_generation_method' => in_array($settings['preset_generation_method'] ?? 'admin', ['admin', 'theme_json']) ? 
+                        $settings['preset_generation_method'] : 'admin',
                     'replace_core_controls' => !empty($settings['replace_core_controls']),
                     'show_groups' => !empty($settings['show_groups']),
                     'output_preset_css' => !empty($settings['output_preset_css']),

@@ -226,6 +226,7 @@ class Typography_Presets {
         
         // Set default settings
         $this->settings = wp_parse_args($this->settings, array(
+            'preset_generation_method' => 'admin', // 'admin' or 'theme_json'
             'replace_core_controls' => true,
             'allowed_blocks' => array(
                 'core/paragraph',
@@ -247,13 +248,170 @@ class Typography_Presets {
     }
 
     /**
-     * Load presets from database.
+     * Load presets from database or theme.json.
      */
     private function load_presets() {
+        if ($this->settings['preset_generation_method'] === 'theme_json') {
+            $this->load_presets_from_theme_json();
+        } else {
+            $this->load_presets_from_admin();
+        }
+    }
+    
+    /**
+     * Load presets from admin interface (database).
+     */
+    private function load_presets_from_admin() {
         $saved_presets = get_option('orbital_typography_presets', array());
         
         // Merge default presets with saved custom presets
         $this->presets = array_merge($this->default_presets, $saved_presets);
+    }
+    
+    /**
+     * Load presets from theme.json.
+     */
+    private function load_presets_from_theme_json() {
+        $theme_data = $this->get_theme_json_data();
+        
+        if (!$theme_data) {
+            // Fallback to default presets if theme.json data not found
+            $this->presets = $this->default_presets;
+            return;
+        }
+        
+        // Override settings from theme.json
+        if (isset($theme_data['settings'])) {
+            $theme_settings = $theme_data['settings'];
+            
+            if (isset($theme_settings['replace_core_controls'])) {
+                $this->settings['replace_core_controls'] = $theme_settings['replace_core_controls'];
+            }
+            if (isset($theme_settings['show_groups'])) {
+                $this->settings['show_groups'] = $theme_settings['show_groups'];
+            }
+            if (isset($theme_settings['output_preset_css'])) {
+                $this->settings['output_preset_css'] = $theme_settings['output_preset_css'];
+            }
+        }
+        
+        // Parse presets based on structure
+        $this->presets = $this->parse_theme_json_presets($theme_data);
+    }
+    
+    /**
+     * Get Typography_Presets data from theme.json.
+     */
+    private function get_theme_json_data() {
+        $theme_json_path = get_template_directory() . '/theme.json';
+        
+        if (!file_exists($theme_json_path)) {
+            return false;
+        }
+        
+        $theme_json_content = file_get_contents($theme_json_path);
+        $theme_json = json_decode($theme_json_content, true);
+        
+        if (!$theme_json || json_last_error() !== JSON_ERROR_NONE) {
+            return false;
+        }
+        
+        // Navigate to our plugin data: plugins -> oes -> Typography_Presets
+        if (!isset($theme_json['plugins']['oes']['Typography_Presets'])) {
+            return false;
+        }
+        
+        return $theme_json['plugins']['oes']['Typography_Presets'];
+    }
+    
+    /**
+     * Parse presets from theme.json data.
+     */
+    private function parse_theme_json_presets($theme_data) {
+        if (!isset($theme_data['items'])) {
+            return $this->default_presets;
+        }
+        
+        $parsed_presets = array();
+        
+        // Get group definitions if they exist
+        $group_definitions = isset($theme_data['groups']) ? $theme_data['groups'] : array();
+        
+        // Unified format: always same structure
+        foreach ($theme_data['items'] as $preset_id => $preset_data) {
+            $group_id = isset($preset_data['group']) ? $preset_data['group'] : 'theme';
+            
+            // Get group title from definitions or fallback
+            $group_title = null;
+            if (isset($group_definitions[$group_id]['title'])) {
+                $group_title = $group_definitions[$group_id]['title'];
+            } elseif (isset($preset_data['group_title'])) {
+                $group_title = $preset_data['group_title'];
+            }
+            
+            $parsed_presets[$preset_id] = array(
+                'label' => isset($preset_data['label']) ? $preset_data['label'] : $this->generate_preset_label($preset_id),
+                'description' => isset($preset_data['description']) ? $preset_data['description'] : __('From theme.json', 'orbital-editor-suite'),
+                'properties' => $this->normalize_css_properties($preset_data['properties']),
+                'group' => $group_id,
+                'group_title' => $group_title,
+                'is_theme_json' => true
+            );
+        }
+        
+        return $parsed_presets;
+    }
+    
+    /**
+     * Generate a readable label from preset ID.
+     */
+    private function generate_preset_label($preset_id) {
+        // Convert "termina-16-400" to "Termina • 16px • Regular"
+        $parts = explode('-', $preset_id);
+        
+        if (count($parts) >= 3) {
+            $font = ucwords($parts[0]);
+            $size = $parts[1] . 'px';
+            $weight = $this->convert_weight_to_name($parts[2]);
+            return "{$font} • {$size} • {$weight}";
+        }
+        
+        // Fallback for unexpected formats
+        return ucwords(implode(' • ', $parts));
+    }
+    
+    /**
+     * Convert numeric weight to readable name.
+     */
+    private function convert_weight_to_name($weight) {
+        $weight_map = array(
+            '100' => 'Thin',
+            '200' => 'Extra Light',
+            '300' => 'Light',
+            '400' => 'Regular',
+            '500' => 'Medium',
+            '600' => 'Semi Bold',
+            '700' => 'Bold',
+            '800' => 'Extra Bold',
+            '900' => 'Black'
+        );
+        
+        return isset($weight_map[$weight]) ? $weight_map[$weight] : $weight;
+    }
+    
+    /**
+     * Normalize CSS properties from theme.json format.
+     */
+    private function normalize_css_properties($properties) {
+        $normalized = array();
+        
+        foreach ($properties as $property => $value) {
+            // Convert camelCase to kebab-case
+            $css_property = strtolower(preg_replace('/(?<!^)[A-Z]/', '-$0', $property));
+            $normalized[$css_property] = $value;
+        }
+        
+        return $normalized;
     }
 
     /**
