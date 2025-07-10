@@ -14,19 +14,39 @@ if (!defined('ABSPATH')) {
 $options = get_option('orbital_editor_suite_options', array());
 $settings = isset($options['settings']) ? $options['settings'] : array();
 
+// Show success message if redirected after module changes
+if (isset($_GET['settings-updated']) && $_GET['settings-updated'] === '1') {
+    echo '<div class="notice notice-success"><p>' . __('Settings saved successfully! Admin menu updated.', 'orbital-editor-suite') . '</p></div>';
+}
+
 // Handle form submission
 if (isset($_POST['submit']) && check_admin_referer('orbital_editor_suite_settings')) {
     $new_settings = array();
+    
+    // Get old enabled modules for comparison
+    $old_enabled_modules = isset($settings['enabled_modules']) ? $settings['enabled_modules'] : array();
     
     // Process form data
     $new_settings['enable_debug'] = !empty($_POST['enable_debug']);
     $new_settings['enabled_modules'] = isset($_POST['enabled_modules']) ? 
         array_map('sanitize_text_field', $_POST['enabled_modules']) : array();
     
+    // Check if enabled modules changed
+    $modules_changed = (
+        count(array_diff($old_enabled_modules, $new_settings['enabled_modules'])) > 0 ||
+        count(array_diff($new_settings['enabled_modules'], $old_enabled_modules)) > 0
+    );
+    
     // Update options
     $options['settings'] = $new_settings;
     $options['version'] = ORBITAL_EDITOR_SUITE_VERSION;
     update_option('orbital_editor_suite_options', $options);
+    
+    // If modules changed, redirect to refresh admin menu
+    if ($modules_changed) {
+        wp_redirect(admin_url('admin.php?page=orbital-editor-suite&settings-updated=1'));
+        exit;
+    }
     
     echo '<div class="notice notice-success"><p>' . __('Settings saved successfully!', 'orbital-editor-suite') . '</p></div>';
     $settings = $new_settings; // Update local variable
