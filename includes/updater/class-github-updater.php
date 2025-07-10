@@ -72,7 +72,7 @@ class GitHub_Updater {
     public function handle_manual_check() {
         if (isset($_GET['orbital_check_update']) && $_GET['orbital_check_update'] === '1') {
             if (!current_user_can('manage_options')) {
-                wp_die(__('Insufficient permissions.', 'orbital-editor-suite'));
+                wp_die('Insufficient permissions.');
             }
             
             $this->force_update_check();
@@ -170,10 +170,10 @@ class GitHub_Updater {
             'version' => $remote_version,
             'author' => 'Orbital Design',
             'homepage' => $this->get_github_url(),
-            'short_description' => __('Professional suite of editor enhancements with typography utilities', 'orbital-editor-suite'),
+            'short_description' => 'Professional suite of editor enhancements with typography utilities',
             'sections' => array(
                 'changelog' => isset($release['body']) ? wp_kses_post($release['body']) : '',
-                'description' => __('Professional suite of editor enhancements with typography utilities and modern admin panel.', 'orbital-editor-suite')
+                'description' => 'Professional suite of editor enhancements with typography utilities and modern admin panel.'
             ),
             'download_link' => $this->get_download_url()
         );
@@ -257,8 +257,8 @@ class GitHub_Updater {
             'remote_version' => $remote_version,
             'has_update' => $has_update,
             'github_url' => $this->get_github_url(),
-            'last_checked' => get_transient('orbital_editor_suite_last_checked') ?: __('Never', 'orbital-editor-suite'),
-            'repository_type' => __('Public Repository', 'orbital-editor-suite')
+            'last_checked' => get_transient('orbital_editor_suite_last_checked') ?: 'Never',
+            'repository_type' => 'Public Repository'
         );
     }
 }

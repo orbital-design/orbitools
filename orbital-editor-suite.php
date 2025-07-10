@@ -100,8 +100,7 @@ add_action('init', 'orbital_editor_suite_load_textdomain');
  * Add settings link on plugin page.
  */
 function orbital_editor_suite_settings_link($links) {
-    $settings_link = '<a href="' . admin_url('admin.php?page=orbital-editor-suite') . '">' . 
-        __('Settings', 'orbital-editor-suite') . '</a>';
+    $settings_link = '<a href="' . admin_url('admin.php?page=orbital-editor-suite') . '">Settings</a>';
     array_unshift($links, $settings_link);
     return $links;
 }
@@ -112,10 +111,8 @@ add_filter('plugin_action_links_' . plugin_basename(__FILE__), 'orbital_editor_s
  */
 function orbital_editor_suite_meta_links($links, $file) {
     if ($file === plugin_basename(__FILE__)) {
-        $links[] = '<a href="https://github.com/orbital-design/orbital-editor-suite" target="_blank">' . 
-            __('GitHub', 'orbital-editor-suite') . '</a>';
-        $links[] = '<a href="' . admin_url('admin.php?page=orbital-editor-suite-updates') . '">' . 
-            __('Updates', 'orbital-editor-suite') . '</a>';
+        $links[] = '<a href="https://github.com/orbital-design/orbital-editor-suite" target="_blank">GitHub</a>';
+        $links[] = '<a href="' . admin_url('admin.php?page=orbital-editor-suite-updates') . '">Updates</a>';
     }
     return $links;
 }

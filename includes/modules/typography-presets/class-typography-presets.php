@@ -61,6 +61,14 @@ class Typography_Presets {
             return;
         }
         
+        // Delay initialization until after translations are loaded
+        add_action('init', array($this, 'delayed_init'));
+    }
+    
+    /**
+     * Initialize after translations are loaded.
+     */
+    public function delayed_init() {
         $this->load_default_presets();
         $this->load_settings();
         $this->load_presets();

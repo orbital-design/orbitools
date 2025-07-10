@@ -81,9 +81,9 @@ class Admin {
                 'ajax_url' => admin_url('admin-ajax.php'),
                 'nonce' => wp_create_nonce('orbital_editor_suite_nonce'),
                 'strings' => array(
-                    'saving' => __('Saving...', 'orbital-editor-suite'),
-                    'saved' => __('Settings saved successfully!', 'orbital-editor-suite'),
-                    'error' => __('An error occurred while saving.', 'orbital-editor-suite')
+                    'saving' => 'Saving...',
+                    'saved' => 'Settings saved successfully!',
+                    'error' => 'An error occurred while saving.'
                 )
             )
         );
