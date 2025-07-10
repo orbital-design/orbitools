@@ -121,7 +121,8 @@ class Admin_Pages {
                     array_map('sanitize_text_field', (array) $settings['utility_categories']) : array(),
                 'custom_css' => isset($settings['custom_css']) ? 
                     wp_kses_post($settings['custom_css']) : '',
-                'load_custom_css' => !empty($settings['load_custom_css'])
+                'load_custom_css' => !empty($settings['load_custom_css']),
+                'enable_debug' => !empty($settings['enable_debug'])
             );
         }
 

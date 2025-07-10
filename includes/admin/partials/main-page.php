@@ -28,6 +28,7 @@ if (isset($_POST['submit']) && check_admin_referer('orbital_editor_suite_setting
     $new_settings['custom_css'] = isset($_POST['custom_css']) ? 
         wp_kses_post($_POST['custom_css']) : '';
     $new_settings['load_custom_css'] = !empty($_POST['load_custom_css']);
+    $new_settings['enable_debug'] = !empty($_POST['enable_debug']);
     
     // Update options
     $options['settings'] = $new_settings;
@@ -70,6 +71,15 @@ if (isset($_POST['submit']) && check_admin_referer('orbital_editor_suite_setting
                             <span class="orbital-label"><?php _e('Enable Search', 'orbital-editor-suite'); ?></span>
                         </label>
                         <p class="orbital-help-text"><?php _e('Allow users to search through utility classes in the block editor.', 'orbital-editor-suite'); ?></p>
+                    </div>
+                    
+                    <div class="orbital-field">
+                        <label class="orbital-toggle-switch">
+                            <input type="checkbox" name="enable_debug" value="1" <?php checked(!empty($settings['enable_debug']), true); ?>>
+                            <span class="orbital-slider"></span>
+                            <span class="orbital-label"><?php _e('Enable Debug Logging', 'orbital-editor-suite'); ?></span>
+                        </label>
+                        <p class="orbital-help-text"><?php _e('Show detailed console logs in browser developer tools for troubleshooting.', 'orbital-editor-suite'); ?></p>
                     </div>
                 </div>
                 

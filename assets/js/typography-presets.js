@@ -6,8 +6,6 @@
 
 // Register typography removal filter immediately when script loads (after dependencies)
 (function() {
-    console.log('Typography Presets: Registering early block filter...');
-    
     const { addFilter } = wp.hooks;
     
     addFilter(
@@ -16,6 +14,16 @@
         function(settings, name) {
             // Get settings from localized data
             const { settings: moduleSettings } = window.orbitalTypographyPresets || {};
+            
+            // Debug function for early filter
+            function debugLog(...args) {
+                const globalSettings = window.orbitalEditorSuiteGlobal?.settings || {};
+                if (globalSettings.enable_debug) {
+                    console.log('[Typography Presets Debug]', ...args);
+                }
+            }
+            
+            debugLog('Early filter - checking block:', name);
             
             if (!moduleSettings || !moduleSettings.replace_core_controls) {
                 return settings;
@@ -30,7 +38,7 @@
                 return settings;
             }
             
-            console.log('Typography Presets: Removing typography controls from', name);
+            debugLog('Removing typography controls from', name);
             
             if (!settings.supports) {
                 settings.supports = {};
@@ -49,21 +57,44 @@
             settings.supports.__experimentalTextTransform = false;
             settings.supports.__experimentalWritingMode = false;
             
-            console.log('Typography Presets: Typography supports removed for', name);
+            debugLog('Typography supports removed for', name);
             
             return settings;
         },
         5  // Early priority
     );
-    
-    console.log('Typography Presets: Early filter registered');
 })();
 
 wp.domReady(function() {
-    console.log('Typography Presets: Script loading...');
+    // Get localized data first
+    const { presets, categories, settings, strings } = window.orbitalTypographyPresets || {};
+    
+    // Debug logging function - check global debug setting
+    function debugLog(...args) {
+        const globalSettings = window.orbitalEditorSuiteGlobal?.settings || {};
+        if (globalSettings.enable_debug) {
+            console.log('[Typography Presets Debug]', ...args);
+        }
+    }
+    
+    function debugWarn(...args) {
+        const globalSettings = window.orbitalEditorSuiteGlobal?.settings || {};
+        if (globalSettings.enable_debug) {
+            console.warn('[Typography Presets Debug]', ...args);
+        }
+    }
+    
+    function debugError(...args) {
+        const globalSettings = window.orbitalEditorSuiteGlobal?.settings || {};
+        if (globalSettings.enable_debug) {
+            console.error('[Typography Presets Debug]', ...args);
+        }
+    }
+    
+    debugLog('Script loading...');
 
     if (!wp.hooks || !wp.compose || !wp.element || !wp.blockEditor || !wp.components) {
-        console.error('Typography Presets: Missing WordPress dependencies');
+        debugError('Missing WordPress dependencies');
         return;
     }
 
@@ -73,22 +104,19 @@ wp.domReady(function() {
     const { InspectorControls } = wp.blockEditor;
     const { __experimentalToolsPanel: ToolsPanel, __experimentalToolsPanelItem: ToolsPanelItem, SelectControl } = wp.components;
 
-    console.log('Typography Presets: All dependencies loaded');
+    debugLog('All dependencies loaded');
 
     // Debug: List all registered filters
-    console.log('Typography Presets: Checking existing filters...');
+    debugLog('Checking existing filters...');
     if (wp.hooks.filters && wp.hooks.filters['blocks.registerBlockType']) {
-        console.log('Typography Presets: blocks.registerBlockType filters:', wp.hooks.filters['blocks.registerBlockType']);
+        debugLog('blocks.registerBlockType filters:', wp.hooks.filters['blocks.registerBlockType']);
     }
     if (wp.hooks.filters && wp.hooks.filters['editor.BlockEdit']) {
-        console.log('Typography Presets: editor.BlockEdit filters:', wp.hooks.filters['editor.BlockEdit']);
+        debugLog('editor.BlockEdit filters:', wp.hooks.filters['editor.BlockEdit']);
     }
 
-    // Get localized data
-    const { presets, categories, settings, strings } = window.orbitalTypographyPresets || {};
-
     // Debug logging
-    console.log('Typography Presets Data:', {
+    debugLog('Data loaded:', {
         hasData: !!window.orbitalTypographyPresets,
         presetsCount: presets ? Object.keys(presets).length : 0,
         settings,
@@ -96,7 +124,7 @@ wp.domReady(function() {
     });
 
     if (!presets || !settings || !settings.enabled) {
-        console.log('Typography Presets: Not enabled or missing data');
+        debugLog('Not enabled or missing data');
         return;
     }
 
@@ -111,7 +139,7 @@ wp.domReady(function() {
 
     // Ensure allowedBlocks is always an array
     if (!Array.isArray(allowedBlocks)) {
-        console.warn('Typography Presets: allowed_blocks is not an array, using defaults');
+        debugWarn('allowed_blocks is not an array, using defaults');
         allowedBlocks = [
             'core/paragraph',
             'core/heading',
@@ -121,7 +149,7 @@ wp.domReady(function() {
         ];
     }
 
-    console.log('Typography Presets: Allowed blocks:', allowedBlocks);
+    debugLog('Allowed blocks:', allowedBlocks);
 
     /**
      * Convert presets object to array suitable for SelectControl
@@ -176,7 +204,7 @@ wp.domReady(function() {
     /**
      * Apply preset styles to block
      */
-    function applyPresetToBlock(preset, attributes, setAttributes) {
+    function applyPresetToBlock(preset, presetId, attributes, setAttributes) {
         if (!preset || !preset.properties) {
             // Clear preset styles
             setAttributes({
@@ -235,16 +263,16 @@ wp.domReady(function() {
         };
 
         setAttributes({
-            orbitalTypographyPreset: preset.id || '',
+            orbitalTypographyPreset: presetId || '',
             style: newStyle,
-            className: `${attributes.className || ''} orbital-preset-${preset.id || ''}`.trim()
+            className: `${attributes.className || ''} orbital-preset-${presetId || ''}`.trim()
         });
     }
 
     // Add custom attribute
     function addTypographyPresetAttribute(settings, name) {
         if (allowedBlocks.includes(name)) {
-            console.log('Typography Presets: Adding attribute to', name);
+            debugLog('Adding attribute to', name);
             settings.attributes = {
                 ...settings.attributes,
                 orbitalTypographyPreset: {
@@ -263,7 +291,7 @@ wp.domReady(function() {
                 return wp.element.createElement(BlockEdit, props);
             }
 
-            console.log('Typography Presets: Adding controls for', props.name);
+            debugLog('Adding controls for', props.name);
 
             const { attributes, setAttributes } = props;
             const { orbitalTypographyPreset } = attributes;
@@ -283,7 +311,7 @@ wp.domReady(function() {
                         {
                             label: 'Typography Presets',
                             resetAll: function() {
-                                setAttributes({ orbitalTypographyPreset: '' });
+                                applyPresetToBlock(null, '', attributes, setAttributes);
                             }
                         },
                         wp.element.createElement(
@@ -292,7 +320,7 @@ wp.domReady(function() {
                                 hasValue: function() { return !!orbitalTypographyPreset; },
                                 label: 'Typography Preset',
                                 onDeselect: function() {
-                                    applyPresetToBlock(null, attributes, setAttributes);
+                                    applyPresetToBlock(null, '', attributes, setAttributes);
                                 },
                                 isShownByDefault: true
                             },
@@ -301,11 +329,11 @@ wp.domReady(function() {
                                 value: orbitalTypographyPreset || '',
                                 options: getPresetsForSelect(),
                                 onChange: function(presetId) {
-                                    console.log('Typography Presets: Setting preset to:', presetId);
+                                    debugLog('Setting preset to:', presetId);
                                     if (presetId && presets[presetId]) {
-                                        applyPresetToBlock(presets[presetId], attributes, setAttributes);
+                                        applyPresetToBlock(presets[presetId], presetId, attributes, setAttributes);
                                     } else {
-                                        applyPresetToBlock(null, attributes, setAttributes);
+                                        applyPresetToBlock(null, '', attributes, setAttributes);
                                     }
                                 },
                                 help: currentPreset ?
@@ -374,7 +402,7 @@ wp.domReady(function() {
             const presetClass = `orbital-preset-${orbitalTypographyPreset}`;
             const existingClasses = props.className || '';
             props.className = (existingClasses + ' ' + presetClass).trim();
-            console.log('Typography Presets: Adding class to frontend:', props.className);
+            debugLog('Adding class to frontend:', props.className);
         }
 
         return props;
@@ -383,10 +411,10 @@ wp.domReady(function() {
     /**
      * Remove core typography controls if setting is enabled
      */
-    console.log('Typography Presets: replace_core_controls setting:', settings.replace_core_controls);
+    debugLog('replace_core_controls setting:', settings.replace_core_controls);
     
     if (settings.replace_core_controls) {
-        console.log('Typography Presets: Removing core typography controls');
+        debugLog('Removing core typography controls');
 
         // Define typography controls to remove for allowed blocks
         const typographyControlsToRemove = [
@@ -402,17 +430,17 @@ wp.domReady(function() {
          * Applies typography control restrictions to block settings
          */
         function removeTypographyControls(settings, blockName) {
-            console.log('fn: removeTypographyControls')
+            debugLog('fn: removeTypographyControls')
             if (!settings || !blockName || !allowedBlocks.includes(blockName)) {
                 return settings;
             }
 
-            console.log('Typography Presets: Removing typography controls from', blockName);
+            debugLog('Removing typography controls from', blockName);
 
             if (!settings.supports) {
                 settings.supports = {};
             }
-console.log(settings.supports.typography)
+debugLog('typography supports:', settings.supports.typography)
             // Remove individual typography controls
             if (settings.supports.typography) {
                 typographyControlsToRemove.forEach(control => {
@@ -432,11 +460,11 @@ console.log(settings.supports.typography)
             return settings;
         }
 
-        console.log('Typography Presets: Core typography removal handled by early filter');
+        debugLog('Core typography removal handled by early filter');
     }
 
     // Register all filters
-    console.log('Typography Presets: Registering filters');
+    debugLog('Registering filters');
 
     addFilter(
         'blocks.registerBlockType',
@@ -459,5 +487,5 @@ console.log(settings.supports.typography)
         20
     );
 
-    console.log('Typography Presets: Setup complete');
+    debugLog('Setup complete');
 });

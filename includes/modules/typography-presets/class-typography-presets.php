@@ -386,6 +386,18 @@ class Typography_Presets {
             )
         );
 
+        // Localize global settings for debug logging
+        $global_options = get_option('orbital_editor_suite_options', array());
+        $global_settings = isset($global_options['settings']) ? $global_options['settings'] : array();
+        
+        wp_localize_script(
+            'orbital-typography-presets',
+            'orbitalEditorSuiteGlobal',
+            array(
+                'settings' => $global_settings
+            )
+        );
+
         // Enqueue CSS for editor
         if (!empty($this->settings['custom_css_output'])) {
             wp_add_inline_style('wp-edit-blocks', $this->generate_css());
