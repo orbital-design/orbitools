@@ -1,10 +1,10 @@
-# Typography Utility Controls - Modern Admin Panel
+# Orbital Editor Suite - Modern Admin Panel
 
-This plugin uses a **modern, custom-built admin panel** with zero external dependencies.
+Orbital Editor Suite uses a **modern, custom-built admin panel** with zero external dependencies.
 
 ## 🚀 Modern Admin Panel (Recommended)
 
-**Location:** Typography Utils → Main Panel  
+**Location:** Orbital Editor → Main Panel  
 **Files:** `inc/admin-panel.php`, `inc/modern-admin.css`, `inc/admin-script.js`
 
 ### ✅ Advantages

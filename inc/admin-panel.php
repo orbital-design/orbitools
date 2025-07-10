@@ -1,6 +1,6 @@
 <?php
 /**
- * Modern Admin Panel for Typography Utility Controls
+ * Modern Admin Panel for Orbital Editor Suite
  * No external dependencies required
  */
 
@@ -8,18 +8,18 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-class TUC_Admin_Panel {
+class OES_Admin_Panel {
     
     private $options;
     
     public function __construct() {
         add_action('admin_init', array($this, 'page_init'));
         add_action('admin_enqueue_scripts', array($this, 'enqueue_admin_assets'));
-        $this->options = get_option('tuc_options');
+        $this->options = get_option('oes_options');
     }
     
     public function render_admin_page() {
-        $this->options = get_option('tuc_options');
+        $this->options = get_option('oes_options');
         
         if (isset($_POST['submit'])) {
             $this->save_settings();
@@ -28,13 +28,13 @@ class TUC_Admin_Panel {
         ?>
         <div class="tuc-admin-wrap">
             <div class="tuc-admin-header">
-                <span class="dashicons dashicons-editor-textcolor"></span>
-                <h1><?php echo esc_html(get_admin_page_title()); ?></h1>
+                <span class="dashicons dashicons-admin-customizer"></span>
+                <h1>Orbital Editor Suite</h1>
             </div>
             
             <div class="tuc-admin-content">
                 <form method="post" action="">
-                    <?php wp_nonce_field('tuc_save_settings', 'tuc_nonce'); ?>
+                    <?php wp_nonce_field('oes_save_settings', 'oes_nonce'); ?>
                     
                     <div class="tuc-settings-grid">
                         <!-- General Settings -->
@@ -43,7 +43,7 @@ class TUC_Admin_Panel {
                             
                             <div class="tuc-field">
                                 <label class="tuc-toggle-switch">
-                                    <input type="checkbox" name="tuc_options[enable_plugin]" value="1" <?php checked(isset($this->options['enable_plugin']) ? $this->options['enable_plugin'] : 0, 1); ?>>
+                                    <input type="checkbox" name="oes_options[enable_plugin]" value="1" <?php checked(isset($this->options['enable_plugin']) ? $this->options['enable_plugin'] : 0, 1); ?>>
                                     <span class="tuc-slider"></span>
                                     <span class="tuc-label">Enable Plugin</span>
                                 </label>
@@ -52,7 +52,7 @@ class TUC_Admin_Panel {
                             
                             <div class="tuc-field">
                                 <label class="tuc-toggle-switch">
-                                    <input type="checkbox" name="tuc_options[enable_search]" value="1" <?php checked(isset($this->options['enable_search']) ? $this->options['enable_search'] : 1, 1); ?>>
+                                    <input type="checkbox" name="oes_options[enable_search]" value="1" <?php checked(isset($this->options['enable_search']) ? $this->options['enable_search'] : 1, 1); ?>>
                                     <span class="tuc-slider"></span>
                                     <span class="tuc-label">Enable Search</span>
                                 </label>
@@ -89,7 +89,7 @@ class TUC_Admin_Panel {
                                         $checked = isset($this->options['allowed_blocks']) && in_array($block, $this->options['allowed_blocks']);
                                         ?>
                                         <label class="tuc-checkbox-item">
-                                            <input type="checkbox" name="tuc_options[allowed_blocks][]" value="<?php echo esc_attr($block); ?>" <?php checked($checked, true); ?>>
+                                            <input type="checkbox" name="oes_options[allowed_blocks][]" value="<?php echo esc_attr($block); ?>" <?php checked($checked, true); ?>>
                                             <span class="tuc-checkmark"></span>
                                             <?php echo esc_html($label); ?>
                                         </label>
@@ -128,7 +128,7 @@ class TUC_Admin_Panel {
                                         $checked = isset($this->options['utility_categories']) && in_array($category, $this->options['utility_categories']);
                                         ?>
                                         <label class="tuc-checkbox-item">
-                                            <input type="checkbox" name="tuc_options[utility_categories][]" value="<?php echo esc_attr($category); ?>" <?php checked($checked, true); ?>>
+                                            <input type="checkbox" name="oes_options[utility_categories][]" value="<?php echo esc_attr($category); ?>" <?php checked($checked, true); ?>>
                                             <span class="tuc-checkmark"></span>
                                             <?php echo esc_html($label); ?>
                                         </label>
@@ -148,7 +148,7 @@ class TUC_Admin_Panel {
                                 <p class="tuc-help-text">Add your own custom utility classes in CSS format.</p>
                                 <textarea 
                                     id="custom_css" 
-                                    name="tuc_options[custom_css]" 
+                                    name="oes_options[custom_css]" 
                                     rows="8" 
                                     class="tuc-textarea"
                                     placeholder="/* Add your custom utility classes here */
@@ -163,7 +163,7 @@ class TUC_Admin_Panel {
                             
                             <div class="tuc-field">
                                 <label class="tuc-toggle-switch">
-                                    <input type="checkbox" name="tuc_options[load_custom_css]" value="1" <?php checked(isset($this->options['load_custom_css']) ? $this->options['load_custom_css'] : 0, 1); ?>>
+                                    <input type="checkbox" name="oes_options[load_custom_css]" value="1" <?php checked(isset($this->options['load_custom_css']) ? $this->options['load_custom_css'] : 0, 1); ?>>
                                     <span class="tuc-slider"></span>
                                     <span class="tuc-label">Load Custom CSS</span>
                                 </label>
@@ -234,7 +234,7 @@ class TUC_Admin_Panel {
     public function page_init() {
         // Handle reset
         if (isset($_GET['reset']) && $_GET['reset'] === 'true') {
-            delete_option('tuc_options');
+            delete_option('oes_options');
             $this->set_default_options();
             wp_redirect(admin_url('admin.php?page=typography-utility-controls&reset-success=true'));
             exit;
@@ -249,31 +249,31 @@ class TUC_Admin_Panel {
     }
     
     private function save_settings() {
-        if (!isset($_POST['tuc_nonce']) || !wp_verify_nonce($_POST['tuc_nonce'], 'tuc_save_settings')) {
+        if (!isset($_POST['oes_nonce']) || !wp_verify_nonce($_POST['oes_nonce'], 'oes_save_settings')) {
             wp_die('Security check failed');
         }
         
         $options = array();
         
-        if (isset($_POST['tuc_options'])) {
-            $options = array_map('sanitize_text_field', $_POST['tuc_options']);
+        if (isset($_POST['oes_options'])) {
+            $options = array_map('sanitize_text_field', $_POST['oes_options']);
             
             // Handle arrays
-            if (isset($_POST['tuc_options']['allowed_blocks'])) {
-                $options['allowed_blocks'] = array_map('sanitize_text_field', $_POST['tuc_options']['allowed_blocks']);
+            if (isset($_POST['oes_options']['allowed_blocks'])) {
+                $options['allowed_blocks'] = array_map('sanitize_text_field', $_POST['oes_options']['allowed_blocks']);
             }
             
-            if (isset($_POST['tuc_options']['utility_categories'])) {
-                $options['utility_categories'] = array_map('sanitize_text_field', $_POST['tuc_options']['utility_categories']);
+            if (isset($_POST['oes_options']['utility_categories'])) {
+                $options['utility_categories'] = array_map('sanitize_text_field', $_POST['oes_options']['utility_categories']);
             }
             
             // Handle custom CSS
-            if (isset($_POST['tuc_options']['custom_css'])) {
-                $options['custom_css'] = wp_kses_post($_POST['tuc_options']['custom_css']);
+            if (isset($_POST['oes_options']['custom_css'])) {
+                $options['custom_css'] = wp_kses_post($_POST['oes_options']['custom_css']);
             }
         }
         
-        update_option('tuc_options', $options);
+        update_option('oes_options', $options);
         
         add_action('admin_notices', function() {
             echo '<div class="notice notice-success is-dismissible"><p>Settings saved successfully!</p></div>';
@@ -301,24 +301,24 @@ class TUC_Admin_Panel {
             'load_custom_css' => 0
         );
         
-        update_option('tuc_options', $default_options);
+        update_option('oes_options', $default_options);
     }
     
     public function enqueue_admin_assets($hook) {
-        if ('toplevel_page_typography-utility-controls' !== $hook) {
+        if ('toplevel_page_orbital-editor-suite' !== $hook) {
             return;
         }
         
         wp_enqueue_style(
-            'tuc-admin-styles',
-            TUC_PLUGIN_URL . 'inc/modern-admin.css',
+            'oes-admin-styles',
+            OES_PLUGIN_URL . 'inc/modern-admin.css',
             array(),
             '1.0.0'
         );
         
         wp_enqueue_script(
-            'tuc-admin-script',
-            TUC_PLUGIN_URL . 'inc/admin-script.js',
+            'oes-admin-script',
+            OES_PLUGIN_URL . 'inc/admin-script.js',
             array('jquery'),
             '1.0.0',
             true
@@ -326,4 +326,4 @@ class TUC_Admin_Panel {
     }
 }
 
-new TUC_Admin_Panel();
+new OES_Admin_Panel();
