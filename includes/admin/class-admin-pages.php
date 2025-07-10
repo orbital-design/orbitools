@@ -76,14 +76,8 @@ class Admin_Pages {
             array($this, 'render_main_page')
         );
 
-        add_submenu_page(
-            'orbital-editor-suite',
-            __('Typography Presets', 'orbital-editor-suite'),
-            __('Typography Presets', 'orbital-editor-suite'),
-            'manage_options',
-            'orbital-editor-suite-typography',
-            array($this, 'render_typography_page')
-        );
+        // Allow modules to register their own admin pages
+        do_action('orbital_editor_suite_admin_pages');
 
         add_submenu_page(
             'orbital-editor-suite',
@@ -110,9 +104,11 @@ class Admin_Pages {
      * Sanitize options.
      */
     public function sanitize_options($options) {
-        // Implement proper sanitization
-        $sanitized = array();
+        // Get current options to preserve existing data
+        $current_options = get_option('orbital_editor_suite_options', array());
+        $sanitized = $current_options;
         
+        // Handle legacy settings
         if (isset($options['settings'])) {
             $settings = $options['settings'];
             
@@ -129,7 +125,53 @@ class Admin_Pages {
             );
         }
 
+        // Handle module settings
+        if (isset($options['modules'])) {
+            if (!isset($sanitized['modules'])) {
+                $sanitized['modules'] = array();
+            }
+            
+            foreach ($options['modules'] as $module_slug => $module_settings) {
+                $sanitized['modules'][$module_slug] = $this->sanitize_module_settings($module_slug, $module_settings);
+            }
+        }
+
         $sanitized['version'] = ORBITAL_EDITOR_SUITE_VERSION;
+        
+        return $sanitized;
+    }
+
+    /**
+     * Sanitize module-specific settings.
+     */
+    private function sanitize_module_settings($module_slug, $settings) {
+        $sanitized = array();
+        
+        switch ($module_slug) {
+            case 'typography-presets':
+                $sanitized = array(
+                    'enabled' => !empty($settings['enabled']),
+                    'replace_core_controls' => !empty($settings['replace_core_controls']),
+                    'show_categories' => !empty($settings['show_categories']),
+                    'custom_css_output' => !empty($settings['custom_css_output']),
+                    'allowed_blocks' => isset($settings['allowed_blocks']) ? 
+                        array_map('sanitize_text_field', (array) $settings['allowed_blocks']) : array()
+                );
+                break;
+            
+            default:
+                // Generic sanitization for unknown modules
+                foreach ($settings as $key => $value) {
+                    if (is_array($value)) {
+                        $sanitized[$key] = array_map('sanitize_text_field', $value);
+                    } elseif (is_bool($value) || $value === '1' || $value === '') {
+                        $sanitized[$key] = !empty($value);
+                    } else {
+                        $sanitized[$key] = sanitize_text_field($value);
+                    }
+                }
+                break;
+        }
         
         return $sanitized;
     }
@@ -160,20 +202,6 @@ class Admin_Pages {
         require_once plugin_dir_path(__FILE__) . 'partials/main-page.php';
     }
 
-    /**
-     * Render the typography presets page.
-     */
-    public function render_typography_page() {
-        $typography_presets = new \Orbital\Editor_Suite\Modules\Typography_Presets\Typography_Presets();
-        $admin_interface = new \Orbital\Editor_Suite\Modules\Typography_Presets\Admin\Admin_Interface($typography_presets);
-        
-        ?>
-        <div class="wrap">
-            <h1><?php _e('Typography Presets', 'orbital-editor-suite'); ?></h1>
-            <?php $admin_interface->render_admin_section(); ?>
-        </div>
-        <?php
-    }
 
     /**
      * Render the updates page.

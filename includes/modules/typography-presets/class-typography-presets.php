@@ -70,6 +70,9 @@ class Typography_Presets {
         add_action('wp_enqueue_scripts', array($this, 'enqueue_frontend_styles'));
         add_action('admin_enqueue_scripts', array($this, 'enqueue_admin_assets'));
         
+        // Register admin pages using WordPress hooks
+        add_action('orbital_editor_suite_admin_pages', array($this, 'register_admin_pages'));
+        
         // AJAX handlers for preset management
         add_action('wp_ajax_orbital_save_typography_preset', array($this, 'ajax_save_preset'));
         add_action('wp_ajax_orbital_delete_typography_preset', array($this, 'ajax_delete_preset'));
@@ -211,6 +214,13 @@ class Typography_Presets {
             'show_categories' => true,
             'custom_css_output' => true
         ));
+    }
+
+    /**
+     * Refresh settings from database.
+     */
+    public function refresh_settings() {
+        $this->load_settings();
     }
 
     /**
@@ -489,5 +499,37 @@ class Typography_Presets {
         check_ajax_referer('orbital_typography_presets_nonce', 'nonce');
         
         wp_send_json_success($this->get_presets());
+    }
+
+    /**
+     * Register admin pages for this module.
+     * Called via orbital_editor_suite_admin_pages hook.
+     */
+    public function register_admin_pages() {
+        // Load admin class
+        if (!class_exists('\Orbital\Editor_Suite\Admin\Module_Admin')) {
+            require_once plugin_dir_path(dirname(dirname(__FILE__))) . 'admin/class-module-admin.php';
+        }
+        
+        if (!class_exists('\Orbital\Editor_Suite\Modules\Typography_Presets\Typography_Presets_Admin')) {
+            require_once plugin_dir_path(__FILE__) . 'class-typography-presets-admin.php';
+        }
+
+        $admin = new Typography_Presets_Admin($this);
+        $admin->register_admin_page();
+    }
+
+    /**
+     * Get module slug.
+     */
+    public function get_slug() {
+        return self::MODULE_SLUG;
+    }
+
+    /**
+     * Get module settings.
+     */
+    public function get_settings() {
+        return $this->settings;
     }
 }
