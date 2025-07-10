@@ -1,7 +1,7 @@
-console.log('Typography Utility Controls: Full version loading...');
+// console.log('Typography Utility Controls: Full version loading...');
 
 wp.domReady(function() {
-    console.log('Typography Utility Controls: WordPress ready');
+    // console.log('Typography Utility Controls: WordPress ready');
     
     if (!wp.hooks || !wp.compose || !wp.element || !wp.blockEditor || !wp.components) {
         console.error('Typography Utility Controls: Missing WordPress dependencies');
@@ -14,7 +14,7 @@ wp.domReady(function() {
     const { InspectorControls } = wp.blockEditor;
     const { PanelBody, SelectControl, TextControl } = wp.components;
     
-    console.log('Typography Utility Controls: All dependencies loaded');
+    // console.log('Typography Utility Controls: All dependencies loaded');
     
     // Define which blocks should have the custom control
     const allowedBlocks = [
@@ -121,7 +121,7 @@ wp.domReady(function() {
     // Add custom attribute
     function addTypographyAttribute(settings, name) {
         if (allowedBlocks.includes(name)) {
-            console.log('Typography Utility Controls: Adding attribute to', name);
+            // console.log('Typography Utility Controls: Adding attribute to', name);
             settings.attributes = {
                 ...settings.attributes,
                 typographyUtilityClass: {
@@ -178,7 +178,8 @@ wp.domReady(function() {
                             value: typographyUtilityClass || '',
                             options: filteredOptions,
                             onChange: function(newValue) {
-                                console.log('Typography Utility Controls: Setting class to:', newValue);
+                                // console.log('Typography Utility Controls: Setting class to:', newValue);
+                                // console.log('Typography Utility Controls: Current attributes:', attributes);
                                 setAttributes({ typographyUtilityClass: newValue });
                                 setSearchTerm(''); // Clear search after selection
                             },
@@ -201,9 +202,13 @@ wp.domReady(function() {
             
             const { typographyUtilityClass } = props.attributes;
             
+            // console.log('Typography Utility Controls: Editor rendering - Block:', props.name, 'Class:', typographyUtilityClass);
+            
             if (typographyUtilityClass) {
                 const existingClasses = props.className || '';
                 const newClassName = (existingClasses + ' ' + typographyUtilityClass).trim();
+                
+                // console.log('Typography Utility Controls: Editor - Adding class:', newClassName);
                 
                 const newProps = {
                     ...props,
@@ -228,13 +233,35 @@ wp.domReady(function() {
         if (typographyUtilityClass) {
             const existingClasses = props.className || '';
             props.className = (existingClasses + ' ' + typographyUtilityClass).trim();
+            // console.log('Typography Utility Controls: Adding class to frontend:', props.className);
+        }
+        
+        return props;
+    }
+    
+    // Alternative method to ensure class is added to wrapper element
+    function addClassToWrapperProps(props, blockType, attributes) {
+        if (!allowedBlocks.includes(blockType.name)) {
+            return props;
+        }
+        
+        const { typographyUtilityClass } = attributes;
+        
+        if (typographyUtilityClass) {
+            // Ensure the class is added to the main wrapper
+            if (props.className) {
+                props.className = props.className + ' ' + typographyUtilityClass;
+            } else {
+                props.className = typographyUtilityClass;
+            }
+            // console.log('Typography Utility Controls: Wrapper class set to:', props.className);
         }
         
         return props;
     }
     
     // Register all filters
-    console.log('Typography Utility Controls: Registering filters');
+    // console.log('Typography Utility Controls: Registering filters');
     
     addFilter(
         'blocks.registerBlockType',
@@ -260,5 +287,12 @@ wp.domReady(function() {
         addUtilityClassToSave
     );
     
-    console.log('Typography Utility Controls: Setup complete with search functionality');
+    // Additional filter to ensure classes are applied to block wrapper
+    addFilter(
+        'blocks.getBlockDefaultClassName',
+        'typography-utility-controls/add-wrapper-class',
+        addClassToWrapperProps
+    );
+    
+    // console.log('Typography Utility Controls: Setup complete with search functionality');
 });
