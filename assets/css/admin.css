@@ -1,6 +1,6 @@
-/* Modern Admin Panel Styles - Typography Utility Controls */
+/* Modern Admin Panel Styles - Orbital Editor Suite */
 
-.tuc-admin-wrap {
+.orbital-admin-wrap {
     max-width: 1200px;
     margin: 20px 0;
     background: #ffffff;
@@ -9,7 +9,7 @@
     overflow: hidden;
 }
 
-.tuc-admin-header {
+.orbital-admin-header {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: white;
     padding: 30px 40px;
@@ -18,7 +18,7 @@
     position: relative;
 }
 
-.tuc-admin-header::before {
+.orbital-admin-header::before {
     content: '';
     position: absolute;
     top: 0;
@@ -29,7 +29,7 @@
     opacity: 0.3;
 }
 
-.tuc-admin-header h1 {
+.orbital-admin-header h1 {
     margin: 0 0 0 15px;
     font-size: 28px;
     font-weight: 600;
@@ -37,7 +37,7 @@
     z-index: 1;
 }
 
-.tuc-admin-header .dashicons {
+.orbital-admin-header .dashicons {
     font-size: 36px;
     position: relative;
     z-index: 1;
@@ -77,18 +77,18 @@
     vertical-align: middle;
 }
 
-.tuc-admin-content {
+.orbital-admin-content {
     padding: 40px;
 }
 
-.tuc-settings-grid {
+.orbital-settings-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(480px, 1fr));
     gap: 30px;
     margin-bottom: 30px;
 }
 
-.tuc-settings-card {
+.orbital-settings-card {
     background: #f8f9fa;
     border: 1px solid #e9ecef;
     border-radius: 8px;
@@ -98,7 +98,7 @@
     overflow: hidden;
 }
 
-.tuc-settings-card::before {
+.orbital-settings-card::before {
     content: '';
     position: absolute;
     top: 0;
@@ -110,17 +110,17 @@
     transition: transform 0.3s ease;
 }
 
-.tuc-settings-card:hover::before {
+.orbital-settings-card:hover::before {
     transform: scaleX(1);
 }
 
-.tuc-settings-card:hover {
+.orbital-settings-card:hover {
     background: #ffffff;
     box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
     transform: translateY(-2px);
 }
 
-.tuc-settings-card h3 {
+.orbital-settings-card h3 {
     margin: 0 0 20px 0;
     color: #2c3e50;
     font-size: 18px;
@@ -129,27 +129,27 @@
     align-items: center;
 }
 
-.tuc-settings-card h3 .dashicons {
+.orbital-settings-card h3 .dashicons {
     margin-right: 10px;
     color: #667eea;
 }
 
-.tuc-field {
+.orbital-field {
     margin-bottom: 20px;
 }
 
-.tuc-field:last-child {
+.orbital-field:last-child {
     margin-bottom: 0;
 }
 
-.tuc-field label {
+.orbital-field label {
     display: block;
     margin-bottom: 8px;
     font-weight: 500;
     color: #2c3e50;
 }
 
-.tuc-help-text {
+.orbital-help-text {
     margin: 5px 0 0 0;
     color: #6c757d;
     font-size: 13px;
@@ -157,7 +157,7 @@
 }
 
 /* Toggle Switch Styles */
-.tuc-toggle-switch {
+.orbital-toggle-switch {
     display: flex;
     align-items: center;
     cursor: pointer;
@@ -165,14 +165,14 @@
     margin-bottom: 0;
 }
 
-.tuc-toggle-switch input[type="checkbox"] {
+.orbital-toggle-switch input[type="checkbox"] {
     opacity: 0;
     width: 0;
     height: 0;
     position: absolute;
 }
 
-.tuc-slider {
+.orbital-slider {
     width: 48px;
     height: 24px;
     background: #ccc;
@@ -182,7 +182,7 @@
     margin-right: 12px;
 }
 
-.tuc-slider:before {
+.orbital-slider:before {
     content: "";
     position: absolute;
     height: 20px;
@@ -195,28 +195,28 @@
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
-.tuc-toggle-switch input:checked + .tuc-slider {
+.orbital-toggle-switch input:checked + .orbital-slider {
     background: #667eea;
 }
 
-.tuc-toggle-switch input:checked + .tuc-slider:before {
+.orbital-toggle-switch input:checked + .orbital-slider:before {
     transform: translateX(24px);
 }
 
-.tuc-label {
+.orbital-label {
     font-weight: 500;
     color: #2c3e50;
 }
 
 /* Checkbox Grid */
-.tuc-checkbox-grid {
+.orbital-checkbox-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
     gap: 12px;
     margin-top: 12px;
 }
 
-.tuc-checkbox-item {
+.orbital-checkbox-item {
     display: flex;
     align-items: center;
     padding: 10px 12px;
@@ -228,19 +228,19 @@
     position: relative;
 }
 
-.tuc-checkbox-item:hover {
+.orbital-checkbox-item:hover {
     background: #f8f9fa;
     border-color: #667eea;
 }
 
-.tuc-checkbox-item input[type="checkbox"] {
+.orbital-checkbox-item input[type="checkbox"] {
     opacity: 0;
     width: 0;
     height: 0;
     position: absolute;
 }
 
-.tuc-checkmark {
+.orbital-checkmark {
     height: 18px;
     width: 18px;
     background: #fff;
@@ -251,12 +251,12 @@
     transition: all 0.2s ease;
 }
 
-.tuc-checkbox-item input:checked + .tuc-checkmark {
+.orbital-checkbox-item input:checked + .orbital-checkmark {
     background: #667eea;
     border-color: #667eea;
 }
 
-.tuc-checkbox-item input:checked + .tuc-checkmark:after {
+.orbital-checkbox-item input:checked + .orbital-checkmark:after {
     content: "";
     position: absolute;
     display: block;
@@ -270,7 +270,7 @@
 }
 
 /* Textarea */
-.tuc-textarea {
+.orbital-textarea {
     width: 100%;
     min-height: 150px;
     padding: 12px;
@@ -284,7 +284,7 @@
     transition: all 0.3s ease;
 }
 
-.tuc-textarea:focus {
+.orbital-textarea:focus {
     outline: none;
     border-color: #667eea;
     background: white;
@@ -292,14 +292,14 @@
 }
 
 /* Section Divider */
-.tuc-section-divider {
+.orbital-section-divider {
     height: 1px;
     background: linear-gradient(90deg, transparent, #e9ecef, transparent);
     margin: 40px 0;
 }
 
 /* Preview Section */
-.tuc-utility-preview {
+.orbital-utility-preview {
     background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
     padding: 30px;
     border-radius: 8px;
@@ -307,7 +307,7 @@
     border: 1px solid #e9ecef;
 }
 
-.tuc-utility-preview h4 {
+.orbital-utility-preview h4 {
     margin: 0 0 20px 0;
     color: #2c3e50;
     font-size: 18px;
@@ -316,24 +316,24 @@
     align-items: center;
 }
 
-.tuc-utility-preview h4 .dashicons {
+.orbital-utility-preview h4 .dashicons {
     margin-right: 10px;
     color: #667eea;
 }
 
-.tuc-preview-grid {
+.orbital-preview-grid {
     display: grid;
     gap: 20px;
 }
 
-.tuc-preview-item {
+.orbital-preview-item {
     background: white;
     padding: 20px;
     border-radius: 6px;
     border: 1px solid #e9ecef;
 }
 
-.tuc-preview-text {
+.orbital-preview-text {
     margin: 0 0 10px 0;
     padding: 15px;
     background: #f8f9fa;
@@ -341,7 +341,7 @@
     border-left: 4px solid #667eea;
 }
 
-.tuc-preview-item code {
+.orbital-preview-item code {
     background: #2c3e50;
     color: #ecf0f1;
     padding: 8px 12px;
@@ -351,7 +351,7 @@
 }
 
 /* Submit Section */
-.tuc-submit-section {
+.orbital-submit-section {
     display: flex;
     gap: 15px;
     align-items: center;
@@ -360,7 +360,7 @@
     margin-top: 30px;
 }
 
-.tuc-save-button {
+.orbital-save-button {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     border: none;
     color: white;
@@ -372,13 +372,13 @@
     box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
 }
 
-.tuc-save-button:hover {
+.orbital-save-button:hover {
     transform: translateY(-2px);
     box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
     background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%);
 }
 
-.tuc-reset-button {
+.orbital-reset-button {
     background: white;
     border: 1px solid #e9ecef;
     color: #6c757d;
@@ -389,21 +389,21 @@
     transition: all 0.3s ease;
 }
 
-.tuc-reset-button:hover {
+.orbital-reset-button:hover {
     background: #f8f9fa;
     border-color: #dc3545;
     color: #dc3545;
 }
 
 /* Help Section */
-.tuc-help-section {
+.orbital-help-section {
     background: #f8f9fa;
     margin: 30px -40px -40px -40px;
     padding: 30px 40px;
     border-top: 1px solid #e9ecef;
 }
 
-.tuc-help-section h3 {
+.orbital-help-section h3 {
     margin: 0 0 20px 0;
     color: #2c3e50;
     font-size: 18px;
@@ -412,18 +412,18 @@
     align-items: center;
 }
 
-.tuc-help-section h3 .dashicons {
+.orbital-help-section h3 .dashicons {
     margin-right: 10px;
     color: #667eea;
 }
 
-.tuc-help-grid {
+.orbital-help-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
     gap: 20px;
 }
 
-.tuc-help-item {
+.orbital-help-item {
     background: white;
     padding: 20px;
     border-radius: 6px;
@@ -431,19 +431,19 @@
     transition: all 0.3s ease;
 }
 
-.tuc-help-item:hover {
+.orbital-help-item:hover {
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
     transform: translateY(-2px);
 }
 
-.tuc-help-item strong {
+.orbital-help-item strong {
     color: #667eea;
     font-weight: 600;
     display: block;
     margin-bottom: 8px;
 }
 
-.tuc-help-item p {
+.orbital-help-item p {
     margin: 0;
     color: #6c757d;
     font-size: 14px;
@@ -452,36 +452,36 @@
 
 /* Responsive Design */
 @media (max-width: 768px) {
-    .tuc-admin-content {
+    .orbital-admin-content {
         padding: 20px;
     }
     
-    .tuc-settings-grid {
+    .orbital-settings-grid {
         grid-template-columns: 1fr;
         gap: 20px;
     }
     
-    .tuc-checkbox-grid {
+    .orbital-checkbox-grid {
         grid-template-columns: 1fr;
     }
     
-    .tuc-help-grid {
+    .orbital-help-grid {
         grid-template-columns: 1fr;
     }
     
-    .tuc-submit-section {
+    .orbital-submit-section {
         flex-direction: column;
         align-items: stretch;
     }
     
-    .tuc-help-section {
+    .orbital-help-section {
         margin: 20px -20px -20px -20px;
         padding: 20px;
     }
 }
 
 /* Animation for page load */
-.tuc-admin-wrap {
+.orbital-admin-wrap {
     animation: fadeInUp 0.5s ease-out;
 }
 
@@ -497,35 +497,35 @@
 }
 
 /* Focus states for accessibility */
-.tuc-toggle-switch:focus-within .tuc-slider {
+.orbital-toggle-switch:focus-within .orbital-slider {
     box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.3);
 }
 
-.tuc-checkbox-item:focus-within {
+.orbital-checkbox-item:focus-within {
     box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.3);
 }
 
-.tuc-textarea:focus,
-.tuc-save-button:focus,
-.tuc-reset-button:focus {
+.orbital-textarea:focus,
+.orbital-save-button:focus,
+.orbital-reset-button:focus {
     outline: none;
     box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.3);
 }
 
 /* Updates Tab Styles */
-.tuc-updates-content {
+.orbital-updates-content {
     animation: fadeInUp 0.5s ease-out;
 }
 
-.tuc-version-info {
+.orbital-version-info {
     background: #f8f9fa;
     border-radius: 8px;
     padding: 20px;
     margin: 15px 0;
 }
 
-.tuc-version-current,
-.tuc-version-remote {
+.orbital-version-current,
+.orbital-version-remote {
     margin-bottom: 10px;
     font-size: 14px;
 }
@@ -539,7 +539,7 @@
     font-size: 12px;
 }
 
-.tuc-version-status {
+.orbital-version-status {
     margin-top: 15px;
     padding: 10px;
     border-radius: 6px;
@@ -563,22 +563,22 @@
     margin-right: 8px;
 }
 
-.tuc-update-actions {
+.orbital-update-actions {
     padding: 20px;
     text-align: center;
 }
 
-.tuc-update-actions .button {
+.orbital-update-actions .button {
     margin: 10px;
     padding: 10px 20px;
     font-size: 14px;
 }
 
-.tuc-update-actions .dashicons {
+.orbital-update-actions .dashicons {
     margin-right: 8px;
 }
 
-.tuc-update-notice {
+.orbital-update-notice {
     background: #fff3cd;
     border: 1px solid #ffeaa7;
     border-radius: 6px;
@@ -587,14 +587,14 @@
     text-align: left;
 }
 
-.tuc-repo-info {
+.orbital-repo-info {
     padding: 20px;
     background: #f8f9fa;
     border-radius: 8px;
     margin: 15px 0;
 }
 
-.tuc-repo-instructions {
+.orbital-repo-instructions {
     margin-top: 20px;
     padding: 15px;
     background: #e3f2fd;
@@ -602,22 +602,22 @@
     border-left: 4px solid #2196f3;
 }
 
-.tuc-repo-instructions h4 {
+.orbital-repo-instructions h4 {
     margin-top: 0;
     color: #1976d2;
 }
 
-.tuc-repo-instructions ol {
+.orbital-repo-instructions ol {
     margin: 10px 0;
     padding-left: 20px;
 }
 
-.tuc-repo-instructions li {
+.orbital-repo-instructions li {
     margin-bottom: 8px;
     line-height: 1.5;
 }
 
-.tuc-repo-instructions code {
+.orbital-repo-instructions code {
     background: #333;
     color: #fff;
     padding: 2px 6px;
@@ -626,7 +626,7 @@
 }
 
 /* Debug Information Styles */
-.tuc-debug-toggle {
+.orbital-debug-toggle {
     float: right;
     background: #f0f0f1;
     border: 1px solid #c3c4c7;
@@ -637,17 +637,17 @@
     transition: all 0.2s ease;
 }
 
-.tuc-debug-toggle:hover {
+.orbital-debug-toggle:hover {
     background: #e0e0e1;
     border-color: #8c8f94;
 }
 
-.tuc-debug-toggle .dashicons {
+.orbital-debug-toggle .dashicons {
     font-size: 14px;
     vertical-align: middle;
 }
 
-.tuc-debug-info {
+.orbital-debug-info {
     background: #f8f9fa;
     border: 1px solid #e2e4e7;
     border-radius: 6px;
@@ -655,7 +655,7 @@
     margin: 15px 0;
 }
 
-.tuc-debug-item {
+.orbital-debug-item {
     margin-bottom: 10px;
     padding: 8px;
     background: white;
@@ -663,17 +663,17 @@
     border-left: 3px solid #667eea;
 }
 
-.tuc-debug-item:last-child {
+.orbital-debug-item:last-child {
     margin-bottom: 0;
 }
 
-.tuc-debug-item strong {
+.orbital-debug-item strong {
     display: inline-block;
     min-width: 120px;
     color: #1d2327;
 }
 
-.tuc-debug-item code {
+.orbital-debug-item code {
     background: #f6f7f7;
     padding: 2px 6px;
     border-radius: 3px;
@@ -682,7 +682,7 @@
 }
 
 /* Version Format Guide */
-.tuc-version-format-guide {
+.orbital-version-format-guide {
     margin-top: 20px;
     padding: 15px;
     background: #fff3cd;
@@ -691,23 +691,23 @@
     border-left: 4px solid #f39c12;
 }
 
-.tuc-version-format-guide h5 {
+.orbital-version-format-guide h5 {
     margin-top: 0;
     margin-bottom: 10px;
     color: #856404;
 }
 
-.tuc-version-format-guide ul {
+.orbital-version-format-guide ul {
     margin: 10px 0;
     padding-left: 20px;
 }
 
-.tuc-version-format-guide li {
+.orbital-version-format-guide li {
     margin-bottom: 5px;
     line-height: 1.4;
 }
 
-.tuc-version-format-guide code {
+.orbital-version-format-guide code {
     background: #333;
     color: #fff;
     padding: 2px 6px;
