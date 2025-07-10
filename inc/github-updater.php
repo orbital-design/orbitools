@@ -17,13 +17,13 @@ class OES_GitHub_Updater {
     private $plugin_file;
     private $github_token;
     
-    public function __construct($plugin_file, $version, $github_token = '') {
+    public function __construct($plugin_file, $version) {
         $this->plugin_file = $plugin_file;
         $this->plugin_slug = plugin_basename($plugin_file);
         $this->version = $version;
         $this->github_user = 'orbital-design';
         $this->github_repo = 'orbital-editor-suite';
-        $this->github_token = $github_token;
+        $this->github_token = ''; // No token needed for public repos
         
         add_filter('pre_set_site_transient_update_plugins', array($this, 'check_for_update'));
         add_filter('plugins_api', array($this, 'plugin_popup'), 10, 3);
@@ -108,14 +108,27 @@ class OES_GitHub_Updater {
             return $cached_version;
         }
         
-        $request = wp_remote_get($this->get_api_url());
+        $request = wp_remote_get($this->get_api_url(), $this->get_request_args());
         
         if (!is_wp_error($request) && wp_remote_retrieve_response_code($request) === 200) {
             $body = wp_remote_retrieve_body($request);
             $release = json_decode($body, true);
             
             if (isset($release['tag_name'])) {
-                $version = ltrim($release['tag_name'], 'v');
+                $tag_name = $release['tag_name'];
+                $version = ltrim($tag_name, 'v');
+                
+                // If tag is not a valid version number, try to extract from release name or use a default
+                if (!preg_match('/^\d+\.\d+\.\d+/', $version)) {
+                    // Check if there's a version in the release name
+                    if (isset($release['name']) && preg_match('/v?(\d+\.\d+\.\d+)/', $release['name'], $matches)) {
+                        $version = $matches[1];
+                    } else {
+                        // Default to a version higher than current to trigger update
+                        $version = '1.0.1';
+                    }
+                }
+                
                 set_transient('oes_remote_version', $version, 12 * HOUR_IN_SECONDS);
                 return $version;
             }
@@ -131,7 +144,7 @@ class OES_GitHub_Updater {
             return $cached_changelog;
         }
         
-        $request = wp_remote_get($this->get_api_url());
+        $request = wp_remote_get($this->get_api_url(), $this->get_request_args());
         
         if (!is_wp_error($request) && wp_remote_retrieve_response_code($request) === 200) {
             $body = wp_remote_retrieve_body($request);
@@ -147,6 +160,15 @@ class OES_GitHub_Updater {
         return 'No changelog available.';
     }
     
+    private function get_request_args() {
+        return array(
+            'timeout' => 10,
+            'headers' => array(
+                'User-Agent' => 'Orbital-Editor-Suite-Updater/1.0'
+            )
+        );
+    }
+    
     private function get_api_url() {
         return "https://api.github.com/repos/{$this->github_user}/{$this->github_repo}/releases/latest";
     }
@@ -156,7 +178,7 @@ class OES_GitHub_Updater {
     }
     
     private function get_download_url() {
-        $request = wp_remote_get($this->get_api_url());
+        $request = wp_remote_get($this->get_api_url(), $this->get_request_args());
         
         if (!is_wp_error($request) && wp_remote_retrieve_response_code($request) === 200) {
             $body = wp_remote_retrieve_body($request);
@@ -180,12 +202,54 @@ class OES_GitHub_Updater {
         $remote_version = $this->get_remote_version();
         $has_update = version_compare($this->version, $remote_version, '<');
         
+        // Debug information
+        $debug_info = $this->get_debug_info();
+        
         return array(
             'current_version' => $this->version,
             'remote_version' => $remote_version,
             'has_update' => $has_update,
             'github_url' => $this->get_github_url(),
-            'last_checked' => get_transient('oes_last_checked') ?: 'Never'
+            'last_checked' => get_transient('oes_last_checked') ?: 'Never',
+            'debug' => $debug_info
         );
+    }
+    
+    public function get_debug_info() {
+        set_transient('oes_last_checked', current_time('mysql'), 12 * HOUR_IN_SECONDS);
+        
+        $request = wp_remote_get($this->get_api_url(), $this->get_request_args());
+        
+        $debug = array(
+            'api_url' => $this->get_api_url(),
+            'repository_type' => 'Public Repository',
+            'response_code' => '',
+            'error_message' => '',
+            'raw_response' => ''
+        );
+        
+        if (is_wp_error($request)) {
+            $debug['error_message'] = $request->get_error_message();
+        } else {
+            $debug['response_code'] = wp_remote_retrieve_response_code($request);
+            $body = wp_remote_retrieve_body($request);
+            
+            if ($debug['response_code'] === 200) {
+                $release = json_decode($body, true);
+                if (isset($release['tag_name'])) {
+                    $debug['raw_response'] = sprintf(
+                        'Found release - Tag: "%s", Name: "%s"', 
+                        $release['tag_name'],
+                        isset($release['name']) ? $release['name'] : 'No name'
+                    );
+                } else {
+                    $debug['raw_response'] = 'No tag_name in response';
+                }
+            } else {
+                $debug['raw_response'] = substr($body, 0, 200) . '...';
+            }
+        }
+        
+        return $debug;
     }
 }

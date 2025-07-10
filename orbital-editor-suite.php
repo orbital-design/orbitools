@@ -74,6 +74,9 @@ function oes_plugin_activate() {
     );
     
     update_option('oes_options', $default_options);
+    
+    // Clean up any old GitHub token (no longer needed for public repo)
+    delete_option('oes_github_token');
 }
 register_activation_hook(__FILE__, 'oes_plugin_activate');
 

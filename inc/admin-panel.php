@@ -337,17 +337,65 @@ class OES_Admin_Panel {
                                 <p><strong>Last Checked:</strong> <?php echo esc_html($update_info['last_checked']); ?></p>
                             <?php endif; ?>
                             
-                            <div class="tuc-repo-instructions">
-                                <h4>How Auto-Updates Work:</h4>
-                                <ol>
-                                    <li>Plugin is configured for <strong>orbital-design/orbital-editor-suite</strong> repository</li>
-                                    <li>Create releases on GitHub with version tags (e.g., v1.0.1, v1.0.2)</li>
-                                    <li>Updates will be automatically detected and offered through WordPress</li>
-                                    <li>Users can update directly from the WordPress admin plugins page</li>
-                                </ol>
-                            </div>
                         </div>
                     </div>
+                    
+                    <?php if ($update_info && isset($update_info['debug'])): ?>
+                    <div class="tuc-settings-card">
+                        <h3>
+                            <span class="dashicons dashicons-admin-tools"></span> 
+                            <span>Debug Information</span>
+                            <button type="button" class="tuc-debug-toggle" onclick="toggleDebugInfo()">
+                                <span class="dashicons dashicons-arrow-down"></span> Show
+                            </button>
+                        </h3>
+                        <div class="tuc-debug-info" id="tuc-debug-info" style="display: none;">
+                            <div class="tuc-debug-item">
+                                <strong>API URL:</strong> <code><?php echo esc_html($update_info['debug']['api_url']); ?></code>
+                            </div>
+                            <div class="tuc-debug-item">
+                                <strong>Repository Type:</strong> <?php echo esc_html($update_info['debug']['repository_type']); ?>
+                            </div>
+                            <div class="tuc-debug-item">
+                                <strong>Response Code:</strong> 
+                                <code style="color: <?php echo $update_info['debug']['response_code'] === 200 ? 'green' : 'red'; ?>">
+                                    <?php echo esc_html($update_info['debug']['response_code'] ?: 'No response'); ?>
+                                </code>
+                            </div>
+                            <?php if (!empty($update_info['debug']['error_message'])): ?>
+                            <div class="tuc-debug-item">
+                                <strong>Error:</strong> <code style="color: red;"><?php echo esc_html($update_info['debug']['error_message']); ?></code>
+                            </div>
+                            <?php endif; ?>
+                            <div class="tuc-debug-item">
+                                <strong>Response:</strong> <code><?php echo esc_html($update_info['debug']['raw_response']); ?></code>
+                            </div>
+                            <div class="tuc-debug-item">
+                                <strong>Version Comparison:</strong> 
+                                <code>Current: <?php echo esc_html($update_info['current_version']); ?> vs Remote: <?php echo esc_html($update_info['remote_version']); ?></code>
+                            </div>
+                        </div>
+                        
+                        <script>
+                        function toggleDebugInfo() {
+                            const debugInfo = document.getElementById('tuc-debug-info');
+                            const toggle = document.querySelector('.tuc-debug-toggle');
+                            const icon = toggle.querySelector('.dashicons');
+                            const text = toggle.querySelector('span:not(.dashicons)');
+                            
+                            if (debugInfo.style.display === 'none') {
+                                debugInfo.style.display = 'block';
+                                icon.className = 'dashicons dashicons-arrow-up';
+                                text.textContent = ' Hide';
+                            } else {
+                                debugInfo.style.display = 'none';
+                                icon.className = 'dashicons dashicons-arrow-down';
+                                text.textContent = ' Show';
+                            }
+                        }
+                        </script>
+                    </div>
+                    <?php endif; ?>
                 </div>
             </div>
         <?php
