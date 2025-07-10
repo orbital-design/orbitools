@@ -226,7 +226,6 @@ class Typography_Presets {
         
         // Set default settings
         $this->settings = wp_parse_args($this->settings, array(
-            'enabled' => true,
             'replace_core_controls' => true,
             'allowed_blocks' => array(
                 'core/paragraph',
@@ -362,7 +361,7 @@ class Typography_Presets {
      * Check if module is enabled.
      */
     public function is_enabled() {
-        return !empty($this->settings['enabled']);
+        return true; // Module is enabled if instantiated
     }
 
     /**
@@ -383,10 +382,6 @@ class Typography_Presets {
      * Enqueue editor assets.
      */
     public function enqueue_editor_assets() {
-        if (!$this->is_enabled()) {
-            return;
-        }
-
         wp_enqueue_script(
             'orbital-typography-presets',
             ORBITAL_EDITOR_SUITE_URL . 'assets/js/typography-presets.js',

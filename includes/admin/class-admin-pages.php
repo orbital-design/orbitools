@@ -144,7 +144,6 @@ class Admin_Pages {
         switch ($module_slug) {
             case 'typography-presets':
                 $sanitized = array(
-                    'enabled' => !empty($settings['enabled']),
                     'replace_core_controls' => !empty($settings['replace_core_controls']),
                     'show_categories' => !empty($settings['show_categories']),
                     'custom_css_output' => !empty($settings['custom_css_output']),

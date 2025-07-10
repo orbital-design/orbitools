@@ -54,12 +54,6 @@ class Typography_Presets_Admin extends Module_Admin {
                 'icon' => 'admin-generic',
                 'description' => __('Configure how the Typography Presets module behaves.', 'orbital-editor-suite'),
                 'fields' => array(
-                    'enabled' => array(
-                        'type' => 'checkbox',
-                        'label' => __('Enable Typography Presets', 'orbital-editor-suite'),
-                        'description' => __('Enable the typography presets system in the block editor.', 'orbital-editor-suite'),
-                        'default' => true
-                    ),
                     'replace_core_controls' => array(
                         'type' => 'checkbox',
                         'label' => __('Replace Core Typography Controls', 'orbital-editor-suite'),

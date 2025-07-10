@@ -87,7 +87,7 @@
             // Get data from localized script
             const { presets, settings, strings } = window.orbitalTypographyPresets || {};
             
-            if (!presets || !settings || !settings.enabled) {
+            if (!presets || !settings) {
                 return wp.element.createElement(BlockEdit, props);
             }
 
@@ -269,7 +269,7 @@
         // Get data from localized script
         const { settings: moduleSettings } = window.orbitalTypographyPresets || {};
         
-        if (!moduleSettings || !moduleSettings.enabled) {
+        if (!moduleSettings) {
             return settings;
         }
 
@@ -298,7 +298,7 @@
             // Get data from localized script
             const { settings: moduleSettings } = window.orbitalTypographyPresets || {};
             
-            if (!moduleSettings || !moduleSettings.enabled) {
+            if (!moduleSettings) {
                 return wp.element.createElement(BlockListBlock, props);
             }
 
@@ -337,7 +337,7 @@
         // Get data from localized script
         const { settings: moduleSettings } = window.orbitalTypographyPresets || {};
         
-        if (!moduleSettings || !moduleSettings.enabled) {
+        if (!moduleSettings) {
             return props;
         }
 
