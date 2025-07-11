@@ -341,11 +341,22 @@ class Typography_Presets_Admin extends Module_Admin {
                 
                 <p><?php _e('Add the following structure to your theme\'s <code>theme.json</code> file:', 'orbital-editor-suite'); ?></p>
                 
-                <h6><?php _e('1. With Groups (Organized Presets)', 'orbital-editor-suite'); ?></h6>
-                <textarea class="orbital-code-example" readonly><?php echo esc_textarea($this->get_grouped_example()); ?></textarea>
-                
-                <h6><?php _e('2. Without Groups (Flat Structure)', 'orbital-editor-suite'); ?></h6>
-                <textarea class="orbital-code-example" readonly><?php echo esc_textarea($this->get_flat_example()); ?></textarea>
+                <div style="display: flex; gap: 20px; margin: 20px 0;">
+                    <div style="flex: 1;">
+                        <h6><?php _e('1. With Groups (Organized Presets)', 'orbital-editor-suite'); ?></h6>
+                        <textarea class="orbital-code-example" readonly><?php echo esc_textarea($this->get_grouped_example()); ?></textarea>
+                        <button type="button" class="button button-secondary" onclick="this.previousElementSibling.select(); document.execCommand('copy');">
+                            <?php _e('Copy Grouped Example', 'orbital-editor-suite'); ?>
+                        </button>
+                    </div>
+                    <div style="flex: 1;">
+                        <h6><?php _e('2. Without Groups (Flat Structure)', 'orbital-editor-suite'); ?></h6>
+                        <textarea class="orbital-code-example" readonly><?php echo esc_textarea($this->get_flat_example()); ?></textarea>
+                        <button type="button" class="button button-secondary" onclick="this.previousElementSibling.select(); document.execCommand('copy');">
+                            <?php _e('Copy Flat Example', 'orbital-editor-suite'); ?>
+                        </button>
+                    </div>
+                </div>
                 
                 <h5><?php _e('Important Notes', 'orbital-editor-suite'); ?></h5>
                 <ul style="margin-left: 20px;">
@@ -356,26 +367,19 @@ class Typography_Presets_Admin extends Module_Admin {
                     <li><?php _e('Changes require clearing any caching plugins', 'orbital-editor-suite'); ?></li>
                 </ul>
                 
-                <button type="button" class="button button-secondary" onclick="this.previousElementSibling.previousElementSibling.select(); document.execCommand('copy');">
-                    <?php _e('Copy Grouped Example', 'orbital-editor-suite'); ?>
-                </button>
-                
-                <button type="button" class="button button-secondary" onclick="this.previousElementSibling.previousElementSibling.previousElementSibling.previousElementSibling.select(); document.execCommand('copy');">
-                    <?php _e('Copy Flat Example', 'orbital-editor-suite'); ?>
-                </button>
             </div>
         </div>
         
         <style>
         .orbital-code-example {
             width: 100%;
-            height: 200px;
+            height: 300px;
             font-family: 'Monaco', 'Consolas', 'Courier New', monospace;
             font-size: 12px;
-            background: #2b2b2b;
-            color: #f8f8f2;
+            background: #252525;
+            color: #252525;
             padding: 15px;
-            border: none;
+            border: 1px solid #21262d;
             border-radius: 6px;
             margin: 10px 0;
             resize: vertical;
