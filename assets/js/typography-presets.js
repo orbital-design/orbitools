@@ -235,8 +235,8 @@
                                 wp.element.createElement(
                                     'div',
                                     {
+                                        className: `has-type-preset has-type-preset-${orbitalTypographyPreset}`,
                                         style: {
-                                            ...currentPreset.properties,
                                             margin: '0 0 4px 0',
                                             color: '#1e1e1e',
                                             whiteSpace: 'nowrap',
@@ -254,9 +254,27 @@
                                             fontFamily: 'monospace'
                                         }
                                     },
-                                    Object.keys(currentPreset.properties).slice(0, 2).map(prop =>
-                                        `${prop}: ${currentPreset.properties[prop]}`
-                                    ).join(' • ')
+                                    Object.keys(currentPreset.properties).map(prop => {
+                                        let value = currentPreset.properties[prop];
+                                        
+                                        // Replace font-family CSS vars with font name from label
+                                        if (prop === 'font-family' && value.startsWith('var(')) {
+                                            const fontName = currentPreset.label.split(' • ')[0];
+                                            value = fontName;
+                                        }
+                                        
+                                        return wp.element.createElement(
+                                            'div', 
+                                            { 
+                                                key: prop,
+                                                style: {
+                                                    whiteSpace: 'nowrap',
+                                                    overflow: 'hidden'
+                                                }
+                                            }, 
+                                            `${prop}: ${value}`
+                                        );
+                                    })
                                 )
                             )
                         )
