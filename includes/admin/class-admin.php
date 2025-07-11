@@ -68,7 +68,7 @@ class Admin {
         wp_enqueue_script(
             $this->plugin_name,
             plugin_dir_url(dirname(dirname(__FILE__))) . 'assets/js/admin.js',
-            array('jquery'),
+            array(),
             $this->version,
             true
         );

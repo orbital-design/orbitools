@@ -710,7 +710,7 @@ class Typography_Presets {
         wp_enqueue_script(
             'orbital-typography-presets-admin',
             ORBITAL_EDITOR_SUITE_URL . 'assets/js/typography-presets-admin.js',
-            array('jquery', 'wp-util'),
+            array('wp-util'),
             self::VERSION,
             true
         );

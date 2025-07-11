@@ -4,7 +4,7 @@
  * Handles admin interface interactions for managing typography presets
  */
 
-(function($) {
+(function() {
     'use strict';
 
     const { ajaxUrl, nonce, strings } = orbitalTypographyPresetsAdmin;
@@ -22,21 +22,43 @@
      */
     function bindEvents() {
         // Handle new preset form submission
-        $('#orbital-new-preset-form').on('submit', handleNewPresetSubmit);
+        const newPresetForm = document.getElementById('orbital-new-preset-form');
+        if (newPresetForm) {
+            newPresetForm.addEventListener('submit', handleNewPresetSubmit);
+        }
         
         // Handle preset deletion
-        $(document).on('click', '.orbital-delete-preset', handlePresetDelete);
+        document.addEventListener('click', function(e) {
+            if (e.target.classList.contains('orbital-delete-preset')) {
+                handlePresetDelete(e);
+            }
+        });
         
         // Handle preset property changes for live preview
-        $(document).on('input change', '.orbital-preset-form input, .orbital-preset-form select, .orbital-preset-form textarea', 
-            debounce(updateNewPresetPreview, 300));
+        document.addEventListener('input', function(e) {
+            if (e.target.matches('.orbital-preset-form input, .orbital-preset-form select, .orbital-preset-form textarea')) {
+                debounce(updateNewPresetPreview, 300)();
+            }
+        });
+        
+        document.addEventListener('change', function(e) {
+            if (e.target.matches('.orbital-preset-form input, .orbital-preset-form select, .orbital-preset-form textarea')) {
+                debounce(updateNewPresetPreview, 300)();
+            }
+        });
         
         // Auto-generate preset ID from label
-        $('#preset-label').on('input', function() {
-            const label = $(this).val();
-            const id = generatePresetId(label);
-            $('#preset-id').val(id);
-        });
+        const presetLabel = document.getElementById('preset-label');
+        if (presetLabel) {
+            presetLabel.addEventListener('input', function() {
+                const label = this.value;
+                const id = generatePresetId(label);
+                const presetId = document.getElementById('preset-id');
+                if (presetId) {
+                    presetId.value = id;
+                }
+            });
+        }
     }
 
     /**
@@ -45,63 +67,97 @@
     function handleNewPresetSubmit(e) {
         e.preventDefault();
         
-        const $form = $(this);
-        const $button = $form.find('button[type="submit"]');
-        const originalText = $button.html();
+        const form = e.target;
+        const button = form.querySelector('button[type="submit"]');
+        const originalText = button.innerHTML;
         
         // Disable submit button
-        $button.prop('disabled', true).html('<span class="dashicons dashicons-update-alt"></span> Saving...');
+        button.disabled = true;
+        button.innerHTML = '<span class="dashicons dashicons-update-alt"></span> Saving...';
         
         // Collect form data
         const formData = {
             action: 'orbital_save_typography_preset',
             nonce: nonce,
-            id: $('#preset-id').val(),
-            label: $('#preset-label').val(),
-            description: $('#preset-description').val(),
-            category: $('#preset-category').val(),
+            id: document.getElementById('preset-id').value,
+            label: document.getElementById('preset-label').value,
+            description: document.getElementById('preset-description').value,
+            category: document.getElementById('preset-category').value,
             properties: {}
         };
         
         // Collect properties
-        $form.find('[name^="properties["]').each(function() {
-            const name = $(this).attr('name').match(/properties\[([^\]]+)\]/)[1];
-            const value = $(this).val().trim();
-            if (value) {
-                formData.properties[name] = value;
+        form.querySelectorAll('[name^="properties["]').forEach(function(input) {
+            const match = input.name.match(/properties\[([^\]]+)\]/);
+            if (match) {
+                const name = match[1];
+                const value = input.value.trim();
+                if (value) {
+                    formData.properties[name] = value;
+                }
             }
         });
         
         // Validate
         if (!formData.id || !formData.label) {
             showNotice('Please fill in required fields.', 'error');
-            $button.prop('disabled', false).html(originalText);
+            button.disabled = false;
+            button.innerHTML = originalText;
             return;
         }
         
         // Send AJAX request
-        $.post(ajaxUrl, formData)
-            .done(function(response) {
-                if (response.success) {
-                    showNotice('Preset saved successfully!', 'success');
-                    
-                    // Reset form
-                    $form[0].reset();
-                    
-                    // Refresh page to show new preset
-                    setTimeout(() => {
-                        location.reload();
-                    }, 1000);
-                } else {
-                    showNotice(response.data || 'Failed to save preset.', 'error');
+        const xhr = new XMLHttpRequest();
+        xhr.open('POST', ajaxUrl);
+        xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+        
+        xhr.onload = function() {
+            if (xhr.status === 200) {
+                try {
+                    const response = JSON.parse(xhr.responseText);
+                    if (response.success) {
+                        showNotice('Preset saved successfully!', 'success');
+                        
+                        // Reset form
+                        form.reset();
+                        
+                        // Refresh page to show new preset
+                        setTimeout(() => {
+                            location.reload();
+                        }, 1000);
+                    } else {
+                        showNotice(response.data || 'Failed to save preset.', 'error');
+                    }
+                } catch (e) {
+                    showNotice('Invalid response from server.', 'error');
                 }
-            })
-            .fail(function() {
+            } else {
                 showNotice('Network error. Please try again.', 'error');
-            })
-            .always(function() {
-                $button.prop('disabled', false).html(originalText);
-            });
+            }
+            
+            button.disabled = false;
+            button.innerHTML = originalText;
+        };
+        
+        xhr.onerror = function() {
+            showNotice('Network error. Please try again.', 'error');
+            button.disabled = false;
+            button.innerHTML = originalText;
+        };
+        
+        // Convert formData to URL-encoded string
+        const params = new URLSearchParams();
+        for (const key in formData) {
+            if (key === 'properties') {
+                for (const prop in formData.properties) {
+                    params.append(`properties[${prop}]`, formData.properties[prop]);
+                }
+            } else {
+                params.append(key, formData[key]);
+            }
+        }
+        
+        xhr.send(params.toString());
     }
 
     /**
@@ -110,46 +166,66 @@
     function handlePresetDelete(e) {
         e.preventDefault();
         
-        const presetId = $(this).data('preset-id');
-        const $card = $(this).closest('.orbital-preset-card');
+        const presetId = e.target.dataset.presetId;
+        const card = e.target.closest('.orbital-preset-card');
         
         if (!confirm(strings.confirmDelete || 'Are you sure you want to delete this preset?')) {
             return;
         }
         
         // Send AJAX request
-        $.post(ajaxUrl, {
+        const xhr = new XMLHttpRequest();
+        xhr.open('POST', ajaxUrl);
+        xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+        
+        xhr.onload = function() {
+            if (xhr.status === 200) {
+                try {
+                    const response = JSON.parse(xhr.responseText);
+                    if (response.success) {
+                        if (card) {
+                            card.style.opacity = '0';
+                            card.style.transition = 'opacity 0.3s';
+                            setTimeout(() => {
+                                card.remove();
+                            }, 300);
+                        }
+                        showNotice('Preset deleted successfully!', 'success');
+                    } else {
+                        showNotice(response.data || 'Failed to delete preset.', 'error');
+                    }
+                } catch (e) {
+                    showNotice('Invalid response from server.', 'error');
+                }
+            } else {
+                showNotice('Network error. Please try again.', 'error');
+            }
+        };
+        
+        xhr.onerror = function() {
+            showNotice('Network error. Please try again.', 'error');
+        };
+        
+        const params = new URLSearchParams({
             action: 'orbital_delete_typography_preset',
             nonce: nonce,
             id: presetId
-        })
-        .done(function(response) {
-            if (response.success) {
-                $card.fadeOut(300, function() {
-                    $(this).remove();
-                });
-                showNotice('Preset deleted successfully!', 'success');
-            } else {
-                showNotice(response.data || 'Failed to delete preset.', 'error');
-            }
-        })
-        .fail(function() {
-            showNotice('Network error. Please try again.', 'error');
         });
+        
+        xhr.send(params.toString());
     }
 
     /**
      * Update preset previews with current CSS
      */
     function updatePresetPreviews() {
-        $('.orbital-preset-sample').each(function() {
-            const $sample = $(this);
-            const classes = $sample.attr('class').split(' ');
+        document.querySelectorAll('.orbital-preset-sample').forEach(function(sample) {
+            const classes = sample.className.split(' ');
             const presetClass = classes.find(cls => cls.startsWith('orbital-preset-'));
             
             if (presetClass) {
                 // Apply inline styles for preview (since CSS might not be loaded)
-                applyPresetStyles($sample, presetClass);
+                applyPresetStyles(sample, presetClass);
             }
         });
     }
@@ -157,10 +233,10 @@
     /**
      * Apply preset styles to preview element
      */
-    function applyPresetStyles($element, presetClass) {
+    function applyPresetStyles(element, presetClass) {
         // This would need to reference the actual preset data
         // For now, we'll let the CSS handle it
-        $element.addClass(presetClass);
+        element.classList.add(presetClass);
     }
 
     /**
@@ -169,25 +245,42 @@
     function updateNewPresetPreview() {
         const properties = {};
         
-        $('#orbital-new-preset-form [name^="properties["]').each(function() {
-            const name = $(this).attr('name').match(/properties\[([^\]]+)\]/)[1];
-            const value = $(this).val().trim();
-            if (value) {
-                properties[name.replace('_', '-')] = value;
+        document.querySelectorAll('#orbital-new-preset-form [name^="properties["]').forEach(function(input) {
+            const match = input.name.match(/properties\[([^\]]+)\]/);
+            if (match) {
+                const name = match[1];
+                const value = input.value.trim();
+                if (value) {
+                    properties[name.replace('_', '-')] = value;
+                }
             }
         });
         
         // Create or update preview
-        let $preview = $('#orbital-new-preset-preview');
-        if ($preview.length === 0) {
-            $preview = $('<div id="orbital-new-preset-preview" class="orbital-preset-preview">' +
-                '<div class="orbital-preset-sample">Sample text with your custom preset</div>' +
-                '</div>');
-            $('#orbital-new-preset-form .orbital-preset-properties').after($preview);
+        let preview = document.getElementById('orbital-new-preset-preview');
+        if (!preview) {
+            preview = document.createElement('div');
+            preview.id = 'orbital-new-preset-preview';
+            preview.className = 'orbital-preset-preview';
+            preview.innerHTML = '<div class="orbital-preset-sample">Sample text with your custom preset</div>';
+            
+            const propertiesSection = document.querySelector('#orbital-new-preset-form .orbital-preset-properties');
+            if (propertiesSection && propertiesSection.parentNode) {
+                propertiesSection.parentNode.insertBefore(preview, propertiesSection.nextSibling);
+            }
         }
         
         // Apply styles to preview
-        $preview.find('.orbital-preset-sample').css(properties);
+        const sample = preview.querySelector('.orbital-preset-sample');
+        if (sample) {
+            // Clear existing styles
+            sample.style.cssText = '';
+            
+            // Apply new styles
+            for (const prop in properties) {
+                sample.style.setProperty(prop, properties[prop]);
+            }
+        }
     }
 
     /**
@@ -206,24 +299,42 @@
      * Show admin notice
      */
     function showNotice(message, type = 'info') {
-        const $notice = $('<div class="notice notice-' + type + ' is-dismissible">' +
-            '<p>' + message + '</p>' +
+        const notice = document.createElement('div');
+        notice.className = 'notice notice-' + type + ' is-dismissible';
+        notice.innerHTML = '<p>' + message + '</p>' +
             '<button type="button" class="notice-dismiss">' +
             '<span class="screen-reader-text">Dismiss this notice.</span>' +
-            '</button>' +
-            '</div>');
+            '</button>';
         
-        $('.orbital-typography-presets-section').prepend($notice);
+        const section = document.querySelector('.orbital-typography-presets-section');
+        if (section) {
+            section.insertBefore(notice, section.firstChild);
+        }
         
         // Auto-dismiss after 5 seconds
         setTimeout(() => {
-            $notice.fadeOut();
+            notice.style.opacity = '0';
+            notice.style.transition = 'opacity 0.3s';
+            setTimeout(() => {
+                if (notice.parentNode) {
+                    notice.remove();
+                }
+            }, 300);
         }, 5000);
         
         // Handle dismiss button
-        $notice.find('.notice-dismiss').on('click', function() {
-            $notice.fadeOut();
-        });
+        const dismissButton = notice.querySelector('.notice-dismiss');
+        if (dismissButton) {
+            dismissButton.addEventListener('click', function() {
+                notice.style.opacity = '0';
+                notice.style.transition = 'opacity 0.3s';
+                setTimeout(() => {
+                    if (notice.parentNode) {
+                        notice.remove();
+                    }
+                }, 300);
+            });
+        }
     }
 
     /**
@@ -245,14 +356,20 @@
      * Copy CSS to clipboard
      */
     function copyCSS() {
-        const $textarea = $('.orbital-css-output');
-        $textarea.select();
-        document.execCommand('copy');
-        showNotice('CSS copied to clipboard!', 'success');
+        const textarea = document.querySelector('.orbital-css-output');
+        if (textarea) {
+            textarea.select();
+            document.execCommand('copy');
+            showNotice('CSS copied to clipboard!', 'success');
+        }
     }
 
     // Initialize when DOM is ready
-    $(document).ready(init);
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+    } else {
+        init();
+    }
 
     // Export functions for global access
     window.orbitalTypographyPresetsAdmin = {
@@ -260,4 +377,4 @@
         showNotice: showNotice
     };
 
-})(jQuery);
+})();
