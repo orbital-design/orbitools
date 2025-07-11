@@ -71,7 +71,7 @@
     const { createHigherOrderComponent } = wp.compose;
     const { Fragment } = wp.element;
     const { InspectorControls } = wp.blockEditor;
-    const { __experimentalToolsPanel: ToolsPanel, __experimentalToolsPanelItem: ToolsPanelItem, SelectControl } = wp.components;
+    const { __experimentalToolsPanel: ToolsPanel, __experimentalToolsPanelItem: ToolsPanelItem, ComboboxControl } = wp.components;
 
     // Debug function for early editor filter
     function debugLog(...args) {
@@ -119,9 +119,7 @@
              * Convert presets object to array suitable for SelectControl
              */
             function getPresetsForSelect() {
-                const options = [
-                    { label: strings?.noPreset || 'No Preset', value: '' }
-                ];
+                const options = [];
 
                 // Group by group if enabled
                 if (settings.show_groups) {
@@ -200,7 +198,7 @@
                                 },
                                 isShownByDefault: true
                             },
-                            wp.element.createElement(SelectControl, {
+                            wp.element.createElement(ComboboxControl, {
                                 label: 'Preset',
                                 value: orbitalTypographyPreset || '',
                                 options: getPresetsForSelect(),
