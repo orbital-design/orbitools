@@ -434,7 +434,7 @@ class Typography_Presets {
 
         // Generate CSS and cache it
         $css = $this->generate_css();
-        set_transient($cache_key, $css, 12 * HOUR_IN_SECONDS);
+        set_transient($cache_key, $css, WEEK_IN_SECONDS);
 
         return $css;
     }
