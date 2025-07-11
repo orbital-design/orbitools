@@ -502,7 +502,8 @@ class Typography_Presets {
         
         foreach ($this->presets as $id => $preset) {
             if (!empty($preset['properties'])) {
-                $css .= ".orbital-preset-{$id} {\n";
+                // Generate CSS for the specific preset class
+                $css .= ".has-type-preset-{$id} {\n";
                 
                 foreach ($preset['properties'] as $property => $value) {
                     $css .= "  {$property}: {$value};\n";
@@ -575,21 +576,20 @@ class Typography_Presets {
             )
         );
 
-        // CSS output disabled - using CSS classes instead of inline styles
-        // if (!empty($this->settings['custom_css_output'])) {
-        //     wp_add_inline_style('wp-edit-blocks', $this->generate_css());
-        // }
+        // Add CSS to editor if enabled
+        if (!empty($this->settings['output_preset_css'])) {
+            wp_add_inline_style('wp-edit-blocks', $this->generate_css());
+        }
     }
 
     /**
      * Enqueue frontend styles.
      */
     public function enqueue_frontend_styles() {
-        // CSS output disabled - using CSS classes instead of inline styles
-        // if (!$this->is_enabled() || empty($this->settings['custom_css_output'])) {
-        //     return;
-        // }
-        // wp_add_inline_style('wp-block-library', $this->generate_css());
+        // Add CSS to frontend if enabled
+        if (!empty($this->settings['output_preset_css'])) {
+            wp_add_inline_style('wp-block-library', $this->generate_css());
+        }
     }
 
     /**
