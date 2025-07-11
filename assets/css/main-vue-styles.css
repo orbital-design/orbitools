@@ -246,8 +246,8 @@
 .module-card {
     background: white;
     border: 1px solid #e5e5e5;
-    border-radius: 12px;
-    padding: 24px;
+    border-radius: 8px;
+    padding: 16px;
     transition: all 0.2s ease;
     position: relative;
 }
@@ -255,6 +255,23 @@
 .module-card:hover {
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
     transform: translateY(-2px);
+}
+
+.module-card.active:hover {
+    box-shadow: none;
+    transform: none;
+}
+
+.module-card.clickable {
+    text-decoration: none;
+    color: inherit;
+    cursor: pointer;
+    display: block;
+}
+
+.module-card.clickable:hover {
+    text-decoration: none;
+    color: inherit;
 }
 
 .module-card.active {
@@ -265,21 +282,94 @@
 .module-header {
     display: flex;
     align-items: center;
-    gap: 12px;
-    margin-bottom: 12px;
+    gap: 10px;
+    margin-bottom: 0;
 }
 
 .module-header .dashicons {
-    font-size: 24px;
+    font-size: 20px;
     color: #667eea;
 }
 
 .module-header h4 {
     margin: 0;
-    font-size: 18px;
+    font-size: 16px;
     font-weight: 600;
     color: #333;
     flex: 1;
+}
+
+.module-info-icon {
+    font-size: 16px;
+    color: #666;
+    cursor: help;
+    opacity: 0.7;
+    transition: opacity 0.2s ease;
+}
+
+.module-info-icon:hover {
+    opacity: 1;
+    color: #667eea;
+}
+
+.module-tooltip {
+    position: relative;
+}
+
+.tooltip-text {
+    visibility: hidden;
+    width: 200px;
+    background-color: #333;
+    color: white;
+    text-align: center;
+    border-radius: 6px;
+    padding: 8px;
+    position: absolute;
+    z-index: 1000;
+    bottom: 125%;
+    left: 50%;
+    margin-left: -100px;
+    opacity: 0;
+    transition: opacity 0.3s;
+    font-size: 12px;
+    line-height: 1.3;
+    font-weight: normal;
+}
+
+.tooltip-text::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    margin-left: -5px;
+    border-width: 5px;
+    border-style: solid;
+    border-color: #333 transparent transparent transparent;
+}
+
+.module-tooltip:hover .tooltip-text {
+    visibility: visible;
+    opacity: 1;
+}
+
+.module-actions-inline {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.module-settings-icon {
+    font-size: 16px;
+    color: #666;
+    text-decoration: none;
+    opacity: 0.7;
+    transition: all 0.2s ease;
+}
+
+.module-settings-icon:hover {
+    opacity: 1;
+    color: #667eea;
+    text-decoration: none;
 }
 
 .module-status {
@@ -329,6 +419,49 @@
     font-size: 13px;
     padding: 6px 12px;
     height: auto;
+}
+
+/* Empty State */
+.no-modules-message {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 60px 20px;
+}
+
+.empty-state {
+    max-width: 400px;
+    margin: 0 auto;
+}
+
+.empty-state .dashicons {
+    font-size: 64px;
+    color: #ccc;
+    margin-bottom: 20px;
+    display: block;
+}
+
+.empty-state h4 {
+    margin: 0 0 12px 0;
+    font-size: 20px;
+    font-weight: 600;
+    color: #666;
+}
+
+.empty-state p {
+    color: #888;
+    font-size: 16px;
+    line-height: 1.5;
+    margin: 0;
+}
+
+.empty-state a {
+    color: #667eea;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.empty-state a:hover {
+    text-decoration: underline;
 }
 
 /* Settings Grid */

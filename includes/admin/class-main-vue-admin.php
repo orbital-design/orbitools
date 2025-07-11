@@ -173,7 +173,6 @@ class Main_Vue_Admin {
             if ($module_id === 'typography-presets') {
                 $module_status[$module_id]['class_exists'] = class_exists('\Orbital\Editor_Suite\Modules\Typography_Presets\Typography_Presets');
                 $module_status[$module_id]['vue_class_exists'] = class_exists('\Orbital\Editor_Suite\Modules\Typography_Presets\Typography_Presets_Vue_Admin');
-                $module_status[$module_id]['admin_class_exists'] = class_exists('\Orbital\Editor_Suite\Modules\Typography_Presets\Typography_Presets_Admin');
             }
         }
         
@@ -343,21 +342,27 @@ class Main_Vue_Admin {
                             <div class="modules-overview">
                                 <h3>Active Modules</h3>
                                 <div class="modules-grid">
-                                    <div v-for="(module, moduleId) in availableModules" :key="moduleId" 
-                                         v-if="isModuleEnabled(moduleId)" class="module-card active">
-                                        <div class="module-header">
-                                            <span class="dashicons" :class="module.icon"></span>
-                                            <h4>{{ module.name }}</h4>
-                                            <span class="module-status enabled">Enabled</span>
+                                    <template v-for="(module, moduleId) in availableModules" :key="moduleId">
+                                        <div v-if="isModuleEnabled(moduleId)" class="module-card active">
+                                            <div class="module-header">
+                                                <span class="dashicons" :class="module.icon"></span>
+                                                <h4>{{ module.name }}</h4>
+                                                <div class="module-actions-inline">
+                                                    <span class="dashicons dashicons-info module-info-icon module-tooltip">
+                                                        <span class="tooltip-text">{{ module.description }}</span>
+                                                    </span>
+                                                    <a :href="module.admin_url" class="dashicons dashicons-admin-generic module-settings-icon" title="Configure module"></a>
+                                                </div>
+                                            </div>
                                         </div>
-                                        <p>{{ module.description }}</p>
-                                        <div class="module-actions">
-                                            <a :href="module.admin_url" class="button button-secondary">
-                                                Configure
-                                            </a>
-                                            <button @click="toggleModule(moduleId)" class="button button-small">
-                                                Disable
-                                            </button>
+                                    </template>
+                                    
+                                    <!-- No active modules message -->
+                                    <div v-if="enabledModulesCount === 0" class="no-modules-message">
+                                        <div class="empty-state">
+                                            <span class="dashicons dashicons-admin-plugins"></span>
+                                            <h4>No Active Modules</h4>
+                                            <p>Enable modules from the <a href="#" @click="activeTab = 'modules'">Modules tab</a> to get started.</p>
                                         </div>
                                     </div>
                                 </div>
@@ -556,8 +561,7 @@ define('WP_DEBUG_DISPLAY', false);</code></pre>
                                             <td style="padding-left: 20px;">Classes Loaded</td>
                                             <td>
                                                 Main: {{ status.class_exists ? '✅' : '❌' }} |
-                                                Vue: {{ status.vue_class_exists ? '✅' : '❌' }} |
-                                                Admin: {{ status.admin_class_exists ? '✅' : '❌' }}
+                                                Vue: {{ status.vue_class_exists ? '✅' : '❌' }}
                                             </td>
                                         </tr>
                                     </template>

@@ -226,23 +226,4 @@ class Admin_Pages {
         }
     }
 
-    /**
-     * Legacy method - no longer used.
-     * Main admin page is now handled by Main_Vue_Admin class.
-     */
-    public function render_main_page() {
-        // Redirect to Vue.js admin if somehow accessed
-        wp_redirect(admin_url('admin.php?page=orbital-editor-suite'));
-        exit;
-    }
-
-    /**
-     * Legacy method - no longer used.
-     * Updates page is now handled by Updates_Vue_Admin class.
-     */
-    public function render_updates_page() {
-        // Redirect to Vue.js admin if somehow accessed
-        wp_redirect(admin_url('admin.php?page=orbital-editor-suite-updates'));
-        exit;
-    }
 }

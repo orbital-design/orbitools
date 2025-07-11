@@ -807,15 +807,6 @@ class Typography_Presets {
             return;
         }
         
-        // Load admin class
-        if (!class_exists('\Orbital\Editor_Suite\Admin\Module_Admin')) {
-            require_once plugin_dir_path(dirname(dirname(__FILE__))) . 'admin/class-module-admin.php';
-        }
-        
-        if (!class_exists('\Orbital\Editor_Suite\Modules\Typography_Presets\Typography_Presets_Admin')) {
-            require_once plugin_dir_path(__FILE__) . 'class-typography-presets-admin.php';
-        }
-
         // Load Vue.js admin
         if (!class_exists('\Orbital\Editor_Suite\Modules\Typography_Presets\Typography_Presets_Vue_Admin')) {
             require_once plugin_dir_path(__FILE__) . 'class-typography-presets-vue-admin.php';
@@ -827,9 +818,6 @@ class Typography_Presets {
         // Since we're already in the orbital_editor_suite_admin_pages hook,
         // call add_admin_menu directly instead of trying to hook into it
         $vue_admin->add_admin_menu();
-
-        $admin = new Typography_Presets_Admin($this);
-        $admin->register_admin_page();
     }
 
     /**

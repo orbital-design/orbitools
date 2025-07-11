@@ -182,18 +182,21 @@ When enabled, the module:
 
 ```
 typography-presets/
-├── class-typography-presets.php          # Main module class
-├── class-typography-presets-admin.php    # Admin interface
-├── README.md                             # This documentation
-└── assets/
-    ├── js/typography-presets.js          # Block editor integration
-    └── css/typography-presets.css        # Admin styles
+├── class-typography-presets.php              # Main module class
+├── class-typography-presets-vue-admin.php    # Vue.js admin interface
+├── README.md                                 # This documentation
+└── ../../assets/
+    ├── js/
+    │   ├── typography-presets.js                  # Block editor integration
+    │   └── typography-presets-vue-app.js          # Vue.js admin app
+    └── css/
+        └── typography-presets-vue-styles.css      # Vue.js admin styles
 ```
 
 ### Key Classes
 
 - **`Typography_Presets`** - Main module class, handles loading and parsing
-- **`Typography_Presets_Admin`** - Admin interface extending base Module_Admin
+- **`Typography_Presets_Vue_Admin`** - Modern Vue.js admin interface
 - **Module system** - Pluggable architecture for easy extension
 
 ### WordPress Integration

@@ -52,7 +52,6 @@ orbital-editor-suite/
 │       ├── typography-presets-vue-styles.css # Typography styles
 │       ├── updates-vue-styles.css    # Updates styles
 │       └── vue-components-styles.css # Shared component styles
-└── examples/                         # Development examples (WP_DEBUG only)
 ```
 
 ## Vue.js Implementation
@@ -123,9 +122,9 @@ define('WP_DEBUG_LOG', true);
 define('WP_DEBUG_DISPLAY', false);
 ```
 
-### Development Examples
+### Development Mode
 
-When `WP_DEBUG` is enabled, the plugin loads example interfaces for development and testing purposes.
+The plugin automatically adapts its behavior based on the WordPress debug configuration. Enable debug mode for detailed error reporting and diagnostic information.
 
 ## Security Considerations
 

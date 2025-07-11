@@ -109,35 +109,6 @@ class Plugin {
     private function init_modules() {
         // Initialize Typography Presets module
         new Modules\Typography_Presets\Typography_Presets();
-        
-        // Load examples (only in admin and for development)
-        if (is_admin()) {
-            $this->load_examples();
-        }
-    }
-    
-    /**
-     * Load admin interface examples for development.
-     * Note: Debug files have been removed and functionality moved to System Info tab.
-     */
-    private function load_examples() {
-        // Only load examples if WP_DEBUG is enabled to avoid loading in production
-        if (!defined('WP_DEBUG') || !WP_DEBUG) {
-            return;
-        }
-        
-        $examples_dir = plugin_dir_path(dirname(__FILE__)) . 'examples/';
-        
-        // Load examples only if they exist and debug is enabled
-        if (file_exists($examples_dir . 'simplified-admin-example.php')) {
-            require_once $examples_dir . 'simplified-admin-example.php';
-        }
-        
-        if (file_exists($examples_dir . 'actual-wp-options-kit-example.php')) {
-            require_once $examples_dir . 'actual-wp-options-kit-example.php';
-        }
-        
-        // Debug files have been removed - functionality is now in System Info tab
     }
 
     /**

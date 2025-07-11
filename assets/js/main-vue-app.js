@@ -55,7 +55,8 @@ document.addEventListener('DOMContentLoaded', function() {
              */
             loadInitialData() {
                 if (typeof orbitalMainVue !== 'undefined') {
-                    this.settings = orbitalMainVue.options.settings || {};
+                    // Extract settings from the options object
+                    this.settings = (orbitalMainVue.options && orbitalMainVue.options.settings) || {};
                     this.availableModules = orbitalMainVue.available_modules || {};
                     this.pluginInfo = orbitalMainVue.plugin_info || {};
                     this.systemInfo = orbitalMainVue.system_info || {};
