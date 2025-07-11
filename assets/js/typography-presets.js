@@ -238,7 +238,9 @@
                                         style: {
                                             ...currentPreset.properties,
                                             margin: '0 0 4px 0',
-                                            color: '#1e1e1e'
+                                            color: '#1e1e1e',
+                                            whiteSpace: 'nowrap',
+                                            overflow: 'hidden'
                                         }
                                     },
                                     currentPreset.label
