@@ -75,6 +75,7 @@ class Main_Vue_Admin {
                 'path' => ORBITAL_EDITOR_SUITE_PATH,
                 'url' => ORBITAL_EDITOR_SUITE_URL
             ),
+            'system_info' => $this->get_system_info(),
             'available_modules' => $this->get_available_modules(),
             'strings' => array(
                 'loading' => __('Loading...', 'orbital-editor-suite'),
@@ -103,6 +104,124 @@ class Main_Vue_Admin {
         add_action('wp_ajax_orbital_main_vue_reset_settings', array($this, 'handle_reset_settings'));
         add_action('wp_ajax_orbital_main_vue_get_module_info', array($this, 'handle_get_module_info'));
         add_action('wp_ajax_orbital_main_vue_toggle_module', array($this, 'handle_toggle_module'));
+    }
+
+    /**
+     * Get comprehensive system information.
+     */
+    private function get_system_info() {
+        global $wp_version;
+        
+        // WordPress Environment
+        $wp_environment = array(
+            'wp_version' => $wp_version,
+            'php_version' => PHP_VERSION,
+            'wp_debug' => defined('WP_DEBUG') && WP_DEBUG,
+            'wp_debug_log' => defined('WP_DEBUG_LOG') && WP_DEBUG_LOG,
+            'wp_debug_display' => defined('WP_DEBUG_DISPLAY') && WP_DEBUG_DISPLAY,
+            'wp_memory_limit' => WP_MEMORY_LIMIT,
+            'php_memory_limit' => ini_get('memory_limit'),
+            'max_execution_time' => ini_get('max_execution_time'),
+            'upload_max_filesize' => ini_get('upload_max_filesize'),
+            'post_max_size' => ini_get('post_max_size'),
+            'current_theme' => wp_get_theme()->get('Name'),
+            'current_theme_version' => wp_get_theme()->get('Version'),
+            'is_multisite' => is_multisite(),
+            'user_can_manage_options' => current_user_can('manage_options')
+        );
+        
+        // Plugin Files Status
+        $files_to_check = array(
+            'Main Plugin File' => ORBITAL_EDITOR_SUITE_PATH . 'orbital-editor-suite.php',
+            'Main Vue Admin' => ORBITAL_EDITOR_SUITE_PATH . 'includes/admin/class-main-vue-admin.php',
+            'Updates Vue Admin' => ORBITAL_EDITOR_SUITE_PATH . 'includes/admin/class-updates-vue-admin.php',
+            'Typography Vue Admin' => ORBITAL_EDITOR_SUITE_PATH . 'includes/modules/typography-presets/class-typography-presets-vue-admin.php',
+            'Typography Vue JS' => ORBITAL_EDITOR_SUITE_PATH . 'assets/js/typography-presets-vue-app.js',
+            'Typography Vue CSS' => ORBITAL_EDITOR_SUITE_PATH . 'assets/css/typography-presets-vue-styles.css',
+            'Main Vue JS' => ORBITAL_EDITOR_SUITE_PATH . 'assets/js/main-vue-app.js',
+            'Main Vue CSS' => ORBITAL_EDITOR_SUITE_PATH . 'assets/css/main-vue-styles.css',
+            'Updates Vue JS' => ORBITAL_EDITOR_SUITE_PATH . 'assets/js/updates-vue-app.js',
+            'Updates Vue CSS' => ORBITAL_EDITOR_SUITE_PATH . 'assets/css/updates-vue-styles.css',
+            'Vue Components' => ORBITAL_EDITOR_SUITE_PATH . 'assets/js/vue-components.js',
+            'Vue Components CSS' => ORBITAL_EDITOR_SUITE_PATH . 'assets/css/vue-components-styles.css'
+        );
+        
+        $file_status = array();
+        foreach ($files_to_check as $name => $file_path) {
+            $file_status[$name] = array(
+                'exists' => file_exists($file_path),
+                'readable' => file_exists($file_path) && is_readable($file_path),
+                'size' => file_exists($file_path) ? size_format(filesize($file_path)) : 'N/A',
+                'modified' => file_exists($file_path) ? date('Y-m-d H:i:s', filemtime($file_path)) : 'N/A'
+            );
+        }
+        
+        // Module Status
+        $options = get_option('orbital_editor_suite_options', array());
+        $settings = isset($options['settings']) ? $options['settings'] : array();
+        $enabled_modules = isset($settings['enabled_modules']) ? $settings['enabled_modules'] : array();
+        
+        $module_status = array();
+        foreach ($this->get_available_modules() as $module_id => $module_info) {
+            $module_status[$module_id] = array(
+                'enabled' => in_array($module_id, $enabled_modules),
+                'class_exists' => false,
+                'vue_class_exists' => false
+            );
+            
+            // Check if classes exist for typography presets
+            if ($module_id === 'typography-presets') {
+                $module_status[$module_id]['class_exists'] = class_exists('\Orbital\Editor_Suite\Modules\Typography_Presets\Typography_Presets');
+                $module_status[$module_id]['vue_class_exists'] = class_exists('\Orbital\Editor_Suite\Modules\Typography_Presets\Typography_Presets_Vue_Admin');
+                $module_status[$module_id]['admin_class_exists'] = class_exists('\Orbital\Editor_Suite\Modules\Typography_Presets\Typography_Presets_Admin');
+            }
+        }
+        
+        // Active Plugins
+        $active_plugins = get_option('active_plugins', array());
+        $plugin_info = array();
+        foreach ($active_plugins as $plugin) {
+            $plugin_data = get_plugin_data(WP_PLUGIN_DIR . '/' . $plugin);
+            $plugin_info[] = array(
+                'name' => $plugin_data['Name'],
+                'version' => $plugin_data['Version'],
+                'file' => $plugin
+            );
+        }
+        
+        // Server Information
+        $server_info = array(
+            'server_software' => isset($_SERVER['SERVER_SOFTWARE']) ? $_SERVER['SERVER_SOFTWARE'] : 'Unknown',
+            'php_sapi' => php_sapi_name(),
+            'mysql_version' => $this->get_mysql_version(),
+            'curl_version' => function_exists('curl_version') ? curl_version()['version'] : 'Not available',
+            'openssl_version' => defined('OPENSSL_VERSION_TEXT') ? OPENSSL_VERSION_TEXT : 'Not available',
+            'user_agent' => isset($_SERVER['HTTP_USER_AGENT']) ? $_SERVER['HTTP_USER_AGENT'] : 'Unknown'
+        );
+        
+        return array(
+            'wp_environment' => $wp_environment,
+            'file_status' => $file_status,
+            'module_status' => $module_status,
+            'active_plugins' => $plugin_info,
+            'server_info' => $server_info,
+            'constants' => array(
+                'ABSPATH' => ABSPATH,
+                'WP_CONTENT_DIR' => WP_CONTENT_DIR,
+                'WP_PLUGIN_DIR' => WP_PLUGIN_DIR,
+                'ORBITAL_EDITOR_SUITE_PATH' => ORBITAL_EDITOR_SUITE_PATH,
+                'ORBITAL_EDITOR_SUITE_URL' => ORBITAL_EDITOR_SUITE_URL,
+                'ORBITAL_EDITOR_SUITE_VERSION' => ORBITAL_EDITOR_SUITE_VERSION
+            )
+        );
+    }
+    
+    /**
+     * Get MySQL version.
+     */
+    private function get_mysql_version() {
+        global $wpdb;
+        return $wpdb->get_var('SELECT VERSION()');
     }
 
     /**
@@ -300,47 +419,213 @@ class Main_Vue_Admin {
                         <!-- System Info Tab -->
                         <div v-if="activeTab === 'system'" class="orbital-section">
                             <h2>System Information</h2>
-                            <p>View system information and plugin diagnostics.</p>
+                            <p>Comprehensive system diagnostics and plugin status information.</p>
                             
-                            <div class="system-info-grid">
-                                <div class="info-section">
-                                    <h3>Plugin Information</h3>
-                                    <table class="system-table">
-                                        <tr>
-                                            <td>Plugin Name</td>
-                                            <td>{{ pluginInfo.name }}</td>
-                                        </tr>
-                                        <tr>
-                                            <td>Version</td>
-                                            <td>{{ pluginInfo.version }}</td>
-                                        </tr>
-                                        <tr>
-                                            <td>Plugin Path</td>
-                                            <td><code>{{ pluginInfo.path }}</code></td>
-                                        </tr>
-                                        <tr>
-                                            <td>Plugin URL</td>
-                                            <td><code>{{ pluginInfo.url }}</code></td>
-                                        </tr>
-                                    </table>
-                                </div>
+                            <!-- WordPress Environment -->
+                            <div class="info-card">
+                                <h3>
+                                    <span class="dashicons dashicons-wordpress"></span>
+                                    WordPress Environment
+                                </h3>
+                                <table class="system-table">
+                                    <tr>
+                                        <td>WordPress Version</td>
+                                        <td>{{ systemInfo.wp_environment?.wp_version || 'Unknown' }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>PHP Version</td>
+                                        <td>{{ systemInfo.wp_environment?.php_version || 'Unknown' }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Active Theme</td>
+                                        <td>{{ systemInfo.wp_environment?.current_theme || 'Unknown' }} 
+                                            ({{ systemInfo.wp_environment?.current_theme_version || 'Unknown' }})</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Multisite</td>
+                                        <td>{{ systemInfo.wp_environment?.is_multisite ? 'Yes' : 'No' }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>User Can Manage Options</td>
+                                        <td>{{ systemInfo.wp_environment?.user_can_manage_options ? '✅ Yes' : '❌ No' }}</td>
+                                    </tr>
+                                </table>
+                            </div>
 
-                                <div class="info-section">
-                                    <h3>WordPress Information</h3>
-                                    <table class="system-table">
+                            <!-- Debug Settings -->
+                            <div class="info-card">
+                                <h3>
+                                    <span class="dashicons dashicons-admin-tools"></span>
+                                    Debug Configuration
+                                </h3>
+                                <table class="system-table">
+                                    <tr>
+                                        <td>WP_DEBUG</td>
+                                        <td>{{ systemInfo.wp_environment?.wp_debug ? '✅ Enabled' : '❌ Disabled' }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>WP_DEBUG_LOG</td>
+                                        <td>{{ systemInfo.wp_environment?.wp_debug_log ? '✅ Enabled' : '❌ Disabled' }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>WP_DEBUG_DISPLAY</td>
+                                        <td>{{ systemInfo.wp_environment?.wp_debug_display ? '✅ Enabled' : '❌ Disabled' }}</td>
+                                    </tr>
+                                </table>
+                                <div v-if="!systemInfo.wp_environment?.wp_debug" class="debug-notice">
+                                    <p><strong>💡 Debug Tip:</strong> Enable WP_DEBUG for better troubleshooting. Add this to wp-config.php:</p>
+                                    <pre><code>define('WP_DEBUG', true);
+define('WP_DEBUG_LOG', true);
+define('WP_DEBUG_DISPLAY', false);</code></pre>
+                                </div>
+                            </div>
+
+                            <!-- Memory & Performance -->
+                            <div class="info-card">
+                                <h3>
+                                    <span class="dashicons dashicons-performance"></span>
+                                    Memory & Performance
+                                </h3>
+                                <table class="system-table">
+                                    <tr>
+                                        <td>WP Memory Limit</td>
+                                        <td>{{ systemInfo.wp_environment?.wp_memory_limit || 'Unknown' }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>PHP Memory Limit</td>
+                                        <td>{{ systemInfo.wp_environment?.php_memory_limit || 'Unknown' }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Max Execution Time</td>
+                                        <td>{{ systemInfo.wp_environment?.max_execution_time || 'Unknown' }}s</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Upload Max Filesize</td>
+                                        <td>{{ systemInfo.wp_environment?.upload_max_filesize || 'Unknown' }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Post Max Size</td>
+                                        <td>{{ systemInfo.wp_environment?.post_max_size || 'Unknown' }}</td>
+                                    </tr>
+                                </table>
+                            </div>
+
+                            <!-- Plugin Information -->
+                            <div class="info-card">
+                                <h3>
+                                    <span class="dashicons dashicons-admin-plugins"></span>
+                                    Plugin Information
+                                </h3>
+                                <table class="system-table">
+                                    <tr>
+                                        <td>Plugin Name</td>
+                                        <td>{{ pluginInfo.name }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Version</td>
+                                        <td>{{ pluginInfo.version }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Plugin Path</td>
+                                        <td><code>{{ pluginInfo.path }}</code></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Plugin URL</td>
+                                        <td><code>{{ pluginInfo.url }}</code></td>
+                                    </tr>
+                                </table>
+                            </div>
+
+                            <!-- Module Status -->
+                            <div class="info-card">
+                                <h3>
+                                    <span class="dashicons dashicons-admin-settings"></span>
+                                    Module Status
+                                </h3>
+                                <table class="system-table">
+                                    <template v-for="(status, moduleId) in systemInfo.module_status" :key="moduleId">
                                         <tr>
-                                            <td>WordPress Version</td>
-                                            <td>{{ wpInfo.version }}</td>
+                                            <td>{{ availableModules[moduleId]?.name || moduleId }}</td>
+                                            <td>
+                                                <span :class="['status-badge', status.enabled ? 'enabled' : 'disabled']">
+                                                    {{ status.enabled ? '✅ Enabled' : '❌ Disabled' }}
+                                                </span>
+                                            </td>
                                         </tr>
-                                        <tr>
-                                            <td>PHP Version</td>
-                                            <td>{{ wpInfo.php_version }}</td>
+                                        <tr v-if="moduleId === 'typography-presets'">
+                                            <td style="padding-left: 20px;">Classes Loaded</td>
+                                            <td>
+                                                Main: {{ status.class_exists ? '✅' : '❌' }} |
+                                                Vue: {{ status.vue_class_exists ? '✅' : '❌' }} |
+                                                Admin: {{ status.admin_class_exists ? '✅' : '❌' }}
+                                            </td>
                                         </tr>
-                                        <tr>
-                                            <td>Active Theme</td>
-                                            <td>{{ wpInfo.theme }}</td>
-                                        </tr>
-                                    </table>
+                                    </template>
+                                </table>
+                            </div>
+
+                            <!-- File Status -->
+                            <div class="info-card">
+                                <h3>
+                                    <span class="dashicons dashicons-media-document"></span>
+                                    Plugin Files
+                                </h3>
+                                <table class="system-table">
+                                    <tr v-for="(fileInfo, fileName) in systemInfo.file_status" :key="fileName">
+                                        <td>{{ fileName }}</td>
+                                        <td>
+                                            <span :class="['status-badge', fileInfo.exists ? 'enabled' : 'disabled']">
+                                                {{ fileInfo.exists ? '✅ Exists' : '❌ Missing' }}
+                                            </span>
+                                            <span v-if="fileInfo.exists" class="file-details">
+                                                ({{ fileInfo.size }}, {{ fileInfo.modified }})
+                                            </span>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+
+                            <!-- Server Information -->
+                            <div class="info-card">
+                                <h3>
+                                    <span class="dashicons dashicons-admin-site-alt3"></span>
+                                    Server Information
+                                </h3>
+                                <table class="system-table">
+                                    <tr>
+                                        <td>Server Software</td>
+                                        <td>{{ systemInfo.server_info?.server_software || 'Unknown' }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>PHP SAPI</td>
+                                        <td>{{ systemInfo.server_info?.php_sapi || 'Unknown' }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>MySQL Version</td>
+                                        <td>{{ systemInfo.server_info?.mysql_version || 'Unknown' }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>cURL Version</td>
+                                        <td>{{ systemInfo.server_info?.curl_version || 'Not available' }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>OpenSSL Version</td>
+                                        <td>{{ systemInfo.server_info?.openssl_version || 'Not available' }}</td>
+                                    </tr>
+                                </table>
+                            </div>
+
+                            <!-- Active Plugins -->
+                            <div class="info-card">
+                                <h3>
+                                    <span class="dashicons dashicons-admin-plugins"></span>
+                                    Active Plugins ({{ systemInfo.active_plugins?.length || 0 }})
+                                </h3>
+                                <div class="plugins-list">
+                                    <div v-for="plugin in systemInfo.active_plugins" :key="plugin.file" class="plugin-item">
+                                        <strong>{{ plugin.name }}</strong> v{{ plugin.version }}
+                                        <br><small>{{ plugin.file }}</small>
+                                    </div>
                                 </div>
                             </div>
                         </div>

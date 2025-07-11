@@ -25,11 +25,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 availableModules: {},
                 pluginInfo: {},
-                wpInfo: {
-                    version: '6.4',
-                    php_version: '8.0',
-                    theme: 'Default Theme'
-                },
+                systemInfo: {},
                 
                 strings: {},
                 
@@ -62,6 +58,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     this.settings = orbitalMainVue.options.settings || {};
                     this.availableModules = orbitalMainVue.available_modules || {};
                     this.pluginInfo = orbitalMainVue.plugin_info || {};
+                    this.systemInfo = orbitalMainVue.system_info || {};
                     this.strings = orbitalMainVue.strings || {};
                     
                     // Ensure enabled_modules is an array

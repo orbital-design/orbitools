@@ -378,17 +378,30 @@
 }
 
 /* System Info */
-.system-info-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-    gap: 30px;
+.info-card {
+    background: white;
+    border: 1px solid #e5e5e5;
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 24px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    transition: all 0.2s ease;
 }
 
-.info-section h3 {
+.info-card:hover {
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.info-card h3 {
     margin: 0 0 20px 0;
     font-size: 18px;
     font-weight: 600;
     color: #333;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid #f0f0f0;
 }
 
 .system-table {
@@ -419,6 +432,84 @@
     border-radius: 4px;
     font-size: 13px;
     word-break: break-all;
+}
+
+/* Status Badges */
+.status-badge {
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.status-badge.enabled {
+    background: #d4edda;
+    color: #155724;
+}
+
+.status-badge.disabled {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+/* File Details */
+.file-details {
+    font-size: 11px;
+    color: #666;
+    margin-left: 8px;
+}
+
+/* Debug Notice */
+.debug-notice {
+    background: #fff3cd;
+    border: 1px solid #ffeaa7;
+    border-radius: 6px;
+    padding: 15px;
+    margin-top: 15px;
+}
+
+.debug-notice pre {
+    background: #2d3748;
+    color: #e2e8f0;
+    padding: 12px;
+    border-radius: 4px;
+    margin: 10px 0 0 0;
+    font-size: 13px;
+    overflow-x: auto;
+}
+
+.debug-notice code {
+    background: transparent;
+    color: inherit;
+    padding: 0;
+}
+
+/* Plugins List */
+.plugins-list {
+    max-height: 300px;
+    overflow-y: auto;
+    border: 1px solid #e5e5e5;
+    border-radius: 6px;
+    padding: 10px;
+}
+
+.plugin-item {
+    padding: 8px 0;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.plugin-item:last-child {
+    border-bottom: none;
+}
+
+.plugin-item strong {
+    color: #333;
+}
+
+.plugin-item small {
+    color: #666;
+    font-family: monospace;
 }
 
 /* Messages */

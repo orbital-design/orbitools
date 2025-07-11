@@ -36,26 +36,13 @@ class Typography_Presets_Vue_Admin {
         // Note: add_admin_menu() will be called directly from the main module
         add_action('admin_enqueue_scripts', array($this, 'enqueue_scripts'));
         $this->register_ajax_handlers();
-        
-        // Debug: Log that the Vue admin is being constructed
-        error_log('Vue.js Typography Presets Admin: Class constructed');
-        
-        // Debug: Add admin notice
-        add_action('admin_notices', function() {
-            echo '<div class="notice notice-info is-dismissible">';
-            echo '<p><strong>DEBUG:</strong> Vue.js Typography Presets Admin class has been constructed. Menu will be added directly.</p>';
-            echo '</div>';
-        });
     }
 
     /**
      * Add admin menu.
      */
     public function add_admin_menu() {
-        // Debug: Log that the Vue admin menu method is being called
-        error_log('Vue.js Typography Presets Admin: add_admin_menu() called');
-        
-        $result = add_submenu_page(
+        add_submenu_page(
             'orbital-editor-suite',
             'Typography Presets (Vue.js)',
             'Typography Presets (Vue.js)',
@@ -63,16 +50,6 @@ class Typography_Presets_Vue_Admin {
             'orbital-typography-vue-new',
             array($this, 'render_admin_page')
         );
-        
-        // Debug: Log the result of add_submenu_page
-        error_log('Vue.js Typography Presets Admin: add_submenu_page result: ' . var_export($result, true));
-        
-        // Debug: Add another admin notice to confirm menu was added
-        add_action('admin_notices', function() use ($result) {
-            echo '<div class="notice notice-success is-dismissible">';
-            echo '<p><strong>MENU DEBUG:</strong> Vue.js Typography Presets menu method called! Result: ' . var_export($result, true) . '</p>';
-            echo '</div>';
-        });
     }
 
     /**

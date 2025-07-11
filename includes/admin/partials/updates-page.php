@@ -14,7 +14,21 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-// Initialize updater for this page
+// DEPRECATED: This file is no longer used
+// All functionality has been moved to the Vue.js Updates_Vue_Admin class
+// This file is kept for backward compatibility only
+
+echo '<div class="wrap">';
+echo '<h1>Legacy Updates Page (Deprecated)</h1>';
+echo '<div class="notice notice-error">';
+echo '<p><strong>This page has been replaced.</strong> Please use the new Vue.js interface.</p>';
+echo '<p><a href="' . admin_url('admin.php?page=orbital-editor-suite-updates') . '" class="button button-primary">Go to New Updates Interface</a></p>';
+echo '</div>';
+echo '</div>';
+
+return; // Stop execution
+
+// Legacy code below (no longer executed)
 $updater = new \Orbital\Editor_Suite\Updater\GitHub_Updater(
     plugin_dir_path(dirname(dirname(dirname(__FILE__)))) . 'orbital-editor-suite.php',
     ORBITAL_EDITOR_SUITE_VERSION

@@ -118,10 +118,17 @@ class Plugin {
     
     /**
      * Load admin interface examples for development.
+     * Note: Debug files have been removed and functionality moved to System Info tab.
      */
     private function load_examples() {
+        // Only load examples if WP_DEBUG is enabled to avoid loading in production
+        if (!defined('WP_DEBUG') || !WP_DEBUG) {
+            return;
+        }
+        
         $examples_dir = plugin_dir_path(dirname(__FILE__)) . 'examples/';
         
+        // Load examples only if they exist and debug is enabled
         if (file_exists($examples_dir . 'simplified-admin-example.php')) {
             require_once $examples_dir . 'simplified-admin-example.php';
         }
@@ -130,35 +137,7 @@ class Plugin {
             require_once $examples_dir . 'actual-wp-options-kit-example.php';
         }
         
-        // Load debug file for Vue.js testing
-        $debug_file = plugin_dir_path(dirname(__FILE__)) . 'debug-vue-admin.php';
-        if (file_exists($debug_file)) {
-            require_once $debug_file;
-        }
-        
-        // Load debug status page
-        $debug_status = plugin_dir_path(dirname(__FILE__)) . 'debug-status.php';
-        if (file_exists($debug_status)) {
-            require_once $debug_status;
-        }
-        
-        // Auto-enable Typography Presets module
-        $auto_enable = plugin_dir_path(dirname(__FILE__)) . 'auto-enable-typography.php';
-        if (file_exists($auto_enable)) {
-            require_once $auto_enable;
-        }
-        
-        // Force enable debug
-        $force_enable = plugin_dir_path(dirname(__FILE__)) . 'force-enable-debug.php';
-        if (file_exists($force_enable)) {
-            require_once $force_enable;
-        }
-        
-        // Simple test
-        $simple_test = plugin_dir_path(dirname(__FILE__)) . 'simple-test.php';
-        if (file_exists($simple_test)) {
-            require_once $simple_test;
-        }
+        // Debug files have been removed - functionality is now in System Info tab
     }
 
     /**

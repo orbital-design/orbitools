@@ -1,120 +1,162 @@
 # Orbital Editor Suite - Developer Guide
 
-## Debug Logging System
+## Overview
 
-The plugin implements a global debug logging system that can be toggled on/off from the admin interface.
-
-### Setup
-
-**PHP Side**: Global debug setting stored in `orbital_editor_suite_options['settings']['enable_debug']`
-
-**JavaScript Side**: Settings localized via `window.orbitalEditorSuiteGlobal.settings.enable_debug`
-
-### Debug Functions
-
-Use these functions instead of `console.log()` in JavaScript:
-
-```javascript
-function debugLog(...args) {
-    const globalSettings = window.orbitalEditorSuiteGlobal?.settings || {};
-    if (globalSettings.enable_debug) {
-        console.log('[Module Name Debug]', ...args);
-    }
-}
-
-function debugWarn(...args) {
-    const globalSettings = window.orbitalEditorSuiteGlobal?.settings || {};
-    if (globalSettings.enable_debug) {
-        console.warn('[Module Name Debug]', ...args);
-    }
-}
-
-function debugError(...args) {
-    const globalSettings = window.orbitalEditorSuiteGlobal?.settings || {};
-    if (globalSettings.enable_debug) {
-        console.error('[Module Name Debug]', ...args);
-    }
-}
-```
-
-### Usage Pattern
-
-- Replace `console.log()` with `debugLog()`
-- Replace `console.warn()` with `debugWarn()` 
-- Replace `console.error()` with `debugError()`
-- All debug messages should be prefixed with `[Module Name Debug]`
-
-### Localization (Required for each module)
-
-Add this to your module's `enqueue_editor_assets()` method:
-
-```php
-// Localize global settings for debug logging
-$global_options = get_option('orbital_editor_suite_options', array());
-$global_settings = isset($global_options['settings']) ? $global_options['settings'] : array();
-
-wp_localize_script(
-    'your-script-handle',
-    'orbitalEditorSuiteGlobal',
-    array(
-        'settings' => $global_settings
-    )
-);
-```
-
-### User Control
-
-Users can enable/disable debug logging at:
-**Settings → Orbital Editor → General Settings → "Enable Debug Logging" checkbox**
-
-When enabled, debug messages appear in browser console. When disabled, console stays clean for production use.
+Orbital Editor Suite is a modern WordPress plugin that provides enhanced editor functionality with a focus on typography management and modern admin interfaces.
 
 ## Architecture
 
-### Module Admin System
+### Vue.js Admin Interfaces
 
-The plugin uses a base `Module_Admin` class that modules can extend for consistent admin interfaces:
+The plugin uses Vue.js 3.0 for all admin interfaces, providing a modern, reactive user experience:
+
+- **Main Dashboard**: Comprehensive plugin management with module controls
+- **Typography Presets**: Advanced typography management with live preview
+- **Updates**: GitHub-integrated update management
+- **System Info**: Comprehensive diagnostic information
+
+### Module System
+
+The plugin uses a modular architecture where individual features can be enabled/disabled:
+
+- **Typography Presets**: Replace core typography controls with preset utility classes
+- Future modules can be easily added to the system
+
+## File Structure
+
+```
+orbital-editor-suite/
+├── orbital-editor-suite.php          # Main plugin file
+├── includes/
+│   ├── class-plugin.php              # Core plugin class
+│   ├── class-loader.php              # Hook loader
+│   ├── class-activator.php           # Plugin activation
+│   ├── admin/
+│   │   ├── class-admin.php           # Admin hooks
+│   │   ├── class-admin-pages.php     # Menu registration
+│   │   ├── class-main-vue-admin.php  # Main Vue.js interface
+│   │   └── class-updates-vue-admin.php # Updates Vue.js interface
+│   └── modules/
+│       └── typography-presets/
+│           ├── class-typography-presets.php      # Main module class
+│           ├── class-typography-presets-admin.php # Legacy admin (redirects)
+│           └── class-typography-presets-vue-admin.php # Vue.js admin
+├── assets/
+│   ├── js/
+│   │   ├── main-vue-app.js           # Main dashboard Vue app
+│   │   ├── typography-presets-vue-app.js # Typography Vue app
+│   │   ├── updates-vue-app.js        # Updates Vue app
+│   │   └── vue-components.js         # Shared Vue components
+│   └── css/
+│       ├── main-vue-styles.css       # Main dashboard styles
+│       ├── typography-presets-vue-styles.css # Typography styles
+│       ├── updates-vue-styles.css    # Updates styles
+│       └── vue-components-styles.css # Shared component styles
+└── examples/                         # Development examples (WP_DEBUG only)
+```
+
+## Vue.js Implementation
+
+### Component Architecture
+
+All Vue.js interfaces share common components and utilities:
+
+- **OrbitalLoadingSpinner**: Loading states
+- **OrbitalStatusMessage**: Success/error messages
+- **OrbitalFormField**: Form field wrapper
+- **OrbitalToggleSwitch**: Toggle switch component
+- **OrbitalCard**: Card layout component
+- **OrbitalTabs**: Tab navigation
+
+### Data Flow
+
+1. PHP localizes data via `wp_localize_script()`
+2. Vue.js components receive data on mount
+3. AJAX calls handle real-time updates
+4. Components update reactively based on data changes
+
+## Development Guidelines
+
+### Adding New Modules
+
+1. Create module directory in `includes/modules/`
+2. Implement main module class extending base functionality
+3. Create Vue.js admin interface using shared components
+4. Register module in `get_available_modules()` method
+5. Add module-specific settings sanitization
+
+### Vue.js Best Practices
+
+- Use shared components from `vue-components.js`
+- Follow consistent naming conventions
+- Implement proper error handling for AJAX calls
+- Use reactive data properties for UI updates
+- Include loading states for async operations
+
+### CSS Standards
+
+- Use consistent design tokens across interfaces
+- Implement responsive design for all screen sizes
+- Follow WordPress admin design patterns
+- Use CSS custom properties for maintainability
+
+## System Information
+
+The System Info tab provides comprehensive diagnostic information:
+
+- **WordPress Environment**: Version, theme, debug settings
+- **Module Status**: Enabled modules and class loading status
+- **File Status**: Plugin file existence and modification dates
+- **Server Information**: PHP, MySQL, and server details
+- **Active Plugins**: Complete list of active plugins
+
+## Debug and Development
+
+### Debug Mode
+
+Enable WordPress debug mode for development:
 
 ```php
-class Your_Module_Admin extends Module_Admin {
-    protected function get_admin_fields() {
-        return array(
-            'settings' => array(
-                'title' => __('Module Settings', 'orbital-editor-suite'),
-                'fields' => array(
-                    'enabled' => array(
-                        'type' => 'checkbox',
-                        'label' => __('Enable Module', 'orbital-editor-suite')
-                    )
-                )
-            )
-        );
-    }
-}
+// wp-config.php
+define('WP_DEBUG', true);
+define('WP_DEBUG_LOG', true);
+define('WP_DEBUG_DISPLAY', false);
 ```
 
-### Available Field Types
+### Development Examples
 
-- `checkbox` - Toggle switches with modern styling
-- `text` - Text input fields
-- `textarea` - Multi-line text areas
-- `select` - Dropdown selects
-- `multi_checkbox` - Checkbox grids with visual feedback
+When `WP_DEBUG` is enabled, the plugin loads example interfaces for development and testing purposes.
 
-## Commands
+## Security Considerations
 
-### Lint & Type Check
+- All AJAX endpoints use nonce verification
+- User capability checks on all admin actions
+- Proper data sanitization for all inputs
+- No sensitive information in client-side code
 
-Run these commands after making changes:
+## Performance Optimization
 
-```bash
-# Add lint/typecheck commands here when available
-```
+- CSS and JavaScript only loaded on relevant admin pages
+- Modular loading prevents unnecessary code execution
+- Efficient Vue.js rendering with conditional components
+- Minimal DOM manipulation and reactive updates
 
-## Best Practices
+## Future Roadmap
 
-1. Always use debug functions instead of direct console logging
-2. Extend `Module_Admin` for consistent admin interfaces
-3. Follow WordPress coding standards and security practices
-4. Test with debug logging both enabled and disabled
-5. Use proper nonces and capability checks for admin actions
+- Additional typography modules (font loading, variable fonts)
+- Block editor enhancements
+- Advanced caching mechanisms
+- Multi-site compatibility improvements
+- Theme integration tools
+
+## Support and Troubleshooting
+
+Use the System Info tab in the admin interface to diagnose issues. It provides comprehensive information about:
+
+- Plugin file status
+- Module loading status
+- Server configuration
+- WordPress environment
+- Active plugin conflicts
+
+For development support, ensure `WP_DEBUG` is enabled and check the WordPress debug log for detailed error information.

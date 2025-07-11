@@ -14,7 +14,21 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-// Get current options
+// DEPRECATED: This file is no longer used
+// All functionality has been moved to the Vue.js Main_Vue_Admin class
+// This file is kept for backward compatibility only
+
+echo '<div class="wrap">';
+echo '<h1>Legacy Main Page (Deprecated)</h1>';
+echo '<div class="notice notice-error">';
+echo '<p><strong>This page has been replaced.</strong> Please use the new Vue.js interface.</p>';
+echo '<p><a href="' . admin_url('admin.php?page=orbital-editor-suite') . '" class="button button-primary">Go to New Interface</a></p>';
+echo '</div>';
+echo '</div>';
+
+return; // Stop execution
+
+// Legacy code below (no longer executed)
 $options = get_option('orbital_editor_suite_options', array());
 $settings = isset($options['settings']) ? $options['settings'] : array();
 
