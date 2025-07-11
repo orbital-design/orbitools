@@ -18,9 +18,9 @@ if (!defined('ABSPATH')) {
 }
 
 /**
- * Typography Presets Admin Class
+ * Typography Presets Admin Class (Legacy)
  *
- * Handles admin interface for Typography Presets module.
+ * Redirects to the new Vue.js admin interface.
  */
 class Typography_Presets_Admin extends Module_Admin {
 
@@ -29,11 +29,93 @@ class Typography_Presets_Admin extends Module_Admin {
      */
     protected function init_admin_properties() {
         $this->page_slug = 'orbital-editor-suite-typography';
-        $this->page_title = __('Typography Presets', 'orbital-editor-suite');
-        $this->menu_title = __('Typography Presets', 'orbital-editor-suite');
+        $this->page_title = __('Typography Presets (Legacy)', 'orbital-editor-suite');
+        $this->menu_title = __('Typography Presets (Legacy)', 'orbital-editor-suite');
         
         // Add hook to refresh module settings when options are updated
         add_action('update_option_orbital_editor_suite_options', array($this, 'refresh_module_settings'), 10, 2);
+    }
+    
+    /**
+     * Render admin page - redirect to Vue.js version.
+     */
+    public function render_admin_page() {
+        ?>
+        <div class="wrap">
+            <div class="redirect-notice">
+                <h1><?php echo esc_html($this->page_title); ?></h1>
+                <div class="notice notice-info">
+                    <p><strong>This page has been upgraded!</strong></p>
+                    <p>The Typography Presets module now uses a modern Vue.js interface for better user experience.</p>
+                    <p>
+                        <a href="<?php echo admin_url('admin.php?page=orbital-typography-vue-new'); ?>" class="button button-primary">
+                            Go to New Interface
+                        </a>
+                        <span style="margin: 0 10px;">or</span>
+                        <a href="<?php echo admin_url('admin.php?page=orbital-editor-suite'); ?>" class="button button-secondary">
+                            Back to Dashboard
+                        </a>
+                    </p>
+                </div>
+                
+                <div class="legacy-warning">
+                    <h2>Legacy Interface</h2>
+                    <p>This legacy interface will be removed in a future version. Please use the new Vue.js interface above.</p>
+                    <details>
+                        <summary>Show Legacy Interface</summary>
+                        <div style="margin-top: 20px;">
+                            <?php $this->render_legacy_admin_page(); ?>
+                        </div>
+                    </details>
+                </div>
+            </div>
+            
+            <script>
+            // Auto-redirect after 5 seconds unless user expands legacy interface
+            setTimeout(function() {
+                if (!document.querySelector('details[open]')) {
+                    window.location.href = '<?php echo admin_url('admin.php?page=orbital-typography-vue-new'); ?>';
+                }
+            }, 5000);
+            </script>
+        </div>
+        
+        <style>
+        .redirect-notice {
+            max-width: 800px;
+            margin: 20px 0;
+        }
+        .legacy-warning {
+            margin-top: 30px;
+            padding: 20px;
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 6px;
+        }
+        .legacy-warning h2 {
+            margin-top: 0;
+            color: #856404;
+        }
+        details summary {
+            cursor: pointer;
+            padding: 10px;
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            font-weight: 500;
+        }
+        details summary:hover {
+            background: #e9ecef;
+        }
+        </style>
+        <?php
+    }
+    
+    /**
+     * Render the legacy admin page.
+     */
+    private function render_legacy_admin_page() {
+        parent::render_admin_page();
     }
 
     /**

@@ -1,9 +1,13 @@
 <?php
 /**
- * Main admin page template.
+ * Main admin page template (LEGACY - NO LONGER USED).
+ * 
+ * This file is kept for backward compatibility but is no longer used.
+ * The main admin interface is now handled by the Vue.js Main_Vue_Admin class.
  *
  * @package    Orbital_Editor_Suite
  * @subpackage Orbital_Editor_Suite/includes/admin/partials
+ * @deprecated Use Main_Vue_Admin class instead
  */
 
 if (!defined('ABSPATH')) {

@@ -57,35 +57,43 @@ class Admin_Pages {
      * Add menu pages.
      */
     private function add_menu_pages() {
+        // Load Vue.js admin class
+        require_once plugin_dir_path(__FILE__) . 'class-main-vue-admin.php';
+        $main_vue_admin = new Main_Vue_Admin($this->plugin_name, $this->version);
+        
         add_menu_page(
             __('Orbital Editor Suite', 'orbital-editor-suite'),
             __('Orbital Editor', 'orbital-editor-suite'),
             'manage_options',
             'orbital-editor-suite',
-            array($this, 'render_main_page'),
+            array($main_vue_admin, 'render_admin_page'),
             'dashicons-admin-customizer',
             30
         );
 
         add_submenu_page(
             'orbital-editor-suite',
-            __('Settings', 'orbital-editor-suite'),
-            __('Settings', 'orbital-editor-suite'),
+            __('Dashboard', 'orbital-editor-suite'),
+            __('Dashboard', 'orbital-editor-suite'),
             'manage_options',
             'orbital-editor-suite',
-            array($this, 'render_main_page')
+            array($main_vue_admin, 'render_admin_page')
         );
 
         // Allow modules to register their own admin pages
         do_action('orbital_editor_suite_admin_pages');
 
+        // Load Vue.js updates admin class
+        require_once plugin_dir_path(__FILE__) . 'class-updates-vue-admin.php';
+        $updates_vue_admin = new Updates_Vue_Admin($this->plugin_name, $this->version);
+        
         add_submenu_page(
             'orbital-editor-suite',
             __('Updates', 'orbital-editor-suite'),
             __('Updates', 'orbital-editor-suite'),
             'manage_options',
             'orbital-editor-suite-updates',
-            array($this, 'render_updates_page')
+            array($updates_vue_admin, 'render_admin_page')
         );
     }
 
@@ -219,17 +227,22 @@ class Admin_Pages {
     }
 
     /**
-     * Render the main admin page.
+     * Legacy method - no longer used.
+     * Main admin page is now handled by Main_Vue_Admin class.
      */
     public function render_main_page() {
-        require_once plugin_dir_path(__FILE__) . 'partials/main-page.php';
+        // Redirect to Vue.js admin if somehow accessed
+        wp_redirect(admin_url('admin.php?page=orbital-editor-suite'));
+        exit;
     }
 
-
     /**
-     * Render the updates page.
+     * Legacy method - no longer used.
+     * Updates page is now handled by Updates_Vue_Admin class.
      */
     public function render_updates_page() {
-        require_once plugin_dir_path(__FILE__) . 'partials/updates-page.php';
+        // Redirect to Vue.js admin if somehow accessed
+        wp_redirect(admin_url('admin.php?page=orbital-editor-suite-updates'));
+        exit;
     }
 }

@@ -109,6 +109,56 @@ class Plugin {
     private function init_modules() {
         // Initialize Typography Presets module
         new Modules\Typography_Presets\Typography_Presets();
+        
+        // Load examples (only in admin and for development)
+        if (is_admin()) {
+            $this->load_examples();
+        }
+    }
+    
+    /**
+     * Load admin interface examples for development.
+     */
+    private function load_examples() {
+        $examples_dir = plugin_dir_path(dirname(__FILE__)) . 'examples/';
+        
+        if (file_exists($examples_dir . 'simplified-admin-example.php')) {
+            require_once $examples_dir . 'simplified-admin-example.php';
+        }
+        
+        if (file_exists($examples_dir . 'actual-wp-options-kit-example.php')) {
+            require_once $examples_dir . 'actual-wp-options-kit-example.php';
+        }
+        
+        // Load debug file for Vue.js testing
+        $debug_file = plugin_dir_path(dirname(__FILE__)) . 'debug-vue-admin.php';
+        if (file_exists($debug_file)) {
+            require_once $debug_file;
+        }
+        
+        // Load debug status page
+        $debug_status = plugin_dir_path(dirname(__FILE__)) . 'debug-status.php';
+        if (file_exists($debug_status)) {
+            require_once $debug_status;
+        }
+        
+        // Auto-enable Typography Presets module
+        $auto_enable = plugin_dir_path(dirname(__FILE__)) . 'auto-enable-typography.php';
+        if (file_exists($auto_enable)) {
+            require_once $auto_enable;
+        }
+        
+        // Force enable debug
+        $force_enable = plugin_dir_path(dirname(__FILE__)) . 'force-enable-debug.php';
+        if (file_exists($force_enable)) {
+            require_once $force_enable;
+        }
+        
+        // Simple test
+        $simple_test = plugin_dir_path(dirname(__FILE__)) . 'simple-test.php';
+        if (file_exists($simple_test)) {
+            require_once $simple_test;
+        }
     }
 
     /**

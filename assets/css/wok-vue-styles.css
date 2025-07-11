@@ -1,0 +1,329 @@
+/**
+ * WP Options Kit Vue.js Styles
+ * 
+ * Modern, clean styles for the Vue.js admin interface
+ */
+
+/* Loading State */
+.wok-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 20px;
+    color: #666;
+}
+
+.wok-loading .spinner {
+    margin-bottom: 20px;
+}
+
+/* Main Container */
+.wok-admin-container {
+    max-width: 1200px;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    overflow: hidden;
+}
+
+/* Header */
+.wok-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 30px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-bottom: 1px solid #e1e5e9;
+}
+
+.wok-header h2 {
+    margin: 0;
+    font-size: 24px;
+    font-weight: 600;
+}
+
+.wok-header .button {
+    background: rgba(255,255,255,0.2);
+    color: white;
+    border: 1px solid rgba(255,255,255,0.3);
+    border-radius: 6px;
+    padding: 8px 16px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.wok-header .button:hover {
+    background: rgba(255,255,255,0.3);
+    border-color: rgba(255,255,255,0.5);
+}
+
+.wok-header .button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Tabs */
+.wok-tabs {
+    display: flex;
+    background: #f8f9fa;
+    border-bottom: 1px solid #e1e5e9;
+    padding: 0 30px;
+}
+
+.wok-tab {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 15px 20px;
+    background: transparent;
+    border: none;
+    border-bottom: 3px solid transparent;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    color: #666;
+    transition: all 0.3s ease;
+}
+
+.wok-tab:hover {
+    color: #333;
+    background: rgba(102, 126, 234, 0.1);
+}
+
+.wok-tab.active {
+    color: #667eea;
+    border-bottom-color: #667eea;
+    background: rgba(102, 126, 234, 0.1);
+}
+
+.wok-tab .dashicons {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+}
+
+/* Tab Content */
+.wok-tab-content {
+    padding: 30px;
+    min-height: 400px;
+}
+
+.wok-section h3 {
+    margin: 0 0 25px 0;
+    font-size: 20px;
+    color: #333;
+    font-weight: 600;
+}
+
+/* Fields */
+.wok-field {
+    margin-bottom: 25px;
+    padding: 20px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border: 1px solid #e9ecef;
+}
+
+.wok-label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #333;
+    font-size: 14px;
+}
+
+.wok-field input[type="text"],
+.wok-field input[type="email"],
+.wok-field input[type="url"],
+.wok-field select,
+.wok-field textarea {
+    width: 100%;
+    max-width: 400px;
+    padding: 10px 12px;
+    border: 2px solid #dee2e6;
+    border-radius: 6px;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    background: white;
+}
+
+.wok-field input[type="text"]:focus,
+.wok-field input[type="email"]:focus,
+.wok-field input[type="url"]:focus,
+.wok-field select:focus,
+.wok-field textarea:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.wok-field input[type="checkbox"] {
+    transform: scale(1.2);
+    margin-right: 8px;
+    accent-color: #667eea;
+}
+
+.wok-description {
+    margin: 8px 0 0 0;
+    font-size: 13px;
+    color: #666;
+    font-style: italic;
+}
+
+/* Checkbox Grid */
+.wok-checkbox-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 12px;
+    margin: 12px 0;
+}
+
+.wok-checkbox-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 16px;
+    background: white;
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.wok-checkbox-item:hover {
+    border-color: #667eea;
+    background: rgba(102, 126, 234, 0.05);
+}
+
+.wok-checkbox-item input[type="checkbox"]:checked + span {
+    font-weight: 600;
+    color: #667eea;
+}
+
+/* Preview */
+.wok-preview-container {
+    background: white;
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    padding: 25px;
+    margin: 20px 0;
+}
+
+.wok-preview-item {
+    padding: 20px;
+    border-left: 4px solid #667eea;
+    background: #f8f9fa;
+    border-radius: 0 8px 8px 0;
+}
+
+.wok-preview-item h4 {
+    margin: 0 0 10px 0;
+    color: #333;
+}
+
+.wok-preview-item p {
+    margin: 0;
+    color: #666;
+    line-height: 1.6;
+}
+
+/* Messages */
+.wok-message {
+    padding: 12px 20px;
+    border-radius: 6px;
+    margin: 20px 0;
+    font-weight: 500;
+    animation: fadeIn 0.3s ease;
+}
+
+.wok-message.success {
+    background: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.wok-message.error {
+    background: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+.wok-message.warning {
+    background: #fff3cd;
+    color: #856404;
+    border: 1px solid #ffeaa7;
+}
+
+/* Debug */
+.wok-debug {
+    margin-top: 30px;
+    padding: 20px;
+    background: #2d3748;
+    border-radius: 8px;
+    color: #e2e8f0;
+}
+
+.wok-debug h4 {
+    margin: 0 0 15px 0;
+    color: #fed7d7;
+}
+
+.wok-debug pre {
+    background: #1a202c;
+    padding: 15px;
+    border-radius: 6px;
+    overflow-x: auto;
+    font-size: 12px;
+    line-height: 1.4;
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.wok-tab-content {
+    animation: fadeIn 0.3s ease;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .wok-header {
+        flex-direction: column;
+        gap: 15px;
+        text-align: center;
+    }
+    
+    .wok-tabs {
+        flex-direction: column;
+        padding: 0;
+    }
+    
+    .wok-tab {
+        justify-content: center;
+        border-bottom: none;
+        border-left: 3px solid transparent;
+    }
+    
+    .wok-tab.active {
+        border-left-color: #667eea;
+        border-bottom-color: transparent;
+    }
+    
+    .wok-tab-content {
+        padding: 20px;
+    }
+    
+    .wok-checkbox-grid {
+        grid-template-columns: 1fr;
+    }
+}
