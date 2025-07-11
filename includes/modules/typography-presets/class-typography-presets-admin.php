@@ -360,7 +360,7 @@ class Typography_Presets_Admin extends Module_Admin {
                 
                 <h5><?php _e('Important Notes', 'orbital-editor-suite'); ?></h5>
                 <ul style="margin-left: 20px;">
-                    <li><?php _e('The structure must be: <code>plugins</code> → <code>oes</code> → <code>Typography_Presets</code>', 'orbital-editor-suite'); ?></li>
+                    <li><?php _e('The structure must be: <code>settings</code> → <code>custom</code> → <code>orbital</code> → <code>plugins</code> → <code>oes</code> → <code>Typography_Presets</code>', 'orbital-editor-suite'); ?></li>
                     <li><?php _e('Settings in theme.json will override admin interface settings', 'orbital-editor-suite'); ?></li>
                     <li><?php _e('Preset IDs should use kebab-case (e.g., "termina-16-400")', 'orbital-editor-suite'); ?></li>
                     <li><?php _e('CSS properties can use camelCase or kebab-case', 'orbital-editor-suite'); ?></li>
@@ -460,69 +460,75 @@ class Typography_Presets_Admin extends Module_Admin {
      */
     private function get_grouped_example() {
         return json_encode(array(
-            'plugins' => array(
-                'oes' => array(
-                    'Typography_Presets' => array(
-                        'settings' => array(
-                            'replace_core_controls' => true,
-                            'show_groups' => true,
-                            'output_preset_css' => true
-                        ),
-                        'groups' => array(
-                            'headings' => array(
-                                'title' => 'Headings & Standouts'
-                            ),
-                            'body' => array(
-                                'title' => 'Body Text'
-                            )
-                        ),
-                        'items' => array(
-                            'termina-16-400' => array(
-                                'label' => 'Termina 16 Regular',
-                                'description' => 'Clean heading style',
-                                'group' => 'headings',
-                                'properties' => array(
-                                    'font-family' => 'Termina',
-                                    'font-weight' => 400,
-                                    'font-size' => '16px',
-                                    'line-height' => '20px',
-                                    'letter-spacing' => '0'
-                                )
-                            ),
-                            'termina-24-500' => array(
-                                'label' => 'Termina 24 Medium',
-                                'description' => 'Large heading style',
-                                'group' => 'headings',
-                                'properties' => array(
-                                    'font-family' => 'Termina',
-                                    'font-weight' => 500,
-                                    'font-size' => '24px',
-                                    'line-height' => '32px',
-                                    'letter-spacing' => '0'
-                                )
-                            ),
-                            'montserrat-14-400' => array(
-                                'label' => 'Montserrat 14 Regular',
-                                'description' => 'Small body text',
-                                'group' => 'body',
-                                'properties' => array(
-                                    'font-family' => 'Montserrat',
-                                    'font-weight' => 400,
-                                    'font-size' => '14px',
-                                    'line-height' => '1.6',
-                                    'letter-spacing' => '0'
-                                )
-                            ),
-                            'montserrat-16-400' => array(
-                                'label' => 'Montserrat 16 Regular',
-                                'description' => 'Standard body text',
-                                'group' => 'body',
-                                'properties' => array(
-                                    'font-family' => 'Montserrat',
-                                    'font-weight' => 400,
-                                    'font-size' => '16px',
-                                    'line-height' => '1.6',
-                                    'letter-spacing' => '0'
+            'settings' => array(
+                'custom' => array(
+                    'orbital' => array(
+                        'plugins' => array(
+                            'oes' => array(
+                                'Typography_Presets' => array(
+                                    'settings' => array(
+                                        'replace_core_controls' => true,
+                                        'show_groups' => true,
+                                        'output_preset_css' => true
+                                    ),
+                                    'groups' => array(
+                                        'headings' => array(
+                                            'title' => 'Headings & Standouts'
+                                        ),
+                                        'body' => array(
+                                            'title' => 'Body Text'
+                                        )
+                                    ),
+                                    'items' => array(
+                                        'termina-16-400' => array(
+                                            'label' => 'Termina 16 Regular',
+                                            'description' => 'Clean heading style',
+                                            'group' => 'headings',
+                                            'properties' => array(
+                                                'font-family' => 'Termina',
+                                                'font-weight' => 400,
+                                                'font-size' => '16px',
+                                                'line-height' => '20px',
+                                                'letter-spacing' => '0'
+                                            )
+                                        ),
+                                        'termina-24-500' => array(
+                                            'label' => 'Termina 24 Medium',
+                                            'description' => 'Large heading style',
+                                            'group' => 'headings',
+                                            'properties' => array(
+                                                'font-family' => 'Termina',
+                                                'font-weight' => 500,
+                                                'font-size' => '24px',
+                                                'line-height' => '32px',
+                                                'letter-spacing' => '0'
+                                            )
+                                        ),
+                                        'montserrat-14-400' => array(
+                                            'label' => 'Montserrat 14 Regular',
+                                            'description' => 'Small body text',
+                                            'group' => 'body',
+                                            'properties' => array(
+                                                'font-family' => 'Montserrat',
+                                                'font-weight' => 400,
+                                                'font-size' => '14px',
+                                                'line-height' => '1.6',
+                                                'letter-spacing' => '0'
+                                            )
+                                        ),
+                                        'montserrat-16-400' => array(
+                                            'label' => 'Montserrat 16 Regular',
+                                            'description' => 'Standard body text',
+                                            'group' => 'body',
+                                            'properties' => array(
+                                                'font-family' => 'Montserrat',
+                                                'font-weight' => 400,
+                                                'font-size' => '16px',
+                                                'line-height' => '1.6',
+                                                'letter-spacing' => '0'
+                                            )
+                                        )
+                                    )
                                 )
                             )
                         )
@@ -537,57 +543,63 @@ class Typography_Presets_Admin extends Module_Admin {
      */
     private function get_flat_example() {
         return json_encode(array(
-            'plugins' => array(
-                'oes' => array(
-                    'Typography_Presets' => array(
-                        'settings' => array(
-                            'replace_core_controls' => true,
-                            'show_groups' => false,
-                            'output_preset_css' => true
-                        ),
-                        'items' => array(
-                            'termina-16-400' => array(
-                                'label' => 'Termina 16 Regular',
-                                'description' => 'Clean heading style',
-                                'properties' => array(
-                                    'font-family' => 'Termina',
-                                    'font-weight' => 400,
-                                    'font-size' => '16px',
-                                    'line-height' => '20px',
-                                    'letter-spacing' => '0'
-                                )
-                            ),
-                            'termina-24-500' => array(
-                                'label' => 'Termina 24 Medium',
-                                'description' => 'Large heading style',
-                                'properties' => array(
-                                    'font-family' => 'Termina',
-                                    'font-weight' => 500,
-                                    'font-size' => '24px',
-                                    'line-height' => '32px',
-                                    'letter-spacing' => '0'
-                                )
-                            ),
-                            'montserrat-14-400' => array(
-                                'label' => 'Montserrat 14 Regular',
-                                'description' => 'Small body text',
-                                'properties' => array(
-                                    'font-family' => 'Montserrat',
-                                    'font-weight' => 400,
-                                    'font-size' => '14px',
-                                    'line-height' => '1.6',
-                                    'letter-spacing' => '0'
-                                )
-                            ),
-                            'montserrat-16-400' => array(
-                                'label' => 'Montserrat 16 Regular',
-                                'description' => 'Standard body text',
-                                'properties' => array(
-                                    'font-family' => 'Montserrat',
-                                    'font-weight' => 400,
-                                    'font-size' => '16px',
-                                    'line-height' => '1.6',
-                                    'letter-spacing' => '0'
+            'settings' => array(
+                'custom' => array(
+                    'orbital' => array(
+                        'plugins' => array(
+                            'oes' => array(
+                                'Typography_Presets' => array(
+                                    'settings' => array(
+                                        'replace_core_controls' => true,
+                                        'show_groups' => false,
+                                        'output_preset_css' => true
+                                    ),
+                                    'items' => array(
+                                        'termina-16-400' => array(
+                                            'label' => 'Termina 16 Regular',
+                                            'description' => 'Clean heading style',
+                                            'properties' => array(
+                                                'font-family' => 'Termina',
+                                                'font-weight' => 400,
+                                                'font-size' => '16px',
+                                                'line-height' => '20px',
+                                                'letter-spacing' => '0'
+                                            )
+                                        ),
+                                        'termina-24-500' => array(
+                                            'label' => 'Termina 24 Medium',
+                                            'description' => 'Large heading style',
+                                            'properties' => array(
+                                                'font-family' => 'Termina',
+                                                'font-weight' => 500,
+                                                'font-size' => '24px',
+                                                'line-height' => '32px',
+                                                'letter-spacing' => '0'
+                                            )
+                                        ),
+                                        'montserrat-14-400' => array(
+                                            'label' => 'Montserrat 14 Regular',
+                                            'description' => 'Small body text',
+                                            'properties' => array(
+                                                'font-family' => 'Montserrat',
+                                                'font-weight' => 400,
+                                                'font-size' => '14px',
+                                                'line-height' => '1.6',
+                                                'letter-spacing' => '0'
+                                            )
+                                        ),
+                                        'montserrat-16-400' => array(
+                                            'label' => 'Montserrat 16 Regular',
+                                            'description' => 'Standard body text',
+                                            'properties' => array(
+                                                'font-family' => 'Montserrat',
+                                                'font-weight' => 400,
+                                                'font-size' => '16px',
+                                                'line-height' => '1.6',
+                                                'letter-spacing' => '0'
+                                            )
+                                        )
+                                    )
                                 )
                             )
                         )

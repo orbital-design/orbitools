@@ -323,12 +323,12 @@ class Typography_Presets {
             return false;
         }
         
-        // Navigate to our plugin data: plugins -> oes -> Typography_Presets
-        if (!isset($theme_json['plugins']['oes']['Typography_Presets'])) {
+        // Navigate to our plugin data: settings -> custom -> orbital -> plugins -> oes -> Typography_Presets
+        if (!isset($theme_json['settings']['custom']['orbital']['plugins']['oes']['Typography_Presets'])) {
             return false;
         }
         
-        return $theme_json['plugins']['oes']['Typography_Presets'];
+        return $theme_json['settings']['custom']['orbital']['plugins']['oes']['Typography_Presets'];
     }
     
     /**
