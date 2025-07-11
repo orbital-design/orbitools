@@ -91,7 +91,6 @@ class Typography_Presets {
      */
     private function init_hooks() {
         add_action('enqueue_block_editor_assets', array($this, 'enqueue_editor_assets'));
-        add_action('wp_enqueue_scripts', array($this, 'enqueue_frontend_styles'));
         add_action('admin_enqueue_scripts', array($this, 'enqueue_admin_assets'));
         
         // Register admin pages using WordPress hooks
@@ -101,6 +100,14 @@ class Typography_Presets {
         add_action('wp_ajax_orbital_save_typography_preset', array($this, 'ajax_save_preset'));
         add_action('wp_ajax_orbital_delete_typography_preset', array($this, 'ajax_delete_preset'));
         add_action('wp_ajax_orbital_get_typography_presets', array($this, 'ajax_get_presets'));
+        
+        // CSS output hooks - use WordPress proper hooks
+        add_action('wp_head', array($this, 'output_frontend_css'), 5);
+        add_action('admin_head', array($this, 'output_editor_css'), 5);
+        
+        // Theme.json caching and change detection
+        add_action('wp_loaded', array($this, 'check_theme_json_changed'));
+        add_action('after_switch_theme', array($this, 'clear_preset_cache'));
     }
 
     /**
@@ -415,6 +422,84 @@ class Typography_Presets {
     }
 
     /**
+     * Get cached CSS or generate if needed.
+     */
+    private function get_cached_css() {
+        $cache_key = 'orbital_typography_css_' . $this->get_preset_hash();
+        $cached_css = get_transient($cache_key);
+
+        if ($cached_css !== false) {
+            return $cached_css;
+        }
+
+        // Generate CSS and cache it
+        $css = $this->generate_css();
+        set_transient($cache_key, $css, 12 * HOUR_IN_SECONDS);
+
+        return $css;
+    }
+
+    /**
+     * Get hash of current presets for cache invalidation.
+     */
+    private function get_preset_hash() {
+        $preset_data = array(
+            'presets' => $this->presets,
+            'settings' => $this->settings,
+            'method' => $this->settings['preset_generation_method']
+        );
+        
+        return md5(serialize($preset_data));
+    }
+
+    /**
+     * Check if theme.json has changed since last check.
+     */
+    public function check_theme_json_changed() {
+        // Only run in admin and only for theme.json method
+        if (!is_admin() || $this->settings['preset_generation_method'] !== 'theme_json') {
+            return;
+        }
+
+        $current_hash = $this->get_theme_json_hash();
+        $stored_hash = get_option('orbital_typography_theme_json_hash', '');
+
+        // If hash has changed, clear cache and update stored hash
+        if ($current_hash !== $stored_hash) {
+            $this->clear_preset_cache();
+            update_option('orbital_typography_theme_json_hash', $current_hash);
+        }
+    }
+
+    /**
+     * Get hash of theme.json data for change detection.
+     */
+    private function get_theme_json_hash() {
+        $theme_data = $this->get_theme_json_data();
+        return md5(serialize($theme_data ?: array()));
+    }
+
+    /**
+     * Clear all preset caches.
+     */
+    public function clear_preset_cache() {
+        // Clear CSS cache
+        global $wpdb;
+        $wpdb->query("DELETE FROM {$wpdb->options} WHERE option_name LIKE '_transient_orbital_typography_css_%'");
+        $wpdb->query("DELETE FROM {$wpdb->options} WHERE option_name LIKE '_transient_timeout_orbital_typography_css_%'");
+
+        // Clear WordPress object cache
+        wp_cache_delete('orbital_typography_presets', 'theme_json');
+        
+        // Clear theme.json related transients
+        delete_transient('theme_json_data_user');
+        delete_transient('theme_json_data_theme');
+
+        // Refresh presets
+        $this->load_presets();
+    }
+
+    /**
      * Save presets to database.
      */
     private function save_presets($presets) {
@@ -576,20 +661,42 @@ class Typography_Presets {
             )
         );
 
-        // Add CSS to editor if enabled
-        if (!empty($this->settings['output_preset_css'])) {
-            wp_add_inline_style('wp-edit-blocks', $this->generate_css());
+    }
+
+    /**
+     * Output CSS in frontend head (utility classes approach).
+     */
+    public function output_frontend_css() {
+        if (empty($this->settings['output_preset_css'])) {
+            return;
+        }
+
+        $css = $this->get_cached_css();
+        if (!empty($css)) {
+            echo "<style id='orbital-typography-presets-css'>\n" . $css . "\n</style>\n";
         }
     }
 
     /**
-     * Enqueue frontend styles.
+     * Output CSS in editor head.
      */
-    public function enqueue_frontend_styles() {
-        // Add CSS to frontend if enabled
-        if (!empty($this->settings['output_preset_css'])) {
-            wp_add_inline_style('wp-block-library', $this->generate_css());
+    public function output_editor_css() {
+        if (!$this->is_block_editor() || empty($this->settings['output_preset_css'])) {
+            return;
         }
+
+        $css = $this->get_cached_css();
+        if (!empty($css)) {
+            echo "<style id='orbital-typography-presets-editor-css'>\n" . $css . "\n</style>\n";
+        }
+    }
+
+    /**
+     * Check if we're in the block editor.
+     */
+    private function is_block_editor() {
+        global $pagenow;
+        return ($pagenow === 'post.php' || $pagenow === 'post-new.php' || $pagenow === 'site-editor.php');
     }
 
     /**
