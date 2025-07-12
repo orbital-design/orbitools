@@ -82,6 +82,18 @@ add_action('plugins_loaded', function () {
     // Initialize main OptionsKit
     $kit = new \TDP\OptionsKit('orbital-editor-suite');
     $kit->set_page_title('Orbital Editor Suite');
+    
+    // Enqueue custom admin notice styling
+    add_action('admin_enqueue_scripts', function($hook) {
+        if (strpos($hook, 'orbital-editor-suite') !== false) {
+            wp_enqueue_style(
+                'orbital-admin-notices',
+                ORBITAL_EDITOR_SUITE_URL . 'assets/css/admin-notices.css',
+                array(),
+                ORBITAL_EDITOR_SUITE_VERSION
+            );
+        }
+    });
 
 
     // Debug: Check what options OptionsKit is actually saving

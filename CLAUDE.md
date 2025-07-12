@@ -4,6 +4,34 @@
 
 Orbital Editor Suite is a modern WordPress plugin that provides enhanced editor functionality with a focus on typography management and modern admin interfaces.
 
+## WP OptionsKit Field Types
+
+**IMPORTANT: Definitive list of supported field types based on source code analysis**
+
+OptionsKit supports exactly these 11 field types (confirmed from PHP sanitization filters and Vue.js components):
+
+1. **`text`** - Text input field
+2. **`textarea`** - Multi-line text area  
+3. **`radio`** - Radio button group (requires `options` array)
+4. **`select`** - Dropdown select (requires `options` array)
+5. **`checkbox`** - Single checkbox
+6. **`multiselect`** - Multi-select dropdown (requires `options` array)
+7. **`multicheckbox`** (alias: `multicheck`) - Multiple checkboxes (requires `options` array)
+8. **`file`** - File upload/media selector
+9. **`anchor`** - Link/anchor field
+10. **`html`** - Raw HTML content display (for `std` property)
+11. **`hidden`** - Hidden form field
+
+**Source Evidence:**
+- PHP sanitization filters in `class-wpok-rest-server.php` lines 78-85
+- Vue.js components: `formit-text`, `formit-textarea`, `formit-radio`, `formit-select`, `formit-checkbox`, `formit-multiselect`, `formit-multicheckbox`, `formit-file`, `formit-anchor`, `formit-html`, `formit-hidden`
+
+**DO NOT use unsupported field types like:**
+- `checkbox_list` (doesn't exist)
+- `number` (not supported)
+- `color` (not supported)
+- `date` (not supported)
+
 ## Architecture
 
 ### Vue.js Admin Interfaces

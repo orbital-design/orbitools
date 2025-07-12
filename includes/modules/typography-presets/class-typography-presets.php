@@ -2,899 +2,896 @@
 /**
  * Typography Presets Module
  *
- * Replaces core typography controls with preset utility classes that combine
- * multiple typography properties (font-size, line-height, font-weight, etc.)
- * into cohesive, pre-designed styles.
+ * Provides typography preset functionality by reading preset definitions from theme.json
+ * and integrating them into the WordPress block editor. This module replaces core
+ * typography controls with a cohesive preset system.
  *
  * @package    Orbital_Editor_Suite
- * @subpackage Orbital_Editor_Suite/includes/modules/typography-presets
+ * @subpackage Modules/Typography_Presets
+ * @since      1.0.0
  */
 
 namespace Orbital\Editor_Suite\Modules\Typography_Presets;
 
-if (!defined('ABSPATH')) {
-    exit;
+// Prevent direct access
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
 }
 
 /**
  * Typography Presets Module Class
  *
  * Manages typography preset functionality including:
- * - Preset definitions and storage
- * - Block editor integration
- * - CSS generation
- * - Admin management interface
+ * - Reading presets from theme.json files
+ * - Block editor integration and controls
+ * - CSS generation and output
+ * - Settings integration with main plugin
+ *
+ * @since 1.0.0
  */
 class Typography_Presets {
 
-    /**
-     * Module version.
-     */
-    const VERSION = '1.0.0';
+	/**
+	 * Module version
+	 *
+	 * @since 1.0.0
+	 * @var string
+	 */
+	const VERSION = '1.0.0';
 
-    /**
-     * Module slug.
-     */
-    const MODULE_SLUG = 'typography-presets';
+	/**
+	 * Module slug identifier
+	 *
+	 * @since 1.0.0
+	 * @var string
+	 */
+	const MODULE_SLUG = 'typography-presets';
 
+	/**
+	 * Default typography presets
+	 *
+	 * @since 1.0.0
+	 * @var array
+	 */
+	private $default_presets;
 
-    /**
-     * Default presets.
-     */
-    private $default_presets;
+	/**
+	 * Current loaded presets (default + theme.json)
+	 *
+	 * @since 1.0.0
+	 * @var array
+	 */
+	private $presets;
 
-    /**
-     * Current presets.
-     */
-    private $presets;
+	/**
+	 * Module settings
+	 *
+	 * @since 1.0.0
+	 * @var array
+	 */
+	private $settings;
 
-    /**
-     * Module settings.
-     */
-    private $settings;
+	/**
+	 * Initialize the Typography Presets module
+	 *
+	 * Sets up hooks for OptionsKit integration and initializes module functionality
+	 * only if the module is enabled in the main plugin settings.
+	 *
+	 * @since 1.0.0
+	 */
+	public function __construct() {
+		// Check if this module is enabled before registering anything
+		if ( $this->is_module_enabled() ) {
+			$this->register_optionskit_integration();
+		}
 
-    /**
-     * Initialize the module.
-     */
-    public function __construct() {
-        // Only register settings if module is enabled
-        $all_options = get_option('orbital_editor_suite_settings', array());
-        $typography_enabled = isset($all_options['typography_presets_enabled']) ? $all_options['typography_presets_enabled'] : '0';
-        
-        if ($typography_enabled == '1' || $typography_enabled === 1) {
-            // Hook into main OptionsKit filters to register our sections and settings
-            add_filter('orbital_editor_suite_registered_settings_sections', array($this, 'register_sections'));
-            add_filter('orbital_editor_suite_registered_settings', array($this, 'register_settings'));
-        }
-        
-        // Initialize module functionality
-        $this->delayed_init();
-    }
-    
-    /**
-     * Initialize after translations are loaded.
-     */
-    public function delayed_init() {
-        error_log('Typography Presets: delayed_init() called');
-        
-        $this->load_default_presets();
-        $this->load_settings();
-        $this->load_presets();
-        $this->init_hooks();
-        
-        error_log('Typography Presets: delayed_init() completed');
-    }
+		// Always initialize core functionality for enabled modules
+		$this->init();
+	}
 
-    /**
-     * Check if this module is enabled in global settings.
-     */
-    private function is_module_enabled() {
-        $global_options = get_option('orbital_editor_suite_options', array());
-        $global_settings = isset($global_options['settings']) ? $global_options['settings'] : array();
-        $enabled_modules = isset($global_settings['enabled_modules']) ? $global_settings['enabled_modules'] : array();
-        
-        return in_array(self::MODULE_SLUG, $enabled_modules);
-    }
+	/**
+	 * Check if Typography Presets module is enabled
+	 *
+	 * @since 1.0.0
+	 * @return bool True if module is enabled, false otherwise
+	 */
+	private function is_module_enabled() {
+		$options = get_option( 'orbital_editor_suite_settings', array() );
+		$enabled = isset( $options['typography_presets_enabled'] ) ? $options['typography_presets_enabled'] : '0';
 
-    /**
-     * Initialize WordPress hooks.
-     */
-    private function init_hooks() {
-        error_log('Typography Presets: Initializing hooks');
-        
-        add_action('enqueue_block_editor_assets', array($this, 'enqueue_editor_assets'));
-        error_log('Typography Presets: Added enqueue_block_editor_assets hook');
-        
-        
-        // AJAX handlers for preset management
-        add_action('wp_ajax_orbital_save_typography_preset', array($this, 'ajax_save_preset'));
-        add_action('wp_ajax_orbital_delete_typography_preset', array($this, 'ajax_delete_preset'));
-        add_action('wp_ajax_orbital_get_typography_presets', array($this, 'ajax_get_presets'));
-        
-        // CSS output hooks - use WordPress proper hooks
-        add_action('wp_head', array($this, 'output_frontend_css'), 5);
-        add_action('admin_head', array($this, 'output_editor_css'), 5);
-        
-        // Theme.json caching and change detection
-        add_action('wp_loaded', array($this, 'check_theme_json_changed'));
-        add_action('after_switch_theme', array($this, 'clear_preset_cache'));
-    }
+		return ( '1' === $enabled || 1 === $enabled );
+	}
 
-    /**
-     * Load default presets.
-     */
-    private function load_default_presets() {
-        $this->default_presets = array(
-            'heading-xl' => array(
-                'label' => 'Heading XL',
-                'description' => 'Extra large heading with strong presence',
-                'properties' => array(
-                    'font-size' => '3rem',
-                    'line-height' => '1.1',
-                    'font-weight' => '700',
-                    'letter-spacing' => '-0.02em',
-                    'margin-bottom' => '1.5rem'
-                ),
-                'group' => 'headings',
-                'is_default' => true
-            ),
-            'heading-lg' => array(
-                'label' => 'Heading Large',
-                'description' => 'Large heading for section titles',
-                'properties' => array(
-                    'font-size' => '2.25rem',
-                    'line-height' => '1.2',
-                    'font-weight' => '600',
-                    'letter-spacing' => '-0.01em',
-                    'margin-bottom' => '1.25rem'
-                ),
-                'group' => 'headings',
-                'is_default' => true
-            ),
-            'heading-md' => array(
-                'label' => 'Heading Medium',
-                'description' => 'Medium heading for subsections',
-                'properties' => array(
-                    'font-size' => '1.5rem',
-                    'line-height' => '1.3',
-                    'font-weight' => '600',
-                    'letter-spacing' => '0',
-                    'margin-bottom' => '1rem'
-                ),
-                'group' => 'headings',
-                'is_default' => true
-            ),
-            'body-lg' => array(
-                'label' => 'Body Large',
-                'description' => 'Large body text for emphasis',
-                'properties' => array(
-                    'font-size' => '1.125rem',
-                    'line-height' => '1.6',
-                    'font-weight' => '400',
-                    'letter-spacing' => '0',
-                    'margin-bottom' => '1rem'
-                ),
-                'group' => 'body',
-                'is_default' => true
-            ),
-            'body-base' => array(
-                'label' => 'Body Base',
-                'description' => 'Standard body text',
-                'properties' => array(
-                    'font-size' => '1rem',
-                    'line-height' => '1.6',
-                    'font-weight' => '400',
-                    'letter-spacing' => '0',
-                    'margin-bottom' => '1rem'
-                ),
-                'group' => 'body',
-                'is_default' => true
-            ),
-            'body-sm' => array(
-                'label' => 'Body Small',
-                'description' => 'Small body text for captions',
-                'properties' => array(
-                    'font-size' => '0.875rem',
-                    'line-height' => '1.5',
-                    'font-weight' => '400',
-                    'letter-spacing' => '0',
-                    'margin-bottom' => '0.75rem'
-                ),
-                'group' => 'body',
-                'is_default' => true
-            ),
-            'caption' => array(
-                'label' => 'Caption',
-                'description' => 'Caption text for images and quotes',
-                'properties' => array(
-                    'font-size' => '0.75rem',
-                    'line-height' => '1.4',
-                    'font-weight' => '500',
-                    'letter-spacing' => '0.05em',
-                    'text-transform' => 'uppercase',
-                    'color' => '#6b7280'
-                ),
-                'group' => 'utility',
-                'is_default' => true
-            ),
-            'button' => array(
-                'label' => 'Button Text',
-                'description' => 'Text style for buttons and CTAs',
-                'properties' => array(
-                    'font-size' => '0.875rem',
-                    'line-height' => '1.25',
-                    'font-weight' => '600',
-                    'letter-spacing' => '0.025em',
-                    'text-transform' => 'uppercase'
-                ),
-                'group' => 'utility',
-                'is_default' => true
-            )
-        );
-    }
+	/**
+	 * Register OptionsKit integration hooks
+	 *
+	 * Hooks into the main plugin's OptionsKit filters to add Typography
+	 * sections and settings to the admin interface.
+	 *
+	 * @since 1.0.0
+	 */
+	private function register_optionskit_integration() {
+		add_filter( 'orbital_editor_suite_registered_settings_sections', array( $this, 'register_sections' ) );
+		add_filter( 'orbital_editor_suite_registered_settings', array( $this, 'register_settings' ) );
+	}
 
-    /**
-     * Load module settings.
-     */
-    private function load_settings() {
-        $options = get_option('orbital_editor_suite_options', array());
-        $this->settings = isset($options['modules'][self::MODULE_SLUG]) ? 
-            $options['modules'][self::MODULE_SLUG] : array();
-        
-        // Set default settings
-        $this->settings = wp_parse_args($this->settings, array(
-            'preset_generation_method' => 'admin', // 'admin' or 'theme_json'
-            'replace_core_controls' => true,
-            'allowed_blocks' => array(
-                'core/paragraph',
-                'core/heading',
-                'core/list',
-                'core/quote',
-                'core/button'
-            ),
-            'show_groups' => true,
-            'output_preset_css' => true
-        ));
-    }
+	/**
+	 * Initialize module functionality
+	 *
+	 * Loads presets, settings, and sets up WordPress hooks for editor integration.
+	 *
+	 * @since 1.0.0
+	 */
+	private function init() {
+		$this->load_default_presets();
+		$this->load_settings();
+		$this->load_presets();
+		$this->setup_hooks();
+	}
 
-    /**
-     * Refresh settings from database.
-     */
-    public function refresh_settings() {
-        $this->load_settings();
-    }
+	/**
+	 * Setup WordPress hooks for module functionality
+	 *
+	 * @since 1.0.0
+	 */
+	private function setup_hooks() {
+		// Block editor integration
+		add_action( 'enqueue_block_editor_assets', array( $this, 'enqueue_editor_assets' ) );
 
-    /**
-     * Load presets from database or theme.json.
-     */
-    private function load_presets() {
-        if ($this->settings['preset_generation_method'] === 'theme_json') {
-            $this->load_presets_from_theme_json();
-        } else {
-            $this->load_presets_from_admin();
-        }
-    }
-    
-    /**
-     * Load presets from admin interface (database).
-     */
-    private function load_presets_from_admin() {
-        $saved_presets = get_option('orbital_typography_presets', array());
-        
-        // Merge default presets with saved custom presets
-        $this->presets = array_merge($this->default_presets, $saved_presets);
-    }
-    
-    /**
-     * Load presets from theme.json.
-     */
-    private function load_presets_from_theme_json() {
-        $theme_data = $this->get_theme_json_data();
-        
-        if (!$theme_data) {
-            // Fallback to default presets if theme.json data not found
-            $this->presets = $this->default_presets;
-            return;
-        }
-        
-        // Override settings from theme.json
-        if (isset($theme_data['settings'])) {
-            $theme_settings = $theme_data['settings'];
-            
-            if (isset($theme_settings['replace_core_controls'])) {
-                $this->settings['replace_core_controls'] = $theme_settings['replace_core_controls'];
-            }
-            if (isset($theme_settings['show_groups'])) {
-                $this->settings['show_groups'] = $theme_settings['show_groups'];
-            }
-            if (isset($theme_settings['output_preset_css'])) {
-                $this->settings['output_preset_css'] = $theme_settings['output_preset_css'];
-            }
-        }
-        
-        // Parse presets based on structure
-        $this->presets = $this->parse_theme_json_presets($theme_data);
-    }
-    
-    /**
-     * Get Typography_Presets data from theme.json.
-     */
-    private function get_theme_json_data() {
-        $theme_json_path = get_template_directory() . '/theme.json';
-        
-        if (!file_exists($theme_json_path)) {
-            return false;
-        }
-        
-        $theme_json_content = file_get_contents($theme_json_path);
-        $theme_json = json_decode($theme_json_content, true);
-        
-        if (!$theme_json || json_last_error() !== JSON_ERROR_NONE) {
-            return false;
-        }
-        
-        // Navigate to our plugin data: settings -> custom -> orbital -> plugins -> oes -> Typography_Presets
-        if (!isset($theme_json['settings']['custom']['orbital']['plugins']['oes']['Typography_Presets'])) {
-            return false;
-        }
-        
-        return $theme_json['settings']['custom']['orbital']['plugins']['oes']['Typography_Presets'];
-    }
-    
-    /**
-     * Parse presets from theme.json data.
-     */
-    private function parse_theme_json_presets($theme_data) {
-        if (!isset($theme_data['items'])) {
-            return $this->default_presets;
-        }
-        
-        $parsed_presets = array();
-        
-        // Get group definitions if they exist
-        $group_definitions = isset($theme_data['groups']) ? $theme_data['groups'] : array();
-        
-        // Unified format: always same structure
-        foreach ($theme_data['items'] as $preset_id => $preset_data) {
-            $group_id = isset($preset_data['group']) ? $preset_data['group'] : 'theme';
-            
-            // Get group title from definitions or fallback
-            $group_title = null;
-            if (isset($group_definitions[$group_id]['title'])) {
-                $group_title = $group_definitions[$group_id]['title'];
-            } elseif (isset($preset_data['group_title'])) {
-                $group_title = $preset_data['group_title'];
-            }
-            
-            $parsed_presets[$preset_id] = array(
-                'label' => isset($preset_data['label']) ? $preset_data['label'] : $this->generate_preset_label($preset_id),
-                'description' => isset($preset_data['description']) ? $preset_data['description'] : 'From theme.json',
-                'properties' => $this->normalize_css_properties($preset_data['properties']),
-                'group' => $group_id,
-                'group_title' => $group_title,
-                'is_theme_json' => true
-            );
-        }
-        
-        return $parsed_presets;
-    }
-    
-    /**
-     * Generate a readable label from preset ID.
-     */
-    private function generate_preset_label($preset_id) {
-        // Convert "termina-16-400" to "Termina • 16px • Regular"
-        $parts = explode('-', $preset_id);
-        
-        if (count($parts) >= 3) {
-            $font = ucwords($parts[0]);
-            $size = $parts[1] . 'px';
-            $weight = $this->convert_weight_to_name($parts[2]);
-            return "{$font} • {$size} • {$weight}";
-        }
-        
-        // Fallback for unexpected formats
-        return ucwords(implode(' • ', $parts));
-    }
-    
-    /**
-     * Convert numeric weight to readable name.
-     */
-    private function convert_weight_to_name($weight) {
-        $weight_map = array(
-            '100' => 'Thin',
-            '200' => 'Extra Light',
-            '300' => 'Light',
-            '400' => 'Regular',
-            '500' => 'Medium',
-            '600' => 'Semi Bold',
-            '700' => 'Bold',
-            '800' => 'Extra Bold',
-            '900' => 'Black'
-        );
-        
-        return isset($weight_map[$weight]) ? $weight_map[$weight] : $weight;
-    }
-    
-    /**
-     * Normalize CSS properties from theme.json format.
-     */
-    private function normalize_css_properties($properties) {
-        $normalized = array();
-        
-        foreach ($properties as $property => $value) {
-            // Convert camelCase to kebab-case
-            $css_property = strtolower(preg_replace('/(?<!^)[A-Z]/', '-$0', $property));
-            $normalized[$css_property] = $value;
-        }
-        
-        return $normalized;
-    }
+		// CSS output hooks
+		add_action( 'wp_head', array( $this, 'output_frontend_css' ), 5 );
+		add_action( 'admin_head', array( $this, 'output_editor_css' ), 5 );
 
-    /**
-     * Get cached CSS or generate if needed.
-     */
-    private function get_cached_css() {
-        $cache_key = 'orbital_typography_css_' . $this->get_preset_hash();
-        $cached_css = get_transient($cache_key);
+		// Theme.json change detection and caching
+		add_action( 'wp_loaded', array( $this, 'check_theme_json_changed' ) );
+		add_action( 'after_switch_theme', array( $this, 'clear_preset_cache' ) );
+	}
 
-        if ($cached_css !== false) {
-            return $cached_css;
-        }
+	/**
+	 * Load default typography presets
+	 *
+	 * Defines a comprehensive set of default typography presets that work
+	 * as fallbacks when theme.json doesn't provide custom presets.
+	 *
+	 * @since 1.0.0
+	 */
+	private function load_default_presets() {
+		$this->default_presets = array(
+			'heading-xl' => array(
+				'label'       => 'Heading XL',
+				'description' => 'Extra large heading with strong presence',
+				'properties'  => array(
+					'font-size'      => '3rem',
+					'line-height'    => '1.1',
+					'font-weight'    => '700',
+					'letter-spacing' => '-0.02em',
+					'margin-bottom'  => '1.5rem',
+				),
+				'group'       => 'headings',
+				'is_default'  => true,
+			),
+			'heading-lg' => array(
+				'label'       => 'Heading Large',
+				'description' => 'Large heading for section titles',
+				'properties'  => array(
+					'font-size'      => '2.25rem',
+					'line-height'    => '1.2',
+					'font-weight'    => '600',
+					'letter-spacing' => '-0.01em',
+					'margin-bottom'  => '1.25rem',
+				),
+				'group'       => 'headings',
+				'is_default'  => true,
+			),
+			'heading-md' => array(
+				'label'       => 'Heading Medium',
+				'description' => 'Medium heading for subsections',
+				'properties'  => array(
+					'font-size'      => '1.5rem',
+					'line-height'    => '1.3',
+					'font-weight'    => '600',
+					'letter-spacing' => '0',
+					'margin-bottom'  => '1rem',
+				),
+				'group'       => 'headings',
+				'is_default'  => true,
+			),
+			'body-lg' => array(
+				'label'       => 'Body Large',
+				'description' => 'Large body text for emphasis',
+				'properties'  => array(
+					'font-size'      => '1.125rem',
+					'line-height'    => '1.6',
+					'font-weight'    => '400',
+					'letter-spacing' => '0',
+					'margin-bottom'  => '1rem',
+				),
+				'group'       => 'body',
+				'is_default'  => true,
+			),
+			'body-base' => array(
+				'label'       => 'Body Base',
+				'description' => 'Standard body text',
+				'properties'  => array(
+					'font-size'      => '1rem',
+					'line-height'    => '1.6',
+					'font-weight'    => '400',
+					'letter-spacing' => '0',
+					'margin-bottom'  => '1rem',
+				),
+				'group'       => 'body',
+				'is_default'  => true,
+			),
+			'body-sm' => array(
+				'label'       => 'Body Small',
+				'description' => 'Small body text for captions',
+				'properties'  => array(
+					'font-size'      => '0.875rem',
+					'line-height'    => '1.5',
+					'font-weight'    => '400',
+					'letter-spacing' => '0',
+					'margin-bottom'  => '0.75rem',
+				),
+				'group'       => 'body',
+				'is_default'  => true,
+			),
+			'caption' => array(
+				'label'       => 'Caption',
+				'description' => 'Caption text for images and quotes',
+				'properties'  => array(
+					'font-size'      => '0.75rem',
+					'line-height'    => '1.4',
+					'font-weight'    => '500',
+					'letter-spacing' => '0.05em',
+					'text-transform' => 'uppercase',
+					'color'          => '#6b7280',
+				),
+				'group'       => 'utility',
+				'is_default'  => true,
+			),
+			'button' => array(
+				'label'       => 'Button Text',
+				'description' => 'Text style for buttons and CTAs',
+				'properties'  => array(
+					'font-size'      => '0.875rem',
+					'line-height'    => '1.25',
+					'font-weight'    => '600',
+					'letter-spacing' => '0.025em',
+					'text-transform' => 'uppercase',
+				),
+				'group'       => 'utility',
+				'is_default'  => true,
+			),
+		);
+	}
 
-        // Generate CSS and cache it
-        $css = $this->generate_css();
-        set_transient($cache_key, $css, WEEK_IN_SECONDS);
+	/**
+	 * Load module settings with defaults
+	 *
+	 * @since 1.0.0
+	 */
+	private function load_settings() {
+		$options        = get_option( 'orbital_editor_suite_settings', array() );
+		$module_options = isset( $options[ self::MODULE_SLUG ] ) ? $options[ self::MODULE_SLUG ] : array();
 
-        return $css;
-    }
+		// Set default settings - always use theme.json method
+		$this->settings = wp_parse_args(
+			$module_options,
+			array(
+				'replace_core_controls' => true,
+				'allowed_blocks'        => array(
+					'core/paragraph',
+					'core/heading',
+					'core/list',
+					'core/quote',
+					'core/button',
+				),
+				'show_groups'           => true,
+				'output_preset_css'     => true,
+			)
+		);
+	}
 
-    /**
-     * Get hash of current presets for cache invalidation.
-     */
-    private function get_preset_hash() {
-        $preset_data = array(
-            'presets' => $this->presets,
-            'settings' => $this->settings,
-            'method' => $this->settings['preset_generation_method']
-        );
-        
-        return md5(serialize($preset_data));
-    }
+	/**
+	 * Load presets from theme.json only
+	 *
+	 * This module exclusively uses theme.json for preset definitions.
+	 *
+	 * @since 1.0.0
+	 */
+	private function load_presets() {
+		$this->load_presets_from_theme_json();
+	}
 
-    /**
-     * Check if theme.json has changed since last check.
-     */
-    public function check_theme_json_changed() {
-        // Only run in admin and only for theme.json method
-        if (!is_admin() || $this->settings['preset_generation_method'] !== 'theme_json') {
-            return;
-        }
+	/**
+	 * Load presets from theme.json file
+	 *
+	 * Attempts to read typography presets from the active theme's theme.json file.
+	 * Falls back to default presets if theme.json is not available or invalid.
+	 *
+	 * @since 1.0.0
+	 */
+	private function load_presets_from_theme_json() {
+		$theme_data = $this->get_theme_json_data();
 
-        $current_hash = $this->get_theme_json_hash();
-        $stored_hash = get_option('orbital_typography_theme_json_hash', '');
+		if ( ! $theme_data ) {
+			// Fallback to default presets if theme.json data not found
+			$this->presets = $this->default_presets;
+			return;
+		}
 
-        // If hash has changed, clear cache and update stored hash
-        if ($current_hash !== $stored_hash) {
-            $this->clear_preset_cache();
-            update_option('orbital_typography_theme_json_hash', $current_hash);
-        }
-    }
+		// Override settings from theme.json if provided
+		$this->maybe_override_settings_from_theme_json( $theme_data );
 
-    /**
-     * Get hash of theme.json data for change detection.
-     */
-    private function get_theme_json_hash() {
-        $theme_data = $this->get_theme_json_data();
-        return md5(serialize($theme_data ?: array()));
-    }
+		// Parse and load presets
+		$this->presets = $this->parse_theme_json_presets( $theme_data );
+	}
 
-    /**
-     * Clear all preset caches.
-     */
-    public function clear_preset_cache() {
-        // Clear CSS cache
-        global $wpdb;
-        $wpdb->query("DELETE FROM {$wpdb->options} WHERE option_name LIKE '_transient_orbital_typography_css_%'");
-        $wpdb->query("DELETE FROM {$wpdb->options} WHERE option_name LIKE '_transient_timeout_orbital_typography_css_%'");
+	/**
+	 * Override module settings from theme.json configuration
+	 *
+	 * @since 1.0.0
+	 * @param array $theme_data Theme.json data array.
+	 */
+	private function maybe_override_settings_from_theme_json( $theme_data ) {
+		if ( ! isset( $theme_data['settings'] ) ) {
+			return;
+		}
 
-        // Clear WordPress object cache
-        wp_cache_delete('orbital_typography_presets', 'theme_json');
-        
-        // Clear theme.json related transients
-        delete_transient('theme_json_data_user');
-        delete_transient('theme_json_data_theme');
+		$theme_settings = $theme_data['settings'];
 
-        // Refresh presets
-        $this->load_presets();
-    }
+		$settings_map = array(
+			'replace_core_controls' => 'replace_core_controls',
+			'show_groups'           => 'show_groups',
+			'output_preset_css'     => 'output_preset_css',
+		);
 
-    /**
-     * Save presets to database.
-     */
-    private function save_presets($presets) {
-        // Only save custom presets (non-default ones)
-        $custom_presets = array();
-        foreach ($presets as $id => $preset) {
-            if (empty($preset['is_default'])) {
-                $custom_presets[$id] = $preset;
-            }
-        }
-        
-        update_option('orbital_typography_presets', $custom_presets);
-        $this->presets = $presets;
-    }
+		foreach ( $settings_map as $theme_key => $setting_key ) {
+			if ( isset( $theme_settings[ $theme_key ] ) ) {
+				$this->settings[ $setting_key ] = $theme_settings[ $theme_key ];
+			}
+		}
+	}
 
-    /**
-     * Get all presets.
-     */
-    public function get_presets() {
-        return $this->presets;
-    }
+	/**
+	 * Get typography presets data from theme.json
+	 *
+	 * Attempts to read and parse the theme.json file to extract typography
+	 * preset definitions specific to this plugin.
+	 *
+	 * @since 1.0.0
+	 * @return array|false Theme data array or false if not found/invalid
+	 */
+	private function get_theme_json_data() {
+		$theme_json_path = get_template_directory() . '/theme.json';
 
-    /**
-     * Get presets by group.
-     */
-    public function get_presets_by_group($group = null) {
-        if (!$group) {
-            return $this->presets;
-        }
-        
-        return array_filter($this->presets, function($preset) use ($group) {
-            return isset($preset['group']) && $preset['group'] === $group;
-        });
-    }
+		if ( ! file_exists( $theme_json_path ) ) {
+			return false;
+		}
 
-    /**
-     * Get preset groups.
-     */
-    public function get_groups() {
-        $groups = array();
-        foreach ($this->presets as $preset) {
-            if (isset($preset['group'])) {
-                $groups[$preset['group']] = $preset['group'];
-            }
-        }
-        return $groups;
-    }
+		$theme_json_content = file_get_contents( $theme_json_path );
+		$theme_json         = json_decode( $theme_json_content, true );
 
-    /**
-     * Add or update a preset.
-     */
-    public function save_preset($id, $preset_data) {
-        $preset = wp_parse_args($preset_data, array(
-            'label' => '',
-            'description' => '',
-            'properties' => array(),
-            'group' => 'custom',
-            'is_default' => false
-        ));
-        
-        $this->presets[$id] = $preset;
-        $this->save_presets($this->presets);
-        
-        return true;
-    }
+		if ( ! $theme_json || JSON_ERROR_NONE !== json_last_error() ) {
+			return false;
+		}
 
-    /**
-     * Delete a preset.
-     */
-    public function delete_preset($id) {
-        if (isset($this->presets[$id]) && empty($this->presets[$id]['is_default'])) {
-            unset($this->presets[$id]);
-            $this->save_presets($this->presets);
-            return true;
-        }
-        
-        return false;
-    }
+		// Navigate to our plugin data: settings -> custom -> orbital -> plugins -> oes -> Typography_Presets
+		$plugin_path = array( 'settings', 'custom', 'orbital', 'plugins', 'oes', 'Typography_Presets' );
+		$data        = $theme_json;
 
-    /**
-     * Generate CSS for all presets.
-     */
-    public function generate_css() {
-        $css = "/* Typography Presets - Generated by Orbital Editor Suite */\n";
-        
-        foreach ($this->presets as $id => $preset) {
-            if (!empty($preset['properties'])) {
-                // Generate CSS for the specific preset class
-                $css .= ".has-type-preset-{$id} {\n";
-                
-                foreach ($preset['properties'] as $property => $value) {
-                    $css .= "  {$property}: {$value};\n";
-                }
-                
-                $css .= "}\n\n";
-            }
-        }
-        
-        return $css;
-    }
+		foreach ( $plugin_path as $key ) {
+			if ( ! isset( $data[ $key ] ) ) {
+				return false;
+			}
+			$data = $data[ $key ];
+		}
 
-    /**
-     * Check if module is enabled.
-     */
-    public function is_enabled() {
-        return true; // Module is enabled if instantiated
-    }
+		return $data;
+	}
 
-    /**
-     * Check if core controls should be replaced.
-     */
-    public function should_replace_core_controls() {
-        return !empty($this->settings['replace_core_controls']);
-    }
+	/**
+	 * Parse typography presets from theme.json data
+	 *
+	 * @since 1.0.0
+	 * @param array $theme_data Raw theme.json data.
+	 * @return array Parsed presets array
+	 */
+	private function parse_theme_json_presets( $theme_data ) {
+		if ( ! isset( $theme_data['items'] ) ) {
+			return $this->default_presets;
+		}
 
-    /**
-     * Get allowed blocks for this module.
-     */
-    public function get_allowed_blocks() {
-        return $this->settings['allowed_blocks'];
-    }
+		$parsed_presets    = array();
+		$group_definitions = isset( $theme_data['groups'] ) ? $theme_data['groups'] : array();
 
-    /**
-     * Enqueue editor assets.
-     */
-    public function enqueue_editor_assets() {
-        error_log('Typography Presets: Enqueuing editor assets');
-        
-        wp_enqueue_script(
-            'orbital-typography-presets',
-            ORBITAL_EDITOR_SUITE_URL . 'assets/js/typography-presets.js',
-            array('wp-hooks', 'wp-blocks', 'wp-element', 'wp-components', 'wp-block-editor'),
-            self::VERSION,
-            true
-        );
+		// Process each preset from theme.json
+		foreach ( $theme_data['items'] as $preset_id => $preset_data ) {
+			$group_id = isset( $preset_data['group'] ) ? $preset_data['group'] : 'theme';
 
-        wp_localize_script(
-            'orbital-typography-presets',
-            'orbitalTypographyPresets',
-            array(
-                'presets' => $this->get_presets(),
-                'groups' => $this->get_groups(),
-                'settings' => $this->settings,
-                'strings' => array(
-                    'selectPreset' => 'Select Typography Preset',
-                    'customPreset' => 'Custom Preset',
-                    'noPreset' => 'No Preset'
-                )
-            )
-        );
+			// Determine group title
+			$group_title = $this->get_group_title( $group_id, $preset_data, $group_definitions );
 
-        // Localize global settings for debug logging
-        $global_options = get_option('orbital_editor_suite_options', array());
-        $global_settings = isset($global_options['settings']) ? $global_options['settings'] : array();
-        
-        wp_localize_script(
-            'orbital-typography-presets',
-            'orbitalEditorSuiteGlobal',
-            array(
-                'settings' => $global_settings
-            )
-        );
+			$parsed_presets[ $preset_id ] = array(
+				'label'         => isset( $preset_data['label'] ) ? $preset_data['label'] : $this->generate_preset_label( $preset_id ),
+				'description'   => isset( $preset_data['description'] ) ? $preset_data['description'] : 'From theme.json',
+				'properties'    => $this->normalize_css_properties( $preset_data['properties'] ),
+				'group'         => $group_id,
+				'group_title'   => $group_title,
+				'is_theme_json' => true,
+			);
+		}
 
-    }
+		return $parsed_presets;
+	}
 
-    /**
-     * Output CSS in frontend head (utility classes approach).
-     */
-    public function output_frontend_css() {
-        if (empty($this->settings['output_preset_css'])) {
-            return;
-        }
+	/**
+	 * Get group title for a preset
+	 *
+	 * @since 1.0.0
+	 * @param string $group_id Group identifier.
+	 * @param array  $preset_data Preset data array.
+	 * @param array  $group_definitions Group definitions from theme.json.
+	 * @return string|null Group title or null
+	 */
+	private function get_group_title( $group_id, $preset_data, $group_definitions ) {
+		if ( isset( $group_definitions[ $group_id ]['title'] ) ) {
+			return $group_definitions[ $group_id ]['title'];
+		}
 
-        $css = $this->get_cached_css();
-        if (!empty($css)) {
-            echo "<style id='orbital-typography-presets-css'>\n" . $css . "\n</style>\n";
-        }
-    }
+		if ( isset( $preset_data['group_title'] ) ) {
+			return $preset_data['group_title'];
+		}
 
-    /**
-     * Output CSS in editor head.
-     */
-    public function output_editor_css() {
-        if (!$this->is_block_editor() || empty($this->settings['output_preset_css'])) {
-            return;
-        }
+		return null;
+	}
 
-        $css = $this->get_cached_css();
-        if (!empty($css)) {
-            echo "<style id='orbital-typography-presets-editor-css'>\n" . $css . "\n</style>\n";
-        }
-    }
+	/**
+	 * Generate a readable label from preset ID
+	 *
+	 * Converts preset IDs like "termina-16-400" to "Termina • 16px • Regular"
+	 *
+	 * @since 1.0.0
+	 * @param string $preset_id The preset identifier.
+	 * @return string Human-readable label
+	 */
+	private function generate_preset_label( $preset_id ) {
+		$parts = explode( '-', $preset_id );
 
-    /**
-     * Check if we're in the block editor.
-     */
-    private function is_block_editor() {
-        global $pagenow;
-        return ($pagenow === 'post.php' || $pagenow === 'post-new.php' || $pagenow === 'site-editor.php');
-    }
+		if ( count( $parts ) >= 3 ) {
+			$font   = ucwords( $parts[0] );
+			$size   = $parts[1] . 'px';
+			$weight = $this->convert_weight_to_name( $parts[2] );
+			return "{$font} • {$size} • {$weight}";
+		}
 
-    /**
-     * Enqueue admin assets.
-     */
-    public function enqueue_admin_assets($hook) {
-        if (!$this->is_admin_page($hook)) {
-            return;
-        }
+		// Fallback for unexpected formats
+		return ucwords( implode( ' • ', $parts ) );
+	}
 
-        // Enqueue Vue.js first
-        wp_enqueue_script('vue-js', 'https://unpkg.com/vue@3/dist/vue.global.js', array(), '3.0.0', true);
-        
-        wp_enqueue_script(
-            'orbital-typography-presets-admin',
-            ORBITAL_EDITOR_SUITE_URL . 'assets/js/typography-presets-vue-app.js',
-            array('vue-js', 'wp-util'),
-            self::VERSION,
-            true
-        );
+	/**
+	 * Convert numeric font weight to readable name
+	 *
+	 * @since 1.0.0
+	 * @param string $weight Numeric font weight (100-900).
+	 * @return string Human-readable weight name
+	 */
+	private function convert_weight_to_name( $weight ) {
+		$weight_map = array(
+			'100' => 'Thin',
+			'200' => 'Extra Light',
+			'300' => 'Light',
+			'400' => 'Regular',
+			'500' => 'Medium',
+			'600' => 'Semi Bold',
+			'700' => 'Bold',
+			'800' => 'Extra Bold',
+			'900' => 'Black',
+		);
 
-        wp_localize_script(
-            'orbital-typography-presets-admin',
-            'orbitalTypographyPresetsAdmin',
-            array(
-                'ajaxUrl' => admin_url('admin-ajax.php'),
-                'nonce' => wp_create_nonce('orbital_typography_presets_nonce'),
-                'strings' => array(
-                    'savePreset' => 'Save Preset',
-                    'deletePreset' => 'Delete Preset',
-                    'confirmDelete' => 'Are you sure you want to delete this preset?'
-                )
-            )
-        );
-    }
+		return isset( $weight_map[ $weight ] ) ? $weight_map[ $weight ] : $weight;
+	}
 
-    /**
-     * Check if we're on an admin page for this module.
-     */
-    private function is_admin_page($hook) {
-        return strpos($hook, 'orbital-editor-suite') !== false;
-    }
+	/**
+	 * Normalize CSS properties from theme.json format
+	 *
+	 * Converts camelCase property names to kebab-case CSS properties.
+	 *
+	 * @since 1.0.0
+	 * @param array $properties Raw CSS properties array.
+	 * @return array Normalized CSS properties
+	 */
+	private function normalize_css_properties( $properties ) {
+		$normalized = array();
 
-    /**
-     * AJAX: Save preset.
-     */
-    public function ajax_save_preset() {
-        check_ajax_referer('orbital_typography_presets_nonce', 'nonce');
-        
-        if (!current_user_can('manage_options')) {
-            wp_send_json_error('Insufficient permissions.');
-        }
+		foreach ( $properties as $property => $value ) {
+			// Convert camelCase to kebab-case
+			$css_property              = strtolower( preg_replace( '/(?<!^)[A-Z]/', '-$0', $property ) );
+			$normalized[ $css_property ] = $value;
+		}
 
-        $id = sanitize_key($_POST['id']);
-        $preset_data = array(
-            'label' => sanitize_text_field($_POST['label']),
-            'description' => sanitize_textarea_field($_POST['description']),
-            'category' => sanitize_text_field($_POST['category']),
-            'properties' => array()
-        );
+		return $normalized;
+	}
 
-        // Sanitize properties
-        if (isset($_POST['properties']) && is_array($_POST['properties'])) {
-            foreach ($_POST['properties'] as $property => $value) {
-                $preset_data['properties'][sanitize_key($property)] = sanitize_text_field($value);
-            }
-        }
+	/**
+	 * Generate CSS for all typography presets
+	 *
+	 * Creates CSS rules for each preset that can be applied via CSS classes.
+	 *
+	 * @since 1.0.0
+	 * @return string Generated CSS
+	 */
+	public function generate_css() {
+		$css = "/* Typography Presets - Generated by Orbital Editor Suite */\n";
 
-        if ($this->save_preset($id, $preset_data)) {
-            wp_send_json_success('Preset saved successfully.');
-        } else {
-            wp_send_json_error('Failed to save preset.');
-        }
-    }
+		foreach ( $this->presets as $id => $preset ) {
+			if ( empty( $preset['properties'] ) ) {
+				continue;
+			}
 
-    /**
-     * AJAX: Delete preset.
-     */
-    public function ajax_delete_preset() {
-        check_ajax_referer('orbital_typography_presets_nonce', 'nonce');
-        
-        if (!current_user_can('manage_options')) {
-            wp_send_json_error('Insufficient permissions.');
-        }
+			$css .= ".has-type-preset-{$id} {\n";
 
-        $id = sanitize_key($_POST['id']);
+			foreach ( $preset['properties'] as $property => $value ) {
+				$css .= "  {$property}: {$value};\n";
+			}
 
-        if ($this->delete_preset($id)) {
-            wp_send_json_success('Preset deleted successfully.');
-        } else {
-            wp_send_json_error('Failed to delete preset or preset is default.');
-        }
-    }
+			$css .= "}\n\n";
+		}
 
-    /**
-     * AJAX: Get presets.
-     */
-    public function ajax_get_presets() {
-        check_ajax_referer('orbital_typography_presets_nonce', 'nonce');
-        
-        wp_send_json_success($this->get_presets());
-    }
+		return $css;
+	}
 
-    /**
-     * Register sections in the main OptionsKit interface.
-     */
-    public function register_sections($sections) {
-        // Ensure $sections is an array
-        if (!is_array($sections)) {
-            $sections = array();
-        }
-        
-        // Ensure modules tab exists
-        if (!isset($sections['modules'])) {
-            $sections['modules'] = array();
-        }
-        
-        // Add Typography section to the modules tab
-        $sections['modules']['typography'] = 'Typography Presets';
-        
-        return $sections;
-    }
+	/**
+	 * Get cached CSS or generate if needed
+	 *
+	 * @since 1.0.0
+	 * @return string CSS content
+	 */
+	private function get_cached_css() {
+		$cache_key  = 'orbital_typography_css_' . $this->get_preset_hash();
+		$cached_css = get_transient( $cache_key );
 
-    /**
-     * Register settings in the main OptionsKit interface.
-     */
-    public function register_settings($settings) {
-        // Ensure $settings is an array
-        if (!is_array($settings)) {
-            $settings = array();
-        }
-        
-        // Add Typography settings directly under 'typography' key
-        $settings['typography'] = array(
-            array(
-                'id'      => 'typography_preset_generation_method',
-                'name'    => 'Preset Generation Method',
-                'desc'    => 'Choose how presets are defined and managed.',
-                'type'    => 'select',
-                'options' => array(
-                    'admin' => 'Admin Interface (User-friendly)',
-                    'theme_json' => 'theme.json (Developer/Advanced)'
-                ),
-                'std'     => 'admin',
-                'section' => 'typography',
-            ),
-            array(
-                'id'      => 'typography_replace_core_controls',
-                'name'    => 'Replace Core Controls',
-                'desc'    => 'Remove WordPress core typography controls and replace with preset system.',
-                'type'    => 'checkbox',
-                'std'     => false,
-                'section' => 'typography',
-            ),
-            array(
-                'id'      => 'typography_show_groups',
-                'name'    => 'Show Groups in Dropdown',
-                'desc'    => 'Organize presets into groups in the block editor dropdown.',
-                'type'    => 'checkbox',
-                'std'     => true,
-                'section' => 'typography',
-            ),
-            array(
-                'id'      => 'typography_output_preset_css',
-                'name'    => 'Output Preset CSS',
-                'desc'    => 'Automatically generate and include CSS for all presets.',
-                'type'    => 'checkbox',
-                'std'     => true,
-                'section' => 'typography',
-            ),
-        );
-        
-        return $settings;
-    }
+		if ( false !== $cached_css ) {
+			return $cached_css;
+		}
 
-    /**
-     * Get module slug.
-     */
-    public function get_slug() {
-        return self::MODULE_SLUG;
-    }
+		// Generate CSS and cache it
+		$css = $this->generate_css();
+		set_transient( $cache_key, $css, WEEK_IN_SECONDS );
 
-    /**
-     * Get module settings.
-     */
-    public function get_settings() {
-        return $this->settings;
-    }
+		return $css;
+	}
+
+	/**
+	 * Get hash of current presets for cache invalidation
+	 *
+	 * @since 1.0.0
+	 * @return string MD5 hash of preset data
+	 */
+	private function get_preset_hash() {
+		$preset_data = array(
+			'presets'  => $this->presets,
+			'settings' => $this->settings,
+			'method'   => 'theme_json',
+		);
+
+		return md5( serialize( $preset_data ) );
+	}
+
+	/**
+	 * Check if theme.json has changed since last check
+	 *
+	 * @since 1.0.0
+	 */
+	public function check_theme_json_changed() {
+		// Only run in admin
+		if ( ! is_admin() ) {
+			return;
+		}
+
+		$current_hash = $this->get_theme_json_hash();
+		$stored_hash  = get_option( 'orbital_typography_theme_json_hash', '' );
+
+		// If hash has changed, clear cache and update stored hash
+		if ( $current_hash !== $stored_hash ) {
+			$this->clear_preset_cache();
+			update_option( 'orbital_typography_theme_json_hash', $current_hash );
+		}
+	}
+
+	/**
+	 * Get hash of theme.json data for change detection
+	 *
+	 * @since 1.0.0
+	 * @return string MD5 hash of theme.json data
+	 */
+	private function get_theme_json_hash() {
+		$theme_data = $this->get_theme_json_data();
+		return md5( serialize( $theme_data ? $theme_data : array() ) );
+	}
+
+	/**
+	 * Clear all preset-related caches
+	 *
+	 * @since 1.0.0
+	 */
+	public function clear_preset_cache() {
+		global $wpdb;
+
+		// Clear CSS cache transients
+		$wpdb->query( "DELETE FROM {$wpdb->options} WHERE option_name LIKE '_transient_orbital_typography_css_%'" );
+		$wpdb->query( "DELETE FROM {$wpdb->options} WHERE option_name LIKE '_transient_timeout_orbital_typography_css_%'" );
+
+		// Clear WordPress object cache
+		wp_cache_delete( 'orbital_typography_presets', 'theme_json' );
+
+		// Clear theme.json related transients
+		delete_transient( 'theme_json_data_user' );
+		delete_transient( 'theme_json_data_theme' );
+
+		// Refresh presets
+		$this->load_presets();
+	}
+
+	/**
+	 * Get all loaded presets
+	 *
+	 * @since 1.0.0
+	 * @return array All presets (default + theme.json)
+	 */
+	public function get_presets() {
+		return $this->presets;
+	}
+
+	/**
+	 * Get presets filtered by group
+	 *
+	 * @since 1.0.0
+	 * @param string|null $group Group to filter by, or null for all.
+	 * @return array Filtered presets
+	 */
+	public function get_presets_by_group( $group = null ) {
+		if ( ! $group ) {
+			return $this->presets;
+		}
+
+		return array_filter(
+			$this->presets,
+			function( $preset ) use ( $group ) {
+				return isset( $preset['group'] ) && $preset['group'] === $group;
+			}
+		);
+	}
+
+	/**
+	 * Get all available preset groups
+	 *
+	 * @since 1.0.0
+	 * @return array Available groups
+	 */
+	public function get_groups() {
+		$groups = array();
+		foreach ( $this->presets as $preset ) {
+			if ( isset( $preset['group'] ) ) {
+				$groups[ $preset['group'] ] = $preset['group'];
+			}
+		}
+		return $groups;
+	}
+
+	/**
+	 * Check if module is enabled
+	 *
+	 * @since 1.0.0
+	 * @return bool True if enabled
+	 */
+	public function is_enabled() {
+		return true; // Module is enabled if instantiated
+	}
+
+	/**
+	 * Check if core typography controls should be replaced
+	 *
+	 * @since 1.0.0
+	 * @return bool True if core controls should be replaced
+	 */
+	public function should_replace_core_controls() {
+		return ! empty( $this->settings['replace_core_controls'] );
+	}
+
+	/**
+	 * Get blocks allowed to use typography presets
+	 *
+	 * @since 1.0.0
+	 * @return array Array of allowed block names
+	 */
+	public function get_allowed_blocks() {
+		return $this->settings['allowed_blocks'];
+	}
+
+	/**
+	 * Enqueue block editor assets
+	 *
+	 * Loads JavaScript and localizes data for the block editor integration.
+	 *
+	 * @since 1.0.0
+	 */
+	public function enqueue_editor_assets() {
+		wp_enqueue_script(
+			'orbital-typography-presets',
+			ORBITAL_EDITOR_SUITE_URL . 'assets/js/typography-presets.js',
+			array( 'wp-hooks', 'wp-blocks', 'wp-element', 'wp-components', 'wp-block-editor' ),
+			self::VERSION,
+			true
+		);
+
+		wp_localize_script(
+			'orbital-typography-presets',
+			'orbitalTypographyPresets',
+			array(
+				'presets'  => $this->get_presets(),
+				'groups'   => $this->get_groups(),
+				'settings' => $this->settings,
+				'strings'  => array(
+					'selectPreset' => __( 'Select Typography Preset', 'orbital-editor-suite' ),
+					'customPreset' => __( 'Custom Preset', 'orbital-editor-suite' ),
+					'noPreset'     => __( 'No Preset', 'orbital-editor-suite' ),
+				),
+			)
+		);
+	}
+
+	/**
+	 * Output CSS in frontend head
+	 *
+	 * @since 1.0.0
+	 */
+	public function output_frontend_css() {
+		if ( empty( $this->settings['output_preset_css'] ) ) {
+			return;
+		}
+
+		$css = $this->get_cached_css();
+		if ( ! empty( $css ) ) {
+			echo "<style id='orbital-typography-presets-css'>\n" . $css . "\n</style>\n";
+		}
+	}
+
+	/**
+	 * Output CSS in editor head
+	 *
+	 * @since 1.0.0
+	 */
+	public function output_editor_css() {
+		if ( ! $this->is_block_editor() || empty( $this->settings['output_preset_css'] ) ) {
+			return;
+		}
+
+		$css = $this->get_cached_css();
+		if ( ! empty( $css ) ) {
+			echo "<style id='orbital-typography-presets-editor-css'>\n" . $css . "\n</style>\n";
+		}
+	}
+
+	/**
+	 * Check if we're in the block editor
+	 *
+	 * @since 1.0.0
+	 * @return bool True if in block editor
+	 */
+	private function is_block_editor() {
+		global $pagenow;
+		return in_array( $pagenow, array( 'post.php', 'post-new.php', 'site-editor.php' ), true );
+	}
+
+	/**
+	 * Get module slug
+	 *
+	 * @since 1.0.0
+	 * @return string Module slug
+	 */
+	public function get_slug() {
+		return self::MODULE_SLUG;
+	}
+
+	/**
+	 * Get module settings
+	 *
+	 * @since 1.0.0
+	 * @return array Module settings
+	 */
+	public function get_settings() {
+		return $this->settings;
+	}
+
+	/**
+	 * Register Typography sections in OptionsKit interface
+	 *
+	 * Adds the Typography Presets section to the main plugin's
+	 * OptionsKit admin interface under the Modules tab.
+	 *
+	 * @since 1.0.0
+	 * @param array $sections Existing sections array.
+	 * @return array Modified sections array
+	 */
+	public function register_sections( $sections ) {
+		// Ensure $sections is an array
+		if ( ! is_array( $sections ) ) {
+			$sections = array();
+		}
+
+		// Ensure modules tab exists
+		if ( ! isset( $sections['modules'] ) ) {
+			$sections['modules'] = array();
+		}
+
+		// Add Typography section to the modules tab
+		$sections['modules']['typography'] = __( 'Typography Presets', 'orbital-editor-suite' );
+
+		return $sections;
+	}
+
+	/**
+	 * Register Typography settings in OptionsKit interface
+	 *
+	 * Adds Typography Presets settings fields to the main plugin's
+	 * OptionsKit admin interface.
+	 *
+	 * @since 1.0.0
+	 * @param array $settings Existing settings array.
+	 * @return array Modified settings array
+	 */
+	public function register_settings( $settings ) {
+		// Ensure $settings is an array
+		if ( ! is_array( $settings ) ) {
+			$settings = array();
+		}
+
+		// Add Typography settings directly under 'typography' key
+		$settings['typography'] = array(
+			array(
+				'id'      => 'typography_replace_core_controls',
+				'name'    => __( 'Replace Core Controls', 'orbital-editor-suite' ),
+				'desc'    => __( 'Remove WordPress core typography controls and replace with preset system.', 'orbital-editor-suite' ),
+				'type'    => 'checkbox',
+				'std'     => false,
+				'section' => 'typography',
+			),
+			array(
+				'id'      => 'typography_show_groups',
+				'name'    => __( 'Show Groups in Dropdown', 'orbital-editor-suite' ),
+				'desc'    => __( 'Organize presets into groups in the block editor dropdown.', 'orbital-editor-suite' ),
+				'type'    => 'checkbox',
+				'std'     => true,
+				'section' => 'typography',
+			),
+			array(
+				'id'      => 'typography_output_preset_css',
+				'name'    => __( 'Output Preset CSS', 'orbital-editor-suite' ),
+				'desc'    => __( 'Automatically generate and include CSS for all presets.', 'orbital-editor-suite' ),
+				'type'    => 'checkbox',
+				'std'     => true,
+				'section' => 'typography',
+			),
+			array(
+				'id'      => 'typography_allowed_blocks',
+				'name'    => __( 'Allowed Blocks', 'orbital-editor-suite' ),
+				'desc'    => __( 'Select which blocks can use typography presets', 'orbital-editor-suite' ),
+				'type'    => 'multicheckbox',
+				'options' => array(
+					'core/paragraph' => __( 'Paragraph', 'orbital-editor-suite' ),
+					'core/heading'   => __( 'Heading', 'orbital-editor-suite' ),
+					'core/list'      => __( 'List', 'orbital-editor-suite' ),
+					'core/quote'     => __( 'Quote', 'orbital-editor-suite' ),
+					'core/button'    => __( 'Button', 'orbital-editor-suite' ),
+					'core/cover'     => __( 'Cover', 'orbital-editor-suite' ),
+					'core/group'     => __( 'Group', 'orbital-editor-suite' ),
+				),
+				'std'     => array( 'core/paragraph', 'core/heading', 'core/list', 'core/quote', 'core/button' ),
+				'section' => 'typography',
+			),
+		);
+
+		return $settings;
+	}
 }

@@ -1,0 +1,42 @@
+/**
+ * OptionsKit Admin Notice Customizations
+ * 
+ * Customizes the positioning and appearance of admin notices
+ * in OptionsKit admin pages.
+ */
+
+/* Re-enable WordPress admin notices if desired */
+body.optionskit-panel-page #optionskit-topbar h1+.hide-notice {
+    display: block !important;
+}
+
+/* Move Vue notices to a different position */
+#optionskit-topbar .vue-wp-notice {
+    /* Option 1: Move to top-right corner */
+    position: fixed;
+    top: 32px; /* Below WordPress admin bar */
+    right: 20px;
+    z-index: 9999;
+    max-width: 350px;
+    margin: 0;
+}
+
+/* Alternative: Move notices below the navigation */
+.optionskit-navigation-wrapper + .vue-wp-notice {
+    margin: 20px 0;
+    position: relative;
+}
+
+/* Custom notice container styling */
+.orbital-custom-notices {
+    padding: 20px 0;
+    border-bottom: 1px solid #ddd;
+    margin-bottom: 20px;
+}
+
+/* Make notices more prominent */
+.vue-wp-notice {
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    border-radius: 4px;
+    font-weight: 500;
+}
