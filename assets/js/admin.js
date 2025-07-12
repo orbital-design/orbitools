@@ -1,25 +1,31 @@
+/**
+ * Orbital Editor Suite Admin JavaScript
+ * 
+ * Common functionality for all admin pages
+ */
+
 document.addEventListener('DOMContentLoaded', function() {
     'use strict';
     
-    // Initialize admin functionality
-    TUC_Admin.init();
-    
+    // Initialize Orbital Editor Suite admin functionality
+    Orbital_Admin.init();
 });
 
-var TUC_Admin = {
+var Orbital_Admin = {
     
     init: function() {
         this.bindEvents();
-        this.initPreview();
         this.initTooltips();
         this.initAnimations();
+        this.initTabSwitching();
+        this.initNotices();
     },
     
     bindEvents: function() {
-        // Toggle switch animations
-        document.querySelectorAll('.tuc-toggle-switch input[type="checkbox"]').forEach(function(checkbox) {
+        // Toggle switch animations for orbital controls
+        document.querySelectorAll('.orbital-toggle-switch input[type="checkbox"]').forEach(function(checkbox) {
             checkbox.addEventListener('change', function() {
-                var slider = this.parentNode.querySelector('.tuc-slider');
+                var slider = this.parentNode.querySelector('.orbital-slider');
                 if (this.checked) {
                     slider.classList.add('checked');
                 } else {
@@ -28,20 +34,8 @@ var TUC_Admin = {
             });
         });
         
-        // Checkbox animations
-        document.querySelectorAll('.tuc-checkbox-item input[type="checkbox"]').forEach(function(checkbox) {
-            checkbox.addEventListener('change', function() {
-                var item = this.closest('.tuc-checkbox-item');
-                if (this.checked) {
-                    item.classList.add('checked');
-                } else {
-                    item.classList.remove('checked');
-                }
-            });
-        });
-        
         // Settings card hover effects
-        document.querySelectorAll('.tuc-settings-card').forEach(function(card) {
+        document.querySelectorAll('.orbital-card').forEach(function(card) {
             card.addEventListener('mouseenter', function() {
                 this.classList.add('hovered');
             });
@@ -50,91 +44,67 @@ var TUC_Admin = {
             });
         });
         
-        // Form validation
-        document.querySelectorAll('form').forEach(function(form) {
-            form.addEventListener('submit', function(e) {
-                if (!TUC_Admin.validateForm()) {
-                    e.preventDefault();
-                    TUC_Admin.showNotice('Please check your settings before saving.', 'error');
-                } else {
-                    TUC_Admin.showNotice('Saving settings...', 'info');
+        // Copy to clipboard functionality
+        document.querySelectorAll('.orbital-copy-button').forEach(function(button) {
+            button.addEventListener('click', function(e) {
+                e.preventDefault();
+                var targetSelector = this.getAttribute('data-copy-target');
+                var target = document.querySelector(targetSelector);
+                if (target) {
+                    Orbital_Admin.copyToClipboard(target.textContent || target.value);
                 }
             });
         });
-        
-        // Custom CSS editor enhancements
-        var customCssElement = document.getElementById('custom_css');
-        if (customCssElement) {
-            customCssElement.addEventListener('input', function() {
-                TUC_Admin.updatePreview();
+    },
+    
+    initTabSwitching: function() {
+        // Global tab switching functionality for non-Vue pages
+        document.querySelectorAll('.orbital-tabs').forEach(function(tabContainer) {
+            var tabs = tabContainer.querySelectorAll('.orbital-tab');
+            var panels = document.querySelectorAll('[role="tabpanel"]');
+            
+            tabs.forEach(function(tab) {
+                tab.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    
+                    // Remove active state from all tabs
+                    tabs.forEach(function(t) {
+                        t.classList.remove('active');
+                        t.setAttribute('aria-selected', 'false');
+                    });
+                    
+                    // Hide all panels
+                    panels.forEach(function(panel) {
+                        panel.style.display = 'none';
+                    });
+                    
+                    // Activate clicked tab
+                    this.classList.add('active');
+                    this.setAttribute('aria-selected', 'true');
+                    
+                    // Show corresponding panel
+                    var targetPanel = document.getElementById(this.getAttribute('aria-controls'));
+                    if (targetPanel) {
+                        targetPanel.style.display = 'block';
+                    }
+                });
             });
-        }
-    },
-    
-    validateForm: function() {
-        var valid = true;
-        
-        // Check if at least one block is selected
-        if (document.querySelectorAll('input[name="tuc_options[allowed_blocks][]"]:checked').length === 0) {
-            TUC_Admin.showNotice('Please select at least one block type.', 'warning');
-            valid = false;
-        }
-        
-        // Check if at least one utility category is selected
-        if (document.querySelectorAll('input[name="tuc_options[utility_categories][]"]:checked').length === 0) {
-            TUC_Admin.showNotice('Please select at least one utility category.', 'warning');
-            valid = false;
-        }
-        
-        return valid;
-    },
-    
-    updatePreview: function() {
-        var customCssElement = document.getElementById('custom_css');
-        var customCSS = customCssElement ? customCssElement.value : '';
-        
-        // Remove existing custom preview styles
-        var existingStyles = document.getElementById('tuc-custom-preview-styles');
-        if (existingStyles) {
-            existingStyles.remove();
-        }
-        
-        if (customCSS.trim()) {
-            // Add custom styles to preview
-            var style = document.createElement('style');
-            style.id = 'tuc-custom-preview-styles';
-            style.textContent = customCSS;
-            document.head.appendChild(style);
-        }
-    },
-    
-    initPreview: function() {
-        // Add interactive preview functionality
-        var previewItems = document.querySelectorAll('.tuc-preview-item');
-        
-        previewItems.forEach(function(item) {
-            var text = item.querySelector('.tuc-preview-text');
-            if (text) {
-                // Add click-to-edit functionality
-                text.setAttribute('contenteditable', 'true');
-                text.addEventListener('focus', function() {
-                    this.classList.add('editing');
-                });
-                text.addEventListener('blur', function() {
-                    this.classList.remove('editing');
-                });
+            
+            // Set initial active state
+            if (tabs.length > 0) {
+                tabs[0].click();
             }
         });
     },
     
     initTooltips: function() {
         // Add tooltips to help icons
-        document.querySelectorAll('.tuc-help-text').forEach(function(help) {
-            var parent = help.closest('.tuc-field');
+        document.querySelectorAll('.orbital-help-text').forEach(function(help) {
+            var parent = help.closest('.orbital-field');
             if (parent) {
                 // Create tooltip trigger
                 var tooltip = document.createElement('span');
-                tooltip.className = 'tuc-tooltip-trigger dashicons dashicons-editor-help';
+                tooltip.className = 'orbital-tooltip-trigger dashicons dashicons-editor-help';
                 var label = parent.querySelector('label');
                 if (label) {
                     label.appendChild(tooltip);
@@ -143,7 +113,7 @@ var TUC_Admin = {
                 // Tooltip behavior
                 tooltip.addEventListener('mouseenter', function() {
                     var content = document.createElement('div');
-                    content.className = 'tuc-tooltip';
+                    content.className = 'orbital-tooltip';
                     content.textContent = help.textContent;
                     document.body.appendChild(content);
                     
@@ -155,7 +125,7 @@ var TUC_Admin = {
                 });
                 
                 tooltip.addEventListener('mouseleave', function() {
-                    document.querySelectorAll('.tuc-tooltip').forEach(function(tooltip) {
+                    document.querySelectorAll('.orbital-tooltip').forEach(function(tooltip) {
                         tooltip.remove();
                     });
                 });
@@ -165,7 +135,7 @@ var TUC_Admin = {
     
     initAnimations: function() {
         // Staggered animation for settings cards
-        document.querySelectorAll('.tuc-settings-card').forEach(function(card, index) {
+        document.querySelectorAll('.orbital-card').forEach(function(card, index) {
             card.style.animationDelay = (index * 0.1) + 's';
         });
         
@@ -186,22 +156,37 @@ var TUC_Admin = {
         });
     },
     
+    initNotices: function() {
+        // Auto-dismiss notices after 5 seconds
+        document.querySelectorAll('.orbital-notice.is-dismissible').forEach(function(notice) {
+            setTimeout(function() {
+                notice.style.opacity = '0';
+                notice.style.transition = 'opacity 0.3s';
+                setTimeout(function() {
+                    if (notice.parentNode) {
+                        notice.remove();
+                    }
+                }, 300);
+            }, 5000);
+        });
+    },
+    
     showNotice: function(message, type) {
         type = type || 'info';
         
         var notice = document.createElement('div');
-        notice.className = 'tuc-notice tuc-notice-' + type;
-        notice.textContent = message;
+        notice.className = 'orbital-notice orbital-notice-' + type;
+        notice.innerHTML = '<p>' + message + '</p>';
         
         // Remove existing notices
-        document.querySelectorAll('.tuc-notice').forEach(function(existingNotice) {
+        document.querySelectorAll('.orbital-notice').forEach(function(existingNotice) {
             existingNotice.remove();
         });
         
         // Add new notice
-        var adminContent = document.querySelector('.tuc-admin-content');
+        var adminContent = document.querySelector('.orbital-notices-container');
         if (adminContent) {
-            adminContent.insertBefore(notice, adminContent.firstChild);
+            adminContent.appendChild(notice);
         }
         
         // Auto-hide after 5 seconds
@@ -214,34 +199,71 @@ var TUC_Admin = {
                 }
             }, 300);
         }, 5000);
-    }
-};
-
-// Utility functions
-window.TUC_Utils = {
-    
-    formatClassName: function(className) {
-        return className.replace(/[^a-z0-9-]/gi, '').toLowerCase();
-    },
-    
-    generatePreviewCode: function(classes) {
-        return '.' + classes.join(' .');
     },
     
     copyToClipboard: function(text) {
         if (navigator.clipboard) {
             navigator.clipboard.writeText(text).then(function() {
-                TUC_Admin.showNotice('Copied to clipboard!', 'success');
+                Orbital_Admin.showNotice('Copied to clipboard!', 'success');
+            }).catch(function() {
+                Orbital_Admin.fallbackCopyToClipboard(text);
             });
         } else {
-            // Fallback for older browsers
-            var textArea = document.createElement('textarea');
-            textArea.value = text;
-            document.body.appendChild(textArea);
-            textArea.select();
-            document.execCommand('copy');
-            document.body.removeChild(textArea);
-            TUC_Admin.showNotice('Copied to clipboard!', 'success');
+            Orbital_Admin.fallbackCopyToClipboard(text);
         }
+    },
+    
+    fallbackCopyToClipboard: function(text) {
+        // Fallback for older browsers
+        var textArea = document.createElement('textarea');
+        textArea.value = text;
+        textArea.style.position = 'fixed';
+        textArea.style.left = '-999999px';
+        textArea.style.top = '-999999px';
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        
+        try {
+            document.execCommand('copy');
+            Orbital_Admin.showNotice('Copied to clipboard!', 'success');
+        } catch (err) {
+            Orbital_Admin.showNotice('Copy to clipboard failed', 'error');
+        }
+        
+        document.body.removeChild(textArea);
+    }
+};
+
+// Utility functions
+window.Orbital_Utils = {
+    
+    formatClassName: function(className) {
+        return className.replace(/[^a-z0-9-]/gi, '').toLowerCase();
+    },
+    
+    debounce: function(func, wait, immediate) {
+        var timeout;
+        return function() {
+            var context = this, args = arguments;
+            var later = function() {
+                timeout = null;
+                if (!immediate) func.apply(context, args);
+            };
+            var callNow = immediate && !timeout;
+            clearTimeout(timeout);
+            timeout = setTimeout(later, wait);
+            if (callNow) func.apply(context, args);
+        };
+    },
+    
+    isElementInViewport: function(el) {
+        var rect = el.getBoundingClientRect();
+        return (
+            rect.top >= 0 &&
+            rect.left >= 0 &&
+            rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) &&
+            rect.right <= (window.innerWidth || document.documentElement.clientWidth)
+        );
     }
 };

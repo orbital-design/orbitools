@@ -65,13 +65,26 @@ class Admin {
             return;
         }
 
+        // Load Vue.js 3.0 first (centralized loading)
+        wp_enqueue_script(
+            'vue-js',
+            'https://unpkg.com/vue@3/dist/vue.global.js',
+            array(),
+            '3.0.0',
+            true
+        );
+
+        // Load main admin script with Vue dependency
         wp_enqueue_script(
             $this->plugin_name,
             plugin_dir_url(dirname(dirname(__FILE__))) . 'assets/js/admin.js',
-            array(),
+            array('vue-js'),
             $this->version,
             true
         );
+
+        // Load page-specific Vue apps based on current page
+        $this->load_page_specific_assets($hook);
 
         // Localize script for AJAX
         wp_localize_script(
@@ -87,6 +100,65 @@ class Admin {
                 )
             )
         );
+    }
+
+    /**
+     * Load page-specific Vue.js assets.
+     */
+    private function load_page_specific_assets($hook) {
+        // Typography Presets Vue app
+        if (strpos($hook, 'orbital-typography-vue-new') !== false) {
+            wp_enqueue_script(
+                'orbital-typography-presets-vue-app',
+                plugin_dir_url(dirname(dirname(__FILE__))) . 'assets/js/typography-presets-vue-app.js',
+                array('vue-js'),
+                $this->version,
+                true
+            );
+            
+            wp_enqueue_style(
+                'orbital-typography-presets-vue-styles',
+                plugin_dir_url(dirname(dirname(__FILE__))) . 'assets/css/typography-presets-vue-styles.css',
+                array(),
+                $this->version
+            );
+        }
+
+        // Main dashboard Vue app
+        if (strpos($hook, 'orbital-editor-suite') !== false && strpos($hook, 'updates') === false) {
+            wp_enqueue_script(
+                'orbital-main-vue-app',
+                plugin_dir_url(dirname(dirname(__FILE__))) . 'assets/js/main-vue-app.js',
+                array('vue-js'),
+                $this->version,
+                true
+            );
+            
+            wp_enqueue_style(
+                'orbital-main-vue-styles',
+                plugin_dir_url(dirname(dirname(__FILE__))) . 'assets/css/main-vue-styles.css',
+                array(),
+                $this->version
+            );
+        }
+
+        // Updates Vue app
+        if (strpos($hook, 'orbital-editor-suite-updates') !== false) {
+            wp_enqueue_script(
+                'orbital-updates-vue-app',
+                plugin_dir_url(dirname(dirname(__FILE__))) . 'assets/js/updates-vue-app.js',
+                array('vue-js'),
+                $this->version,
+                true
+            );
+            
+            wp_enqueue_style(
+                'orbital-updates-vue-styles',
+                plugin_dir_url(dirname(dirname(__FILE__))) . 'assets/css/updates-vue-styles.css',
+                array(),
+                $this->version
+            );
+        }
     }
 
     /**

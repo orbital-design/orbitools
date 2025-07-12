@@ -137,6 +137,7 @@ createApp({
     
     mounted() {
         this.loadData();
+        this.initTabSwitching();
     },
     
     methods: {
@@ -156,6 +157,31 @@ createApp({
             setTimeout(() => {
                 this.loading = false;
             }, 500);
+        },
+        
+        initTabSwitching() {
+            // Initialize tab switching for static PHP-rendered tabs
+            const tabButtons = document.querySelectorAll('.orbital-tab');
+            
+            tabButtons.forEach(button => {
+                button.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    
+                    // Remove active class from all tabs
+                    tabButtons.forEach(tab => tab.classList.remove('active'));
+                    
+                    // Add active class to clicked tab
+                    button.classList.add('active');
+                    
+                    // Update Vue activeTab data
+                    this.activeTab = button.dataset.tab;
+                });
+            });
+            
+            // Set initial active tab
+            if (tabButtons.length > 0) {
+                tabButtons[0].classList.add('active');
+            }
         },
         
         async saveSettings() {

@@ -60,19 +60,8 @@ class Typography_Presets_Vue_Admin {
             return;
         }
 
-        // Enqueue Vue.js
-        wp_enqueue_script('vue-js', 'https://unpkg.com/vue@3/dist/vue.global.js', array(), '3.0.0', true);
-        
-        // Enqueue our Vue app
-        wp_enqueue_script(
-            'orbital-typography-presets-vue-app',
-            ORBITAL_EDITOR_SUITE_URL . 'assets/js/typography-presets-vue-app.js',
-            array('vue-js'),
-            '1.0.0',
-            true
-        );
-
-        // Localize script with WordPress data
+        // Vue.js and main assets are now loaded centrally in class-admin.php
+        // Only localize script with Typography-specific data
         wp_localize_script('orbital-typography-presets-vue-app', 'orbitalTypographyVue', array(
             'ajax_url' => admin_url('admin-ajax.php'),
             'nonce' => wp_create_nonce('orbital_typography_vue_nonce'),
@@ -89,14 +78,6 @@ class Typography_Presets_Vue_Admin {
                 'presetSaved' => __('Preset saved successfully', 'orbital-editor-suite')
             )
         ));
-
-        // Enqueue styles
-        wp_enqueue_style(
-            'orbital-typography-presets-vue-styles',
-            ORBITAL_EDITOR_SUITE_URL . 'assets/css/typography-presets-vue-styles.css',
-            array(),
-            '1.0.0'
-        );
     }
 
     /**
@@ -136,25 +117,25 @@ class Typography_Presets_Vue_Admin {
             <!-- Admin notices container -->
             <div class="orbital-notices-container"></div>
             
-            <!-- Static tabs -->
-            <div class="orbital-tabs">
-                <button @click="activeTab = 'settings'" :class="['orbital-tab', { active: activeTab === 'settings' }]">
+            <!-- Static tabs (PHP rendered, Vue controlled) -->
+            <nav class="orbital-tabs" role="tablist">
+                <button id="settings-tab" class="orbital-tab" data-tab="settings" role="tab" aria-controls="settings-panel">
                     <span class="dashicons dashicons-admin-settings"></span>
                     Settings
                 </button>
-                <button @click="activeTab = 'presets'" :class="['orbital-tab', { active: activeTab === 'presets' }]">
+                <button id="presets-tab" class="orbital-tab" data-tab="presets" role="tab" aria-controls="presets-panel">
                     <span class="dashicons dashicons-editor-textcolor"></span>
                     Preset Management
                 </button>
-                <button @click="activeTab = 'css'" :class="['orbital-tab', { active: activeTab === 'css' }]">
+                <button id="css-tab" class="orbital-tab" data-tab="css" role="tab" aria-controls="css-panel">
                     <span class="dashicons dashicons-editor-code"></span>
                     Generated CSS
                 </button>
-                <button @click="activeTab = 'instructions'" :class="['orbital-tab', { active: activeTab === 'instructions' }]">
+                <button id="instructions-tab" class="orbital-tab" data-tab="instructions" role="tab" aria-controls="instructions-panel">
                     <span class="dashicons dashicons-media-code"></span>
                     Theme.json Instructions
                 </button>
-            </div>
+            </nav>
             
             <!-- Tab content container -->
             <div class="orbital-tab-content">
@@ -169,7 +150,7 @@ class Typography_Presets_Vue_Admin {
                     <!-- Main app content -->
                     <div v-else>
                         <!-- Settings Tab -->
-                        <div v-if="activeTab === 'settings'" class="typography-section">
+                        <div v-if="activeTab === 'settings'" class="typography-section" id="settings-panel" role="tabpanel" aria-labelledby="settings-tab">
                             <h2>Module Settings</h2>
                             <p>Configure how the Typography Presets module behaves.</p>
                             
@@ -238,7 +219,7 @@ class Typography_Presets_Vue_Admin {
                         </div>
 
                         <!-- Preset Management Tab -->
-                        <div v-if="activeTab === 'presets'" class="typography-section">
+                        <div v-if="activeTab === 'presets'" class="typography-section" id="presets-panel" role="tabpanel" aria-labelledby="presets-tab">
                             <h2>Preset Management</h2>
                             <p>Create and manage your typography presets.</p>
                             
@@ -365,7 +346,7 @@ class Typography_Presets_Vue_Admin {
                         </div>
 
                         <!-- CSS Output Tab -->
-                        <div v-if="activeTab === 'css'" class="typography-section">
+                        <div v-if="activeTab === 'css'" class="typography-section" id="css-panel" role="tabpanel" aria-labelledby="css-tab">
                             <h2>Generated CSS</h2>
                             <p>View and copy the CSS generated for your presets.</p>
                             
@@ -378,7 +359,7 @@ class Typography_Presets_Vue_Admin {
                         </div>
 
                         <!-- Theme.json Instructions Tab -->
-                        <div v-if="activeTab === 'instructions'" class="typography-section">
+                        <div v-if="activeTab === 'instructions'" class="typography-section" id="instructions-panel" role="tabpanel" aria-labelledby="instructions-tab">
                             <h2>theme.json Instructions</h2>
                             <p>How to configure presets using theme.json (Advanced users only).</p>
                             
