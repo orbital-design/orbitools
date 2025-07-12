@@ -106,8 +106,12 @@ class Admin {
      * Load page-specific Vue.js assets.
      */
     private function load_page_specific_assets($hook) {
+        echo "<!-- DEBUG: load_page_specific_assets called with hook: $hook -->\n";
+        echo "<!-- DEBUG: Page parameter: " . (isset($_GET['page']) ? $_GET['page'] : 'none') . " -->\n";
+        
         // Typography Presets Vue app
-        if (strpos($hook, 'orbital-typography-vue-new') !== false) {
+        if (isset($_GET['page']) && $_GET['page'] === 'orbital-typography-vue-new') {
+            echo "<!-- DEBUG: Loading Typography assets -->\n";
             wp_enqueue_script(
                 'orbital-typography-presets-vue-app',
                 plugin_dir_url(dirname(dirname(__FILE__))) . 'assets/js/typography-presets-vue-app.js',
@@ -116,16 +120,33 @@ class Admin {
                 true
             );
             
+            // Load shared Vue component styles first
+            wp_enqueue_style(
+                'orbital-vue-components-styles',
+                plugin_dir_url(dirname(dirname(__FILE__))) . 'assets/css/vue-components-styles.css',
+                array(),
+                $this->version
+            );
+            
+            // Load main Vue styles for tabs
+            wp_enqueue_style(
+                'orbital-main-vue-styles',
+                plugin_dir_url(dirname(dirname(__FILE__))) . 'assets/css/main-vue-styles.css',
+                array('orbital-vue-components-styles'),
+                $this->version
+            );
+            
+            // Load Typography-specific styles
             wp_enqueue_style(
                 'orbital-typography-presets-vue-styles',
                 plugin_dir_url(dirname(dirname(__FILE__))) . 'assets/css/typography-presets-vue-styles.css',
-                array(),
+                array('orbital-main-vue-styles'),
                 $this->version
             );
         }
 
         // Main dashboard Vue app
-        if (strpos($hook, 'orbital-editor-suite') !== false && strpos($hook, 'updates') === false) {
+        if (isset($_GET['page']) && $_GET['page'] === 'orbital-editor-suite') {
             wp_enqueue_script(
                 'orbital-main-vue-app',
                 plugin_dir_url(dirname(dirname(__FILE__))) . 'assets/js/main-vue-app.js',
@@ -143,7 +164,7 @@ class Admin {
         }
 
         // Updates Vue app
-        if (strpos($hook, 'orbital-editor-suite-updates') !== false) {
+        if (isset($_GET['page']) && $_GET['page'] === 'orbital-editor-suite-updates') {
             wp_enqueue_script(
                 'orbital-updates-vue-app',
                 plugin_dir_url(dirname(dirname(__FILE__))) . 'assets/js/updates-vue-app.js',
@@ -162,12 +183,19 @@ class Admin {
     }
 
     /**
-     * Add admin menu pages.
+     * Initialize OptionsKit admin pages early.
      */
-    public function add_admin_menu() {
+    public function init_optionskit_pages() {
         require_once plugin_dir_path(__FILE__) . 'class-admin-pages.php';
         $admin_pages = new Admin_Pages($this->plugin_name, $this->version);
         $admin_pages->init();
+    }
+
+    /**
+     * Placeholder for admin_menu hook (no longer needed with OptionsKit).
+     */
+    public function add_admin_menu() {
+        // OptionsKit handles admin menu registration automatically
     }
 
     /**

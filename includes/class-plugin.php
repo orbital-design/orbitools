@@ -70,13 +70,17 @@ class Plugin {
 
     /**
      * Register all of the hooks related to the admin area functionality.
+     * Everything runs on plugins_loaded - no complicated timing.
      */
     private function define_admin_hooks() {
         $plugin_admin = new Admin\Admin($this->get_plugin_name(), $this->get_version());
-
+        
+        // Always initialize OptionsKit pages - they handle their own admin checks
+        $plugin_admin->init_optionskit_pages();
+        
+        // Still need to hook scripts for later
         $this->loader->add_action('admin_enqueue_scripts', $plugin_admin, 'enqueue_styles');
         $this->loader->add_action('admin_enqueue_scripts', $plugin_admin, 'enqueue_scripts');
-        $this->loader->add_action('admin_menu', $plugin_admin, 'add_admin_menu');
     }
 
     /**

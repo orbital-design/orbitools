@@ -12,6 +12,8 @@
 
 namespace Orbital\Editor_Suite\Modules\Typography_Presets;
 
+use TDP\OptionsKit;
+
 if (!defined('ABSPATH')) {
     exit;
 }
@@ -38,6 +40,11 @@ class Typography_Presets {
     const MODULE_SLUG = 'typography-presets';
 
     /**
+     * Flag to prevent multiple OptionsKit initializations.
+     */
+    private static $optionskit_initialized = false;
+
+    /**
      * Default presets.
      */
     private $default_presets;
@@ -56,13 +63,13 @@ class Typography_Presets {
      * Initialize the module.
      */
     public function __construct() {
-        // Check if module is enabled before initializing
-        if (!$this->is_module_enabled()) {
-            return;
-        }
+        // Everything runs on plugins_loaded - no complicated timing
         
-        // Delay initialization until after translations are loaded
-        add_action('init', array($this, 'delayed_init'));
+        // Initialize OptionsKit immediately - it handles its own admin checks
+        $this->init_optionskit();
+        
+        // Initialize everything else immediately too
+        $this->delayed_init();
     }
     
     /**
@@ -91,7 +98,6 @@ class Typography_Presets {
      */
     private function init_hooks() {
         add_action('enqueue_block_editor_assets', array($this, 'enqueue_editor_assets'));
-        add_action('admin_enqueue_scripts', array($this, 'enqueue_admin_assets'));
         
         // Register admin pages using WordPress hooks
         add_action('orbital_editor_suite_admin_pages', array($this, 'register_admin_pages'));
@@ -116,8 +122,8 @@ class Typography_Presets {
     private function load_default_presets() {
         $this->default_presets = array(
             'heading-xl' => array(
-                'label' => __('Heading XL', 'orbital-editor-suite'),
-                'description' => __('Extra large heading with strong presence', 'orbital-editor-suite'),
+                'label' => 'Heading XL',
+                'description' => 'Extra large heading with strong presence',
                 'properties' => array(
                     'font-size' => '3rem',
                     'line-height' => '1.1',
@@ -129,8 +135,8 @@ class Typography_Presets {
                 'is_default' => true
             ),
             'heading-lg' => array(
-                'label' => __('Heading Large', 'orbital-editor-suite'),
-                'description' => __('Large heading for section titles', 'orbital-editor-suite'),
+                'label' => 'Heading Large',
+                'description' => 'Large heading for section titles',
                 'properties' => array(
                     'font-size' => '2.25rem',
                     'line-height' => '1.2',
@@ -142,8 +148,8 @@ class Typography_Presets {
                 'is_default' => true
             ),
             'heading-md' => array(
-                'label' => __('Heading Medium', 'orbital-editor-suite'),
-                'description' => __('Medium heading for subsections', 'orbital-editor-suite'),
+                'label' => 'Heading Medium',
+                'description' => 'Medium heading for subsections',
                 'properties' => array(
                     'font-size' => '1.5rem',
                     'line-height' => '1.3',
@@ -155,8 +161,8 @@ class Typography_Presets {
                 'is_default' => true
             ),
             'body-lg' => array(
-                'label' => __('Body Large', 'orbital-editor-suite'),
-                'description' => __('Large body text for emphasis', 'orbital-editor-suite'),
+                'label' => 'Body Large',
+                'description' => 'Large body text for emphasis',
                 'properties' => array(
                     'font-size' => '1.125rem',
                     'line-height' => '1.6',
@@ -168,8 +174,8 @@ class Typography_Presets {
                 'is_default' => true
             ),
             'body-base' => array(
-                'label' => __('Body Base', 'orbital-editor-suite'),
-                'description' => __('Standard body text', 'orbital-editor-suite'),
+                'label' => 'Body Base',
+                'description' => 'Standard body text',
                 'properties' => array(
                     'font-size' => '1rem',
                     'line-height' => '1.6',
@@ -181,8 +187,8 @@ class Typography_Presets {
                 'is_default' => true
             ),
             'body-sm' => array(
-                'label' => __('Body Small', 'orbital-editor-suite'),
-                'description' => __('Small body text for captions', 'orbital-editor-suite'),
+                'label' => 'Body Small',
+                'description' => 'Small body text for captions',
                 'properties' => array(
                     'font-size' => '0.875rem',
                     'line-height' => '1.5',
@@ -194,8 +200,8 @@ class Typography_Presets {
                 'is_default' => true
             ),
             'caption' => array(
-                'label' => __('Caption', 'orbital-editor-suite'),
-                'description' => __('Caption text for images and quotes', 'orbital-editor-suite'),
+                'label' => 'Caption',
+                'description' => 'Caption text for images and quotes',
                 'properties' => array(
                     'font-size' => '0.75rem',
                     'line-height' => '1.4',
@@ -208,8 +214,8 @@ class Typography_Presets {
                 'is_default' => true
             ),
             'button' => array(
-                'label' => __('Button Text', 'orbital-editor-suite'),
-                'description' => __('Text style for buttons and CTAs', 'orbital-editor-suite'),
+                'label' => 'Button Text',
+                'description' => 'Text style for buttons and CTAs',
                 'properties' => array(
                     'font-size' => '0.875rem',
                     'line-height' => '1.25',
@@ -358,7 +364,7 @@ class Typography_Presets {
             
             $parsed_presets[$preset_id] = array(
                 'label' => isset($preset_data['label']) ? $preset_data['label'] : $this->generate_preset_label($preset_id),
-                'description' => isset($preset_data['description']) ? $preset_data['description'] : __('From theme.json', 'orbital-editor-suite'),
+                'description' => isset($preset_data['description']) ? $preset_data['description'] : 'From theme.json',
                 'properties' => $this->normalize_css_properties($preset_data['properties']),
                 'group' => $group_id,
                 'group_title' => $group_title,
@@ -642,9 +648,9 @@ class Typography_Presets {
                 'groups' => $this->get_groups(),
                 'settings' => $this->settings,
                 'strings' => array(
-                    'selectPreset' => __('Select Typography Preset', 'orbital-editor-suite'),
-                    'customPreset' => __('Custom Preset', 'orbital-editor-suite'),
-                    'noPreset' => __('No Preset', 'orbital-editor-suite')
+                    'selectPreset' => 'Select Typography Preset',
+                    'customPreset' => 'Custom Preset',
+                    'noPreset' => 'No Preset'
                 )
             )
         );
@@ -725,9 +731,9 @@ class Typography_Presets {
                 'ajaxUrl' => admin_url('admin-ajax.php'),
                 'nonce' => wp_create_nonce('orbital_typography_presets_nonce'),
                 'strings' => array(
-                    'savePreset' => __('Save Preset', 'orbital-editor-suite'),
-                    'deletePreset' => __('Delete Preset', 'orbital-editor-suite'),
-                    'confirmDelete' => __('Are you sure you want to delete this preset?', 'orbital-editor-suite')
+                    'savePreset' => 'Save Preset',
+                    'deletePreset' => 'Delete Preset',
+                    'confirmDelete' => 'Are you sure you want to delete this preset?'
                 )
             )
         );
@@ -747,7 +753,7 @@ class Typography_Presets {
         check_ajax_referer('orbital_typography_presets_nonce', 'nonce');
         
         if (!current_user_can('manage_options')) {
-            wp_send_json_error(__('Insufficient permissions.', 'orbital-editor-suite'));
+            wp_send_json_error('Insufficient permissions.');
         }
 
         $id = sanitize_key($_POST['id']);
@@ -766,9 +772,9 @@ class Typography_Presets {
         }
 
         if ($this->save_preset($id, $preset_data)) {
-            wp_send_json_success(__('Preset saved successfully.', 'orbital-editor-suite'));
+            wp_send_json_success('Preset saved successfully.');
         } else {
-            wp_send_json_error(__('Failed to save preset.', 'orbital-editor-suite'));
+            wp_send_json_error('Failed to save preset.');
         }
     }
 
@@ -779,15 +785,15 @@ class Typography_Presets {
         check_ajax_referer('orbital_typography_presets_nonce', 'nonce');
         
         if (!current_user_can('manage_options')) {
-            wp_send_json_error(__('Insufficient permissions.', 'orbital-editor-suite'));
+            wp_send_json_error('Insufficient permissions.');
         }
 
         $id = sanitize_key($_POST['id']);
 
         if ($this->delete_preset($id)) {
-            wp_send_json_success(__('Preset deleted successfully.', 'orbital-editor-suite'));
+            wp_send_json_success('Preset deleted successfully.');
         } else {
-            wp_send_json_error(__('Failed to delete preset or preset is default.', 'orbital-editor-suite'));
+            wp_send_json_error('Failed to delete preset or preset is default.');
         }
     }
 
@@ -801,26 +807,152 @@ class Typography_Presets {
     }
 
     /**
+     * Initialize OptionsKit early to prevent timing issues.
+     * Called during plugins_loaded, so translations may not be ready yet.
+     */
+    private function init_optionskit() {
+        // Prevent multiple initializations
+        if (self::$optionskit_initialized) {
+            error_log('Typography OptionsKit already initialized - skipping');
+            return;
+        }
+        
+        self::$optionskit_initialized = true;
+        error_log('Typography OptionsKit init_optionskit() called - first time');
+        
+        // Temporarily bypass module check for testing WP Options Kit
+        // TODO: Re-enable after confirming OptionsKit works
+        // if (!$this->is_module_enabled()) {
+        //     return;
+        // }
+        
+        // Setup the OptionsKit configuration using WordPress filters FIRST
+        $this->setup_optionskit_configuration();
+        
+        // Initialize WP Options Kit - it will automatically register the admin page
+        $options_kit = new OptionsKit('orbital-typography-presets');
+        // Use fallback for page title since translations may not be loaded yet
+        $options_kit->set_page_title('Typography Presets');
+        error_log('Typography OptionsKit initialized');
+    }
+
+    /**
      * Register admin pages for this module.
      * Called via orbital_editor_suite_admin_pages hook.
      */
     public function register_admin_pages() {
-        // Only register admin pages if module is enabled
-        if (!$this->is_module_enabled()) {
-            return;
-        }
+        // This method is now just a placeholder since OptionsKit initialization 
+        // happens earlier in init_optionskit()
+    }
+
+    /**
+     * Setup WP Options Kit configuration using WordPress filters.
+     */
+    private function setup_optionskit_configuration() {
+        // Configure the menu location (make it a submenu under Orbital Editor Suite)
+        add_filter('orbital_typography_presets_menu', [$this, 'configure_optionskit_menu']);
         
-        // Load Vue.js admin
-        if (!class_exists('\Orbital\Editor_Suite\Modules\Typography_Presets\Typography_Presets_Vue_Admin')) {
-            require_once plugin_dir_path(__FILE__) . 'class-typography-presets-vue-admin.php';
-        }
+        // Add settings tabs
+        add_filter('orbital_typography_presets_settings_tabs', [$this, 'register_optionskit_tabs']);
         
-        // Create and initialize Vue.js admin interface
-        $vue_admin = new Typography_Presets_Vue_Admin($this);
+        // Add settings sections
+        add_filter('orbital_typography_presets_registered_settings_sections', [$this, 'register_optionskit_sections']);
         
-        // Since we're already in the orbital_editor_suite_admin_pages hook,
-        // call add_admin_menu directly instead of trying to hook into it
-        $vue_admin->add_admin_menu();
+        // Add settings fields
+        add_filter('orbital_typography_presets_registered_settings', [$this, 'register_optionskit_fields']);
+    }
+
+    /**
+     * Configure OptionsKit menu to be a submenu under Orbital Editor Suite.
+     */
+    public function configure_optionskit_menu($menu) {
+        $menu['parent'] = 'orbital-editor-suite';
+        $menu['page_title'] = 'Typography Presets';
+        $menu['menu_title'] = 'Typography Presets';
+        $menu['capability'] = 'manage_options';
+        
+        return $menu;
+    }
+
+    /**
+     * Register OptionsKit tabs.
+     */
+    public function register_optionskit_tabs($tabs) {
+        $tabs['general'] = [
+            'title' => 'General Settings',
+            'description' => 'Configure how the Typography Presets module behaves.'
+        ];
+
+        $tabs['presets'] = [
+            'title' => 'Preset Management',
+            'description' => 'Create and manage your typography presets.'
+        ];
+
+        return $tabs;
+    }
+
+    /**
+     * Register OptionsKit sections.
+     */
+    public function register_optionskit_sections($sections) {
+        $sections['general']['typography_general'] = [
+            'title' => 'Typography Settings',
+            'description' => 'Configure the basic behavior of the typography presets system.',
+            'tab' => 'general'
+        ];
+
+        return $sections;
+    }
+
+    /**
+     * Register OptionsKit fields.
+     */
+    public function register_optionskit_fields($fields) {
+        $fields['preset_generation_method'] = [
+            'tab' => 'general',
+            'section' => 'typography_general',
+            'id' => 'preset_generation_method',
+            'title' => 'Preset Generation Method',
+            'description' => 'Choose how presets are defined and managed.',
+            'type' => 'select',
+            'options' => [
+                'admin' => 'Admin Interface (User-friendly)',
+                'theme_json' => 'theme.json (Developer/Advanced)'
+            ],
+            'default' => 'admin'
+        ];
+
+        $fields['replace_core_controls'] = [
+            'tab' => 'general',
+            'section' => 'typography_general',
+            'id' => 'replace_core_controls',
+            'title' => 'Replace Core Typography Controls',
+            'description' => 'Remove WordPress core typography controls and replace with preset system.',
+            'type' => 'checkbox',
+            'default' => false
+        ];
+
+        $fields['show_groups'] = [
+            'tab' => 'general',
+            'section' => 'typography_general',
+            'id' => 'show_groups',
+            'title' => 'Show Groups in Dropdown',
+            'description' => 'Organize presets into groups in the block editor dropdown.',
+            'type' => 'checkbox',
+            'default' => true
+        ];
+
+        $fields['output_preset_css'] = [
+            'tab' => 'general',
+            'section' => 'typography_general',
+            'id' => 'output_preset_css',
+            'title' => 'Output Preset CSS',
+            'description' => 'Automatically generate and include CSS for all presets.',
+            'type' => 'checkbox',
+            'default' => true
+        ];
+
+        return $fields;
     }
 
     /**

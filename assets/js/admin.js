@@ -58,8 +58,8 @@ var Orbital_Admin = {
     },
     
     initTabSwitching: function() {
-        // Global tab switching functionality for non-Vue pages
-        document.querySelectorAll('.orbital-tabs').forEach(function(tabContainer) {
+        // Global tab switching functionality for non-Vue pages only
+        document.querySelectorAll('.orbital-tabs:not([data-vue-controlled])').forEach(function(tabContainer) {
             var tabs = tabContainer.querySelectorAll('.orbital-tab');
             var panels = document.querySelectorAll('[role="tabpanel"]');
             

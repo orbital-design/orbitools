@@ -1,6 +1,6 @@
 <?php
 /**
- * Admin pages functionality.
+ * Admin pages functionality using WP Options Kit.
  *
  * @package    Orbital_Editor_Suite
  * @subpackage Orbital_Editor_Suite/includes/admin
@@ -8,17 +8,19 @@
 
 namespace Orbital\Editor_Suite\Admin;
 
+use TDP\OptionsKit;
+
 if (!defined('ABSPATH')) {
     exit;
 }
 
 /**
- * Admin pages functionality.
+ * Admin pages functionality using WP Options Kit.
  *
- * Handles all admin page creation and management.
+ * All admin pages are created using OptionsKit, no custom admin pages.
  */
-class Admin_Pages {
-
+class Admin_Pages
+{
     /**
      * The ID of this plugin.
      */
@@ -30,9 +32,9 @@ class Admin_Pages {
     private $version;
 
     /**
-     * Plugin options.
+     * Flag to prevent multiple initializations.
      */
-    private $options;
+    private static $initialized = false;
 
     /**
      * Initialize the class and set its properties.
@@ -40,190 +42,203 @@ class Admin_Pages {
     public function __construct($plugin_name, $version) {
         $this->plugin_name = $plugin_name;
         $this->version = $version;
-        $this->options = get_option('orbital_editor_suite_options', array());
     }
 
     /**
-     * Initialize admin pages.
+     * Initialize OptionsKit admin pages.
+     * 
+     * Note: This should be called early (during plugins_loaded) not during admin_menu.
      */
-    public function init() {
-        add_action('admin_init', array($this, 'register_settings'));
-        add_action('admin_notices', array($this, 'activation_notice'));
+    public function init()
+    {
+        // Prevent multiple initializations
+        if (self::$initialized) {
+            error_log('Admin_Pages::init() already initialized - skipping');
+            return;
+        }
         
-        $this->add_menu_pages();
-    }
-
-    /**
-     * Add menu pages.
-     */
-    private function add_menu_pages() {
-        // Load Vue.js admin class
-        require_once plugin_dir_path(__FILE__) . 'class-main-vue-admin.php';
-        $main_vue_admin = new Main_Vue_Admin($this->plugin_name, $this->version);
+        self::$initialized = true;
+        error_log('Admin_Pages::init() called - first time');
         
-        add_menu_page(
-            __('Orbital Editor Suite', 'orbital-editor-suite'),
-            __('Orbital Editor', 'orbital-editor-suite'),
-            'manage_options',
-            'orbital-editor-suite',
-            array($main_vue_admin, 'render_admin_page'),
-            'dashicons-admin-customizer',
-            30
-        );
+        // Setup main dashboard OptionsKit configuration
+        $this->setup_main_optionskit_configuration();
+        
+        // Initialize main dashboard OptionsKit
+        $main_options_kit = new OptionsKit('orbital-editor-suite');
+        $main_options_kit->set_page_title('Orbital Editor Suite');
+        error_log('Main OptionsKit initialized');
 
-        add_submenu_page(
-            'orbital-editor-suite',
-            __('Dashboard', 'orbital-editor-suite'),
-            __('Dashboard', 'orbital-editor-suite'),
-            'manage_options',
-            'orbital-editor-suite',
-            array($main_vue_admin, 'render_admin_page')
-        );
+        // Setup updates OptionsKit configuration  
+        $this->setup_updates_optionskit_configuration();
+        
+        // Initialize updates OptionsKit
+        $updates_options_kit = new OptionsKit('orbital-editor-suite-updates');
+        $updates_options_kit->set_page_title('Updates');
+        error_log('Updates OptionsKit initialized');
 
-        // Allow modules to register their own admin pages
+        // Allow modules to register their own OptionsKit admin pages
         do_action('orbital_editor_suite_admin_pages');
-
-        // Load Vue.js updates admin class
-        require_once plugin_dir_path(__FILE__) . 'class-updates-vue-admin.php';
-        $updates_vue_admin = new Updates_Vue_Admin($this->plugin_name, $this->version);
-        
-        add_submenu_page(
-            'orbital-editor-suite',
-            __('Updates', 'orbital-editor-suite'),
-            __('Updates', 'orbital-editor-suite'),
-            'manage_options',
-            'orbital-editor-suite-updates',
-            array($updates_vue_admin, 'render_admin_page')
-        );
     }
 
     /**
-     * Register plugin settings.
+     * Setup main dashboard OptionsKit configuration.
      */
-    public function register_settings() {
-        register_setting(
-            'orbital_editor_suite_settings',
-            'orbital_editor_suite_options',
-            array($this, 'sanitize_options')
-        );
+    private function setup_main_optionskit_configuration() {
+        add_filter('orbital_editor_suite_menu', [$this, 'configure_main_optionskit_menu']);
+        add_filter('orbital_editor_suite_settings_tabs', [$this, 'register_main_optionskit_tabs']);
+        add_filter('orbital_editor_suite_registered_settings_sections', [$this, 'register_main_optionskit_sections']);
+        add_filter('orbital_editor_suite_registered_settings', [$this, 'register_main_optionskit_fields']);
     }
 
     /**
-     * Sanitize options.
+     * Setup updates OptionsKit configuration.
      */
-    public function sanitize_options($options) {
-        // Get current options to preserve existing data
-        $current_options = get_option('orbital_editor_suite_options', array());
-        $sanitized = $current_options;
-        
-        // Handle legacy settings
-        if (isset($options['settings'])) {
-            $settings = $options['settings'];
-            
-            $sanitized['settings'] = array(
-                'enable_debug' => !empty($settings['enable_debug']),
-                'enabled_modules' => isset($settings['enabled_modules']) ? 
-                    array_map('sanitize_text_field', (array) $settings['enabled_modules']) : array()
-            );
-        }
-
-        // Handle module settings
-        if (isset($options['modules'])) {
-            if (!isset($sanitized['modules'])) {
-                $sanitized['modules'] = array();
-            }
-            
-            foreach ($options['modules'] as $module_slug => $module_settings) {
-                $sanitized['modules'][$module_slug] = $this->sanitize_module_settings($module_slug, $module_settings);
-            }
-        }
-
-        $sanitized['version'] = ORBITAL_EDITOR_SUITE_VERSION;
-        
-        return $sanitized;
+    private function setup_updates_optionskit_configuration() {
+        add_filter('orbital_editor_suite_updates_menu', [$this, 'configure_updates_optionskit_menu']);
+        add_filter('orbital_editor_suite_updates_settings_tabs', [$this, 'register_updates_optionskit_tabs']);
+        add_filter('orbital_editor_suite_updates_registered_settings_sections', [$this, 'register_updates_optionskit_sections']);
+        add_filter('orbital_editor_suite_updates_registered_settings', [$this, 'register_updates_optionskit_fields']);
     }
 
     /**
-     * Sanitize module-specific settings.
+     * Configure main OptionsKit menu.
      */
-    private function sanitize_module_settings($module_slug, $settings) {
-        $sanitized = array();
+    public function configure_main_optionskit_menu($menu) {
+        $menu['parent'] = null; // Top level menu
+        $menu['page_title'] = 'Orbital Editor Suite';
+        $menu['menu_title'] = 'Orbital Editor Suite';
+        $menu['capability'] = 'manage_options';
         
-        switch ($module_slug) {
-            case 'typography-presets':
-                $sanitized = array(
-                    'preset_generation_method' => in_array($settings['preset_generation_method'] ?? 'admin', ['admin', 'theme_json']) ? 
-                        $settings['preset_generation_method'] : 'admin',
-                    'replace_core_controls' => !empty($settings['replace_core_controls']),
-                    'show_groups' => !empty($settings['show_groups']),
-                    'output_preset_css' => !empty($settings['output_preset_css']),
-                    'allowed_blocks' => isset($settings['allowed_blocks']) ? 
-                        $this->sanitize_allowed_blocks($settings['allowed_blocks']) : array(
-                            'core/paragraph', 'core/heading', 'core/list', 'core/quote', 'core/button'
-                        )
-                );
-                break;
-            
-            default:
-                // Generic sanitization for unknown modules
-                foreach ($settings as $key => $value) {
-                    if (is_array($value)) {
-                        $sanitized[$key] = array_map('sanitize_text_field', $value);
-                    } elseif (is_bool($value) || $value === '1' || $value === '') {
-                        $sanitized[$key] = !empty($value);
-                    } else {
-                        $sanitized[$key] = sanitize_text_field($value);
-                    }
-                }
-                break;
-        }
-        
-        return $sanitized;
+        return $menu;
     }
 
     /**
-     * Sanitize allowed blocks array.
+     * Configure updates OptionsKit menu.
      */
-    private function sanitize_allowed_blocks($blocks) {
-        if (!is_array($blocks)) {
-            return array();
-        }
+    public function configure_updates_optionskit_menu($menu) {
+        $menu['parent'] = 'orbital-editor-suite-settings'; // Submenu under main
+        $menu['page_title'] = 'Updates';
+        $menu['menu_title'] = 'Updates';
+        $menu['capability'] = 'manage_options';
         
-        // Remove the dummy field if present
-        if (isset($blocks['_dummy'])) {
-            unset($blocks['_dummy']);
-        }
-        
-        // Sanitize and filter valid block names
-        $sanitized = array();
-        foreach ($blocks as $block) {
-            $block = sanitize_text_field($block);
-            // Only allow valid core block names
-            if (strpos($block, 'core/') === 0) {
-                $sanitized[] = $block;
-            }
-        }
-        
-        return array_values($sanitized); // Re-index array
+        return $menu;
     }
 
     /**
-     * Show activation notice.
+     * Register main OptionsKit tabs.
      */
-    public function activation_notice() {
-        if (get_transient('orbital_editor_suite_activation_notice')) {
-            ?>
-            <div class="notice notice-success is-dismissible">
-                <p>
-                    <?php _e('Orbital Editor Suite has been activated successfully!', 'orbital-editor-suite'); ?>
-                    <a href="<?php echo admin_url('admin.php?page=orbital-editor-suite'); ?>">
-                        <?php _e('Configure settings', 'orbital-editor-suite'); ?>
-                    </a>
-                </p>
-            </div>
-            <?php
-            delete_transient('orbital_editor_suite_activation_notice');
-        }
+    public function register_main_optionskit_tabs($tabs) {
+        $tabs['dashboard'] = [
+            'title' => 'Dashboard',
+            'description' => 'Overview and quick access to plugin features.'
+        ];
+
+        $tabs['settings'] = [
+            'title' => 'Settings', 
+            'description' => 'Global plugin settings and configuration.'
+        ];
+
+        return $tabs;
     }
 
+    /**
+     * Register updates OptionsKit tabs.
+     */
+    public function register_updates_optionskit_tabs($tabs) {
+        $tabs['updates'] = [
+            'title' => 'Updates',
+            'description' => 'Manage plugin updates and version control.'
+        ];
+
+        return $tabs;
+    }
+
+    /**
+     * Register main OptionsKit sections.
+     */
+    public function register_main_optionskit_sections($sections) {
+        $sections['dashboard']['overview'] = [
+            'title' => 'Plugin Overview',
+            'description' => 'Quick overview of your Orbital Editor Suite configuration.',
+            'tab' => 'dashboard'
+        ];
+
+        $sections['settings']['general'] = [
+            'title' => 'General Settings',
+            'description' => 'Global settings that apply to all modules.',
+            'tab' => 'settings'
+        ];
+
+        return $sections;
+    }
+
+    /**
+     * Register updates OptionsKit sections.
+     */
+    public function register_updates_optionskit_sections($sections) {
+        $sections['updates']['version'] = [
+            'title' => 'Version Information',
+            'description' => 'Current version and update settings.',
+            'tab' => 'updates'
+        ];
+
+        return $sections;
+    }
+
+    /**
+     * Register main OptionsKit fields.
+     */
+    public function register_main_optionskit_fields($fields) {
+        $fields['plugin_status'] = [
+            'tab' => 'dashboard',
+            'section' => 'overview',
+            'id' => 'plugin_status',
+            'title' => 'Plugin Status',
+            'description' => 'Current status of Orbital Editor Suite.',
+            'type' => 'html',
+            'std' => '<p><strong>Status:</strong> Active</p><p><strong>Version:</strong> ' . ORBITAL_EDITOR_SUITE_VERSION . '</p>'
+        ];
+
+        $fields['enabled_modules'] = [
+            'tab' => 'settings',
+            'section' => 'general',
+            'id' => 'enabled_modules',
+            'title' => 'Enabled Modules',
+            'description' => 'Select which modules to enable.',
+            'type' => 'multicheck',
+            'options' => [
+                'typography-presets' => 'Typography Presets'
+            ],
+            'default' => ['typography-presets']
+        ];
+
+        return $fields;
+    }
+
+    /**
+     * Register updates OptionsKit fields.
+     */
+    public function register_updates_optionskit_fields($fields) {
+        $fields['current_version'] = [
+            'tab' => 'updates',
+            'section' => 'version',
+            'id' => 'current_version',
+            'title' => 'Current Version',
+            'description' => 'Currently installed version.',
+            'type' => 'html',
+            'std' => '<p>Version: ' . ORBITAL_EDITOR_SUITE_VERSION . '</p>'
+        ];
+
+        $fields['auto_updates'] = [
+            'tab' => 'updates',
+            'section' => 'version',
+            'id' => 'auto_updates',
+            'title' => 'Auto Updates',
+            'description' => 'Enable automatic updates for this plugin.',
+            'type' => 'checkbox',
+            'default' => false
+        ];
+
+        return $fields;
+    }
 }

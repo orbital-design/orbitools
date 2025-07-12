@@ -56,10 +56,17 @@ class Typography_Presets_Vue_Admin {
      * Enqueue scripts and styles.
      */
     public function enqueue_scripts($hook) {
-        if (strpos($hook, 'orbital-typography-vue-new') === false) {
+        // Debug output
+        echo "<!-- DEBUG: Typography enqueue_scripts called with hook: $hook -->\n";
+        echo "<!-- DEBUG: Page parameter: " . (isset($_GET['page']) ? $_GET['page'] : 'none') . " -->\n";
+        
+        if (!isset($_GET['page']) || $_GET['page'] !== 'orbital-typography-vue-new') {
+            echo "<!-- DEBUG: Exiting enqueue_scripts - page check failed -->\n";
             return;
         }
 
+        echo "<!-- DEBUG: Localizing script data -->\n";
+        
         // Vue.js and main assets are now loaded centrally in class-admin.php
         // Only localize script with Typography-specific data
         wp_localize_script('orbital-typography-presets-vue-app', 'orbitalTypographyVue', array(
@@ -95,6 +102,9 @@ class Typography_Presets_Vue_Admin {
      * Render the admin page.
      */
     public function render_admin_page() {
+        // Debug output
+        echo "<!-- DEBUG: Vue admin page rendering -->\n";
+        echo "<!-- DEBUG: Scripts should be loaded via admin_enqueue_scripts -->\n";
         ?>
         <div class="wrap">
             <?php 
@@ -118,7 +128,7 @@ class Typography_Presets_Vue_Admin {
             <div class="orbital-notices-container"></div>
             
             <!-- Static tabs (PHP rendered, Vue controlled) -->
-            <nav class="orbital-tabs" role="tablist">
+            <nav class="orbital-tabs" role="tablist" data-vue-controlled="true">
                 <button id="settings-tab" class="orbital-tab" data-tab="settings" role="tab" aria-controls="settings-panel">
                     <span class="dashicons dashicons-admin-settings"></span>
                     Settings
@@ -139,6 +149,13 @@ class Typography_Presets_Vue_Admin {
             
             <!-- Tab content container -->
             <div class="orbital-tab-content">
+                <!-- Debug script to check if Vue.js is loaded -->
+                <script>
+                console.log('DEBUG: Checking Vue.js availability');
+                console.log('Vue available:', typeof Vue !== 'undefined');
+                console.log('orbitalTypographyVue data:', typeof orbitalTypographyVue !== 'undefined' ? orbitalTypographyVue : 'NOT FOUND');
+                </script>
+                
                 <!-- Vue.js app for dynamic content -->
                 <div id="orbital-typography-vue-app">
                     <!-- Loading state -->

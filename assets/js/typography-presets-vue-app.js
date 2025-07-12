@@ -168,10 +168,14 @@ createApp({
                     e.preventDefault();
                     
                     // Remove active class from all tabs
-                    tabButtons.forEach(tab => tab.classList.remove('active'));
+                    tabButtons.forEach(tab => {
+                        tab.classList.remove('active');
+                        tab.setAttribute('aria-selected', 'false');
+                    });
                     
                     // Add active class to clicked tab
                     button.classList.add('active');
+                    button.setAttribute('aria-selected', 'true');
                     
                     // Update Vue activeTab data
                     this.activeTab = button.dataset.tab;
@@ -181,6 +185,8 @@ createApp({
             // Set initial active tab
             if (tabButtons.length > 0) {
                 tabButtons[0].classList.add('active');
+                tabButtons[0].setAttribute('aria-selected', 'true');
+                this.activeTab = tabButtons[0].dataset.tab;
             }
         },
         
