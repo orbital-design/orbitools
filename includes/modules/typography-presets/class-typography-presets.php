@@ -12,8 +12,6 @@
 
 namespace Orbital\Editor_Suite\Modules\Typography_Presets;
 
-use TDP\OptionsKit;
-
 if (!defined('ABSPATH')) {
     exit;
 }
@@ -39,10 +37,6 @@ class Typography_Presets {
      */
     const MODULE_SLUG = 'typography-presets';
 
-    /**
-     * Flag to prevent multiple OptionsKit initializations.
-     */
-    private static $optionskit_initialized = false;
 
     /**
      * Default presets.
@@ -63,12 +57,17 @@ class Typography_Presets {
      * Initialize the module.
      */
     public function __construct() {
-        // Everything runs on plugins_loaded - no complicated timing
+        // Only register settings if module is enabled
+        $all_options = get_option('orbital_editor_suite_settings', array());
+        $typography_enabled = isset($all_options['typography_presets_enabled']) ? $all_options['typography_presets_enabled'] : '0';
         
-        // Initialize OptionsKit immediately - it handles its own admin checks
-        $this->init_optionskit();
+        if ($typography_enabled == '1' || $typography_enabled === 1) {
+            // Hook into main OptionsKit filters to register our sections and settings
+            add_filter('orbital_editor_suite_registered_settings_sections', array($this, 'register_sections'));
+            add_filter('orbital_editor_suite_registered_settings', array($this, 'register_settings'));
+        }
         
-        // Initialize everything else immediately too
+        // Initialize module functionality
         $this->delayed_init();
     }
     
@@ -76,10 +75,14 @@ class Typography_Presets {
      * Initialize after translations are loaded.
      */
     public function delayed_init() {
+        error_log('Typography Presets: delayed_init() called');
+        
         $this->load_default_presets();
         $this->load_settings();
         $this->load_presets();
         $this->init_hooks();
+        
+        error_log('Typography Presets: delayed_init() completed');
     }
 
     /**
@@ -97,10 +100,11 @@ class Typography_Presets {
      * Initialize WordPress hooks.
      */
     private function init_hooks() {
-        add_action('enqueue_block_editor_assets', array($this, 'enqueue_editor_assets'));
+        error_log('Typography Presets: Initializing hooks');
         
-        // Register admin pages using WordPress hooks
-        add_action('orbital_editor_suite_admin_pages', array($this, 'register_admin_pages'));
+        add_action('enqueue_block_editor_assets', array($this, 'enqueue_editor_assets'));
+        error_log('Typography Presets: Added enqueue_block_editor_assets hook');
+        
         
         // AJAX handlers for preset management
         add_action('wp_ajax_orbital_save_typography_preset', array($this, 'ajax_save_preset'));
@@ -632,6 +636,8 @@ class Typography_Presets {
      * Enqueue editor assets.
      */
     public function enqueue_editor_assets() {
+        error_log('Typography Presets: Enqueuing editor assets');
+        
         wp_enqueue_script(
             'orbital-typography-presets',
             ORBITAL_EDITOR_SUITE_URL . 'assets/js/typography-presets.js',
@@ -807,152 +813,75 @@ class Typography_Presets {
     }
 
     /**
-     * Initialize OptionsKit early to prevent timing issues.
-     * Called during plugins_loaded, so translations may not be ready yet.
+     * Register sections in the main OptionsKit interface.
      */
-    private function init_optionskit() {
-        // Prevent multiple initializations
-        if (self::$optionskit_initialized) {
-            error_log('Typography OptionsKit already initialized - skipping');
-            return;
+    public function register_sections($sections) {
+        // Ensure $sections is an array
+        if (!is_array($sections)) {
+            $sections = array();
         }
         
-        self::$optionskit_initialized = true;
-        error_log('Typography OptionsKit init_optionskit() called - first time');
+        // Ensure modules tab exists
+        if (!isset($sections['modules'])) {
+            $sections['modules'] = array();
+        }
         
-        // Temporarily bypass module check for testing WP Options Kit
-        // TODO: Re-enable after confirming OptionsKit works
-        // if (!$this->is_module_enabled()) {
-        //     return;
-        // }
+        // Add Typography section to the modules tab
+        $sections['modules']['typography'] = 'Typography Presets';
         
-        // Setup the OptionsKit configuration using WordPress filters FIRST
-        $this->setup_optionskit_configuration();
-        
-        // Initialize WP Options Kit - it will automatically register the admin page
-        $options_kit = new OptionsKit('orbital-typography-presets');
-        // Use fallback for page title since translations may not be loaded yet
-        $options_kit->set_page_title('Typography Presets');
-        error_log('Typography OptionsKit initialized');
-    }
-
-    /**
-     * Register admin pages for this module.
-     * Called via orbital_editor_suite_admin_pages hook.
-     */
-    public function register_admin_pages() {
-        // This method is now just a placeholder since OptionsKit initialization 
-        // happens earlier in init_optionskit()
-    }
-
-    /**
-     * Setup WP Options Kit configuration using WordPress filters.
-     */
-    private function setup_optionskit_configuration() {
-        // Configure the menu location (make it a submenu under Orbital Editor Suite)
-        add_filter('orbital_typography_presets_menu', [$this, 'configure_optionskit_menu']);
-        
-        // Add settings tabs
-        add_filter('orbital_typography_presets_settings_tabs', [$this, 'register_optionskit_tabs']);
-        
-        // Add settings sections
-        add_filter('orbital_typography_presets_registered_settings_sections', [$this, 'register_optionskit_sections']);
-        
-        // Add settings fields
-        add_filter('orbital_typography_presets_registered_settings', [$this, 'register_optionskit_fields']);
-    }
-
-    /**
-     * Configure OptionsKit menu to be a submenu under Orbital Editor Suite.
-     */
-    public function configure_optionskit_menu($menu) {
-        $menu['parent'] = 'orbital-editor-suite';
-        $menu['page_title'] = 'Typography Presets';
-        $menu['menu_title'] = 'Typography Presets';
-        $menu['capability'] = 'manage_options';
-        
-        return $menu;
-    }
-
-    /**
-     * Register OptionsKit tabs.
-     */
-    public function register_optionskit_tabs($tabs) {
-        $tabs['general'] = [
-            'title' => 'General Settings',
-            'description' => 'Configure how the Typography Presets module behaves.'
-        ];
-
-        $tabs['presets'] = [
-            'title' => 'Preset Management',
-            'description' => 'Create and manage your typography presets.'
-        ];
-
-        return $tabs;
-    }
-
-    /**
-     * Register OptionsKit sections.
-     */
-    public function register_optionskit_sections($sections) {
-        $sections['general']['typography_general'] = [
-            'title' => 'Typography Settings',
-            'description' => 'Configure the basic behavior of the typography presets system.',
-            'tab' => 'general'
-        ];
-
         return $sections;
     }
 
     /**
-     * Register OptionsKit fields.
+     * Register settings in the main OptionsKit interface.
      */
-    public function register_optionskit_fields($fields) {
-        $fields['preset_generation_method'] = [
-            'tab' => 'general',
-            'section' => 'typography_general',
-            'id' => 'preset_generation_method',
-            'title' => 'Preset Generation Method',
-            'description' => 'Choose how presets are defined and managed.',
-            'type' => 'select',
-            'options' => [
-                'admin' => 'Admin Interface (User-friendly)',
-                'theme_json' => 'theme.json (Developer/Advanced)'
-            ],
-            'default' => 'admin'
-        ];
-
-        $fields['replace_core_controls'] = [
-            'tab' => 'general',
-            'section' => 'typography_general',
-            'id' => 'replace_core_controls',
-            'title' => 'Replace Core Typography Controls',
-            'description' => 'Remove WordPress core typography controls and replace with preset system.',
-            'type' => 'checkbox',
-            'default' => false
-        ];
-
-        $fields['show_groups'] = [
-            'tab' => 'general',
-            'section' => 'typography_general',
-            'id' => 'show_groups',
-            'title' => 'Show Groups in Dropdown',
-            'description' => 'Organize presets into groups in the block editor dropdown.',
-            'type' => 'checkbox',
-            'default' => true
-        ];
-
-        $fields['output_preset_css'] = [
-            'tab' => 'general',
-            'section' => 'typography_general',
-            'id' => 'output_preset_css',
-            'title' => 'Output Preset CSS',
-            'description' => 'Automatically generate and include CSS for all presets.',
-            'type' => 'checkbox',
-            'default' => true
-        ];
-
-        return $fields;
+    public function register_settings($settings) {
+        // Ensure $settings is an array
+        if (!is_array($settings)) {
+            $settings = array();
+        }
+        
+        // Add Typography settings directly under 'typography' key
+        $settings['typography'] = array(
+            array(
+                'id'      => 'typography_preset_generation_method',
+                'name'    => 'Preset Generation Method',
+                'desc'    => 'Choose how presets are defined and managed.',
+                'type'    => 'select',
+                'options' => array(
+                    'admin' => 'Admin Interface (User-friendly)',
+                    'theme_json' => 'theme.json (Developer/Advanced)'
+                ),
+                'std'     => 'admin',
+                'section' => 'typography',
+            ),
+            array(
+                'id'      => 'typography_replace_core_controls',
+                'name'    => 'Replace Core Controls',
+                'desc'    => 'Remove WordPress core typography controls and replace with preset system.',
+                'type'    => 'checkbox',
+                'std'     => false,
+                'section' => 'typography',
+            ),
+            array(
+                'id'      => 'typography_show_groups',
+                'name'    => 'Show Groups in Dropdown',
+                'desc'    => 'Organize presets into groups in the block editor dropdown.',
+                'type'    => 'checkbox',
+                'std'     => true,
+                'section' => 'typography',
+            ),
+            array(
+                'id'      => 'typography_output_preset_css',
+                'name'    => 'Output Preset CSS',
+                'desc'    => 'Automatically generate and include CSS for all presets.',
+                'type'    => 'checkbox',
+                'std'     => true,
+                'section' => 'typography',
+            ),
+        );
+        
+        return $settings;
     }
 
     /**
