@@ -59,6 +59,7 @@ class Plugin {
     private function load_dependencies() {
         require_once plugin_dir_path(dirname(__FILE__)) . 'includes/class-loader.php';
         require_once plugin_dir_path(dirname(__FILE__)) . 'includes/admin/class-admin.php';
+        require_once plugin_dir_path(dirname(__FILE__)) . 'includes/admin/class-admin-components.php';
         require_once plugin_dir_path(dirname(__FILE__)) . 'includes/updater/class-github-updater.php';
         
         // Load modules

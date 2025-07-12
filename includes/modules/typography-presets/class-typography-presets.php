@@ -707,10 +707,13 @@ class Typography_Presets {
             return;
         }
 
+        // Enqueue Vue.js first
+        wp_enqueue_script('vue-js', 'https://unpkg.com/vue@3/dist/vue.global.js', array(), '3.0.0', true);
+        
         wp_enqueue_script(
             'orbital-typography-presets-admin',
-            ORBITAL_EDITOR_SUITE_URL . 'assets/js/typography-presets-admin.js',
-            array('wp-util'),
+            ORBITAL_EDITOR_SUITE_URL . 'assets/js/typography-presets-vue-app.js',
+            array('vue-js', 'wp-util'),
             self::VERSION,
             true
         );

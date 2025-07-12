@@ -79,6 +79,11 @@
     align-items: center;
 }
 
+/* Admin Notices Container */
+.orbital-notices-container {
+    margin-bottom: 20px;
+}
+
 /* Navigation Tabs */
 .orbital-tabs {
     display: flex;
@@ -508,6 +513,14 @@
     color: #666;
     font-size: 14px;
     line-height: 1.5;
+}
+
+.settings-actions, .typography-actions {
+    margin-top: 30px;
+    padding-top: 20px;
+    border-top: 1px solid #e5e5e5;
+    display: flex;
+    gap: 12px;
 }
 
 /* System Info */

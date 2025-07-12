@@ -27,15 +27,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 pluginInfo: {},
                 systemInfo: {},
                 
-                strings: {},
-                
-                // Tab configuration
-                tabs: [
-                    { id: 'dashboard', title: 'Dashboard', icon: 'dashicons-dashboard' },
-                    { id: 'modules', title: 'Modules', icon: 'dashicons-admin-plugins' },
-                    { id: 'settings', title: 'Settings', icon: 'dashicons-admin-settings' },
-                    { id: 'system', title: 'System Info', icon: 'dashicons-info' }
-                ]
+                strings: {}
             };
         },
         
@@ -213,7 +205,8 @@ document.addEventListener('DOMContentLoaded', function() {
              */
             clearMessage() {
                 this.message = '';
-            }
+            },
+            
         }
     }).mount('#orbital-main-vue-app');
 });

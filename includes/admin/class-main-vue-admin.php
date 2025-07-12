@@ -246,6 +246,10 @@ class Main_Vue_Admin {
     public function render_admin_page() {
         ?>
         <div class="wrap">
+            <?php 
+            // Output any WordPress admin notices here first, before our Vue app
+            settings_errors(); 
+            ?>
             <div id="orbital-main-vue-app">
                 <!-- Loading state -->
                 <div v-if="loading" class="orbital-loading">
@@ -255,39 +259,26 @@ class Main_Vue_Admin {
 
                 <!-- Main app content -->
                 <div v-else class="orbital-admin-container">
-                    <!-- Header -->
-                    <div class="orbital-header">
-                        <div class="header-content">
-                            <div class="header-title">
-                                <h1>
-                                    <span class="dashicons dashicons-admin-customizer"></span>
-                                    Orbital Editor Suite
-                                </h1>
-                                <span class="version-badge">v{{ pluginInfo.version }}</span>
-                            </div>
-                            <div class="header-actions">
-                                <button @click="resetSettings" class="button button-secondary">
-                                    Reset All Settings
-                                </button>
-                                <button @click="saveSettings" :disabled="saving" class="button button-primary">
-                                    {{ saving ? strings.saving : 'Save Settings' }}
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Navigation Tabs -->
-                    <div class="orbital-tabs">
-                        <button 
-                            v-for="tab in tabs" 
-                            :key="tab.id"
-                            @click="activeTab = tab.id"
-                            :class="['orbital-tab', { active: activeTab === tab.id }]"
-                        >
-                            <span class="dashicons" :class="tab.icon"></span>
-                            {{ tab.title }}
-                        </button>
-                    </div>
+                    <?php 
+                    // Render header using new component framework
+                    Admin_Components::render_header(array(
+                        'title' => 'Orbital Editor Suite',
+                        'icon' => 'dashicons-admin-customizer',
+                        'show_version' => true
+                    ));
+                    
+                    // Render admin notices container
+                    Admin_Components::render_notices_container();
+                    
+                    // Render tabs
+                    $tabs = array(
+                        array('id' => 'dashboard', 'title' => 'Dashboard', 'icon' => 'dashicons-dashboard'),
+                        array('id' => 'modules', 'title' => 'Modules', 'icon' => 'dashicons-admin-plugins'),
+                        array('id' => 'settings', 'title' => 'Settings', 'icon' => 'dashicons-admin-settings'),
+                        array('id' => 'system', 'title' => 'System Info', 'icon' => 'dashicons-info')
+                    );
+                    Admin_Components::render_tabs($tabs);
+                    ?>
 
                     <!-- Tab Content -->
                     <div class="orbital-tab-content">
@@ -418,6 +409,16 @@ class Main_Vue_Admin {
                                     </label>
                                     <p class="setting-description">Show debug information and additional logging for troubleshooting.</p>
                                 </div>
+                            </div>
+                            
+                            <!-- Settings Actions -->
+                            <div class="settings-actions">
+                                <button @click="saveSettings" :disabled="saving" class="button button-primary">
+                                    {{ saving ? strings.saving : 'Save Settings' }}
+                                </button>
+                                <button @click="resetSettings" class="button button-secondary">
+                                    Reset All Settings
+                                </button>
                             </div>
                         </div>
 
@@ -635,10 +636,6 @@ define('WP_DEBUG_DISPLAY', false);</code></pre>
                         </div>
                     </div>
 
-                    <!-- Status Messages -->
-                    <div v-if="message" :class="['orbital-message', messageType]">
-                        {{ message }}
-                    </div>
                 </div>
             </div>
         </div>

@@ -45,28 +45,6 @@ createApp({
             generatedCSS: '',
             
             // Static data
-            tabs: [
-                {
-                    id: 'settings',
-                    title: 'Settings',
-                    icon: 'dashicons-admin-generic'
-                },
-                {
-                    id: 'presets',
-                    title: 'Preset Management',
-                    icon: 'dashicons-admin-appearance'
-                },
-                {
-                    id: 'css',
-                    title: 'Generated CSS',
-                    icon: 'dashicons-editor-code'
-                },
-                {
-                    id: 'instructions',
-                    title: 'Theme.json Instructions',
-                    icon: 'dashicons-media-code'
-                }
-            ],
             
             availableBlocks: [
                 { value: 'core/paragraph', label: 'Paragraph' },

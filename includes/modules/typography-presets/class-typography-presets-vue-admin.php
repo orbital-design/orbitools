@@ -116,43 +116,58 @@ class Typography_Presets_Vue_Admin {
     public function render_admin_page() {
         ?>
         <div class="wrap">
-            <div id="orbital-typography-vue-app">
-                <!-- Loading state -->
-                <div v-if="loading" class="typography-loading">
-                    <div class="spinner is-active"></div>
-                    <p>{{ strings.loading }}</p>
+            <?php 
+            // Output WordPress admin notices
+            settings_errors(); 
+            
+            // Static header
+            ?>
+            <div class="orbital-header">
+                <div class="header-content">
+                    <div class="header-title">
+                        <h1>
+                            <span class="dashicons dashicons-editor-textcolor"></span>
+                            Typography Presets
+                        </h1>
+                    </div>
                 </div>
-
-                <!-- Main app content -->
-                <div v-else class="typography-admin-container">
-                    <!-- Header -->
-                    <div class="typography-header">
-                        <h1>Typography Presets</h1>
-                        <div class="header-actions">
-                            <button @click="generateCSS" class="button button-secondary">
-                                Generate CSS
-                            </button>
-                            <button @click="saveSettings" :disabled="saving" class="button button-primary">
-                                {{ saving ? strings.saving : 'Save Settings' }}
-                            </button>
-                        </div>
+            </div>
+            
+            <!-- Admin notices container -->
+            <div class="orbital-notices-container"></div>
+            
+            <!-- Static tabs -->
+            <div class="orbital-tabs">
+                <button @click="activeTab = 'settings'" :class="['orbital-tab', { active: activeTab === 'settings' }]">
+                    <span class="dashicons dashicons-admin-settings"></span>
+                    Settings
+                </button>
+                <button @click="activeTab = 'presets'" :class="['orbital-tab', { active: activeTab === 'presets' }]">
+                    <span class="dashicons dashicons-editor-textcolor"></span>
+                    Preset Management
+                </button>
+                <button @click="activeTab = 'css'" :class="['orbital-tab', { active: activeTab === 'css' }]">
+                    <span class="dashicons dashicons-editor-code"></span>
+                    Generated CSS
+                </button>
+                <button @click="activeTab = 'instructions'" :class="['orbital-tab', { active: activeTab === 'instructions' }]">
+                    <span class="dashicons dashicons-media-code"></span>
+                    Theme.json Instructions
+                </button>
+            </div>
+            
+            <!-- Tab content container -->
+            <div class="orbital-tab-content">
+                <!-- Vue.js app for dynamic content -->
+                <div id="orbital-typography-vue-app">
+                    <!-- Loading state -->
+                    <div v-if="loading" class="orbital-loading">
+                        <div class="spinner is-active"></div>
+                        <p>{{ strings.loading }}</p>
                     </div>
 
-                    <!-- Navigation Tabs -->
-                    <div class="typography-tabs">
-                        <button 
-                            v-for="tab in tabs" 
-                            :key="tab.id"
-                            @click="activeTab = tab.id"
-                            :class="['typography-tab', { active: activeTab === tab.id }]"
-                        >
-                            <span class="dashicons" :class="tab.icon"></span>
-                            {{ tab.title }}
-                        </button>
-                    </div>
-
-                    <!-- Tab Content -->
-                    <div class="typography-tab-content">
+                    <!-- Main app content -->
+                    <div v-else>
                         <!-- Settings Tab -->
                         <div v-if="activeTab === 'settings'" class="typography-section">
                             <h2>Module Settings</h2>
@@ -404,13 +419,18 @@ class Typography_Presets_Vue_Admin {
                                 </ul>
                             </div>
                         </div>
-                    </div>
-
-                    <!-- Status Messages -->
-                    <div v-if="message" :class="['typography-message', messageType]">
-                        {{ message }}
-                    </div>
+                        
+                        <!-- Action buttons for Vue functionality -->
+                        <div class="typography-actions">
+                            <button @click="generateCSS" class="button button-secondary">
+                                Generate CSS
+                            </button>
+                            <button @click="saveSettings" :disabled="saving" class="button button-primary">
+                                {{ saving ? strings.saving : 'Save Settings' }}
+                            </button>
+                        </div>
                 </div>
+            </div>
             </div>
         </div>
         <?php
