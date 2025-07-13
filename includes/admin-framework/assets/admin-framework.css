@@ -1,0 +1,546 @@
+/**
+ * Orbital Admin Framework CSS
+ * 
+ * Clean, modern styling for admin pages built with the framework.
+ * Follows WordPress admin design patterns with enhancements.
+ */
+
+/* =============================================================================
+   FRAMEWORK CONTAINER
+   ============================================================================= */
+
+/* Hide all WordPress admin notices on framework pages */
+body.orbital-framework-page .notice,
+body.orbital-framework-page .error,
+body.orbital-framework-page .updated {
+    display: none !important;
+}
+
+/* Except our custom framework notices */
+body.orbital-framework-page #orbital-notices-container .notice,
+body.orbital-framework-page #orbital-notices-container .error,
+body.orbital-framework-page #orbital-notices-container .updated {
+    display: block !important;
+}
+
+.orbital-admin-framework {
+    max-width: 1200px;
+    margin: 0;
+    background: #fff;
+    border-radius: 6px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}
+
+/* =============================================================================
+   HEADER SECTION
+   ============================================================================= */
+
+.orbital-admin-header {
+    background: #f9f9f9;
+    border-bottom: 1px solid #e5e5e5;
+    padding: 30px 40px;
+}
+
+.orbital-admin-header h1 {
+    margin: 0 0 10px 0;
+    font-size: 24px;
+    font-weight: 600;
+    color: #1d2327;
+}
+
+.orbital-admin-header .description {
+    margin: 0;
+    color: #646970;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+/* =============================================================================
+   NAVIGATION SECTION
+   ============================================================================= */
+
+.orbital-admin-nav {
+    background: #f6f7f7;
+    border-bottom: 1px solid #e5e5e5;
+    padding: 0 40px;
+    min-height: 50px;
+    display: flex;
+    align-items: center;
+}
+
+/* =============================================================================
+   NOTICES SECTION
+   ============================================================================= */
+
+.orbital-admin-notices {
+    padding: 20px 40px 0;
+}
+
+.orbital-admin-notices:empty {
+    padding: 0;
+}
+
+#orbital-notices-container .notice {
+    margin: 0 0 20px 0;
+    border-radius: 4px;
+}
+
+/* Custom notice styling */
+.orbital-notice {
+    background: #fff;
+    border-left: 4px solid #72aee6;
+    border-radius: 0 4px 4px 0;
+    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.04);
+    margin: 0 0 20px 0;
+    padding: 12px 16px;
+}
+
+.orbital-notice.notice-success {
+    border-left-color: #00a32a;
+}
+
+.orbital-notice.notice-error {
+    border-left-color: #d63638;
+}
+
+.orbital-notice.notice-warning {
+    border-left-color: #dba617;
+}
+
+/* =============================================================================
+   TABS SECTION
+   ============================================================================= */
+
+.orbital-admin-tabs {
+    background: #fff;
+    border-bottom: 1px solid #e5e5e5;
+    padding: 0 40px;
+}
+
+.orbital-tabs-wrapper {
+    position: relative;
+}
+
+.orbital-tabs-nav {
+    display: flex;
+    margin: 0;
+    padding: 0;
+    border-bottom: 1px solid #e5e5e5;
+}
+
+.orbital-tab-link {
+    background: none;
+    border: none;
+    border-bottom: 3px solid transparent;
+    color: #646970;
+    cursor: pointer;
+    display: block;
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 1.4;
+    margin: 0;
+    padding: 16px 20px 13px;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    position: relative;
+}
+
+.orbital-tab-link:hover {
+    color: #2271b1;
+    background: rgba(34, 113, 177, 0.04);
+}
+
+.orbital-tab-link.active {
+    color: #2271b1;
+    border-bottom-color: #2271b1;
+    background: none;
+}
+
+.orbital-tab-link:focus {
+    box-shadow: none;
+    outline: 2px solid #2271b1;
+    outline-offset: -2px;
+}
+
+/* =============================================================================
+   TAB CONTENT SECTION
+   ============================================================================= */
+
+.orbital-admin-content {
+    background: #fff;
+    padding: 40px;
+}
+
+.orbital-settings-form {
+    margin: 0;
+}
+
+.orbital-tab-content {
+    margin-bottom: 30px;
+}
+
+/* =============================================================================
+   SUB-TABS (SECTIONS)
+   ============================================================================= */
+
+.orbital-subtabs-wrapper {
+    margin-bottom: 30px;
+    border-bottom: 1px solid #e5e5e5;
+}
+
+.orbital-subtabs-nav {
+    display: flex;
+    margin: 0;
+    padding: 0;
+}
+
+.orbital-subtab-link {
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    color: #646970;
+    cursor: pointer;
+    display: block;
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 1.4;
+    margin: 0;
+    padding: 12px 16px 10px;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    position: relative;
+}
+
+.orbital-subtab-link:hover {
+    color: #2271b1;
+    background: rgba(34, 113, 177, 0.04);
+}
+
+.orbital-subtab-link.active {
+    color: #2271b1;
+    border-bottom-color: #2271b1;
+    background: none;
+}
+
+.orbital-subtab-link:focus {
+    box-shadow: none;
+    outline: 1px solid #2271b1;
+    outline-offset: -1px;
+}
+
+.orbital-section-content {
+    padding: 20px 0;
+}
+
+/* =============================================================================
+   SECTIONS
+   ============================================================================= */
+
+.orbital-section {
+    margin-bottom: 40px;
+    padding-bottom: 30px;
+    border-bottom: 1px solid #f0f0f1;
+}
+
+.orbital-section:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+    padding-bottom: 0;
+}
+
+.orbital-section-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: #1d2327;
+    margin: 0 0 20px 0;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #f0f0f1;
+}
+
+.orbital-section-fields {
+    display: grid;
+    gap: 20px;
+}
+
+/* =============================================================================
+   SECTION CARDS (for card display mode)
+   ============================================================================= */
+
+.orbital-section-card {
+    background: #fff;
+    border: 1px solid #e5e5e5;
+    border-radius: 6px;
+    margin-bottom: 30px;
+    padding: 30px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.orbital-section-card:last-child {
+    margin-bottom: 0;
+}
+
+.orbital-section-card .orbital-section-title {
+    margin-top: 0;
+    margin-bottom: 25px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid #f0f0f1;
+    font-size: 18px;
+    font-weight: 600;
+    color: #1d2327;
+}
+
+.orbital-section-card .orbital-section-fields {
+    display: grid;
+    gap: 20px;
+}
+
+/* =============================================================================
+   NO FIELDS MESSAGE
+   ============================================================================= */
+
+.orbital-no-fields-message {
+    text-align: center;
+    padding: 40px 20px;
+    background: #f8f9fa;
+    border: 2px dashed #ddd;
+    border-radius: 8px;
+    margin: 20px 0;
+}
+
+.orbital-no-fields-icon {
+    margin-bottom: 15px;
+}
+
+.orbital-no-fields-icon .dashicons {
+    font-size: 48px;
+    width: 48px;
+    height: 48px;
+    color: #8c8f94;
+}
+
+.orbital-no-fields-message h4 {
+    margin: 0 0 10px 0;
+    color: #1d2327;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.orbital-no-fields-message p {
+    margin: 0 0 15px 0;
+    color: #646970;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.orbital-no-fields-message p:last-child {
+    margin-bottom: 0;
+}
+
+.orbital-no-fields-help {
+    background: #fff;
+    border: 1px solid #e5e5e5;
+    border-radius: 4px;
+    padding: 15px;
+    margin-top: 20px !important;
+    text-align: left;
+}
+
+.orbital-no-fields-help code {
+    background: #f1f1f1;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 13px;
+    color: #d63638;
+}
+
+/* =============================================================================
+   FIELDS
+   ============================================================================= */
+
+.orbital-field {
+    display: grid;
+    gap: 8px;
+}
+
+.orbital-field-label {
+    font-weight: 500;
+    color: #1d2327;
+    display: block;
+    font-size: 14px;
+    line-height: 1.4;
+}
+
+.orbital-field input[type="text"],
+.orbital-field input[type="email"],
+.orbital-field input[type="url"],
+.orbital-field input[type="number"],
+.orbital-field select,
+.orbital-field textarea {
+    border: 1px solid #8c8f94;
+    border-radius: 4px;
+    font-size: 14px;
+    line-height: 1.4;
+    padding: 8px 12px;
+    transition: border-color 0.2s ease;
+    background: #fff;
+    color: #2c3338;
+}
+
+.orbital-field input[type="text"]:focus,
+.orbital-field input[type="email"]:focus,
+.orbital-field input[type="url"]:focus,
+.orbital-field input[type="number"]:focus,
+.orbital-field select:focus,
+.orbital-field textarea:focus {
+    border-color: #2271b1;
+    box-shadow: 0 0 0 1px #2271b1;
+    outline: none;
+}
+
+.orbital-field textarea {
+    min-height: 100px;
+    resize: vertical;
+}
+
+/* Checkbox fields */
+.orbital-field-checkbox {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+.orbital-field-checkbox input[type="checkbox"] {
+    margin: 0;
+    transform: scale(1.1);
+}
+
+.orbital-field-checkbox .orbital-field-label {
+    margin-top: -2px;
+}
+
+/* Field descriptions */
+.orbital-field .description {
+    color: #646970;
+    font-size: 13px;
+    line-height: 1.4;
+    margin: 0;
+    font-style: italic;
+}
+
+/* =============================================================================
+   FOOTER SECTION
+   ============================================================================= */
+
+.orbital-admin-footer {
+    background: #f6f7f7;
+    border-top: 1px solid #e5e5e5;
+    padding: 20px 40px;
+    text-align: center;
+}
+
+.orbital-admin-footer-text {
+    color: #646970;
+    font-size: 12px;
+    margin: 0;
+}
+
+/* =============================================================================
+   FORM ELEMENTS
+   ============================================================================= */
+
+.orbital-settings-form .button-primary {
+    background: #2271b1;
+    border: 1px solid #2271b1;
+    border-radius: 4px;
+    color: #fff;
+    font-size: 14px;
+    font-weight: 500;
+    padding: 10px 20px;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.orbital-settings-form .button-primary:hover,
+.orbital-settings-form .button-primary:focus {
+    background: #135e96;
+    border-color: #135e96;
+    color: #fff;
+}
+
+.orbital-settings-form .button-primary:focus {
+    box-shadow: 0 0 0 2px rgba(34, 113, 177, 0.3);
+    outline: none;
+}
+
+/* =============================================================================
+   LOADING STATES
+   ============================================================================= */
+
+.orbital-loading .orbital-admin-content {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+.orbital-loading .button-primary {
+    background: #8c8f94;
+    border-color: #8c8f94;
+    cursor: not-allowed;
+}
+
+/* =============================================================================
+   RESPONSIVE DESIGN
+   ============================================================================= */
+
+@media (max-width: 782px) {
+    .orbital-admin-header,
+    .orbital-admin-nav,
+    .orbital-admin-notices,
+    .orbital-admin-content,
+    .orbital-admin-footer {
+        padding-left: 20px;
+        padding-right: 20px;
+    }
+    
+    .orbital-tabs-nav {
+        flex-wrap: wrap;
+    }
+    
+    .orbital-tab-link {
+        padding: 12px 16px 9px;
+        font-size: 13px;
+    }
+    
+    .orbital-section-fields {
+        gap: 16px;
+    }
+}
+
+@media (max-width: 600px) {
+    .orbital-admin-header h1 {
+        font-size: 20px;
+    }
+    
+    .orbital-section-title {
+        font-size: 16px;
+    }
+    
+    .orbital-tabs-nav {
+        border-bottom: none;
+    }
+    
+    .orbital-tab-link {
+        border: 1px solid #e5e5e5;
+        border-bottom: none;
+        display: block;
+        text-align: left;
+        width: 100%;
+    }
+    
+    .orbital-tab-link.active {
+        background: #f6f7f7;
+        border-bottom: 1px solid #e5e5e5;
+    }
+}
