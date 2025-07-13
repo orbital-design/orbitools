@@ -334,7 +334,7 @@ add_filter('orbital_framework_demo_settings', function($settings) {
             ),
             array(
                 'id'      => 'select_sample',
-                'name'    => 'Select Dropdown Example',
+                'name'    => 'Single Select Example',
                 'desc'    => 'This shows a dropdown selection field.',
                 'type'    => 'select',
                 'options' => array(
@@ -343,6 +343,23 @@ add_filter('orbital_framework_demo_settings', function($settings) {
                     'option3' => 'Third Option',
                 ),
                 'std'     => 'option2',
+                'section' => 'fields',
+            ),
+            array(
+                'id'      => 'multiselect_sample',
+                'name'    => 'Multi-Select Example',
+                'desc'    => 'This shows a multiple selection field. Hold Ctrl/Cmd to select multiple options.',
+                'type'    => 'select',
+                'multiple'=> true,
+                'options' => array(
+                    'red'    => 'Red Color',
+                    'green'  => 'Green Color',
+                    'blue'   => 'Blue Color',
+                    'yellow' => 'Yellow Color',
+                    'purple' => 'Purple Color',
+                    'orange' => 'Orange Color',
+                ),
+                'std'     => array( 'red', 'blue' ),
                 'section' => 'fields',
             ),
             array(

@@ -32,8 +32,26 @@ class Orbital_Field_Select extends Orbital_Field_Base {
 			return;
 		}
 
+		$attributes = array();
+		
+		// Add multiple attribute if specified
+		if ( isset( $this->field['multiple'] ) && $this->field['multiple'] ) {
+			$attributes['multiple'] = true;
+			// For multiple selects, the name needs to be an array
+			$attributes['name'] = $this->get_input_name() . '[]';
+			// Add size attribute for better UX if not specified
+			if ( ! isset( $this->field['size'] ) ) {
+				$attributes['size'] = min( count( $this->field['options'] ), 8 );
+			}
+		}
+		
+		// Add size attribute if specified
+		if ( isset( $this->field['size'] ) ) {
+			$attributes['size'] = $this->field['size'];
+		}
+
 		?>
-		<select<?php echo $this->render_attributes(); ?>>
+		<select<?php echo $this->render_attributes( $attributes ); ?>>
 			<?php $this->render_options(); ?>
 		</select>
 		<?php
@@ -45,17 +63,21 @@ class Orbital_Field_Select extends Orbital_Field_Base {
 	 * @since 1.0.0
 	 */
 	private function render_options() {
-		// Add empty option if placeholder is set
-		if ( isset( $this->field['placeholder'] ) ) {
+		$is_multiple = isset( $this->field['multiple'] ) && $this->field['multiple'];
+		$selected_values = $is_multiple && is_array( $this->value ) ? $this->value : array( $this->value );
+		
+		// Add empty option if placeholder is set and not multiple
+		if ( isset( $this->field['placeholder'] ) && ! $is_multiple ) {
 			?>
 			<option value=""><?php echo esc_html( $this->field['placeholder'] ); ?></option>
 			<?php
 		}
 
 		foreach ( $this->field['options'] as $option_value => $option_label ) {
+			$is_selected = in_array( $option_value, $selected_values );
 			?>
 			<option value="<?php echo esc_attr( $option_value ); ?>" 
-			        <?php selected( $this->value, $option_value ); ?>>
+			        <?php selected( $is_selected, true ); ?>>
 				<?php echo esc_html( $option_label ); ?>
 			</option>
 			<?php
@@ -67,12 +89,34 @@ class Orbital_Field_Select extends Orbital_Field_Base {
 	 *
 	 * @since 1.0.0
 	 * @param mixed $value Value to sanitize.
-	 * @return string Sanitized value.
+	 * @return string|array Sanitized value.
 	 */
 	public function sanitize( $value ) {
-		// Ensure the value is one of the allowed options
+		$is_multiple = isset( $this->field['multiple'] ) && $this->field['multiple'];
+		
+		// Multi-select handling
+		if ( $is_multiple ) {
+			if ( ! is_array( $value ) ) {
+				return array();
+			}
+			
+			$sanitized = array();
+			$valid_options = array_keys( $this->field['options'] );
+			
+			foreach ( $value as $item ) {
+				$sanitized_item = sanitize_text_field( $item );
+				// Only include valid options
+				if ( in_array( $sanitized_item, $valid_options ) ) {
+					$sanitized[] = $sanitized_item;
+				}
+			}
+			
+			return $sanitized;
+		}
+		
+		// Single select handling
 		if ( isset( $this->field['options'] ) && is_array( $this->field['options'] ) ) {
-			return array_key_exists( $value, $this->field['options'] ) ? $value : '';
+			return array_key_exists( $value, $this->field['options'] ) ? sanitize_text_field( $value ) : '';
 		}
 		
 		return sanitize_text_field( $value );
@@ -86,7 +130,50 @@ class Orbital_Field_Select extends Orbital_Field_Base {
 	 * @return bool|string True if valid, error message if invalid.
 	 */
 	public function validate( $value ) {
-		// Check for required field
+		$is_multiple = isset( $this->field['multiple'] ) && $this->field['multiple'];
+		
+		// Multi-select validation
+		if ( $is_multiple ) {
+			// Ensure value is an array
+			if ( ! is_array( $value ) ) {
+				$value = array();
+			}
+			
+			// Check for required field
+			if ( isset( $this->field['required'] ) && $this->field['required'] && empty( $value ) ) {
+				return sprintf( 'At least one option must be selected for %s.', $this->get_field_name() );
+			}
+			
+			// Check minimum selections
+			if ( isset( $this->field['min_selections'] ) && count( $value ) < $this->field['min_selections'] ) {
+				return sprintf( 
+					'At least %d option(s) must be selected for %s.', 
+					$this->field['min_selections'], 
+					$this->get_field_name() 
+				);
+			}
+			
+			// Check maximum selections
+			if ( isset( $this->field['max_selections'] ) && count( $value ) > $this->field['max_selections'] ) {
+				return sprintf( 
+					'No more than %d option(s) can be selected for %s.', 
+					$this->field['max_selections'], 
+					$this->get_field_name() 
+				);
+			}
+			
+			// Validate that all values are in allowed options
+			$valid_options = array_keys( $this->field['options'] );
+			foreach ( $value as $item ) {
+				if ( ! in_array( $item, $valid_options ) ) {
+					return sprintf( 'Invalid option selected for %s field.', $this->get_field_name() );
+				}
+			}
+			
+			return true;
+		}
+		
+		// Single select validation
 		if ( isset( $this->field['required'] ) && $this->field['required'] && empty( $value ) ) {
 			return sprintf( 'The %s field is required.', $this->get_field_name() );
 		}

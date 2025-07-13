@@ -462,6 +462,12 @@ body.orbital-framework-page #orbital-notices-container .updated {
     cursor: pointer;
 }
 
+.field__input--select[multiple] {
+    min-height: 120px;
+    max-height: 200px;
+    resize: vertical;
+}
+
 /* Checkbox and Radio Inputs */
 .field__input--checkbox,
 .field__input--radio {
