@@ -22,24 +22,20 @@ if ( ! defined( 'ABSPATH' ) ) {
 class Orbital_Field_Textarea extends Orbital_Field_Base {
 
 	/**
-	 * Render the textarea field
+	 * Render the textarea field input only
 	 *
 	 * @since 1.0.0
 	 */
 	public function render() {
-		$this->render_label();
-		
 		$rows = isset( $this->field['rows'] ) ? $this->field['rows'] : 5;
 		$cols = isset( $this->field['cols'] ) ? $this->field['cols'] : 50;
 		
 		?>
 		<textarea<?php echo $this->render_attributes( array( 
 			'rows' => $rows,
-			'cols' => $cols,
-			'class' => 'large-text'
+			'cols' => $cols
 		) ); ?>><?php echo esc_textarea( $this->value ); ?></textarea>
 		<?php
-		$this->render_description();
 	}
 
 	/**

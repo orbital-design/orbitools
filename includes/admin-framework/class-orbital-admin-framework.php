@@ -801,10 +801,10 @@ class Orbital_Admin_Framework {
 		// Create field instance using registry
 		$field_instance = Orbital_Field_Registry::create_field( $field, $value, $this );
 
-		// Build CSS classes
+		// Build CSS classes using BEM methodology
 		$css_classes = array(
-			'orbital-field',
-			'orbital-field-' . esc_attr( $field['type'] )
+			'field',
+			'field--' . esc_attr( $field['type'] )
 		);
 		
 		// Add custom classes if specified
@@ -812,22 +812,49 @@ class Orbital_Admin_Framework {
 			if ( is_array( $field['class'] ) ) {
 				$css_classes = array_merge( $css_classes, $field['class'] );
 			} else {
-				$css_classes[] = $field['class'];
+				$custom_classes = explode( ' ', $field['class'] );
+				$css_classes = array_merge( $css_classes, $custom_classes );
 			}
 		}
 		
+		// Add state modifiers
+		if ( isset( $field['required'] ) && $field['required'] ) {
+			$css_classes[] = 'field--required';
+		}
+		
+		if ( isset( $field['disabled'] ) && $field['disabled'] ) {
+			$css_classes[] = 'field--disabled';
+		}
+		
 		?>
-		<div class="<?php echo esc_attr( implode( ' ', $css_classes ) ); ?>" data-field-id="<?php echo esc_attr( $field['id'] ); ?>">
+		<div class="<?php echo esc_attr( implode( ' ', array_filter( $css_classes ) ) ); ?>" data-field-id="<?php echo esc_attr( $field['id'] ); ?>" data-field-type="<?php echo esc_attr( $field['type'] ); ?>">
 			<?php
 			if ( $field_instance ) {
 				// Enqueue field-specific assets
 				Orbital_Field_Registry::enqueue_field_assets( $field_instance );
 				
-				// Render the field
-				$field_instance->render();
+				?>
+				<div class="field__wrapper">
+					<?php
+					// For simple fields (text, etc.), render label then input
+					if ( ! isset( $field['options'] ) || ! is_array( $field['options'] ) ) {
+						$field_instance->render_label();
+						echo '<div class="field__input-wrapper">';
+						$field_instance->render();
+						echo '</div>';
+					} else {
+						// For grouped fields (checkboxes, radios), the field handles its own structure
+						$field_instance->render();
+					}
+					
+					// Always render description at the end
+					$field_instance->render_description();
+					?>
+				</div>
+				<?php
 			} else {
 				// Fallback for unregistered field types
-				echo '<p class="orbital-field-error">Unknown field type: ' . esc_html( $field['type'] ) . '</p>';
+				echo '<p class="field__error">Unknown field type: ' . esc_html( $field['type'] ) . '</p>';
 			}
 			?>
 		</div>

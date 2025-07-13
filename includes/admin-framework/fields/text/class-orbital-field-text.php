@@ -22,19 +22,16 @@ if ( ! defined( 'ABSPATH' ) ) {
 class Orbital_Field_Text extends Orbital_Field_Base {
 
 	/**
-	 * Render the text field
+	 * Render the text field input only
 	 *
 	 * @since 1.0.0
 	 */
 	public function render() {
-		$this->render_label();
 		?>
 		<input type="text"<?php echo $this->render_attributes( array( 
-			'value' => esc_attr( $this->value ),
-			'class' => 'regular-text'
+			'value' => esc_attr( $this->value )
 		) ); ?>>
 		<?php
-		$this->render_description();
 	}
 
 	/**

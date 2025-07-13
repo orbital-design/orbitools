@@ -356,15 +356,18 @@ body.orbital-framework-page #orbital-notices-container .updated {
 }
 
 /* =============================================================================
-   FIELDS
+   FIELDS (BEM Methodology)
    ============================================================================= */
 
-.orbital-field {
+/* Field Block */
+.field {
     display: grid;
     gap: 8px;
+    margin-bottom: 20px;
 }
 
-.orbital-field-error {
+/* Field Error State */
+.field__error {
     color: #d63638;
     background: #fcf0f1;
     border: 1px solid #deb0b1;
@@ -374,119 +377,211 @@ body.orbital-framework-page #orbital-notices-container .updated {
     margin: 0;
 }
 
-.orbital-field-label {
+/* Field Wrapper */
+.field__wrapper {
+    display: grid;
+    gap: 6px;
+}
+
+/* Field Labels */
+.field__label {
     font-weight: 500;
     color: #1d2327;
     display: block;
     font-size: 14px;
     line-height: 1.4;
+    margin-bottom: 4px;
 }
 
-.orbital-field input[type="text"],
-.orbital-field input[type="email"],
-.orbital-field input[type="url"],
-.orbital-field input[type="number"],
-.orbital-field select,
-.orbital-field textarea {
+.field__legend {
+    font-weight: 500;
+    color: #1d2327;
+    font-size: 14px;
+    line-height: 1.4;
+    margin-bottom: 8px;
+    padding: 0;
+    border: none;
+}
+
+/* Required Field Indicator */
+.field__required {
+    color: #d63638;
+    font-weight: bold;
+    margin-left: 2px;
+}
+
+/* Field Input Wrapper */
+.field__input-wrapper {
+    position: relative;
+}
+
+/* Base Input Styles */
+.field__input {
     border: 1px solid #8c8f94;
     border-radius: 4px;
     font-size: 14px;
     line-height: 1.4;
     padding: 8px 12px;
-    transition: border-color 0.2s ease;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
     background: #fff;
     color: #2c3338;
+    width: 100%;
+    max-width: 400px;
 }
 
-.orbital-field input[type="text"]:focus,
-.orbital-field input[type="email"]:focus,
-.orbital-field input[type="url"]:focus,
-.orbital-field input[type="number"]:focus,
-.orbital-field select:focus,
-.orbital-field textarea:focus {
+.field__input:focus {
     border-color: #2271b1;
     box-shadow: 0 0 0 1px #2271b1;
     outline: none;
 }
 
-.orbital-field textarea {
+/* Input Type Modifiers */
+.field__input--text {
+    /* Already covered by base styles */
+}
+
+.field__input--email {
+    /* Already covered by base styles */
+}
+
+.field__input--url {
+    /* Already covered by base styles */
+}
+
+.field__input--number {
+    max-width: 120px;
+}
+
+.field__input--textarea {
     min-height: 100px;
     resize: vertical;
+    max-width: 600px;
 }
 
-/* Checkbox fields */
-.orbital-field-checkbox {
-    display: flex;
-    align-items: flex-start;
-    gap: 12px;
+.field__input--select {
+    cursor: pointer;
 }
 
-.orbital-field-checkbox input[type="checkbox"] {
-    margin: 0;
+/* Checkbox and Radio Inputs */
+.field__input--checkbox,
+.field__input--radio {
+    width: auto;
+    margin: 0 6px 0 0;
     transform: scale(1.1);
+    cursor: pointer;
 }
 
-.orbital-field-checkbox .orbital-field-label {
-    margin-top: -2px;
+/* Fieldset for Grouped Inputs */
+.field__fieldset {
+    border: 1px solid #e5e5e5;
+    border-radius: 6px;
+    padding: 16px;
+    margin: 0;
+    background: #fafafa;
 }
 
-/* Multi-checkbox fields */
-.orbital-multicheckbox-wrapper {
+/* Checkbox Groups */
+.field__checkbox-group {
     display: flex;
     flex-direction: column;
     gap: 8px;
 }
 
-.orbital-multicheckbox-option {
+.field__checkbox-option {
     display: flex;
     align-items: flex-start;
     gap: 8px;
     cursor: pointer;
+    padding: 4px 0;
 }
 
-.orbital-multicheckbox-option input[type="checkbox"] {
-    margin: 0;
-    transform: scale(1.1);
+.field__checkbox-label {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    cursor: pointer;
+    font-weight: 400;
+    color: #1d2327;
 }
 
-.orbital-checkbox-label {
+.field__checkbox-text {
     font-weight: 400;
     color: #1d2327;
     cursor: pointer;
+    line-height: 1.4;
 }
 
-/* Radio set fields */
-.orbital-radioset-wrapper {
+/* Radio Groups */
+.field__radio-group {
     display: flex;
     flex-direction: column;
     gap: 8px;
 }
 
-.orbital-radioset-option {
+.field__radio-option {
     display: flex;
     align-items: flex-start;
     gap: 8px;
     cursor: pointer;
+    padding: 4px 0;
 }
 
-.orbital-radioset-option input[type="radio"] {
-    margin: 0;
-    transform: scale(1.1);
+.field__radio-label {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    cursor: pointer;
+    font-weight: 400;
+    color: #1d2327;
 }
 
-.orbital-radio-label {
+.field__radio-text {
     font-weight: 400;
     color: #1d2327;
     cursor: pointer;
+    line-height: 1.4;
 }
 
-/* Field descriptions */
-.orbital-field .description {
+/* Field Description */
+.field__description {
     color: #646970;
     font-size: 13px;
     line-height: 1.4;
-    margin: 0;
+    margin: 4px 0 0 0;
     font-style: italic;
+}
+
+/* Field State Modifiers */
+
+.field--disabled {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+.field--disabled .field__input {
+    background: #f6f7f7;
+    cursor: not-allowed;
+}
+
+/* Field Type Modifiers */
+.field--text {
+    /* Type-specific styles can go here */
+}
+
+.field--checkbox {
+    /* Type-specific styles can go here */
+}
+
+.field--radio {
+    /* Type-specific styles can go here */
+}
+
+.field--select {
+    /* Type-specific styles can go here */
+}
+
+.field--textarea {
+    /* Type-specific styles can go here */
 }
 
 /* =============================================================================
@@ -551,21 +646,21 @@ body.orbital-framework-page #orbital-notices-container .updated {
 }
 
 /* =============================================================================
-   CUSTOM FIELD CLASSES (EXAMPLES)
+   CUSTOM FIELD CLASSES (BEM Examples)
    ============================================================================= */
 
 /* Example custom styling classes for demonstration */
-.orbital-field.custom-styling input {
+.field.custom-styling .field__input {
     border: 2px solid #9b59b6;
     border-radius: 8px;
 }
 
-.orbital-field.custom-styling input:focus {
+.field.custom-styling .field__input:focus {
     border-color: #8e44ad;
     box-shadow: 0 0 0 2px rgba(155, 89, 182, 0.3);
 }
 
-.orbital-field.highlight-field {
+.field.highlight-field {
     background: linear-gradient(135deg, #f8f9ff 0%, #fff 100%);
     border: 1px solid #e6e9ff;
     border-radius: 6px;
@@ -573,11 +668,11 @@ body.orbital-framework-page #orbital-notices-container .updated {
     margin: 10px 0;
 }
 
-.orbital-field.premium-field {
+.field.premium-field {
     position: relative;
 }
 
-.orbital-field.premium-field::before {
+.field.premium-field::before {
     content: "★";
     position: absolute;
     top: -5px;
@@ -592,16 +687,18 @@ body.orbital-framework-page #orbital-notices-container .updated {
     justify-content: center;
     font-size: 12px;
     font-weight: bold;
+    z-index: 1;
 }
 
-.orbital-field.highlight-border {
+.field.highlight-border {
     border: 2px solid #ff6b6b;
     border-radius: 8px;
     padding: 12px;
     background: rgba(255, 107, 107, 0.05);
 }
 
-.orbital-field.highlight-border .orbital-field-label {
+.field.highlight-border .field__label,
+.field.highlight-border .field__legend {
     color: #ff4757;
     font-weight: 600;
 }

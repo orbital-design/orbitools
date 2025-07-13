@@ -428,6 +428,30 @@ add_filter('orbital_framework_demo_settings', function($settings) {
                 'std'     => true,
                 'section' => 'samples',
             ),
+            array(
+                'id'         => 'required_text_field',
+                'name'       => 'Required Text Field',
+                'desc'       => 'This field is required and demonstrates accessibility features.',
+                'type'       => 'text',
+                'required'   => true,
+                'placeholder'=> 'Enter required text here...',
+                'std'        => '',
+                'section'    => 'samples',
+            ),
+            array(
+                'id'      => 'accessible_radio_group',
+                'name'    => 'Accessible Radio Group',
+                'desc'    => 'This radio group demonstrates proper semantic structure with fieldset and legend.',
+                'type'    => 'radio',
+                'required'=> true,
+                'options' => array(
+                    'option_a' => 'Option A',
+                    'option_b' => 'Option B', 
+                    'option_c' => 'Option C',
+                ),
+                'std'     => '',
+                'section' => 'samples',
+            ),
         ),
     );
 });

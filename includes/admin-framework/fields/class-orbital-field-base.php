@@ -140,62 +140,124 @@ abstract class Orbital_Field_Base {
 	}
 
 	/**
-	 * Get field classes
+	 * Get field wrapper classes (BEM methodology)
 	 *
 	 * @since 1.0.0
 	 * @return string CSS classes.
 	 */
-	protected function get_field_classes() {
-		$classes = array( 'orbital-field' );
+	protected function get_field_wrapper_classes() {
+		$classes = array( 
+			'field',
+			'field--' . $this->field['type']
+		);
 		
-		if ( isset( $this->field['class'] ) ) {
-			$classes[] = $this->field['class'];
+		// Add custom classes if specified
+		if ( isset( $this->field['class'] ) && ! empty( $this->field['class'] ) ) {
+			if ( is_array( $this->field['class'] ) ) {
+				$classes = array_merge( $classes, $this->field['class'] );
+			} else {
+				$custom_classes = explode( ' ', $this->field['class'] );
+				$classes = array_merge( $classes, $custom_classes );
+			}
 		}
+		
+		// Add state modifiers
+		if ( isset( $this->field['required'] ) && $this->field['required'] ) {
+			$classes[] = 'field--required';
+		}
+		
+		if ( isset( $this->field['disabled'] ) && $this->field['disabled'] ) {
+			$classes[] = 'field--disabled';
+		}
+		
+		return implode( ' ', array_filter( $classes ) );
+	}
+
+	/**
+	 * Get input element classes (BEM methodology)
+	 *
+	 * @since 1.0.0
+	 * @return string CSS classes.
+	 */
+	protected function get_input_classes() {
+		$classes = array( 'field__input' );
+		
+		// Add type-specific class
+		$classes[] = 'field__input--' . $this->field['type'];
 		
 		return implode( ' ', $classes );
 	}
 
 	/**
-	 * Render field label
+	 * Render field label (BEM + accessibility)
 	 *
 	 * @since 1.0.0
 	 */
-	protected function render_label() {
+	public function render_label() {
 		if ( ! $this->get_field_name() ) {
 			return;
 		}
+		
+		$required_indicator = '';
+		if ( isset( $this->field['required'] ) && $this->field['required'] ) {
+			$required_indicator = ' <span class="field__required" aria-label="required">*</span>';
+		}
+		
 		?>
-		<label for="<?php echo esc_attr( $this->get_field_id() ); ?>">
-			<span class="orbital-field-label"><?php echo esc_html( $this->get_field_name() ); ?></span>
+		<label for="<?php echo esc_attr( $this->get_field_id() ); ?>" class="field__label">
+			<?php echo esc_html( $this->get_field_name() ); ?><?php echo $required_indicator; ?>
 		</label>
 		<?php
 	}
 
 	/**
-	 * Render field description
+	 * Render field description (BEM + accessibility)
 	 *
 	 * @since 1.0.0
 	 */
-	protected function render_description() {
+	public function render_description() {
 		if ( ! $this->get_field_description() ) {
 			return;
 		}
 		?>
-		<p class="description"><?php echo esc_html( $this->get_field_description() ); ?></p>
+		<div class="field__description" id="<?php echo esc_attr( $this->get_field_id() ); ?>-description">
+			<?php echo esc_html( $this->get_field_description() ); ?>
+		</div>
 		<?php
 	}
 
 	/**
-	 * Get field attributes
+	 * Get field attributes (with accessibility)
 	 *
 	 * @since 1.0.0
 	 * @return array Field attributes.
 	 */
 	protected function get_field_attributes() {
 		$attributes = array(
-			'id'   => $this->get_field_id(),
-			'name' => $this->get_input_name(),
+			'id'    => $this->get_field_id(),
+			'name'  => $this->get_input_name(),
+			'class' => $this->get_input_classes(),
 		);
+
+		// Add accessibility attributes
+		if ( $this->get_field_description() ) {
+			$attributes['aria-describedby'] = $this->get_field_id() . '-description';
+		}
+
+		if ( isset( $this->field['required'] ) && $this->field['required'] ) {
+			$attributes['required'] = true;
+			$attributes['aria-required'] = 'true';
+		}
+
+		if ( isset( $this->field['disabled'] ) && $this->field['disabled'] ) {
+			$attributes['disabled'] = true;
+			$attributes['aria-disabled'] = 'true';
+		}
+
+		// Add placeholder if specified
+		if ( isset( $this->field['placeholder'] ) ) {
+			$attributes['placeholder'] = $this->field['placeholder'];
+		}
 
 		// Add custom attributes if defined
 		if ( isset( $this->field['attributes'] ) && is_array( $this->field['attributes'] ) ) {

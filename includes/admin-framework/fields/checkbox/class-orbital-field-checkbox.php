@@ -34,8 +34,6 @@ class Orbital_Field_Checkbox extends Orbital_Field_Base {
 		} else {
 			$this->render_single_checkbox();
 		}
-		
-		$this->render_description();
 	}
 
 	/**
@@ -46,12 +44,12 @@ class Orbital_Field_Checkbox extends Orbital_Field_Base {
 	private function render_single_checkbox() {
 		$checked = ! empty( $this->value );
 		?>
-		<label for="<?php echo esc_attr( $this->get_field_id() ); ?>" class="orbital-checkbox-label">
+		<label for="<?php echo esc_attr( $this->get_field_id() ); ?>" class="field__checkbox-label">
 			<input type="checkbox"<?php echo $this->render_attributes( array( 
 				'value' => '1',
 				'checked' => $checked
 			) ); ?>>
-			<span class="orbital-field-label"><?php echo esc_html( $this->get_field_name() ); ?></span>
+			<span class="field__checkbox-text"><?php echo esc_html( $this->get_field_name() ); ?></span>
 		</label>
 		<?php
 	}
@@ -62,23 +60,27 @@ class Orbital_Field_Checkbox extends Orbital_Field_Base {
 	 * @since 1.0.0
 	 */
 	private function render_multi_checkbox() {
-		$this->render_label();
-		
 		// Ensure value is an array
 		$values = is_array( $this->value ) ? $this->value : array();
 		
 		?>
-		<div class="orbital-multicheckbox-wrapper">
-			<?php foreach ( $this->field['options'] as $option_value => $option_label ) : ?>
-				<label class="orbital-multicheckbox-option">
-					<input type="checkbox" 
-					       name="<?php echo esc_attr( $this->get_input_name() ); ?>[]" 
-					       value="<?php echo esc_attr( $option_value ); ?>"
-					       <?php checked( in_array( $option_value, $values ) ); ?>>
-					<span class="orbital-checkbox-label"><?php echo esc_html( $option_label ); ?></span>
-				</label>
-			<?php endforeach; ?>
-		</div>
+		<fieldset class="field__fieldset" aria-describedby="<?php echo esc_attr( $this->get_field_id() ); ?>-description">
+			<legend class="field__legend"><?php echo esc_html( $this->get_field_name() ); ?></legend>
+			<div class="field__checkbox-group">
+				<?php foreach ( $this->field['options'] as $option_value => $option_label ) : ?>
+					<label class="field__checkbox-option">
+						<input type="checkbox" 
+						       class="field__input field__input--checkbox"
+						       name="<?php echo esc_attr( $this->get_input_name() ); ?>[]" 
+						       id="<?php echo esc_attr( $this->get_field_id() . '_' . $option_value ); ?>"
+						       value="<?php echo esc_attr( $option_value ); ?>"
+						       <?php checked( in_array( $option_value, $values ) ); ?>
+						       <?php if ( isset( $this->field['required'] ) && $this->field['required'] ) echo 'required aria-required="true"'; ?>>
+						<span class="field__checkbox-text"><?php echo esc_html( $option_label ); ?></span>
+					</label>
+				<?php endforeach; ?>
+			</div>
+		</fieldset>
 		<?php
 	}
 

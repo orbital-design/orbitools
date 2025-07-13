@@ -22,16 +22,13 @@ if ( ! defined( 'ABSPATH' ) ) {
 class Orbital_Field_Number extends Orbital_Field_Base {
 
 	/**
-	 * Render the number field
+	 * Render the number field input only
 	 *
 	 * @since 1.0.0
 	 */
 	public function render() {
-		$this->render_label();
-		
 		$attributes = array(
-			'value' => esc_attr( $this->value ),
-			'class' => 'small-text'
+			'value' => esc_attr( $this->value )
 		);
 
 		// Add min/max/step attributes if defined
@@ -48,7 +45,6 @@ class Orbital_Field_Number extends Orbital_Field_Base {
 		?>
 		<input type="number"<?php echo $this->render_attributes( $attributes ); ?>>
 		<?php
-		$this->render_description();
 	}
 
 	/**

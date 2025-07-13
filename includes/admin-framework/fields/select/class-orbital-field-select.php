@@ -22,23 +22,21 @@ if ( ! defined( 'ABSPATH' ) ) {
 class Orbital_Field_Select extends Orbital_Field_Base {
 
 	/**
-	 * Render the select field
+	 * Render the select field input only
 	 *
 	 * @since 1.0.0
 	 */
 	public function render() {
 		if ( ! isset( $this->field['options'] ) || ! is_array( $this->field['options'] ) ) {
-			echo '<p class="orbital-field-error">Select field requires options array.</p>';
+			echo '<p class="field__error">Select field requires options array.</p>';
 			return;
 		}
 
-		$this->render_label();
 		?>
 		<select<?php echo $this->render_attributes(); ?>>
 			<?php $this->render_options(); ?>
 		</select>
 		<?php
-		$this->render_description();
 	}
 
 	/**

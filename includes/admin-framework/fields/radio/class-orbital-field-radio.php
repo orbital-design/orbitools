@@ -34,8 +34,6 @@ class Orbital_Field_Radio extends Orbital_Field_Base {
 		} else {
 			$this->render_single_radio();
 		}
-		
-		$this->render_description();
 	}
 
 	/**
@@ -46,12 +44,12 @@ class Orbital_Field_Radio extends Orbital_Field_Base {
 	private function render_single_radio() {
 		$checked = ! empty( $this->value );
 		?>
-		<label for="<?php echo esc_attr( $this->get_field_id() ); ?>" class="orbital-radio-label">
+		<label for="<?php echo esc_attr( $this->get_field_id() ); ?>" class="field__radio-label">
 			<input type="radio"<?php echo $this->render_attributes( array( 
 				'value' => '1',
 				'checked' => $checked
 			) ); ?>>
-			<span class="orbital-field-label"><?php echo esc_html( $this->get_field_name() ); ?></span>
+			<span class="field__radio-text"><?php echo esc_html( $this->get_field_name() ); ?></span>
 		</label>
 		<?php
 	}
@@ -62,20 +60,24 @@ class Orbital_Field_Radio extends Orbital_Field_Base {
 	 * @since 1.0.0
 	 */
 	private function render_radio_set() {
-		$this->render_label();
-		
 		?>
-		<div class="orbital-radioset-wrapper">
-			<?php foreach ( $this->field['options'] as $option_value => $option_label ) : ?>
-				<label class="orbital-radioset-option">
-					<input type="radio" 
-					       name="<?php echo esc_attr( $this->get_input_name() ); ?>" 
-					       value="<?php echo esc_attr( $option_value ); ?>"
-					       <?php checked( $this->value, $option_value ); ?>>
-					<span class="orbital-radio-label"><?php echo esc_html( $option_label ); ?></span>
-				</label>
-			<?php endforeach; ?>
-		</div>
+		<fieldset class="field__fieldset" aria-describedby="<?php echo esc_attr( $this->get_field_id() ); ?>-description">
+			<legend class="field__legend"><?php echo esc_html( $this->get_field_name() ); ?></legend>
+			<div class="field__radio-group">
+				<?php foreach ( $this->field['options'] as $option_value => $option_label ) : ?>
+					<label class="field__radio-option">
+						<input type="radio" 
+						       class="field__input field__input--radio"
+						       name="<?php echo esc_attr( $this->get_input_name() ); ?>" 
+						       id="<?php echo esc_attr( $this->get_field_id() . '_' . $option_value ); ?>"
+						       value="<?php echo esc_attr( $option_value ); ?>"
+						       <?php checked( $this->value, $option_value ); ?>
+						       <?php if ( isset( $this->field['required'] ) && $this->field['required'] ) echo 'required aria-required="true"'; ?>>
+						<span class="field__radio-text"><?php echo esc_html( $option_label ); ?></span>
+					</label>
+				<?php endforeach; ?>
+			</div>
+		</fieldset>
 		<?php
 	}
 
