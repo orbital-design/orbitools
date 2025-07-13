@@ -801,8 +801,23 @@ class Orbital_Admin_Framework {
 		// Create field instance using registry
 		$field_instance = Orbital_Field_Registry::create_field( $field, $value, $this );
 
+		// Build CSS classes
+		$css_classes = array(
+			'orbital-field',
+			'orbital-field-' . esc_attr( $field['type'] )
+		);
+		
+		// Add custom classes if specified
+		if ( isset( $field['class'] ) && ! empty( $field['class'] ) ) {
+			if ( is_array( $field['class'] ) ) {
+				$css_classes = array_merge( $css_classes, $field['class'] );
+			} else {
+				$css_classes[] = $field['class'];
+			}
+		}
+		
 		?>
-		<div class="orbital-field orbital-field-<?php echo esc_attr( $field['type'] ); ?>" data-field-id="<?php echo esc_attr( $field['id'] ); ?>">
+		<div class="<?php echo esc_attr( implode( ' ', $css_classes ) ); ?>" data-field-id="<?php echo esc_attr( $field['id'] ); ?>">
 			<?php
 			if ( $field_instance ) {
 				// Enqueue field-specific assets

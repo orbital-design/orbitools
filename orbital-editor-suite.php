@@ -410,6 +410,24 @@ add_filter('orbital_framework_demo_settings', function($settings) {
                 'std'     => 'Lorem ipsum dolor sit amet',
                 'section' => 'samples',
             ),
+            array(
+                'id'      => 'custom_styled_text',
+                'name'    => 'Custom Styled Text Field',
+                'desc'    => 'This text field has custom CSS classes applied.',
+                'type'    => 'text',
+                'class'   => 'custom-styling highlight-field',
+                'std'     => 'Text with custom classes',
+                'section' => 'samples',
+            ),
+            array(
+                'id'      => 'special_checkbox',
+                'name'    => 'Special Styled Checkbox',
+                'desc'    => 'This checkbox has custom styling classes.',
+                'type'    => 'checkbox',
+                'class'   => array( 'premium-field', 'highlight-border' ),
+                'std'     => true,
+                'section' => 'samples',
+            ),
         ),
     );
 });

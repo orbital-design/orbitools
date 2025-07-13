@@ -551,6 +551,62 @@ body.orbital-framework-page #orbital-notices-container .updated {
 }
 
 /* =============================================================================
+   CUSTOM FIELD CLASSES (EXAMPLES)
+   ============================================================================= */
+
+/* Example custom styling classes for demonstration */
+.orbital-field.custom-styling input {
+    border: 2px solid #9b59b6;
+    border-radius: 8px;
+}
+
+.orbital-field.custom-styling input:focus {
+    border-color: #8e44ad;
+    box-shadow: 0 0 0 2px rgba(155, 89, 182, 0.3);
+}
+
+.orbital-field.highlight-field {
+    background: linear-gradient(135deg, #f8f9ff 0%, #fff 100%);
+    border: 1px solid #e6e9ff;
+    border-radius: 6px;
+    padding: 15px;
+    margin: 10px 0;
+}
+
+.orbital-field.premium-field {
+    position: relative;
+}
+
+.orbital-field.premium-field::before {
+    content: "★";
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background: #ffd700;
+    color: #fff;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.orbital-field.highlight-border {
+    border: 2px solid #ff6b6b;
+    border-radius: 8px;
+    padding: 12px;
+    background: rgba(255, 107, 107, 0.05);
+}
+
+.orbital-field.highlight-border .orbital-field-label {
+    color: #ff4757;
+    font-weight: 600;
+}
+
+/* =============================================================================
    RESPONSIVE DESIGN
    ============================================================================= */
 
