@@ -5,6 +5,9 @@
  * This file demonstrates how to use the Orbital Admin Framework
  * to create admin pages with the same ease as OptionsKit.
  *
+ * CRITICAL: Field IDs must be unique across the entire framework instance!
+ * Duplicate IDs will cause data conflicts and fields overwriting each other.
+ *
  * @package    Orbital_Admin_Framework
  * @since      1.0.0
  */
@@ -75,12 +78,15 @@ add_filter( 'my_plugin_settings_admin_structure', function( $structure ) {
  * 
  * Fields are kept separate for flexibility. Each field should have a 'section' 
  * parameter that matches a section key defined in the admin structure above.
+ * 
+ * IMPORTANT: Each field's 'id' must be unique across ALL tabs and sections!
+ * The ID is used for HTML names, database keys, and value mapping.
  */
 add_filter( 'my_plugin_settings_settings', function( $settings ) {
 	return array(
 		'general' => array(
 			array(
-				'id'      => 'plugin_enabled',
+				'id'      => 'plugin_enabled',        // ← Must be unique!
 				'name'    => 'Enable Plugin',
 				'desc'    => 'Turn the plugin functionality on or off.',
 				'type'    => 'checkbox',

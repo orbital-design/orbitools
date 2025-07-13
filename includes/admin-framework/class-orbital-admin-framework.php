@@ -888,6 +888,72 @@ class Orbital_Admin_Framework {
 	}
 
 	/**
+	 * Validate field IDs for uniqueness
+	 *
+	 * @since 1.0.0
+	 * @param array $all_settings All settings configuration.
+	 * @return bool True if all IDs are unique, false if duplicates found.
+	 */
+	private function validate_field_ids( $all_settings ) {
+		$field_ids = array();
+		$duplicates = array();
+		$missing_ids = array();
+		
+		foreach ( $all_settings as $tab_key => $tab_settings ) {
+			if ( ! is_array( $tab_settings ) ) {
+				continue;
+			}
+			
+			foreach ( $tab_settings as $field ) {
+				if ( ! isset( $field['id'] ) ) {
+					$missing_ids[] = $tab_key;
+					if ( WP_DEBUG ) {
+						error_log( sprintf( 
+							'Orbital Framework Warning: Field missing ID in tab "%s". Field: %s', 
+							$tab_key,
+							print_r( $field, true )
+						) );
+					}
+					continue;
+				}
+				
+				$field_id = $field['id'];
+				
+				if ( in_array( $field_id, $field_ids ) ) {
+					$duplicates[] = $field_id;
+				} else {
+					$field_ids[] = $field_id;
+				}
+			}
+		}
+		
+		// Show admin notice for duplicates (always, not just debug mode)
+		if ( ! empty( $duplicates ) ) {
+			add_action( 'admin_notices', function() use ( $duplicates ) {
+				?>
+				<div class="notice notice-error">
+					<p>
+						<strong>Orbital Framework Error:</strong> 
+						Duplicate field IDs detected: <code><?php echo esc_html( implode( ', ', array_unique( $duplicates ) ) ); ?></code>
+					</p>
+					<p>Each field must have a unique <code>id</code> parameter. Duplicate IDs will cause data conflicts!</p>
+				</div>
+				<?php
+			} );
+			
+			if ( WP_DEBUG ) {
+				error_log( sprintf( 
+					'Orbital Framework Error: Duplicate field IDs detected in "%s": %s. This will cause data conflicts!', 
+					$this->slug,
+					implode( ', ', array_unique( $duplicates ) )
+				) );
+			}
+		}
+		
+		return empty( $duplicates );
+	}
+
+	/**
 	 * Get tabs from admin structure
 	 *
 	 * @since 1.0.0
@@ -935,7 +1001,14 @@ class Orbital_Admin_Framework {
 	 * @return array Settings array.
 	 */
 	private function get_settings() {
-		return apply_filters( $this->func_slug . '_settings', array() );
+		$settings = apply_filters( $this->func_slug . '_settings', array() );
+		
+		// Validate field IDs for uniqueness (always validate for demo, or when WP_DEBUG is enabled)
+		if ( WP_DEBUG || strpos( $this->slug, 'demo' ) !== false ) {
+			$this->validate_field_ids( $settings );
+		}
+		
+		return $settings;
 	}
 
 	/**

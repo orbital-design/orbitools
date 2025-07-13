@@ -121,6 +121,11 @@ add_action('plugins_loaded', function () {
  * DEMO: Orbital Admin Framework Test Page
  * 
  * This creates a demo admin page to showcase the new framework.
+ * 
+ * NOTE: This demo intentionally includes a duplicate field ID to demonstrate
+ * the validation system. You should see an admin error notice when viewing
+ * the demo page that says "Duplicate field IDs detected: demo_enabled"
+ * 
  * Remove this section once you're satisfied with the framework.
  */
 add_action('plugins_loaded', function() {
@@ -467,6 +472,15 @@ add_filter('orbital_framework_demo_settings', function($settings) {
                     'option_c' => 'Option C',
                 ),
                 'std'     => '',
+                'section' => 'samples',
+            ),
+            // INTENTIONAL DUPLICATE ID for demonstration - this will trigger an error!
+            array(
+                'id'      => 'demo_enabled',  // ← DUPLICATE! Same as checkbox above
+                'name'    => 'Duplicate ID Demo',
+                'desc'    => 'This field intentionally has the same ID as "Enable Demo Mode" to show the validation error.',
+                'type'    => 'text',
+                'std'     => 'This demonstrates duplicate ID detection',
                 'section' => 'samples',
             ),
         ),

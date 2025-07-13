@@ -5,6 +5,14 @@
  * Abstract base class for all field types in the Orbital Admin Framework.
  * Provides common functionality and structure for all field implementations.
  *
+ * IMPORTANT: Field IDs must be unique across the entire framework instance.
+ * The 'id' parameter is used for:
+ * - HTML input names (settings[field_id])
+ * - Database storage keys
+ * - Value retrieval
+ * 
+ * Duplicate IDs will cause fields to overwrite each other's values!
+ *
  * @package    Orbital_Admin_Framework
  * @subpackage Fields
  * @since      1.0.0
