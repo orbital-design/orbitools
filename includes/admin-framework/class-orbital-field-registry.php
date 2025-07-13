@@ -59,6 +59,7 @@ class Orbital_Field_Registry {
 		// Register core fields
 		self::register_field_type( 'text', $framework_path . '/fields/text/class-orbital-field-text.php', 'Orbital_Field_Text' );
 		self::register_field_type( 'checkbox', $framework_path . '/fields/checkbox/class-orbital-field-checkbox.php', 'Orbital_Field_Checkbox' );
+		self::register_field_type( 'radio', $framework_path . '/fields/radio/class-orbital-field-radio.php', 'Orbital_Field_Radio' );
 		self::register_field_type( 'select', $framework_path . '/fields/select/class-orbital-field-select.php', 'Orbital_Field_Select' );
 		self::register_field_type( 'textarea', $framework_path . '/fields/textarea/class-orbital-field-textarea.php', 'Orbital_Field_Textarea' );
 		self::register_field_type( 'number', $framework_path . '/fields/number/class-orbital-field-number.php', 'Orbital_Field_Number' );

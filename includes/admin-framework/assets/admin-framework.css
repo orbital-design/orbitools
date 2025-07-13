@@ -430,6 +430,56 @@ body.orbital-framework-page #orbital-notices-container .updated {
     margin-top: -2px;
 }
 
+/* Multi-checkbox fields */
+.orbital-multicheckbox-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.orbital-multicheckbox-option {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    cursor: pointer;
+}
+
+.orbital-multicheckbox-option input[type="checkbox"] {
+    margin: 0;
+    transform: scale(1.1);
+}
+
+.orbital-checkbox-label {
+    font-weight: 400;
+    color: #1d2327;
+    cursor: pointer;
+}
+
+/* Radio set fields */
+.orbital-radioset-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.orbital-radioset-option {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    cursor: pointer;
+}
+
+.orbital-radioset-option input[type="radio"] {
+    margin: 0;
+    transform: scale(1.1);
+}
+
+.orbital-radio-label {
+    font-weight: 400;
+    color: #1d2327;
+    cursor: pointer;
+}
+
 /* Field descriptions */
 .orbital-field .description {
     color: #646970;
