@@ -294,6 +294,60 @@ class Orbital_Admin_Framework {
 	}
 
 	/**
+	 * Sanitize settings data using field registry
+	 *
+	 * @since 1.0.0
+	 * @param array $settings_data Settings data to sanitize.
+	 * @return array Sanitized settings data.
+	 */
+	public function sanitize_settings_data( $settings_data ) {
+		if ( ! is_array( $settings_data ) ) {
+			return array();
+		}
+
+		$sanitized = array();
+		$all_settings = $this->get_settings();
+
+		foreach ( $settings_data as $field_id => $value ) {
+			// Find the field configuration
+			$field_config = $this->find_field_config( $field_id, $all_settings );
+			
+			if ( $field_config ) {
+				$sanitized[ $field_id ] = Orbital_Field_Registry::sanitize_field_value( $field_config, $value, $this );
+			} else {
+				// Fallback sanitization
+				$sanitized[ $field_id ] = sanitize_text_field( $value );
+			}
+		}
+
+		return $sanitized;
+	}
+
+	/**
+	 * Find field configuration by ID
+	 *
+	 * @since 1.0.0
+	 * @param string $field_id Field ID to find.
+	 * @param array  $all_settings All settings configuration.
+	 * @return array|null Field configuration or null if not found.
+	 */
+	private function find_field_config( $field_id, $all_settings ) {
+		foreach ( $all_settings as $tab_settings ) {
+			if ( ! is_array( $tab_settings ) ) {
+				continue;
+			}
+			
+			foreach ( $tab_settings as $field ) {
+				if ( isset( $field['id'] ) && $field['id'] === $field_id ) {
+					return $field;
+				}
+			}
+		}
+		
+		return null;
+	}
+
+	/**
 	 * AJAX save settings handler
 	 *
 	 * @since 1.0.0
@@ -328,14 +382,17 @@ class Orbital_Admin_Framework {
 	 * @return bool Success status.
 	 */
 	private function save_settings( $settings_data ) {
+		// Sanitize settings using field registry
+		$sanitized_data = $this->sanitize_settings_data( $settings_data );
+
 		// Hook for pre-save processing
-		$settings_data = apply_filters( $this->func_slug . '_pre_save_settings', $settings_data );
+		$sanitized_data = apply_filters( $this->func_slug . '_pre_save_settings', $sanitized_data );
 
 		// Save settings
-		$result = update_option( $this->slug . '_settings', $settings_data );
+		$result = update_option( $this->slug . '_settings', $sanitized_data );
 
 		// Hook for post-save processing
-		do_action( $this->func_slug . '_post_save_settings', $settings_data, $result );
+		do_action( $this->func_slug . '_post_save_settings', $sanitized_data, $result );
 
 		return $result;
 	}
@@ -738,99 +795,30 @@ class Orbital_Admin_Framework {
 			return;
 		}
 
-		$method = 'render_' . $field['type'] . '_field';
-		
+		// Get field value
+		$value = $this->get_field_value( $field['id'], $field );
+
+		// Create field instance using registry
+		$field_instance = Orbital_Field_Registry::create_field( $field, $value, $this );
+
 		?>
 		<div class="orbital-field orbital-field-<?php echo esc_attr( $field['type'] ); ?>" data-field-id="<?php echo esc_attr( $field['id'] ); ?>">
 			<?php
-			if ( method_exists( $this, $method ) ) {
-				$this->$method( $field );
+			if ( $field_instance ) {
+				// Enqueue field-specific assets
+				Orbital_Field_Registry::enqueue_field_assets( $field_instance );
+				
+				// Render the field
+				$field_instance->render();
 			} else {
-				// Fallback to text field
-				$this->render_text_field( $field );
+				// Fallback for unregistered field types
+				echo '<p class="orbital-field-error">Unknown field type: ' . esc_html( $field['type'] ) . '</p>';
 			}
 			?>
 		</div>
 		<?php
 	}
 
-	/**
-	 * Render text field
-	 *
-	 * @since 1.0.0
-	 * @param array $field Field configuration.
-	 */
-	private function render_text_field( $field ) {
-		$value = $this->get_field_value( $field['id'], $field );
-		?>
-		<label for="<?php echo esc_attr( $field['id'] ); ?>">
-			<span class="orbital-field-label"><?php echo esc_html( $field['name'] ); ?></span>
-		</label>
-		<input type="text" 
-			   id="<?php echo esc_attr( $field['id'] ); ?>" 
-			   name="settings[<?php echo esc_attr( $field['id'] ); ?>]" 
-			   value="<?php echo esc_attr( $value ); ?>"
-			   class="regular-text">
-		<?php if ( isset( $field['desc'] ) ) : ?>
-			<p class="description"><?php echo esc_html( $field['desc'] ); ?></p>
-		<?php endif; ?>
-		<?php
-	}
-
-	/**
-	 * Render checkbox field
-	 *
-	 * @since 1.0.0
-	 * @param array $field Field configuration.
-	 */
-	private function render_checkbox_field( $field ) {
-		$value = $this->get_field_value( $field['id'], $field );
-		$checked = ! empty( $value );
-		?>
-		<label for="<?php echo esc_attr( $field['id'] ); ?>">
-			<input type="checkbox" 
-				   id="<?php echo esc_attr( $field['id'] ); ?>" 
-				   name="settings[<?php echo esc_attr( $field['id'] ); ?>]" 
-				   value="1"
-				   <?php checked( $checked ); ?>>
-			<span class="orbital-field-label"><?php echo esc_html( $field['name'] ); ?></span>
-		</label>
-		<?php if ( isset( $field['desc'] ) ) : ?>
-			<p class="description"><?php echo esc_html( $field['desc'] ); ?></p>
-		<?php endif; ?>
-		<?php
-	}
-
-	/**
-	 * Render select field
-	 *
-	 * @since 1.0.0
-	 * @param array $field Field configuration.
-	 */
-	private function render_select_field( $field ) {
-		if ( ! isset( $field['options'] ) ) {
-			return;
-		}
-
-		$value = $this->get_field_value( $field['id'], $field );
-		?>
-		<label for="<?php echo esc_attr( $field['id'] ); ?>">
-			<span class="orbital-field-label"><?php echo esc_html( $field['name'] ); ?></span>
-		</label>
-		<select id="<?php echo esc_attr( $field['id'] ); ?>" 
-				name="settings[<?php echo esc_attr( $field['id'] ); ?>]">
-			<?php foreach ( $field['options'] as $option_value => $option_label ) : ?>
-				<option value="<?php echo esc_attr( $option_value ); ?>" 
-						<?php selected( $value, $option_value ); ?>>
-					<?php echo esc_html( $option_label ); ?>
-				</option>
-			<?php endforeach; ?>
-		</select>
-		<?php if ( isset( $field['desc'] ) ) : ?>
-			<p class="description"><?php echo esc_html( $field['desc'] ); ?></p>
-		<?php endif; ?>
-		<?php
-	}
 
 	/**
 	 * Get field value from database

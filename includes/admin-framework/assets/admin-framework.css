@@ -364,6 +364,16 @@ body.orbital-framework-page #orbital-notices-container .updated {
     gap: 8px;
 }
 
+.orbital-field-error {
+    color: #d63638;
+    background: #fcf0f1;
+    border: 1px solid #deb0b1;
+    border-radius: 4px;
+    padding: 8px 12px;
+    font-size: 13px;
+    margin: 0;
+}
+
 .orbital-field-label {
     font-weight: 500;
     color: #1d2327;

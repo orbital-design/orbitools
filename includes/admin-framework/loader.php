@@ -34,9 +34,24 @@ if ( ! defined( 'ORBITAL_ADMIN_FRAMEWORK_URL' ) ) {
  * @since 1.0.0
  */
 function orbital_admin_framework_load() {
-	// Only load if not already loaded
+	// Load base field class
+	if ( ! class_exists( 'Orbital_Field_Base' ) ) {
+		require_once ORBITAL_ADMIN_FRAMEWORK_PATH . 'fields/class-orbital-field-base.php';
+	}
+
+	// Load field registry
+	if ( ! class_exists( 'Orbital_Field_Registry' ) ) {
+		require_once ORBITAL_ADMIN_FRAMEWORK_PATH . 'class-orbital-field-registry.php';
+	}
+
+	// Load main framework class
 	if ( ! class_exists( 'Orbital_Admin_Framework' ) ) {
 		require_once ORBITAL_ADMIN_FRAMEWORK_PATH . 'class-orbital-admin-framework.php';
+	}
+
+	// Initialize field registry
+	if ( class_exists( 'Orbital_Field_Registry' ) ) {
+		Orbital_Field_Registry::init();
 	}
 }
 
