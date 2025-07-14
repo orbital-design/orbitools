@@ -83,7 +83,6 @@ class Typography_Presets
      */
     public function __construct()
     {
-        // Always register admin interface (users need to see settings to enable/configure)
         // Register module metadata
         add_filter('orbitools_available_modules', array($this, 'register_module_metadata'));
 

@@ -33,7 +33,7 @@ class Admin
     {
         if (class_exists('Orbi\\AdminKit\\Field_Registry')) {
             $field_file = ORBITOOLS_DIR . 'inc/Admin/adminkit/fields/modules/Orbitools_Modules_Field.php';
-            
+
             if (file_exists($field_file)) {
                 \Orbi\AdminKit\Field_Registry::register_field_type(
                     'modules',
@@ -162,21 +162,13 @@ class Admin
                     'desc'    => __('Enable, disable, and configure the various modules.', 'orbitools'),
                     'type'    => 'modules',
                     'section' => 'modules',
-                ),
+                )
             ),
             'settings' => array(
                 array(
                     'id'      => 'debug_mode',
                     'name'    => __('Debug Mode', 'orbitools'),
                     'desc'    => __('Enable debug logging for troubleshooting.', 'orbitools'),
-                    'type'    => 'checkbox',
-                    'std'     => false,
-                    'section' => 'general',
-                ),
-                array(
-                    'id'      => 'typography_presets_enabled',
-                    'name'    => __('Typography Presets', 'orbitools'),
-                    'desc'    => __('Enable typography presets module.', 'orbitools'),
                     'type'    => 'checkbox',
                     'std'     => false,
                     'section' => 'general',
