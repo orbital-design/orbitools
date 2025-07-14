@@ -290,10 +290,33 @@ class Typography_Presets
      */
     private function load_settings()
     {
-        $options        = get_option('orbitools_settings', array());
+        $options = get_option('orbitools_settings', array());
+        
+        // Check for module-specific settings first, then framework settings
         $module_options = isset($options[self::MODULE_SLUG]) ? $options[self::MODULE_SLUG] : array();
+        
+        // If no module-specific settings, check for framework settings
+        if (empty($module_options)) {
+            $framework_settings = array();
+            
+            // Map framework setting keys to module setting keys
+            $setting_map = array(
+                'typography_replace_core_controls' => 'replace_core_controls',
+                'typography_show_groups'           => 'show_groups',
+                'typography_output_preset_css'     => 'output_preset_css',
+                'typography_allowed_blocks'        => 'allowed_blocks',
+            );
+            
+            foreach ($setting_map as $framework_key => $module_key) {
+                if (isset($options[$framework_key])) {
+                    $framework_settings[$module_key] = $options[$framework_key];
+                }
+            }
+            
+            $module_options = $framework_settings;
+        }
 
-        // Set default settings - always use theme.json method
+        // Set default settings
         $this->settings = wp_parse_args(
             $module_options,
             array(

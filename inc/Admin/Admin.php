@@ -123,9 +123,7 @@ class Admin
             'modules' => array(
                 'title' => __('Modules', 'orbitools'),
                 'display_mode' => 'tabs',
-                'sections' => array(
-                    'available' => __('Available Modules', 'orbitools'),
-                ),
+                'sections' => array(),
             ),
             'settings' => array(
                 'title' => __('Settings', 'orbitools'),
