@@ -76,6 +76,14 @@ class Orbital_Admin_Framework {
 	private $menu_config = array();
 
 	/**
+	 * Field ID validation flag
+	 *
+	 * @since 1.0.0
+	 * @var bool
+	 */
+	private $field_ids_validated = false;
+
+	/**
 	 * Initialize the framework
 	 *
 	 * @since 1.0.0
@@ -651,15 +659,27 @@ class Orbital_Admin_Framework {
 			$notices = array();
 		}
 		
-		$notices[] = array(
-			'message'     => $message,
-			'type'        => $type,
-			'dismissible' => $dismissible,
-			'id'          => uniqid( 'orbi-notice-' ),
-		);
+		// Check if this exact notice already exists to prevent duplicates
+		$notice_exists = false;
+		foreach ( $notices as $existing_notice ) {
+			if ( $existing_notice['message'] === $message && $existing_notice['type'] === $type ) {
+				$notice_exists = true;
+				break;
+			}
+		}
 		
-		// Store for 5 minutes
-		set_transient( $notices_key, $notices, 300 );
+		// Only add the notice if it doesn't already exist
+		if ( ! $notice_exists ) {
+			$notices[] = array(
+				'message'     => $message,
+				'type'        => $type,
+				'dismissible' => $dismissible,
+				'id'          => uniqid( 'orbi-notice-' ),
+			);
+			
+			// Store for 5 minutes
+			set_transient( $notices_key, $notices, 300 );
+		}
 	}
 	
 	/**
@@ -1212,9 +1232,10 @@ class Orbital_Admin_Framework {
 	private function get_settings() {
 		$settings = apply_filters( $this->func_slug . '_settings', array() );
 		
-		// Validate field IDs for uniqueness (always validate for demo, or when WP_DEBUG is enabled)
-		if ( WP_DEBUG || strpos( $this->slug, 'demo' ) !== false ) {
+		// Validate field IDs for uniqueness only once per request (always validate for demo, or when WP_DEBUG is enabled)
+		if ( ! $this->field_ids_validated && ( WP_DEBUG || strpos( $this->slug, 'demo' ) !== false ) ) {
 			$this->validate_field_ids( $settings );
+			$this->field_ids_validated = true;
 		}
 		
 		return $settings;
