@@ -135,6 +135,9 @@ class Typography_Presets
         $this->load_settings();
         $this->load_presets();
         $this->setup_hooks();
+        
+        // Add admin notices for this module
+        add_action('admin_init', array($this, 'add_admin_notices'));
     }
 
     /**
@@ -735,6 +738,55 @@ class Typography_Presets
     public function get_settings()
     {
         return $this->settings;
+    }
+
+    /**
+     * Add admin notices for typography presets status
+     *
+     * @since 1.0.0
+     */
+    public function add_admin_notices()
+    {
+        // Only show on our admin pages
+        if (!isset($_GET['page']) || $_GET['page'] !== 'orbitools') {
+            return;
+        }
+
+        // Check if we're on the modules tab and typography section
+        if (!isset($_GET['tab']) || $_GET['tab'] !== 'modules') {
+            return;
+        }
+
+        // Only show if module is enabled
+        if (!$this->is_module_enabled()) {
+            return;
+        }
+
+        // Get the admin framework instance
+        $admin_framework = orbi_admin_kit('orbitools');
+        if (!$admin_framework) {
+            return;
+        }
+
+        // Check for theme.json presets
+        $theme_json_path = get_template_directory() . '/theme.json';
+        $has_presets = false;
+        
+        if (file_exists($theme_json_path)) {
+            $theme_json_content = file_get_contents($theme_json_path);
+            $theme_json = json_decode($theme_json_content, true);
+            
+            if ($theme_json && JSON_ERROR_NONE === json_last_error()) {
+                $has_presets = isset($theme_json['settings']['custom']['orbital']['plugins']['oes']['Typography_Presets']['items']);
+            }
+        }
+        
+        if (!$has_presets) {
+            $admin_framework->add_notice(
+                '<strong>Typography Presets:</strong> No presets found in theme.json. Add typography presets to your theme\'s <code>theme.json</code> file to use this feature.',
+                'warning'
+            );
+        }
     }
 
     /**
