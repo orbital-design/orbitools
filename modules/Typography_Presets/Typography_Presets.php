@@ -24,9 +24,9 @@ if (! defined('ABSPATH')) {
  *
  * Manages typography preset functionality including:
  * - Reading presets from theme.json files
+ * - Loading settings from admin interface
  * - Block editor integration and controls
  * - CSS generation and output
- * - Settings integration with main plugin
  *
  * @since 1.0.0
  */
@@ -49,16 +49,9 @@ class Typography_Presets
      */
     const MODULE_SLUG = 'typography-presets';
 
-    /**
-     * Default typography presets
-     *
-     * @since 1.0.0
-     * @var array
-     */
-    private $default_presets;
 
     /**
-     * Current loaded presets (default + theme.json)
+     * Current loaded presets from theme.json
      *
      * @since 1.0.0
      * @var array
@@ -95,7 +88,7 @@ class Typography_Presets
         if (self::$initialized) {
             return;
         }
-        
+
         // Register module metadata
         add_filter('orbitools_available_modules', array($this, 'register_module_metadata'));
 
@@ -107,7 +100,7 @@ class Typography_Presets
         if ($this->is_module_enabled()) {
             $this->init();
         }
-        
+
         self::$initialized = true;
     }
 
@@ -139,7 +132,6 @@ class Typography_Presets
      */
     private function init()
     {
-        $this->load_default_presets();
         $this->load_settings();
         $this->load_presets();
         $this->setup_hooks();
@@ -164,124 +156,6 @@ class Typography_Presets
         add_action('after_switch_theme', array($this, 'clear_preset_cache'));
     }
 
-    /**
-     * Load default typography presets
-     *
-     * Defines a comprehensive set of default typography presets that work
-     * as fallbacks when theme.json doesn't provide custom presets.
-     *
-     * @since 1.0.0
-     */
-    private function load_default_presets()
-    {
-        $this->default_presets = array(
-            'heading-xl' => array(
-                'label'       => 'Heading XL',
-                'description' => 'Extra large heading with strong presence',
-                'properties'  => array(
-                    'font-size'      => '3rem',
-                    'line-height'    => '1.1',
-                    'font-weight'    => '700',
-                    'letter-spacing' => '-0.02em',
-                    'margin-bottom'  => '1.5rem',
-                ),
-                'group'       => 'headings',
-                'is_default'  => true,
-            ),
-            'heading-lg' => array(
-                'label'       => 'Heading Large',
-                'description' => 'Large heading for section titles',
-                'properties'  => array(
-                    'font-size'      => '2.25rem',
-                    'line-height'    => '1.2',
-                    'font-weight'    => '600',
-                    'letter-spacing' => '-0.01em',
-                    'margin-bottom'  => '1.25rem',
-                ),
-                'group'       => 'headings',
-                'is_default'  => true,
-            ),
-            'heading-md' => array(
-                'label'       => 'Heading Medium',
-                'description' => 'Medium heading for subsections',
-                'properties'  => array(
-                    'font-size'      => '1.5rem',
-                    'line-height'    => '1.3',
-                    'font-weight'    => '600',
-                    'letter-spacing' => '0',
-                    'margin-bottom'  => '1rem',
-                ),
-                'group'       => 'headings',
-                'is_default'  => true,
-            ),
-            'body-lg' => array(
-                'label'       => 'Body Large',
-                'description' => 'Large body text for emphasis',
-                'properties'  => array(
-                    'font-size'      => '1.125rem',
-                    'line-height'    => '1.6',
-                    'font-weight'    => '400',
-                    'letter-spacing' => '0',
-                    'margin-bottom'  => '1rem',
-                ),
-                'group'       => 'body',
-                'is_default'  => true,
-            ),
-            'body-base' => array(
-                'label'       => 'Body Base',
-                'description' => 'Standard body text',
-                'properties'  => array(
-                    'font-size'      => '1rem',
-                    'line-height'    => '1.6',
-                    'font-weight'    => '400',
-                    'letter-spacing' => '0',
-                    'margin-bottom'  => '1rem',
-                ),
-                'group'       => 'body',
-                'is_default'  => true,
-            ),
-            'body-sm' => array(
-                'label'       => 'Body Small',
-                'description' => 'Small body text for captions',
-                'properties'  => array(
-                    'font-size'      => '0.875rem',
-                    'line-height'    => '1.5',
-                    'font-weight'    => '400',
-                    'letter-spacing' => '0',
-                    'margin-bottom'  => '0.75rem',
-                ),
-                'group'       => 'body',
-                'is_default'  => true,
-            ),
-            'caption' => array(
-                'label'       => 'Caption',
-                'description' => 'Caption text for images and quotes',
-                'properties'  => array(
-                    'font-size'      => '0.75rem',
-                    'line-height'    => '1.4',
-                    'font-weight'    => '500',
-                    'letter-spacing' => '0.05em',
-                    'text-transform' => 'uppercase',
-                    'color'          => '#6b7280',
-                ),
-                'group'       => 'utility',
-                'is_default'  => true,
-            ),
-            'button' => array(
-                'label'       => 'Button Text',
-                'description' => 'Text style for buttons and CTAs',
-                'properties'  => array(
-                    'font-size'      => '0.875rem',
-                    'line-height'    => '1.25',
-                    'font-weight'    => '600',
-                    'letter-spacing' => '0.025em',
-                    'text-transform' => 'uppercase',
-                ),
-                'group'       => 'utility',
-                'is_default'  => true,
-            ),
-        );
-    }
 
     /**
      * Load module settings with defaults
@@ -291,46 +165,44 @@ class Typography_Presets
     private function load_settings()
     {
         $options = get_option('orbitools_settings', array());
-        
-        // Check for module-specific settings first, then framework settings
-        $module_options = isset($options[self::MODULE_SLUG]) ? $options[self::MODULE_SLUG] : array();
-        
-        // If no module-specific settings, check for framework settings
-        if (empty($module_options)) {
-            $framework_settings = array();
-            
-            // Map framework setting keys to module setting keys
-            $setting_map = array(
-                'typography_show_groups'           => 'show_groups',
-                'typography_output_preset_css'     => 'output_preset_css',
-                'typography_allowed_blocks'        => 'allowed_blocks',
-            );
-            
-            foreach ($setting_map as $framework_key => $module_key) {
-                if (isset($options[$framework_key])) {
-                    $framework_settings[$module_key] = $options[$framework_key];
+
+        // Extract settings from admin interface
+        $admin_settings = array();
+
+        // Map admin setting keys to module setting keys
+        $setting_map = array(
+            'typography_show_groups'           => 'show_groups',
+            'typography_output_preset_css'     => 'output_preset_css',
+            'typography_allowed_blocks'        => 'allowed_blocks',
+        );
+
+        foreach ($setting_map as $admin_key => $module_key) {
+            if (array_key_exists($admin_key, $options)) {
+                $value = $options[$admin_key];
+                // Convert checkbox values properly
+                if ($value === '' || $value === '0') {
+                    $value = false;
+                } elseif ($value === '1') {
+                    $value = true;
                 }
+                $admin_settings[$module_key] = $value;
             }
-            
-            $module_options = $framework_settings;
         }
 
-        // Set default settings
-        $this->settings = wp_parse_args(
-            $module_options,
-            array(
-                'replace_core_controls' => true,
-                'allowed_blocks'        => array(
-                    'core/paragraph',
-                    'core/heading',
-                    'core/list',
-                    'core/quote',
-                    'core/button',
-                ),
-                'show_groups'           => true,
-                'output_preset_css'     => true,
-            )
+        // Set defaults and merge with admin settings
+        $defaults = array(
+            'allowed_blocks'        => array(
+                'core/paragraph',
+                'core/heading',
+                'core/list',
+                'core/quote',
+                'core/button',
+            ),
+            'show_groups'           => true,
+            'output_preset_css'     => true,
         );
+
+        $this->settings = wp_parse_args($admin_settings, $defaults);
     }
 
     /**
@@ -349,7 +221,7 @@ class Typography_Presets
      * Load presets from theme.json file
      *
      * Attempts to read typography presets from the active theme's theme.json file.
-     * Falls back to default presets if theme.json is not available or invalid.
+     * Sets empty array if theme.json is not available or invalid.
      *
      * @since 1.0.0
      */
@@ -358,44 +230,15 @@ class Typography_Presets
         $theme_data = $this->get_theme_json_data();
 
         if (! $theme_data) {
-            // Fallback to default presets if theme.json data not found
-            $this->presets = $this->default_presets;
+            // No theme.json presets found - set empty array
+            $this->presets = array();
             return;
         }
-
-        // Override settings from theme.json if provided
-        $this->maybe_override_settings_from_theme_json($theme_data);
 
         // Parse and load presets
         $this->presets = $this->parse_theme_json_presets($theme_data);
     }
 
-    /**
-     * Override module settings from theme.json configuration
-     *
-     * @since 1.0.0
-     * @param array $theme_data Theme.json data array.
-     */
-    private function maybe_override_settings_from_theme_json($theme_data)
-    {
-        if (! isset($theme_data['settings'])) {
-            return;
-        }
-
-        $theme_settings = $theme_data['settings'];
-
-        $settings_map = array(
-            'replace_core_controls' => 'replace_core_controls',
-            'show_groups'           => 'show_groups',
-            'output_preset_css'     => 'output_preset_css',
-        );
-
-        foreach ($settings_map as $theme_key => $setting_key) {
-            if (isset($theme_settings[$theme_key])) {
-                $this->settings[$setting_key] = $theme_settings[$theme_key];
-            }
-        }
-    }
 
     /**
      * Get typography presets data from theme.json
@@ -445,7 +288,7 @@ class Typography_Presets
     private function parse_theme_json_presets($theme_data)
     {
         if (! isset($theme_data['items'])) {
-            return $this->default_presets;
+            return array();
         }
 
         $parsed_presets    = array();
@@ -749,16 +592,6 @@ class Typography_Presets
         return true; // Module is enabled if instantiated
     }
 
-    /**
-     * Check if core typography controls should be replaced
-     *
-     * @since 1.0.0
-     * @return bool True if core controls should be replaced
-     */
-    public function should_replace_core_controls()
-    {
-        return ! empty($this->settings['replace_core_controls']);
-    }
 
     /**
      * Get blocks allowed to use typography presets
@@ -781,7 +614,7 @@ class Typography_Presets
     public function enqueue_editor_assets()
     {
         $script_dependencies = array('wp-hooks', 'wp-blocks', 'wp-element', 'wp-components', 'wp-block-editor');
-        
+
         // Enqueue attribute registration first
         wp_enqueue_script(
             'orbitools-typography-attribute-registration',
@@ -790,7 +623,7 @@ class Typography_Presets
             self::VERSION,
             true
         );
-        
+
         // Localize data to the first script so all scripts can access it
         wp_localize_script(
             'orbitools-typography-attribute-registration',
@@ -803,10 +636,11 @@ class Typography_Presets
                     'selectPreset' => __('Select Typography Preset', 'orbitools'),
                     'customPreset' => __('Custom Preset', 'orbitools'),
                     'noPreset'     => __('No Preset', 'orbitools'),
+                    'noPresetsFound' => __('No typography presets found. Add presets to your theme.json file to use this feature.', 'orbitools'),
                 ),
             )
         );
-        
+
         // Enqueue core controls removal
         wp_enqueue_script(
             'orbitools-typography-core-removal',
@@ -815,7 +649,7 @@ class Typography_Presets
             self::VERSION,
             true
         );
-        
+
         // Enqueue editor controls
         wp_enqueue_script(
             'orbitools-typography-editor-controls',
@@ -824,7 +658,7 @@ class Typography_Presets
             self::VERSION,
             true
         );
-        
+
         // Enqueue class application
         wp_enqueue_script(
             'orbitools-typography-class-application',
@@ -983,14 +817,6 @@ class Typography_Presets
 
         // Add Typography settings directly under 'typography' key
         $settings['typography'] = array(
-            array(
-                'id'      => 'typography_replace_core_controls',
-                'name'    => __('Replace Core Controls', 'orbitools'),
-                'desc'    => __('Remove WordPress core typography controls and replace with preset system.', 'orbitools'),
-                'type'    => 'checkbox',
-                'std'     => false,
-                'section' => 'typography',
-            ),
             array(
                 'id'      => 'typography_show_groups',
                 'name'    => __('Show Groups in Dropdown', 'orbitools'),

@@ -1,7 +1,7 @@
 /**
  * Typography Presets - Core Controls Removal
  * 
- * Removes WordPress core typography controls when replace_core_controls is enabled
+ * Removes WordPress core typography controls for blocks that support typography presets
  */
 
 (function() {
@@ -14,7 +14,7 @@
             // Get settings from localized data
             const { settings: moduleSettings } = window.orbitoolsTypographyPresets || {};
 
-            if (!moduleSettings || !moduleSettings.replace_core_controls) {
+            if (!moduleSettings) {
                 return settings;
             }
             

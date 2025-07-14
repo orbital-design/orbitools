@@ -21,6 +21,9 @@
                 return wp.element.createElement(BlockEdit, props);
             }
 
+            // Check if we have any presets to work with
+            const hasPresets = presets && Object.keys(presets).length > 0;
+
             // Define allowed blocks (with fallback)
             const allowedBlocks = settings.allowed_blocks || [
                 'core/paragraph', 'core/heading', 'core/list', 'core/quote', 'core/button'
@@ -28,6 +31,76 @@
 
             if (!allowedBlocks.includes(props.name)) {
                 return wp.element.createElement(BlockEdit, props);
+            }
+
+            // Show control with "No Presets" option if none are available
+            if (!hasPresets) {
+                return wp.element.createElement(
+                    Fragment,
+                    {},
+                    wp.element.createElement(BlockEdit, props),
+                    wp.element.createElement(
+                        InspectorControls,
+                        { group: 'styles' },
+                        wp.element.createElement(
+                            ToolsPanel,
+                            {
+                                label: 'Typography',
+                                resetAll: function() {
+                                    // Nothing to reset when no presets
+                                }
+                            },
+                            wp.element.createElement(
+                                ToolsPanelItem,
+                                {
+                                    hasValue: function() { return false; },
+                                    label: 'Preset',
+                                    onDeselect: function() {
+                                        // Nothing to deselect when no presets
+                                    },
+                                    isShownByDefault: true
+                                },
+                                wp.element.createElement(
+                                    'div',
+                                    {
+                                        style: {
+                                            pointerEvents: 'none',
+                                            opacity: '0.6'
+                                        }
+                                    },
+                                    wp.element.createElement(ComboboxControl, {
+                                        label: 'Preset',
+                                        value: 'no-presets',
+                                        options: [{ label: 'No Presets Available', value: 'no-presets' }],
+                                        onChange: function() {
+                                            // Prevent any changes when no presets
+                                            return;
+                                        },
+                                        __nextHasNoMarginBottom: true,
+                                        __next40pxDefaultSize: true
+                                    })
+                                ),
+
+                                // Show help message in preview box style
+                                wp.element.createElement(
+                                    'div',
+                                    {
+                                        style: {
+                                            background: '#f6f7f7',
+                                            padding: '8px 12px',
+                                            borderRadius: '4px',
+                                            marginTop: '8px',
+                                            fontSize: '13px',
+                                            border: '1px solid #ddd',
+                                            color: '#646970'
+                                        }
+                                    },
+                                    strings.noPresetsFound || 'No typography presets found. Add presets to your theme.json file to use this feature.'
+                                )
+                            )
+                        )
+                    )
+                );
             }
 
             const { attributes, setAttributes } = props;
