@@ -2,13 +2,15 @@
 /**
  * Field Registry Class
  *
- * Manages registration and instantiation of field types in the Orbital Admin Framework.
- * Follows the modular approach similar to Kirki's field system.
+ * Manages registration and instantiation of field types in the OrbiTools AdminKit.
+ * Follows the modular approach allowing external field registration.
  *
- * @package    Orbital_Admin_Framework
+ * @package    Orbi\AdminKit
  * @subpackage Fields
  * @since      1.0.0
  */
+
+namespace Orbi\AdminKit;
 
 // Prevent direct access
 if ( ! defined( 'ABSPATH' ) ) {
@@ -20,7 +22,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  *
  * @since 1.0.0
  */
-class Orbital_Field_Registry {
+class Field_Registry {
 
 	/**
 	 * Registered field types
@@ -45,7 +47,7 @@ class Orbital_Field_Registry {
 	 */
 	public static function init() {
 		self::register_core_fields();
-		do_action( 'orbital_register_fields' );
+		do_action( 'orbi_register_fields' );
 	}
 
 	/**
@@ -57,13 +59,13 @@ class Orbital_Field_Registry {
 		$framework_path = dirname( __FILE__ );
 		
 		// Register core fields
-		self::register_field_type( 'text', $framework_path . '/fields/text/class-orbital-field-text.php', 'Orbital_Field_Text' );
-		self::register_field_type( 'checkbox', $framework_path . '/fields/checkbox/class-orbital-field-checkbox.php', 'Orbital_Field_Checkbox' );
-		self::register_field_type( 'radio', $framework_path . '/fields/radio/class-orbital-field-radio.php', 'Orbital_Field_Radio' );
-		self::register_field_type( 'select', $framework_path . '/fields/select/class-orbital-field-select.php', 'Orbital_Field_Select' );
-		self::register_field_type( 'textarea', $framework_path . '/fields/textarea/class-orbital-field-textarea.php', 'Orbital_Field_Textarea' );
-		self::register_field_type( 'number', $framework_path . '/fields/number/class-orbital-field-number.php', 'Orbital_Field_Number' );
-		self::register_field_type( 'html', $framework_path . '/fields/html/class-orbital-field-html.php', 'Orbital_Field_Html' );
+		self::register_field_type( 'text', $framework_path . '/fields/text/class-orbital-field-text.php', 'Orbi\\AdminKit\\Field_Text' );
+		self::register_field_type( 'checkbox', $framework_path . '/fields/checkbox/class-orbital-field-checkbox.php', 'Orbi\\AdminKit\\Field_Checkbox' );
+		self::register_field_type( 'radio', $framework_path . '/fields/radio/class-orbital-field-radio.php', 'Orbi\\AdminKit\\Field_Radio' );
+		self::register_field_type( 'select', $framework_path . '/fields/select/class-orbital-field-select.php', 'Orbi\\AdminKit\\Field_Select' );
+		self::register_field_type( 'textarea', $framework_path . '/fields/textarea/class-orbital-field-textarea.php', 'Orbi\\AdminKit\\Field_Textarea' );
+		self::register_field_type( 'number', $framework_path . '/fields/number/class-orbital-field-number.php', 'Orbi\\AdminKit\\Field_Number' );
+		self::register_field_type( 'html', $framework_path . '/fields/html/class-orbital-field-html.php', 'Orbi\\AdminKit\\Field_Html' );
 	}
 
 	/**
@@ -89,8 +91,8 @@ class Orbital_Field_Registry {
 	 * @since 1.0.0
 	 * @param array $field Field configuration.
 	 * @param mixed $value Field value.
-	 * @param Orbital_Admin_Framework $framework Framework instance.
-	 * @return Orbital_Field_Base|null Field instance or null if type not found.
+	 * @param Admin_Kit $framework Framework instance.
+	 * @return Field_Base|null Field instance or null if type not found.
 	 */
 	public static function create_field( $field, $value, $framework ) {
 		if ( ! isset( $field['type'] ) ) {

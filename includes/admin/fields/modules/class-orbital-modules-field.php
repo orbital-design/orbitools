@@ -20,7 +20,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  *
  * @since 1.0.0
  */
-class Orbital_Editor_Suite_Modules_Field extends Orbital_Field_Base {
+class Orbital_Editor_Suite_Modules_Field extends Orbi\AdminKit\Field_Base {
 
 	/**
 	 * Render the modules field
@@ -56,7 +56,7 @@ class Orbital_Editor_Suite_Modules_Field extends Orbital_Field_Base {
 						<div class="orbi-module-card__toggle">
 							<label class="orbi-toggle">
 								<input type="checkbox" 
-								       name="<?php echo esc_attr( $field_name ); ?>[<?php echo esc_attr( $module_id ); ?>]" 
+								       name="settings[<?php echo esc_attr( $module_id . '_enabled' ); ?>]" 
 								       value="1"
 								       <?php checked( $is_enabled ); ?>
 								       class="orbi-toggle__input">
@@ -117,7 +117,7 @@ class Orbital_Editor_Suite_Modules_Field extends Orbital_Field_Base {
 	 * @return bool True if enabled, false otherwise.
 	 */
 	private function is_module_enabled( $module_id ) {
-		$framework_settings = get_option( 'orbital_editor_suite_new', array() );
+		$framework_settings = get_option( 'orbital-editor-suite-new_settings', array() );
 		$setting_key = $module_id . '_enabled';
 		
 		if ( isset( $framework_settings[ $setting_key ] ) ) {
@@ -160,19 +160,8 @@ class Orbital_Editor_Suite_Modules_Field extends Orbital_Field_Base {
 	 * @return string Empty string (this field doesn't save data).
 	 */
 	public function sanitize( $value ) {
-		// Handle module toggle updates directly
-		if ( is_array( $value ) ) {
-			$available_modules = $this->get_available_modules();
-			$current_settings = get_option( 'orbital_editor_suite_new', array() );
-			
-			foreach ( $available_modules as $module_id => $module_data ) {
-				$setting_key = $module_id . '_enabled';
-				$current_settings[ $setting_key ] = isset( $value[ $module_id ] ) ? '1' : '0';
-			}
-			
-			update_option( 'orbital_editor_suite_new', $current_settings );
-		}
-		
+		// The modules field doesn't save data itself - individual module toggles are handled
+		// by their respective field names (module_management_module_id)
 		return '';
 	}
 

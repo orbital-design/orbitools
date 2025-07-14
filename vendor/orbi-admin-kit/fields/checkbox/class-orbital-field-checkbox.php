@@ -5,10 +5,12 @@
  * Handles rendering and functionality for checkbox input fields.
  * Supports both single checkbox and multiple checkbox options.
  *
- * @package    Orbital_Admin_Framework
+ * @package    Orbi\AdminKit
  * @subpackage Fields
  * @since      1.0.0
  */
+
+namespace Orbi\AdminKit;
 
 // Prevent direct access
 if ( ! defined( 'ABSPATH' ) ) {
@@ -20,7 +22,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  *
  * @since 1.0.0
  */
-class Orbital_Field_Checkbox extends Orbital_Field_Base {
+class Field_Checkbox extends Field_Base {
 
 	/**
 	 * Render the checkbox field

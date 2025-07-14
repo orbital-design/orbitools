@@ -5,10 +5,12 @@
  * Handles rendering and functionality for radio input fields.
  * Supports both single radio button and radio set options.
  *
- * @package    Orbital_Admin_Framework
+ * @package    Orbi\AdminKit
  * @subpackage Fields
  * @since      1.0.0
  */
+
+namespace Orbi\AdminKit;
 
 // Prevent direct access
 if ( ! defined( 'ABSPATH' ) ) {
@@ -20,7 +22,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  *
  * @since 1.0.0
  */
-class Orbital_Field_Radio extends Orbital_Field_Base {
+class Field_Radio extends Field_Base {
 
 	/**
 	 * Render the radio field

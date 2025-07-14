@@ -1,16 +1,18 @@
 <?php
 /**
- * Orbital Admin Framework
+ * OrbiTools AdminKit
  *
  * A lightweight, standalone admin page framework for WordPress plugins.
  * Provides a clean API for building admin pages with tabs, sections, and fields
  * using WordPress hooks and filters.
  *
- * @package    Orbital_Admin_Framework
+ * @package    Orbi\AdminKit
  * @version    1.0.0
- * @author     Orbital
+ * @author     OrbiTools
  * @since      1.0.0
  */
+
+namespace Orbi\AdminKit;
 
 // Prevent direct access
 if ( ! defined( 'ABSPATH' ) ) {
@@ -18,14 +20,14 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * Orbital Admin Framework Class
+ * OrbiTools AdminKit Class
  *
  * Core framework class that handles admin page creation, rendering,
  * and settings management through a hook-based system.
  *
  * @since 1.0.0
  */
-class Orbital_Admin_Framework {
+class Admin_Kit {
 
 	/**
 	 * Framework version
@@ -113,7 +115,7 @@ class Orbital_Admin_Framework {
 		add_action( 'admin_menu', array( $this, 'add_admin_page' ) );
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_assets' ) );
 		add_action( 'admin_init', array( $this, 'register_settings' ) );
-		add_action( 'wp_ajax_orbital_admin_save_settings', array( $this, 'ajax_save_settings' ) );
+		add_action( 'wp_ajax_orbi_admin_save_settings_' . $this->slug, array( $this, 'ajax_save_settings' ) );
 	}
 
 	/**
@@ -194,7 +196,7 @@ class Orbital_Admin_Framework {
 		$screen = get_current_screen();
 		
 		if ( $screen && strpos( $screen->id, $this->slug ) !== false ) {
-			$classes .= ' orbital-framework-page';
+			$classes .= ' orbi-admin-kit-page';
 		}
 		
 		return $classes;
@@ -229,7 +231,7 @@ class Orbital_Admin_Framework {
 
 		// Framework CSS
 		wp_enqueue_style(
-			'orbital-admin-framework',
+			'orbi-admin-kit',
 			$this->get_framework_url() . 'assets/admin-framework.css',
 			array(),
 			self::VERSION
@@ -237,7 +239,7 @@ class Orbital_Admin_Framework {
 
 		// Framework JS
 		wp_enqueue_script(
-			'orbital-admin-framework',
+			'orbi-admin-kit',
 			$this->get_framework_url() . 'assets/admin-framework.js',
 			array(), // No dependencies - pure vanilla JS
 			self::VERSION,
@@ -246,11 +248,11 @@ class Orbital_Admin_Framework {
 
 		// Localize script data
 		wp_localize_script(
-			'orbital-admin-framework',
-			'orbitalAdminFramework',
+			'orbi-admin-kit',
+			'orbiAdminKit',
 			array(
 				'ajaxUrl'    => admin_url( 'admin-ajax.php' ),
-				'nonce'      => wp_create_nonce( 'orbital_admin_' . $this->slug ),
+				'nonce'      => wp_create_nonce( 'orbi_admin_' . $this->slug ),
 				'slug'       => $this->slug,
 				'labels'     => $this->get_labels(),
 			)
@@ -321,7 +323,7 @@ class Orbital_Admin_Framework {
 			$field_config = $this->find_field_config( $field_id, $all_settings );
 			
 			if ( $field_config ) {
-				$sanitized[ $field_id ] = Orbital_Field_Registry::sanitize_field_value( $field_config, $value, $this );
+				$sanitized[ $field_id ] = Field_Registry::sanitize_field_value( $field_config, $value, $this );
 			} else {
 				// Fallback sanitization
 				$sanitized[ $field_id ] = sanitize_text_field( $value );
@@ -362,7 +364,10 @@ class Orbital_Admin_Framework {
 	 */
 	public function ajax_save_settings() {
 		// Verify nonce
-		if ( ! wp_verify_nonce( $_POST['nonce'], 'orbital_admin_' . $this->slug ) ) {
+		$nonce = isset( $_POST['nonce'] ) ? $_POST['nonce'] : '';
+		$nonce_action = 'orbi_admin_' . $this->slug;
+		
+		if ( ! wp_verify_nonce( $nonce, $nonce_action ) ) {
 			wp_send_json_error( 'Invalid nonce' );
 		}
 
@@ -372,7 +377,16 @@ class Orbital_Admin_Framework {
 		}
 
 		// Process and save settings
-		$settings_data = isset( $_POST['settings'] ) ? $_POST['settings'] : array();
+		$settings_json = isset( $_POST['settings'] ) ? $_POST['settings'] : '{}';
+		// Fix double-escaped quotes
+		$settings_json = stripslashes( $settings_json );
+		$settings_data = json_decode( $settings_json, true );
+		
+		// Fallback to empty array if JSON decode fails
+		if ( ! is_array( $settings_data ) ) {
+			$settings_data = array();
+		}
+		
 		$result = $this->save_settings( $settings_data );
 
 		if ( $result ) {
@@ -430,7 +444,7 @@ class Orbital_Admin_Framework {
 			do_action( $this->func_slug . '_after_header' );
 			?>
 			
-			<nav class="orbi-admin__nav" role="navigation" aria-label="<?php esc_attr_e( 'Admin page navigation', 'orbital-admin-framework' ); ?>">
+			<nav class="orbi-admin__nav" role="navigation" aria-label="<?php esc_attr_e( 'Admin page navigation', 'orbi-admin-kit' ); ?>">
 				<?php $this->render_navigation(); ?>
 			</nav>
 			
@@ -448,7 +462,7 @@ class Orbital_Admin_Framework {
 			do_action( $this->func_slug . '_after_notices' );
 			?>
 			
-			<div class="orbi-admin__tabs" role="tablist" aria-label="<?php esc_attr_e( 'Settings sections', 'orbital-admin-framework' ); ?>">
+			<div class="orbi-admin__tabs" role="tablist" aria-label="<?php esc_attr_e( 'Settings sections', 'orbi-admin-kit' ); ?>">
 				<?php $this->render_tabs(); ?>
 			</div>
 			
@@ -532,7 +546,7 @@ class Orbital_Admin_Framework {
 		}
 		
 		?>
-		<nav class="orbi-admin__breadcrumbs" aria-label="<?php esc_attr_e( 'Breadcrumb navigation', 'orbital-admin-framework' ); ?>">
+		<nav class="orbi-admin__breadcrumbs" aria-label="<?php esc_attr_e( 'Breadcrumb navigation', 'orbi-admin-kit' ); ?>">
 			<ol class="orbi-admin__breadcrumb-list">
 				<li class="orbi-admin__breadcrumb-item">
 					<span class="orbi-admin__breadcrumb-text"><?php echo esc_html( $this->page_title ); ?></span>
@@ -598,10 +612,10 @@ class Orbital_Admin_Framework {
 		        class="orbi-admin__save-btn button button-primary" 
 		        form="orbi-settings-form"
 		        aria-describedby="orbi-save-btn-desc">
-			<span class="orbi-admin__save-btn-text"><?php esc_html_e( 'Save Settings', 'orbital-admin-framework' ); ?></span>
+			<span class="orbi-admin__save-btn-text"><?php esc_html_e( 'Save Settings', 'orbi-admin-kit' ); ?></span>
 		</button>
 		<span id="orbi-save-btn-desc" class="screen-reader-text">
-			<?php esc_html_e( 'Save all settings changes', 'orbital-admin-framework' ); ?>
+			<?php esc_html_e( 'Save all settings changes', 'orbi-admin-kit' ); ?>
 		</span>
 		<?php
 	}
@@ -719,7 +733,7 @@ class Orbital_Admin_Framework {
 			<?php if ( $dismissible ) : ?>
 				<button type="button" 
 				        class="orbi-notice__dismiss" 
-				        aria-label="<?php esc_attr_e( 'Dismiss notice', 'orbital-admin-framework' ); ?>"
+				        aria-label="<?php esc_attr_e( 'Dismiss notice', 'orbi-admin-kit' ); ?>"
 				        onclick="this.parentElement.style.display='none';">
 					<span class="orbi-notice__dismiss-icon" aria-hidden="true">&times;</span>
 				</button>
@@ -791,8 +805,8 @@ class Orbital_Admin_Framework {
 		
 		?>
 		<form method="post" action="<?php echo esc_url( admin_url( 'admin-ajax.php' ) ); ?>" class="orbi-admin__settings-form" id="orbi-settings-form">
-			<?php wp_nonce_field( 'orbital_admin_' . $this->slug, 'orbital_nonce' ); ?>
-			<input type="hidden" name="action" value="orbital_admin_save_settings">
+			<?php wp_nonce_field( 'orbi_admin_' . $this->slug, 'orbi_nonce' ); ?>
+			<input type="hidden" name="action" value="orbi_admin_save_settings_<?php echo esc_attr( $this->slug ); ?>">
 			<input type="hidden" name="slug" value="<?php echo esc_attr( $this->slug ); ?>">
 			
 			<?php foreach ( $tabs as $tab_key => $tab_title ) : ?>
@@ -1032,7 +1046,7 @@ class Orbital_Admin_Framework {
 		$value = $this->get_field_value( $field['id'], $field );
 
 		// Create field instance using registry
-		$field_instance = Orbital_Field_Registry::create_field( $field, $value, $this );
+		$field_instance = Field_Registry::create_field( $field, $value, $this );
 
 		// Build CSS classes using BEM methodology
 		$css_classes = array(
@@ -1064,7 +1078,7 @@ class Orbital_Admin_Framework {
 			<?php
 			if ( $field_instance ) {
 				// Enqueue field-specific assets
-				Orbital_Field_Registry::enqueue_field_assets( $field_instance );
+				Field_Registry::enqueue_field_assets( $field_instance );
 				
 				?>
 				<div class="field__wrapper">

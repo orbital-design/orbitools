@@ -4,10 +4,12 @@
  *
  * Handles rendering and functionality for select dropdown fields.
  *
- * @package    Orbital_Admin_Framework
+ * @package    Orbi\AdminKit
  * @subpackage Fields
  * @since      1.0.0
  */
+
+namespace Orbi\AdminKit;
 
 // Prevent direct access
 if ( ! defined( 'ABSPATH' ) ) {
@@ -19,7 +21,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  *
  * @since 1.0.0
  */
-class Orbital_Field_Select extends Orbital_Field_Base {
+class Field_Select extends Field_Base {
 
 	/**
 	 * Render the select field input only
@@ -37,8 +39,8 @@ class Orbital_Field_Select extends Orbital_Field_Base {
 		// Add multiple attribute if specified
 		if ( isset( $this->field['multiple'] ) && $this->field['multiple'] ) {
 			$attributes['multiple'] = true;
-			// For multiple selects, the name needs to be an array
-			$attributes['name'] = $this->get_input_name() . '[]';
+			// Multiple selects use the same name - JavaScript will handle array collection
+			$attributes['name'] = $this->get_input_name();
 			// Add size attribute for better UX if not specified
 			if ( ! isset( $this->field['size'] ) ) {
 				$attributes['size'] = min( count( $this->field['options'] ), 8 );

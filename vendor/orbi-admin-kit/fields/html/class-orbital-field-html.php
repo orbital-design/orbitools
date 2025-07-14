@@ -5,10 +5,12 @@
  * Handles rendering HTML content fields (for informational displays, 
  * dynamic content, etc.). This field type doesn't save data.
  *
- * @package    Orbital_Admin_Framework
+ * @package    Orbi\AdminKit
  * @subpackage Fields
  * @since      1.0.0
  */
+
+namespace Orbi\AdminKit;
 
 // Prevent direct access
 if ( ! defined( 'ABSPATH' ) ) {
@@ -20,7 +22,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  *
  * @since 1.0.0
  */
-class Orbital_Field_Html extends Orbital_Field_Base {
+class Field_Html extends Field_Base {
 
 	/**
 	 * Render the HTML field

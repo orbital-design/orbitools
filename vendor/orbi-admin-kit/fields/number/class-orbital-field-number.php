@@ -4,10 +4,12 @@
  *
  * Handles rendering and functionality for number input fields.
  *
- * @package    Orbital_Admin_Framework
+ * @package    Orbi\AdminKit
  * @subpackage Fields
  * @since      1.0.0
  */
+
+namespace Orbi\AdminKit;
 
 // Prevent direct access
 if ( ! defined( 'ABSPATH' ) ) {
@@ -19,7 +21,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  *
  * @since 1.0.0
  */
-class Orbital_Field_Number extends Orbital_Field_Base {
+class Field_Number extends Field_Base {
 
 	/**
 	 * Render the number field input only

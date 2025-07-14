@@ -2,7 +2,7 @@
 /**
  * Base Field Class
  *
- * Abstract base class for all field types in the Orbital Admin Framework.
+ * Abstract base class for all field types in the OrbiTools AdminKit.
  * Provides common functionality and structure for all field implementations.
  *
  * IMPORTANT: Field IDs must be unique across the entire framework instance.
@@ -13,10 +13,12 @@
  * 
  * Duplicate IDs will cause fields to overwrite each other's values!
  *
- * @package    Orbital_Admin_Framework
+ * @package    Orbi\AdminKit
  * @subpackage Fields
  * @since      1.0.0
  */
+
+namespace Orbi\AdminKit;
 
 // Prevent direct access
 if ( ! defined( 'ABSPATH' ) ) {
@@ -28,7 +30,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  *
  * @since 1.0.0
  */
-abstract class Orbital_Field_Base {
+abstract class Field_Base {
 
 	/**
 	 * Field configuration
@@ -50,7 +52,7 @@ abstract class Orbital_Field_Base {
 	 * Framework instance
 	 *
 	 * @since 1.0.0
-	 * @var Orbital_Admin_Framework
+	 * @var Admin_Kit
 	 */
 	protected $framework;
 
@@ -60,7 +62,7 @@ abstract class Orbital_Field_Base {
 	 * @since 1.0.0
 	 * @param array $field Field configuration.
 	 * @param mixed $value Field value.
-	 * @param Orbital_Admin_Framework $framework Framework instance.
+	 * @param Admin_Kit $framework Framework instance.
 	 */
 	public function __construct( $field, $value, $framework ) {
 		$this->field = $field;

@@ -94,7 +94,7 @@ add_action('plugins_loaded', function () {
 
     // Debug: Check what options are saved (both OptionsKit and new framework)
     $optionskit_settings = get_option('orbital_editor_suite_settings', array());
-    $framework_settings = get_option('orbital_editor_suite_new', array());
+    $framework_settings = get_option('orbital-editor-suite-new_settings', array());
     error_log('OptionsKit settings: ' . print_r($optionskit_settings, true));
     error_log('Framework settings: ' . print_r($framework_settings, true));
     
@@ -264,12 +264,12 @@ add_filter('orbital_editor_suite_new_settings', function($settings) {
  * Remove this section once you're satisfied with the framework.
  */
 add_action('plugins_loaded', function() {
-    // Load the framework
-    require_once ORBITAL_EDITOR_SUITE_PATH . 'includes/admin-framework/loader.php';
+    // Load the OrbiTools AdminKit
+    require_once ORBITAL_EDITOR_SUITE_PATH . 'vendor/orbi-admin-kit/loader.php';
     
     // Register custom field types for this plugin
-    add_action('orbital_register_fields', function() {
-        Orbital_Field_Registry::register_field_type(
+    add_action('orbi_register_fields', function() {
+        Orbi\AdminKit\Field_Registry::register_field_type(
             'modules',
             ORBITAL_EDITOR_SUITE_PATH . 'includes/admin/fields/modules/class-orbital-modules-field.php',
             'Orbital_Editor_Suite_Modules_Field'
@@ -277,28 +277,28 @@ add_action('plugins_loaded', function() {
     });
     
     // Create test admin page
-    $demo_admin = orbital_admin_framework('orbital-framework-demo');
-    $demo_admin->set_page_title('Framework Demo');
-    $demo_admin->set_page_description('This is a demonstration of the Orbital Admin Framework with all its features.');
+    $demo_admin = orbi_admin_kit('orbital-framework-demo');
+    $demo_admin->set_page_title('OrbiTools AdminKit Demo');
+    $demo_admin->set_page_description('This is a demonstration of the OrbiTools AdminKit with all its features.');
     
     // Configure menu
     $demo_admin->set_menu_config(array(
         'parent'     => 'tools.php',
-        'page_title' => 'Orbital Framework Demo',
-        'menu_title' => 'Framework Demo',
+        'page_title' => 'AdminKit Demo',
+        'menu_title' => 'AdminKit Demo',
         'capability' => 'manage_options',
     ));
     
-    // NEW: Initialize Orbital Admin Framework for main plugin settings
-    $orbital_admin = orbital_admin_framework('orbital-editor-suite-new');
-    $orbital_admin->set_page_title('Orbital Editor Suite (New)');
+    // NEW: Initialize OrbiTools AdminKit for main plugin settings
+    $orbital_admin = orbi_admin_kit('orbital-editor-suite-new');
+    $orbital_admin->set_page_title('Orbital Editor Suite');
     $orbital_admin->set_page_description('Advanced WordPress editor enhancements and typography tools.');
     
     // Configure menu
     $orbital_admin->set_menu_config(array(
         'parent'     => 'options-general.php',
-        'page_title' => 'Orbital Editor Suite (New)',
-        'menu_title' => 'Orbital Editor Suite (New)',
+        'page_title' => 'Orbital Editor Suite',
+        'menu_title' => 'Orbital Editor Suite',
         'capability' => 'manage_options',
     ));
 });
@@ -703,7 +703,7 @@ function orbital_get_active_modules_html() {
     
     // Check both OptionsKit and new framework settings
     $optionskit_settings = get_option('orbital_editor_suite_settings', array());
-    $framework_settings = get_option('orbital_editor_suite_new', array());
+    $framework_settings = get_option('orbital-editor-suite-new_settings', array());
     
     // Check Typography Presets module (new framework takes precedence)
     $typography_enabled = false;

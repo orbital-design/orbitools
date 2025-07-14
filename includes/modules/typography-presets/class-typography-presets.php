@@ -96,7 +96,7 @@ class Typography_Presets {
 	 * @return bool True if module is enabled, false otherwise
 	 */
 	private function is_module_enabled() {
-		$framework_settings = get_option( 'orbital_editor_suite_new', array() );
+		$framework_settings = get_option( 'orbital-editor-suite-new_settings', array() );
 		
 		if ( isset( $framework_settings['typography_presets_enabled'] ) ) {
 			$enabled = $framework_settings['typography_presets_enabled'];

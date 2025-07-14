@@ -29,7 +29,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 			<label class="field__checkbox-option" for="<?php echo esc_attr( $field_id . '_' . $option_value ); ?>">
 				<input type="checkbox" 
 				       class="field__input field__input--checkbox"
-				       name="<?php echo esc_attr( $input_name ); ?>[]" 
+				       name="<?php echo esc_attr( $input_name ); ?>" 
 				       id="<?php echo esc_attr( $field_id . '_' . $option_value ); ?>"
 				       value="<?php echo esc_attr( $option_value ); ?>"
 				       <?php checked( in_array( $option_value, $values ) ); ?>

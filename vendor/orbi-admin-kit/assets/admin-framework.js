@@ -107,20 +107,20 @@
             
             // Show loading state
             this.setLoadingState(true);
-            submitButton.textContent = orbitalAdminFramework.labels.loading;
+            submitButton.textContent = orbiAdminKit.labels.loading;
             
             // Collect form data
             const formData = new FormData();
-            formData.append('action', 'orbital_admin_save_settings');
-            formData.append('nonce', orbitalAdminFramework.nonce);
-            formData.append('slug', orbitalAdminFramework.slug);
+            formData.append('action', 'orbi_admin_save_settings_' + orbiAdminKit.slug);
+            formData.append('nonce', orbiAdminKit.nonce);
+            formData.append('slug', orbiAdminKit.slug);
             
             // Serialize settings data
             const settingsData = this.serializeFormData(form);
             formData.append('settings', JSON.stringify(settingsData));
             
             // Send AJAX request
-            fetch(orbitalAdminFramework.ajaxUrl, {
+            fetch(orbiAdminKit.ajaxUrl, {
                 method: 'POST',
                 body: formData
             })
@@ -140,12 +140,12 @@
         handleSaveSuccess: function(response) {
             if (response.success) {
                 this.showNotice(
-                    orbitalAdminFramework.labels.save_success,
+                    orbiAdminKit.labels.save_success,
                     'success'
                 );
             } else {
                 this.showNotice(
-                    response.data || orbitalAdminFramework.labels.save_error,
+                    response.data || orbiAdminKit.labels.save_error,
                     'error'
                 );
             }
@@ -157,7 +157,7 @@
         handleSaveError: function(error) {
             console.error('Save error:', error);
             this.showNotice(
-                orbitalAdminFramework.labels.save_error,
+                orbiAdminKit.labels.save_error,
                 'error'
             );
         },
@@ -343,11 +343,48 @@
                 
                 // Handle different input types
                 if (element.type === 'checkbox') {
-                    formData[fieldName] = element.checked ? element.value : '';
+                    if (element.checked) {
+                        // Handle multiple checkboxes with same name
+                        if (formData[fieldName]) {
+                            // If field already exists, add to array
+                            if (Array.isArray(formData[fieldName])) {
+                                formData[fieldName].push(element.value);
+                            } else {
+                                // Convert single value to array and add new value
+                                formData[fieldName] = [formData[fieldName], element.value];
+                            }
+                        } else {
+                            // Check if there are other checkboxes with the same name (multi-checkbox field)
+                            const otherCheckboxes = form.querySelectorAll('input[type="checkbox"][name="' + name + '"]');
+                            if (otherCheckboxes.length > 1) {
+                                // Multi-checkbox field - always use array
+                                formData[fieldName] = [element.value];
+                            } else {
+                                // Single checkbox field - use single value
+                                formData[fieldName] = element.value;
+                            }
+                        }
+                    } else {
+                        // For unchecked checkboxes, set appropriate empty value if not already set
+                        if (!formData.hasOwnProperty(fieldName)) {
+                            const otherCheckboxes = form.querySelectorAll('input[type="checkbox"][name="' + name + '"]');
+                            if (otherCheckboxes.length > 1) {
+                                // Multi-checkbox field - use empty array
+                                formData[fieldName] = [];
+                            } else {
+                                // Single checkbox field - use empty string
+                                formData[fieldName] = '';
+                            }
+                        }
+                    }
                 } else if (element.type === 'radio') {
                     if (element.checked) {
                         formData[fieldName] = element.value;
                     }
+                } else if (element.type === 'select-multiple') {
+                    // Handle multi-select
+                    const selectedValues = Array.from(element.selectedOptions).map(option => option.value);
+                    formData[fieldName] = selectedValues;
                 } else if (element.type !== 'submit' && element.type !== 'button') {
                     formData[fieldName] = element.value;
                 }
