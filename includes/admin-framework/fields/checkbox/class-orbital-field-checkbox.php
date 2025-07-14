@@ -43,22 +43,22 @@ class Orbital_Field_Checkbox extends Orbital_Field_Base {
 	 */
 	private function render_single_checkbox() {
 		$checked = ! empty( $this->value );
-		?>
-		<label for="<?php echo esc_attr( $this->get_field_id() ); ?>" class="field__checkbox-label">
-			<input type="checkbox"<?php echo $this->render_attributes( array( 
+		
+		// Prepare template variables
+		$template_vars = array(
+			'field'      => $this->field,
+			'value'      => $this->value,
+			'field_id'   => $this->get_field_id(),
+			'field_name' => $this->get_field_name(),
+			'input_name' => $this->get_input_name(),
+			'checked'    => $checked,
+			'attributes' => $this->render_attributes( array( 
 				'value' => '1',
 				'checked' => $checked
-			) ); ?>>
-			<span class="field__checkbox-custom" aria-hidden="true">
-				<span class="field__checkbox-indicator">
-					<svg class="field__checkbox-check" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-						<path d="M13.5 4.5L6 12L2.5 8.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-					</svg>
-				</span>
-			</span>
-			<span class="field__checkbox-text"><?php echo esc_html( $this->get_field_name() ); ?></span>
-		</label>
-		<?php
+			) ),
+		);
+		
+		$this->render_template( 'single-checkbox', $template_vars );
 	}
 
 	/**
@@ -70,32 +70,101 @@ class Orbital_Field_Checkbox extends Orbital_Field_Base {
 		// Ensure value is an array
 		$values = is_array( $this->value ) ? $this->value : array();
 		
-		?>
-		<fieldset class="field__fieldset" aria-describedby="<?php echo esc_attr( $this->get_field_id() ); ?>-description">
-			<legend class="field__legend"><?php echo esc_html( $this->get_field_name() ); ?></legend>
-			<div class="field__checkbox-group">
-				<?php foreach ( $this->field['options'] as $option_value => $option_label ) : ?>
-					<label class="field__checkbox-option" for="<?php echo esc_attr( $this->get_field_id() . '_' . $option_value ); ?>">
-						<input type="checkbox" 
-						       class="field__input field__input--checkbox"
-						       name="<?php echo esc_attr( $this->get_input_name() ); ?>[]" 
-						       id="<?php echo esc_attr( $this->get_field_id() . '_' . $option_value ); ?>"
-						       value="<?php echo esc_attr( $option_value ); ?>"
-						       <?php checked( in_array( $option_value, $values ) ); ?>
-						       <?php if ( isset( $this->field['required'] ) && $this->field['required'] ) echo 'required aria-required="true"'; ?>>
-						<span class="field__checkbox-custom" aria-hidden="true">
-							<span class="field__checkbox-indicator">
-								<svg class="field__checkbox-check" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-									<path d="M13.5 4.5L6 12L2.5 8.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-								</svg>
-							</span>
-						</span>
-						<span class="field__checkbox-text"><?php echo esc_html( $option_label ); ?></span>
-					</label>
-				<?php endforeach; ?>
-			</div>
-		</fieldset>
-		<?php
+		// Prepare template variables
+		$template_vars = array(
+			'field'      => $this->field,
+			'values'     => $values,
+			'field_id'   => $this->get_field_id(),
+			'field_name' => $this->get_field_name(),
+			'input_name' => $this->get_input_name(),
+			'options'    => $this->field['options'],
+		);
+		
+		$this->render_template( 'multi-checkbox', $template_vars );
+	}
+
+	/**
+	 * Render template with variables
+	 *
+	 * @since 1.0.0
+	 * @param string $template_name Template name (without .php extension)
+	 * @param array  $template_vars Variables to extract into template scope
+	 */
+	private function render_template( $template_name, $template_vars = array() ) {
+		// Check for custom template first
+		if ( isset( $this->field['template'] ) ) {
+			$custom_template = $this->field['template'];
+			
+			// Security: Only allow files within WordPress directories
+			$allowed_paths = array(
+				ABSPATH,
+				WP_CONTENT_DIR,
+				get_template_directory(),
+				get_stylesheet_directory(),
+			);
+
+			$is_allowed = false;
+			$template_path = '';
+			
+			// Handle relative paths by making them relative to the plugin root directory
+			if ( strpos( $custom_template, '/' ) !== 0 ) {
+				// Get plugin root directory - go up from includes/admin-framework/fields/checkbox/ to plugin root
+				$plugin_root = dirname( dirname( dirname( dirname( dirname( __FILE__ ) ) ) ) );
+				$template_path = $plugin_root . '/' . $custom_template;
+			} else {
+				$template_path = $custom_template;
+			}
+			
+			// Debug: Log template path resolution when WP_DEBUG is enabled
+			if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+				error_log( 'Template Debug - Custom template: ' . $custom_template );
+				error_log( 'Template Debug - Plugin root: ' . $plugin_root );
+				error_log( 'Template Debug - Resolved path: ' . $template_path );
+				error_log( 'Template Debug - File exists: ' . ( file_exists( $template_path ) ? 'YES' : 'NO' ) );
+			}
+			
+			$real_path = realpath( $template_path );
+			if ( $real_path ) {
+				foreach ( $allowed_paths as $allowed_path ) {
+					if ( strpos( $real_path, realpath( $allowed_path ) ) === 0 ) {
+						$is_allowed = true;
+						break;
+					}
+				}
+			}
+
+			// Debug: Log security check results when WP_DEBUG is enabled
+			if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+				error_log( 'Template Debug - Security allowed: ' . ( $is_allowed ? 'YES' : 'NO' ) );
+				error_log( 'Template Debug - Real path: ' . ( $real_path ?: 'NOT FOUND' ) );
+			}
+
+			if ( $is_allowed && file_exists( $template_path ) ) {
+				// Debug: Template is being loaded
+				if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+					error_log( 'Template Debug - Loading custom template: ' . $template_path );
+				}
+				
+				// Extract variables into template scope
+				extract( $template_vars );
+				include $template_path;
+				return;
+			}
+		}
+		
+		// Use default template
+		$default_template = plugin_dir_path( __FILE__ ) . 'templates/' . $template_name . '.php';
+		
+		// Debug: Log fallback to default template
+		if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+			error_log( 'Template Debug - Using default template: ' . $default_template );
+		}
+		
+		if ( file_exists( $default_template ) ) {
+			// Extract variables into template scope
+			extract( $template_vars );
+			include $default_template;
+		}
 	}
 
 	/**

@@ -43,20 +43,22 @@ class Orbital_Field_Radio extends Orbital_Field_Base {
 	 */
 	private function render_single_radio() {
 		$checked = ! empty( $this->value );
-		?>
-		<label for="<?php echo esc_attr( $this->get_field_id() ); ?>" class="field__radio-label">
-			<input type="radio"<?php echo $this->render_attributes( array( 
+		
+		// Prepare template variables
+		$template_vars = array(
+			'field'      => $this->field,
+			'value'      => $this->value,
+			'field_id'   => $this->get_field_id(),
+			'field_name' => $this->get_field_name(),
+			'input_name' => $this->get_input_name(),
+			'checked'    => $checked,
+			'attributes' => $this->render_attributes( array( 
 				'value' => '1',
 				'checked' => $checked
-			) ); ?>>
-			<span class="field__radio-custom" aria-hidden="true">
-				<span class="field__radio-indicator">
-					<span class="field__radio-dot"></span>
-				</span>
-			</span>
-			<span class="field__radio-text"><?php echo esc_html( $this->get_field_name() ); ?></span>
-		</label>
-		<?php
+			) ),
+		);
+		
+		$this->render_template( 'single-radio', $template_vars );
 	}
 
 	/**
@@ -65,30 +67,74 @@ class Orbital_Field_Radio extends Orbital_Field_Base {
 	 * @since 1.0.0
 	 */
 	private function render_radio_set() {
-		?>
-		<fieldset class="field__fieldset" aria-describedby="<?php echo esc_attr( $this->get_field_id() ); ?>-description">
-			<legend class="field__legend"><?php echo esc_html( $this->get_field_name() ); ?></legend>
-			<div class="field__radio-group">
-				<?php foreach ( $this->field['options'] as $option_value => $option_label ) : ?>
-					<label class="field__radio-option" for="<?php echo esc_attr( $this->get_field_id() . '_' . $option_value ); ?>">
-						<input type="radio" 
-						       class="field__input field__input--radio"
-						       name="<?php echo esc_attr( $this->get_input_name() ); ?>" 
-						       id="<?php echo esc_attr( $this->get_field_id() . '_' . $option_value ); ?>"
-						       value="<?php echo esc_attr( $option_value ); ?>"
-						       <?php checked( $this->value, $option_value ); ?>
-						       <?php if ( isset( $this->field['required'] ) && $this->field['required'] ) echo 'required aria-required="true"'; ?>>
-						<span class="field__radio-custom" aria-hidden="true">
-							<span class="field__radio-indicator">
-								<span class="field__radio-dot"></span>
-							</span>
-						</span>
-						<span class="field__radio-text"><?php echo esc_html( $option_label ); ?></span>
-					</label>
-				<?php endforeach; ?>
-			</div>
-		</fieldset>
-		<?php
+		// Prepare template variables
+		$template_vars = array(
+			'field'      => $this->field,
+			'value'      => $this->value,
+			'field_id'   => $this->get_field_id(),
+			'field_name' => $this->get_field_name(),
+			'input_name' => $this->get_input_name(),
+			'options'    => $this->field['options'],
+		);
+		
+		$this->render_template( 'multi-radio', $template_vars );
+	}
+
+	/**
+	 * Render template with variables
+	 *
+	 * @since 1.0.0
+	 * @param string $template_name Template name (without .php extension)
+	 * @param array  $template_vars Variables to extract into template scope
+	 */
+	private function render_template( $template_name, $template_vars = array() ) {
+		// Check for custom template first
+		if ( isset( $this->field['template'] ) ) {
+			$custom_template = $this->field['template'];
+			
+			// Security: Only allow files within WordPress directories
+			$allowed_paths = array(
+				ABSPATH,
+				WP_CONTENT_DIR,
+				get_template_directory(),
+				get_stylesheet_directory(),
+			);
+
+			$is_allowed = false;
+			$template_path = '';
+			
+			// Handle relative paths by making them relative to the plugin directory
+			if ( strpos( $custom_template, '/' ) !== 0 ) {
+				$template_path = plugin_dir_path( __FILE__ ) . '../../../' . $custom_template;
+			} else {
+				$template_path = $custom_template;
+			}
+			
+			$real_path = realpath( $template_path );
+			if ( $real_path ) {
+				foreach ( $allowed_paths as $allowed_path ) {
+					if ( strpos( $real_path, realpath( $allowed_path ) ) === 0 ) {
+						$is_allowed = true;
+						break;
+					}
+				}
+			}
+
+			if ( $is_allowed && file_exists( $template_path ) ) {
+				// Extract variables into template scope
+				extract( $template_vars );
+				include $template_path;
+				return;
+			}
+		}
+		
+		// Use default template
+		$default_template = plugin_dir_path( __FILE__ ) . 'templates/' . $template_name . '.php';
+		if ( file_exists( $default_template ) ) {
+			// Extract variables into template scope
+			extract( $template_vars );
+			include $default_template;
+		}
 	}
 
 	/**
