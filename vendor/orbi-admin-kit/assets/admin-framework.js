@@ -286,7 +286,8 @@
             const sectionKey = link.getAttribute('data-section');
             
             // Find the current active tab to scope the sub-tab switching
-            const activeTabContent = document.querySelector('.orbi-admin__tab-content[style*="display: block"]');
+            const currentTab = this.getActiveTab();
+            const activeTabContent = document.querySelector('.orbi-admin__tab-content[data-tab="' + currentTab + '"]');
             if (!activeTabContent) return;
             
             // Update active states for sub-tabs within the active tab only
@@ -312,7 +313,6 @@
             }
             
             // Update breadcrumbs with current tab and new section
-            const currentTab = this.getActiveTab();
             this.updateBreadcrumbs(currentTab, sectionKey);
             
             // Trigger custom event

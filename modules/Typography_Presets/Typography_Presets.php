@@ -807,6 +807,7 @@ class Typography_Presets
             'icon'        => 'dashicons-editor-textcolor',
             'author'      => 'Orbitools',
             'docs_url'    => 'https://docs.example.com/typography-presets',
+            'configure_url' => admin_url('admin.php?page=orbitools&tab=modules&section=typography'),
             'requires'    => array(
                 'wp_version' => '5.0',
                 'php_version' => '7.4',
