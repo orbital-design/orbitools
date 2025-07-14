@@ -41,11 +41,26 @@ class Loader
      */
     public function init()
     {
+        // Load the OrbiTools AdminKit
+        $this->load_orbi_admin_kit();
+
         // Initialize core classes.
         $this->admin = new Admin();
         $this->updater = new Updater();
 
         // Initialize modules.
         $this->modules[] = new ExampleModule();
+    }
+
+    /**
+     * Load the OrbiTools AdminKit.
+     *
+     * @return void
+     */
+    private function load_orbi_admin_kit(): void
+    {
+        if (file_exists(ORBITOOLS_DIR . 'vendor/orbi-admin-kit/loader.php')) {
+            require_once ORBITOOLS_DIR . 'vendor/orbi-admin-kit/loader.php';
+        }
     }
 }
