@@ -91,127 +91,126 @@ if (file_exists(ORBITOOLS_DIR . 'vendor/autoload.php')) {
  */
 final class Orbitools
 {
-        /**
-         * Holds the singleton instance.
-         *
-         * @var Orbitools|null
-         */
-        private static ?Orbitools $instance = null;
+    /**
+     * Holds the singleton instance.
+     *
+     * @var Orbitools|null
+     */
+    private static ?Orbitools $instance = null;
 
-        /**
-         * Debug mode flag.
-         *
-         * @var bool
-         */
-        private bool $debug_mode = false;
+    /**
+     * Debug mode flag.
+     *
+     * @var bool
+     */
+    private bool $debug_mode = false;
 
-        /**
-         * Prevent direct instantiation.
-         */
-        private function __construct() {
-            $this->debug_mode = defined('WP_DEBUG') && WP_DEBUG;
+    /**
+     * Prevent direct instantiation.
+     */
+    private function __construct()
+    {
+        $this->debug_mode = defined('WP_DEBUG') && WP_DEBUG;
+    }
+
+    /**
+     * Prevent cloning.
+     */
+    private function __clone() {}
+
+    /**
+     * Prevent unserialization.
+     */
+    public function __wakeup(): void
+    {
+        throw new \Exception('Cannot unserialize singleton');
+    }
+
+    /**
+     * Returns the singleton instance of the plugin.
+     *
+     * @return Orbitools
+     */
+    public static function instance(): Orbitools
+    {
+        if (self::$instance === null) {
+            self::$instance = new self();
+            self::$instance->init();
         }
+        return self::$instance;
+    }
 
-        /**
-         * Prevent cloning.
-         */
-        private function __clone() {}
+    /**
+     * Initializes the plugin.
+     *
+     * @return void
+     */
+    public function init(): void
+    {
+        add_action('init', [$this, 'load_textdomain']);
 
-        /**
-         * Prevent unserialization.
-         */
-        public function __wakeup(): void
-        {
-            throw new \Exception('Cannot unserialize singleton');
-        }
-
-        /**
-         * Returns the singleton instance of the plugin.
-         *
-         * @return Orbitools
-         */
-        public static function instance(): Orbitools
-        {
-            if (self::$instance === null) {
-                self::$instance = new self();
-                self::$instance->init();
-            }
-            return self::$instance;
-        }
-
-        /**
-         * Initializes the plugin.
-         *
-         * @return void
-         */
-        public function init(): void
-        {
-            add_action('init', [$this, 'load_textdomain']);
-
-            if (class_exists('\Orbitools\Loader')) {
-                $loader = new \Orbitools\Loader();
-                $loader->init();
-            }
-
-            $this->log('Plugin initialized');
-        }
-
-        /**
-         * Loads the plugin textdomain for translations.
-         *
-         * @return void
-         */
-        public function load_textdomain(): void
-        {
-            load_plugin_textdomain('orbitools', false, dirname(ORBITOOLS_BASENAME) . '/languages');
-        }
-
-        /**
-         * Get plugin data.
-         *
-         * @param string $field Optional. Field to retrieve. Default empty (all data).
-         * @return array|string
-         */
-        public function get_orbitools_data(string $field = '')
-        {
-            static $plugin_data = null;
-            
-            if ($plugin_data === null) {
-                if (!function_exists('get_plugin_data')) {
-                    require_once ABSPATH . 'wp-admin/includes/plugin.php';
-                }
-                $plugin_data = get_plugin_data(ORBITOOLS_FILE);
-            }
-            
-            return $field ? ($plugin_data[$field] ?? '') : $plugin_data;
-        }
-
-        /**
-         * Log debug messages.
-         *
-         * @param string $message The message to log.
-         * @param string $level Log level (info, warning, error).
-         * @return void
-         */
-        public function log(string $message, string $level = 'info'): void
-        {
-            if (!$this->debug_mode) {
-                return;
-            }
-            
-            $timestamp = current_time('Y-m-d H:i:s');
-            $log_message = sprintf(
-                '[%s] [%s] Orbitools: %s',
-                $timestamp,
-                strtoupper($level),
-                $message
-            );
-            
-            if (function_exists('error_log')) {
-                error_log($log_message);
-            }
+        if (class_exists('\Orbitools\Loader')) {
+            $loader = new \Orbitools\Loader();
+            $loader->init();
         }
     }
+
+    /**
+     * Loads the plugin textdomain for translations.
+     *
+     * @return void
+     */
+    public function load_textdomain(): void
+    {
+        load_plugin_textdomain('orbitools', false, dirname(ORBITOOLS_BASENAME) . '/languages');
+    }
+
+    /**
+     * Get plugin data.
+     *
+     * @param string $field Optional. Field to retrieve. Default empty (all data).
+     * @return array|string
+     */
+    public function get_orbitools_data(string $field = '')
+    {
+        static $plugin_data = null;
+
+        if ($plugin_data === null) {
+            if (!function_exists('get_plugin_data')) {
+                require_once ABSPATH . 'wp-admin/includes/plugin.php';
+            }
+            $plugin_data = get_plugin_data(ORBITOOLS_FILE);
+        }
+
+        return $field ? ($plugin_data[$field] ?? '') : $plugin_data;
+    }
+
+    /**
+     * Log debug messages.
+     *
+     * @param string $message The message to log.
+     * @param string $level Log level (info, warning, error).
+     * @return void
+     */
+    public function log(string $message, string $level = 'info'): void
+    {
+        if (!$this->debug_mode) {
+            return;
+        }
+
+        $timestamp = current_time('Y-m-d H:i:s');
+        $log_message = sprintf(
+            '[%s] [%s] Orbitools: %s',
+            $timestamp,
+            strtoupper($level),
+            $message
+        );
+
+        if (function_exists('error_log')) {
+            error_log($log_message);
+        }
+    }
+}
 
 /**
  * Plugin activation hook.

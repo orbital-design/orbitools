@@ -16,6 +16,23 @@ class Admin
      */
     public function __construct()
     {
+        add_action('init', [$this, 'init_admin_page']);
+        add_action('admin_enqueue_scripts', [$this, 'enqueue_scripts']);
+
+        // Setup filters (these don't use translations immediately)
+        add_filter('orbitools_settings_tabs', [$this, 'configure_settings_tabs']);
+        add_filter('orbitools_registered_settings_sections', [$this, 'configure_settings_sections']);
+        add_filter('orbitools_settings', [$this, 'get_settings_config']);
+        add_filter('orbitools_admin_structure', [$this, 'configure_admin_structure']);
+    }
+
+    /**
+     * Initialize admin page after translations are loaded.
+     *
+     * @return void
+     */
+    public function init_admin_page(): void
+    {
         $orbitools_page = orbi_admin_kit('orbitools');
         $orbitools_page->set_page_title(__('Orbitools', 'orbitools'));
         $orbitools_page->set_page_description(__('Advanced WordPress tools and utilities.', 'orbitools'));
@@ -27,16 +44,6 @@ class Admin
             'menu_title' => __('Orbitools', 'orbitools'),
             'capability' => 'manage_options',
         ));
-
-        // $this->load_modules();
-
-        add_action('admin_enqueue_scripts', [$this, 'enqueue_scripts']);
-
-        // Setup filters
-        add_filter('orbitools_settings_tabs', [$this, 'configure_settings_tabs']);
-        add_filter('orbitools_registered_settings_sections', [$this, 'configure_settings_sections']);
-        add_filter('orbitools_settings', [$this, 'get_settings_config']);
-        add_filter('orbitools_admin_structure', [$this, 'configure_admin_structure']);
     }
 
     /**
