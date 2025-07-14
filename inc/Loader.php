@@ -5,6 +5,7 @@ namespace Orbitools;
 use Orbitools\Admin\Admin;
 use Orbitools\Updater\Updater;
 use Orbitools\Modules\ExampleModule\ExampleModule;
+use Orbitools\Modules\Typography_Presets\Typography_Presets;
 
 /**
  * Class Loader
@@ -50,6 +51,7 @@ class Loader
 
         // Initialize modules.
         $this->modules[] = new ExampleModule();
+        $this->modules[] = new Typography_Presets();
     }
 
     /**
