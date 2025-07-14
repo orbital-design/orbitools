@@ -680,13 +680,14 @@ body.orbital-framework-page .updated {
     resize: vertical;
 }
 
-/* Checkbox and Radio Inputs */
+/* Checkbox and Radio Inputs - Hidden for Custom Styling */
 .field__input--checkbox,
 .field__input--radio {
-    width: auto;
-    margin: 0 6px 0 0;
-    transform: scale(1.1);
+    position: absolute;
+    opacity: 0;
     cursor: pointer;
+    height: 0;
+    width: 0;
 }
 
 /* Fieldset for Grouped Inputs */
@@ -702,24 +703,26 @@ body.orbital-framework-page .updated {
 .field__checkbox-group {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 12px;
 }
 
 .field__checkbox-option {
     display: flex;
     align-items: flex-start;
-    gap: 8px;
+    gap: 12px;
     cursor: pointer;
-    padding: 4px 0;
+    padding: 8px 0;
+    position: relative;
 }
 
 .field__checkbox-label {
     display: flex;
     align-items: flex-start;
-    gap: 8px;
+    gap: 12px;
     cursor: pointer;
     font-weight: 400;
     color: #1d2327;
+    position: relative;
 }
 
 .field__checkbox-text {
@@ -727,30 +730,92 @@ body.orbital-framework-page .updated {
     color: #1d2327;
     cursor: pointer;
     line-height: 1.4;
+    margin-top: 1px; /* Align with custom checkbox */
+}
+
+/* Custom Checkbox Styling */
+.field__checkbox-custom {
+    position: relative;
+    display: inline-block;
+    flex-shrink: 0;
+}
+
+.field__checkbox-indicator {
+    width: 18px;
+    height: 18px;
+    border: 2px solid #8c8f94;
+    border-radius: 4px;
+    background: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    position: relative;
+}
+
+.field__checkbox-check {
+    width: 12px;
+    height: 12px;
+    color: #fff;
+    opacity: 0;
+    transform: scale(0.8);
+    transition: all 0.2s ease;
+}
+
+/* Checkbox States */
+.field__input--checkbox:checked + .field__checkbox-custom .field__checkbox-indicator {
+    background: #2271b1;
+    border-color: #2271b1;
+}
+
+.field__input--checkbox:checked + .field__checkbox-custom .field__checkbox-check {
+    opacity: 1;
+    transform: scale(1);
+}
+
+.field__input--checkbox:focus + .field__checkbox-custom .field__checkbox-indicator {
+    box-shadow: 0 0 0 2px rgba(34, 113, 177, 0.3);
+    outline: none;
+}
+
+.field__input--checkbox:hover + .field__checkbox-custom .field__checkbox-indicator {
+    border-color: #2271b1;
+}
+
+.field__input--checkbox:disabled + .field__checkbox-custom .field__checkbox-indicator {
+    background: #f6f7f7;
+    border-color: #ddd;
+    cursor: not-allowed;
+}
+
+.field__input--checkbox:disabled + .field__checkbox-custom .field__checkbox-check {
+    color: #8c8f94;
 }
 
 /* Radio Groups */
 .field__radio-group {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 12px;
 }
 
 .field__radio-option {
     display: flex;
     align-items: flex-start;
-    gap: 8px;
+    gap: 12px;
     cursor: pointer;
-    padding: 4px 0;
+    padding: 8px 0;
+    position: relative;
 }
 
 .field__radio-label {
     display: flex;
     align-items: flex-start;
-    gap: 8px;
+    gap: 12px;
     cursor: pointer;
     font-weight: 400;
     color: #1d2327;
+    position: relative;
 }
 
 .field__radio-text {
@@ -758,6 +823,67 @@ body.orbital-framework-page .updated {
     color: #1d2327;
     cursor: pointer;
     line-height: 1.4;
+    margin-top: 1px; /* Align with custom radio */
+}
+
+/* Custom Radio Styling */
+.field__radio-custom {
+    position: relative;
+    display: inline-block;
+    flex-shrink: 0;
+}
+
+.field__radio-indicator {
+    width: 18px;
+    height: 18px;
+    border: 2px solid #8c8f94;
+    border-radius: 50%;
+    background: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    position: relative;
+}
+
+.field__radio-dot {
+    width: 8px;
+    height: 8px;
+    background: #fff;
+    border-radius: 50%;
+    opacity: 0;
+    transform: scale(0.5);
+    transition: all 0.2s ease;
+}
+
+/* Radio States */
+.field__input--radio:checked + .field__radio-custom .field__radio-indicator {
+    background: #2271b1;
+    border-color: #2271b1;
+}
+
+.field__input--radio:checked + .field__radio-custom .field__radio-dot {
+    opacity: 1;
+    transform: scale(1);
+}
+
+.field__input--radio:focus + .field__radio-custom .field__radio-indicator {
+    box-shadow: 0 0 0 2px rgba(34, 113, 177, 0.3);
+    outline: none;
+}
+
+.field__input--radio:hover + .field__radio-custom .field__radio-indicator {
+    border-color: #2271b1;
+}
+
+.field__input--radio:disabled + .field__radio-custom .field__radio-indicator {
+    background: #f6f7f7;
+    border-color: #ddd;
+    cursor: not-allowed;
+}
+
+.field__input--radio:disabled + .field__radio-custom .field__radio-dot {
+    background: #8c8f94;
 }
 
 /* Field Description */

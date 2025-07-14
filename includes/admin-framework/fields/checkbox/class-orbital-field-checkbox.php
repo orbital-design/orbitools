@@ -49,6 +49,13 @@ class Orbital_Field_Checkbox extends Orbital_Field_Base {
 				'value' => '1',
 				'checked' => $checked
 			) ); ?>>
+			<span class="field__checkbox-custom" aria-hidden="true">
+				<span class="field__checkbox-indicator">
+					<svg class="field__checkbox-check" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+						<path d="M13.5 4.5L6 12L2.5 8.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+					</svg>
+				</span>
+			</span>
 			<span class="field__checkbox-text"><?php echo esc_html( $this->get_field_name() ); ?></span>
 		</label>
 		<?php
@@ -68,7 +75,7 @@ class Orbital_Field_Checkbox extends Orbital_Field_Base {
 			<legend class="field__legend"><?php echo esc_html( $this->get_field_name() ); ?></legend>
 			<div class="field__checkbox-group">
 				<?php foreach ( $this->field['options'] as $option_value => $option_label ) : ?>
-					<label class="field__checkbox-option">
+					<label class="field__checkbox-option" for="<?php echo esc_attr( $this->get_field_id() . '_' . $option_value ); ?>">
 						<input type="checkbox" 
 						       class="field__input field__input--checkbox"
 						       name="<?php echo esc_attr( $this->get_input_name() ); ?>[]" 
@@ -76,6 +83,13 @@ class Orbital_Field_Checkbox extends Orbital_Field_Base {
 						       value="<?php echo esc_attr( $option_value ); ?>"
 						       <?php checked( in_array( $option_value, $values ) ); ?>
 						       <?php if ( isset( $this->field['required'] ) && $this->field['required'] ) echo 'required aria-required="true"'; ?>>
+						<span class="field__checkbox-custom" aria-hidden="true">
+							<span class="field__checkbox-indicator">
+								<svg class="field__checkbox-check" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+									<path d="M13.5 4.5L6 12L2.5 8.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+								</svg>
+							</span>
+						</span>
 						<span class="field__checkbox-text"><?php echo esc_html( $option_label ); ?></span>
 					</label>
 				<?php endforeach; ?>

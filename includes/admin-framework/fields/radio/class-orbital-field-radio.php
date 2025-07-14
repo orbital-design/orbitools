@@ -49,6 +49,11 @@ class Orbital_Field_Radio extends Orbital_Field_Base {
 				'value' => '1',
 				'checked' => $checked
 			) ); ?>>
+			<span class="field__radio-custom" aria-hidden="true">
+				<span class="field__radio-indicator">
+					<span class="field__radio-dot"></span>
+				</span>
+			</span>
 			<span class="field__radio-text"><?php echo esc_html( $this->get_field_name() ); ?></span>
 		</label>
 		<?php
@@ -65,7 +70,7 @@ class Orbital_Field_Radio extends Orbital_Field_Base {
 			<legend class="field__legend"><?php echo esc_html( $this->get_field_name() ); ?></legend>
 			<div class="field__radio-group">
 				<?php foreach ( $this->field['options'] as $option_value => $option_label ) : ?>
-					<label class="field__radio-option">
+					<label class="field__radio-option" for="<?php echo esc_attr( $this->get_field_id() . '_' . $option_value ); ?>">
 						<input type="radio" 
 						       class="field__input field__input--radio"
 						       name="<?php echo esc_attr( $this->get_input_name() ); ?>" 
@@ -73,6 +78,11 @@ class Orbital_Field_Radio extends Orbital_Field_Base {
 						       value="<?php echo esc_attr( $option_value ); ?>"
 						       <?php checked( $this->value, $option_value ); ?>
 						       <?php if ( isset( $this->field['required'] ) && $this->field['required'] ) echo 'required aria-required="true"'; ?>>
+						<span class="field__radio-custom" aria-hidden="true">
+							<span class="field__radio-indicator">
+								<span class="field__radio-dot"></span>
+							</span>
+						</span>
 						<span class="field__radio-text"><?php echo esc_html( $option_label ); ?></span>
 					</label>
 				<?php endforeach; ?>
