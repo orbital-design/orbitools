@@ -71,6 +71,81 @@ body.orbital-framework-page .updated {
     align-items: center;
 }
 
+.orbi-admin__nav-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    gap: 20px;
+}
+
+/* Breadcrumbs */
+.orbi-admin__breadcrumbs {
+    flex: 1;
+}
+
+.orbi-admin__breadcrumb-list {
+    display: flex;
+    align-items: center;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    gap: 8px;
+}
+
+.orbi-admin__breadcrumb-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.orbi-admin__breadcrumb-text {
+    color: #646970;
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.orbi-admin__breadcrumb-text--current {
+    color: #1d2327;
+}
+
+.orbi-admin__breadcrumb-separator {
+    color: #8c8f94;
+    font-size: 12px;
+    user-select: none;
+}
+
+/* Navigation Actions */
+.orbi-admin__nav-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.orbi-admin__save-btn {
+    background: #2271b1;
+    border: 1px solid #2271b1;
+    border-radius: 4px;
+    color: #fff;
+    font-size: 13px;
+    font-weight: 500;
+    padding: 8px 16px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.orbi-admin__save-btn:hover,
+.orbi-admin__save-btn:focus {
+    background: #135e96;
+    border-color: #135e96;
+    color: #fff;
+}
+
+.orbi-admin__save-btn:focus {
+    box-shadow: 0 0 0 2px rgba(34, 113, 177, 0.3);
+    outline: none;
+}
+
 /* =============================================================================
    NOTICES SECTION (BEM + Accessible)
    ============================================================================= */
@@ -246,27 +321,27 @@ body.orbital-framework-page .updated {
 }
 
 /* =============================================================================
-   TABS SECTION
+   TABS SECTION (BEM)
    ============================================================================= */
 
-.orbital-admin-tabs {
+.orbi-admin__tabs {
     background: #fff;
     border-bottom: 1px solid #e5e5e5;
     padding: 0 40px;
 }
 
-.orbital-tabs-wrapper {
+.orbi-admin__tabs-wrapper {
     position: relative;
 }
 
-.orbital-tabs-nav {
+.orbi-admin__tabs-nav {
     display: flex;
     margin: 0;
     padding: 0;
     border-bottom: 1px solid #e5e5e5;
 }
 
-.orbital-tab-link {
+.orbi-admin__tab-link {
     background: none;
     border: none;
     border-bottom: 3px solid transparent;
@@ -283,56 +358,56 @@ body.orbital-framework-page .updated {
     position: relative;
 }
 
-.orbital-tab-link:hover {
+.orbi-admin__tab-link:hover {
     color: #2271b1;
     background: rgba(34, 113, 177, 0.04);
 }
 
-.orbital-tab-link.active {
+.orbi-admin__tab-link--active {
     color: #2271b1;
     border-bottom-color: #2271b1;
     background: none;
 }
 
-.orbital-tab-link:focus {
+.orbi-admin__tab-link:focus {
     box-shadow: none;
     outline: 2px solid #2271b1;
     outline-offset: -2px;
 }
 
 /* =============================================================================
-   TAB CONTENT SECTION
+   TAB CONTENT SECTION (BEM)
    ============================================================================= */
 
-.orbital-admin-content {
+.orbi-admin__content {
     background: #fff;
     padding: 40px;
 }
 
-.orbital-settings-form {
+.orbi-admin__settings-form {
     margin: 0;
 }
 
-.orbital-tab-content {
+.orbi-admin__tab-content {
     margin-bottom: 30px;
 }
 
 /* =============================================================================
-   SUB-TABS (SECTIONS)
+   SUB-TABS (SECTIONS) (BEM)
    ============================================================================= */
 
-.orbital-subtabs-wrapper {
+.orbi-admin__subtabs-wrapper {
     margin-bottom: 30px;
     border-bottom: 1px solid #e5e5e5;
 }
 
-.orbital-subtabs-nav {
+.orbi-admin__subtabs-nav {
     display: flex;
     margin: 0;
     padding: 0;
 }
 
-.orbital-subtab-link {
+.orbi-admin__subtab-link {
     background: none;
     border: none;
     border-bottom: 2px solid transparent;
@@ -349,44 +424,44 @@ body.orbital-framework-page .updated {
     position: relative;
 }
 
-.orbital-subtab-link:hover {
+.orbi-admin__subtab-link:hover {
     color: #2271b1;
     background: rgba(34, 113, 177, 0.04);
 }
 
-.orbital-subtab-link.active {
+.orbi-admin__subtab-link--active {
     color: #2271b1;
     border-bottom-color: #2271b1;
     background: none;
 }
 
-.orbital-subtab-link:focus {
+.orbi-admin__subtab-link:focus {
     box-shadow: none;
     outline: 1px solid #2271b1;
     outline-offset: -1px;
 }
 
-.orbital-section-content {
+.orbi-admin__section-content {
     padding: 20px 0;
 }
 
 /* =============================================================================
-   SECTIONS
+   SECTIONS (BEM)
    ============================================================================= */
 
-.orbital-section {
+.orbi-admin__section {
     margin-bottom: 40px;
     padding-bottom: 30px;
     border-bottom: 1px solid #f0f0f1;
 }
 
-.orbital-section:last-child {
+.orbi-admin__section:last-child {
     border-bottom: none;
     margin-bottom: 0;
     padding-bottom: 0;
 }
 
-.orbital-section-title {
+.orbi-admin__section-title {
     font-size: 18px;
     font-weight: 600;
     color: #1d2327;
@@ -395,16 +470,16 @@ body.orbital-framework-page .updated {
     border-bottom: 2px solid #f0f0f1;
 }
 
-.orbital-section-fields {
+.orbi-admin__section-fields {
     display: grid;
     gap: 20px;
 }
 
 /* =============================================================================
-   SECTION CARDS (for card display mode)
+   SECTION CARDS (for card display mode) (BEM)
    ============================================================================= */
 
-.orbital-section-card {
+.orbi-admin__section-card {
     background: #fff;
     border: 1px solid #e5e5e5;
     border-radius: 6px;
@@ -413,11 +488,11 @@ body.orbital-framework-page .updated {
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
 }
 
-.orbital-section-card:last-child {
+.orbi-admin__section-card:last-child {
     margin-bottom: 0;
 }
 
-.orbital-section-card .orbital-section-title {
+.orbi-admin__section-card .orbi-admin__section-title {
     margin-top: 0;
     margin-bottom: 25px;
     padding-bottom: 15px;
@@ -427,16 +502,16 @@ body.orbital-framework-page .updated {
     color: #1d2327;
 }
 
-.orbital-section-card .orbital-section-fields {
+.orbi-admin__section-card .orbi-admin__section-fields {
     display: grid;
     gap: 20px;
 }
 
 /* =============================================================================
-   NO FIELDS MESSAGE
+   NO FIELDS MESSAGE (BEM)
    ============================================================================= */
 
-.orbital-no-fields-message {
+.orbi-admin__no-fields-message {
     text-align: center;
     padding: 40px 20px;
     background: #f8f9fa;
@@ -445,36 +520,36 @@ body.orbital-framework-page .updated {
     margin: 20px 0;
 }
 
-.orbital-no-fields-icon {
+.orbi-admin__no-fields-icon {
     margin-bottom: 15px;
 }
 
-.orbital-no-fields-icon .dashicons {
+.orbi-admin__no-fields-icon .dashicons {
     font-size: 48px;
     width: 48px;
     height: 48px;
     color: #8c8f94;
 }
 
-.orbital-no-fields-message h4 {
+.orbi-admin__no-fields-message h4 {
     margin: 0 0 10px 0;
     color: #1d2327;
     font-size: 18px;
     font-weight: 600;
 }
 
-.orbital-no-fields-message p {
+.orbi-admin__no-fields-message p {
     margin: 0 0 15px 0;
     color: #646970;
     font-size: 14px;
     line-height: 1.5;
 }
 
-.orbital-no-fields-message p:last-child {
+.orbi-admin__no-fields-message p:last-child {
     margin-bottom: 0;
 }
 
-.orbital-no-fields-help {
+.orbi-admin__no-fields-help {
     background: #fff;
     border: 1px solid #e5e5e5;
     border-radius: 4px;
@@ -483,7 +558,7 @@ body.orbital-framework-page .updated {
     text-align: left;
 }
 
-.orbital-no-fields-help code {
+.orbi-admin__no-fields-help code {
     background: #f1f1f1;
     padding: 2px 6px;
     border-radius: 3px;
@@ -728,27 +803,27 @@ body.orbital-framework-page .updated {
 }
 
 /* =============================================================================
-   FOOTER SECTION
+   FOOTER SECTION (BEM)
    ============================================================================= */
 
-.orbital-admin-footer {
+.orbi-admin__footer {
     background: #f6f7f7;
     border-top: 1px solid #e5e5e5;
     padding: 20px 40px;
     text-align: center;
 }
 
-.orbital-admin-footer-text {
+.orbi-admin__footer-text {
     color: #646970;
     font-size: 12px;
     margin: 0;
 }
 
 /* =============================================================================
-   FORM ELEMENTS
+   FORM ELEMENTS (BEM)
    ============================================================================= */
 
-.orbital-settings-form .button-primary {
+.orbi-admin__settings-form .button-primary {
     background: #2271b1;
     border: 1px solid #2271b1;
     border-radius: 4px;
@@ -761,28 +836,28 @@ body.orbital-framework-page .updated {
     cursor: pointer;
 }
 
-.orbital-settings-form .button-primary:hover,
-.orbital-settings-form .button-primary:focus {
+.orbi-admin__settings-form .button-primary:hover,
+.orbi-admin__settings-form .button-primary:focus {
     background: #135e96;
     border-color: #135e96;
     color: #fff;
 }
 
-.orbital-settings-form .button-primary:focus {
+.orbi-admin__settings-form .button-primary:focus {
     box-shadow: 0 0 0 2px rgba(34, 113, 177, 0.3);
     outline: none;
 }
 
 /* =============================================================================
-   LOADING STATES
+   LOADING STATES (BEM)
    ============================================================================= */
 
-.orbital-loading .orbital-admin-content {
+.orbi-admin--loading .orbi-admin__content {
     opacity: 0.6;
     pointer-events: none;
 }
 
-.orbital-loading .button-primary {
+.orbi-admin--loading .button-primary {
     background: #8c8f94;
     border-color: #8c8f94;
     cursor: not-allowed;
@@ -851,43 +926,43 @@ body.orbital-framework-page .updated {
    ============================================================================= */
 
 @media (max-width: 782px) {
-    .orbital-admin-header,
-    .orbital-admin-nav,
-    .orbital-admin-notices,
-    .orbital-admin-content,
-    .orbital-admin-footer {
+    .orbi-admin__header,
+    .orbi-admin__nav,
+    .orbi-admin__notices,
+    .orbi-admin__content,
+    .orbi-admin__footer {
         padding-left: 20px;
         padding-right: 20px;
     }
     
-    .orbital-tabs-nav {
+    .orbi-admin__tabs-nav {
         flex-wrap: wrap;
     }
     
-    .orbital-tab-link {
+    .orbi-admin__tab-link {
         padding: 12px 16px 9px;
         font-size: 13px;
     }
     
-    .orbital-section-fields {
+    .orbi-admin__section-fields {
         gap: 16px;
     }
 }
 
 @media (max-width: 600px) {
-    .orbital-admin-header h1 {
+    .orbi-admin__header h1 {
         font-size: 20px;
     }
     
-    .orbital-section-title {
+    .orbi-admin__section-title {
         font-size: 16px;
     }
     
-    .orbital-tabs-nav {
+    .orbi-admin__tabs-nav {
         border-bottom: none;
     }
     
-    .orbital-tab-link {
+    .orbi-admin__tab-link {
         border: 1px solid #e5e5e5;
         border-bottom: none;
         display: block;
@@ -895,7 +970,7 @@ body.orbital-framework-page .updated {
         width: 100%;
     }
     
-    .orbital-tab-link.active {
+    .orbi-admin__tab-link--active {
         background: #f6f7f7;
         border-bottom: 1px solid #e5e5e5;
     }

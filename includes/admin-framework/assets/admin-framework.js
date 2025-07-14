@@ -27,16 +27,16 @@
          */
         bindEvents: function() {
             // Form submission
-            this.addEventListener('.orbital-settings-form', 'submit', this.handleFormSubmit.bind(this));
+            this.addEventListener('.orbi-admin__settings-form', 'submit', this.handleFormSubmit.bind(this));
             
             // Tab switching
-            this.addEventListener('.orbital-tab-link', 'click', this.handleTabSwitch.bind(this));
+            this.addEventListener('.orbi-admin__tab-link', 'click', this.handleTabSwitch.bind(this));
             
             // Sub-tab switching
-            this.addEventListener('.orbital-subtab-link', 'click', this.handleSubTabSwitch.bind(this));
+            this.addEventListener('.orbi-admin__subtab-link', 'click', this.handleSubTabSwitch.bind(this));
             
             // Notice dismissal
-            this.addEventListener('.orbital-notice-dismiss', 'click', this.dismissNotice.bind(this));
+            this.addEventListener('.orbi-notice__dismiss', 'click', this.dismissNotice.bind(this));
         },
 
         /**
@@ -57,7 +57,7 @@
         initTabs: function() {
             // Show active tab content, hide others
             const activeTab = this.getActiveTab();
-            const tabContents = document.querySelectorAll('.orbital-tab-content');
+            const tabContents = document.querySelectorAll('.orbi-admin__tab-content');
             
             tabContents.forEach(function(content) {
                 const tabKey = content.getAttribute('data-tab');
@@ -77,7 +77,7 @@
         initNotices: function() {
             // Auto-dismiss success notices after 5 seconds
             setTimeout(function() {
-                const successNotices = document.querySelectorAll('.orbital-notice.notice-success');
+                const successNotices = document.querySelectorAll('.orbi-notice--success');
                 successNotices.forEach(function(notice) {
                     notice.style.opacity = '0';
                     setTimeout(function() {
@@ -160,7 +160,7 @@
          * Handle tab switching
          */
         handleTabSwitch: function(e, link) {
-            const tabsNav = link.closest('.orbital-tabs-nav');
+            const tabsNav = link.closest('.orbi-admin__tabs-nav');
             
             // Don't follow the link if it's just for switching tabs
             if (tabsNav) {
@@ -169,15 +169,15 @@
                 const tabKey = link.getAttribute('data-tab');
                 
                 // Update active states
-                const allTabLinks = document.querySelectorAll('.orbital-tab-link');
-                allTabLinks.forEach(tabLink => tabLink.classList.remove('active'));
-                link.classList.add('active');
+                const allTabLinks = document.querySelectorAll('.orbi-admin__tab-link');
+                allTabLinks.forEach(tabLink => tabLink.classList.remove('orbi-admin__tab-link--active'));
+                link.classList.add('orbi-admin__tab-link--active');
                 
                 // Switch tab content
-                const allTabContent = document.querySelectorAll('.orbital-tab-content');
+                const allTabContent = document.querySelectorAll('.orbi-admin__tab-content');
                 allTabContent.forEach(content => content.style.display = 'none');
                 
-                const activeContent = document.querySelector('.orbital-tab-content[data-tab="' + tabKey + '"]');
+                const activeContent = document.querySelector('.orbi-admin__tab-content[data-tab="' + tabKey + '"]');
                 if (activeContent) {
                     activeContent.style.display = 'block';
                     
@@ -220,8 +220,8 @@
          *   - If no sections exist: does nothing
          */
         initSubTabsForTab: function(tabContent) {
-            const subTabLinks = tabContent.querySelectorAll('.orbital-subtab-link');
-            const sectionContents = tabContent.querySelectorAll('.orbital-section-content');
+            const subTabLinks = tabContent.querySelectorAll('.orbi-admin__subtab-link');
+            const sectionContents = tabContent.querySelectorAll('.orbi-admin__section-content');
             
             if (subTabLinks.length === 0) return; // No sub-tabs in this tab
             
@@ -235,7 +235,7 @@
             
             if (urlSection) {
                 // Try to find the sub-tab with the URL section (deep linking)
-                activeSubTab = tabContent.querySelector('.orbital-subtab-link[data-section="' + urlSection + '"]');
+                activeSubTab = tabContent.querySelector('.orbi-admin__subtab-link[data-section="' + urlSection + '"]');
                 if (activeSubTab) {
                     activeSectionKey = urlSection;
                 }
@@ -250,13 +250,13 @@
             if (!activeSubTab) return;
             
             // Update sub-tab active states
-            subTabLinks.forEach(subTabLink => subTabLink.classList.remove('active'));
-            activeSubTab.classList.add('active');
+            subTabLinks.forEach(subTabLink => subTabLink.classList.remove('orbi-admin__subtab-link--active'));
+            activeSubTab.classList.add('orbi-admin__subtab-link--active');
             
             // Update section content visibility
             sectionContents.forEach(content => content.style.display = 'none');
             
-            const activeContent = tabContent.querySelector('.orbital-section-content[data-section="' + activeSectionKey + '"]');
+            const activeContent = tabContent.querySelector('.orbi-admin__section-content[data-section="' + activeSectionKey + '"]');
             if (activeContent) {
                 activeContent.style.display = 'block';
             }
@@ -271,19 +271,19 @@
             const sectionKey = link.getAttribute('data-section');
             
             // Find the current active tab to scope the sub-tab switching
-            const activeTabContent = document.querySelector('.orbital-tab-content[style*="display: block"]');
+            const activeTabContent = document.querySelector('.orbi-admin__tab-content[style*="display: block"]');
             if (!activeTabContent) return;
             
             // Update active states for sub-tabs within the active tab only
-            const subTabLinks = activeTabContent.querySelectorAll('.orbital-subtab-link');
-            subTabLinks.forEach(subTabLink => subTabLink.classList.remove('active'));
-            link.classList.add('active');
+            const subTabLinks = activeTabContent.querySelectorAll('.orbi-admin__subtab-link');
+            subTabLinks.forEach(subTabLink => subTabLink.classList.remove('orbi-admin__subtab-link--active'));
+            link.classList.add('orbi-admin__subtab-link--active');
             
             // Switch section content within the active tab only
-            const sectionContents = activeTabContent.querySelectorAll('.orbital-section-content');
+            const sectionContents = activeTabContent.querySelectorAll('.orbi-admin__section-content');
             sectionContents.forEach(content => content.style.display = 'none');
             
-            const activeContent = activeTabContent.querySelector('.orbital-section-content[data-section="' + sectionKey + '"]');
+            const activeContent = activeTabContent.querySelector('.orbi-admin__section-content[data-section="' + sectionKey + '"]');
             if (activeContent) {
                 activeContent.style.display = 'block';
             }
@@ -341,14 +341,14 @@
          * Set loading state
          */
         setLoadingState: function(loading) {
-            const framework = document.querySelector('.orbital-admin-framework');
+            const framework = document.querySelector('.orbi-admin');
             
             if (!framework) return;
             
             if (loading) {
-                framework.classList.add('orbital-loading');
+                framework.classList.add('orbi-admin--loading');
             } else {
-                framework.classList.remove('orbital-loading');
+                framework.classList.remove('orbi-admin--loading');
             }
         },
 
@@ -356,25 +356,25 @@
          * Show notice
          */
         showNotice: function(message, type = 'info') {
-            const container = document.getElementById('orbital-notices-container');
+            const container = document.getElementById('orbi-notices-container');
             
             if (!container) return;
             
             // Remove existing notices
-            const existingNotices = container.querySelectorAll('.orbital-notice');
+            const existingNotices = container.querySelectorAll('.orbi-notice');
             existingNotices.forEach(notice => notice.remove());
             
             // Create new notice
             const notice = document.createElement('div');
-            notice.className = 'orbital-notice notice-' + type;
-            notice.innerHTML = '<p>' + message + '</p>';
+            notice.className = 'orbi-notice orbi-notice--' + type;
+            notice.innerHTML = '<div class="orbi-notice__content"><p class="orbi-notice__message">' + message + '</p></div>';
             
             // Add dismiss button for non-error notices
             if (type !== 'error') {
                 const dismissBtn = document.createElement('button');
                 dismissBtn.type = 'button';
-                dismissBtn.className = 'orbital-notice-dismiss';
-                dismissBtn.innerHTML = '<span class="screen-reader-text">Dismiss this notice.</span>';
+                dismissBtn.className = 'orbi-notice__dismiss';
+                dismissBtn.innerHTML = '<span class="orbi-notice__dismiss-icon">&times;</span><span class="screen-reader-text">Dismiss this notice.</span>';
                 notice.appendChild(dismissBtn);
             }
             
@@ -397,7 +397,7 @@
          */
         dismissNotice: function(e, button) {
             e.preventDefault();
-            const notice = button.closest('.orbital-notice');
+            const notice = button.closest('.orbi-notice');
             
             if (notice) {
                 notice.style.transition = 'opacity 0.3s ease';
@@ -447,7 +447,7 @@
             
             if (urlTab) return urlTab;
             
-            const activeLink = document.querySelector('.orbital-tab-link.active');
+            const activeLink = document.querySelector('.orbi-admin__tab-link--active');
             return activeLink ? activeLink.getAttribute('data-tab') : '';
         },
 
@@ -489,7 +489,7 @@
      */
     function initFramework() {
         // Only initialize on admin framework pages
-        if (document.querySelector('.orbital-admin-framework')) {
+        if (document.querySelector('.orbi-admin')) {
             OrbitalAdminFramework.init();
         }
     }

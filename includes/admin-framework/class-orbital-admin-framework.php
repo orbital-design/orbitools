@@ -493,13 +493,109 @@ class Orbital_Admin_Framework {
 	}
 
 	/**
-	 * Render navigation section
+	 * Render navigation section (BEM + semantic)
 	 *
 	 * @since 1.0.0
 	 */
 	private function render_navigation() {
+		?>
+		<div class="orbi-admin__nav-content">
+			<?php $this->render_breadcrumbs(); ?>
+			<?php $this->render_nav_actions(); ?>
+		</div>
+		<?php
+		
 		// Hook for custom navigation
 		do_action( $this->func_slug . '_render_navigation' );
+	}
+	
+	/**
+	 * Render breadcrumbs
+	 *
+	 * @since 1.0.0
+	 */
+	private function render_breadcrumbs() {
+		$current_tab = $this->get_current_tab();
+		$current_section = $this->get_current_section();
+		$tabs = $this->get_tabs();
+		
+		if ( empty( $tabs ) ) {
+			return;
+		}
+		
+		?>
+		<nav class="orbi-admin__breadcrumbs" aria-label="<?php esc_attr_e( 'Breadcrumb navigation', 'orbital-admin-framework' ); ?>">
+			<ol class="orbi-admin__breadcrumb-list">
+				<li class="orbi-admin__breadcrumb-item">
+					<span class="orbi-admin__breadcrumb-text"><?php echo esc_html( $this->page_title ); ?></span>
+				</li>
+				
+				<?php if ( $current_tab && isset( $tabs[ $current_tab ] ) ) : ?>
+					<li class="orbi-admin__breadcrumb-item">
+						<span class="orbi-admin__breadcrumb-separator" aria-hidden="true">›</span>
+						<span class="orbi-admin__breadcrumb-text orbi-admin__breadcrumb-text--current">
+							<?php echo esc_html( $tabs[ $current_tab ] ); ?>
+						</span>
+					</li>
+				<?php endif; ?>
+				
+				<?php if ( $current_section ) : ?>
+					<?php
+					$structure = $this->get_admin_structure();
+					$sections = isset( $structure[ $current_tab ]['sections'] ) ? $structure[ $current_tab ]['sections'] : array();
+					?>
+					<?php if ( isset( $sections[ $current_section ] ) ) : ?>
+						<li class="orbi-admin__breadcrumb-item">
+							<span class="orbi-admin__breadcrumb-separator" aria-hidden="true">›</span>
+							<span class="orbi-admin__breadcrumb-text orbi-admin__breadcrumb-text--current">
+								<?php echo esc_html( $sections[ $current_section ] ); ?>
+							</span>
+						</li>
+					<?php endif; ?>
+				<?php endif; ?>
+			</ol>
+		</nav>
+		<?php
+	}
+	
+	/**
+	 * Render navigation actions
+	 *
+	 * @since 1.0.0
+	 */
+	private function render_nav_actions() {
+		?>
+		<div class="orbi-admin__nav-actions">
+			<?php
+			// Hook for navigation actions (save buttons, etc.)
+			do_action( $this->func_slug . '_render_nav_actions' );
+			
+			// Default save button (if no custom actions provided)
+			if ( ! has_action( $this->func_slug . '_render_nav_actions' ) ) {
+				$this->render_default_nav_actions();
+			}
+			?>
+		</div>
+		<?php
+	}
+	
+	/**
+	 * Render default navigation actions
+	 *
+	 * @since 1.0.0
+	 */
+	private function render_default_nav_actions() {
+		?>
+		<button type="submit" 
+		        class="orbi-admin__save-btn button button-primary" 
+		        form="orbi-settings-form"
+		        aria-describedby="orbi-save-btn-desc">
+			<span class="orbi-admin__save-btn-text"><?php esc_html_e( 'Save Settings', 'orbital-admin-framework' ); ?></span>
+		</button>
+		<span id="orbi-save-btn-desc" class="screen-reader-text">
+			<?php esc_html_e( 'Save all settings changes', 'orbital-admin-framework' ); ?>
+		</span>
+		<?php
 	}
 
 	/**
@@ -643,12 +739,15 @@ class Orbital_Admin_Framework {
 			return;
 		}
 		?>
-		<div class="orbital-tabs-wrapper">
-			<nav class="orbital-tabs-nav">
+		<div class="orbi-admin__tabs-wrapper">
+			<nav class="orbi-admin__tabs-nav">
 				<?php foreach ( $tabs as $tab_key => $tab_label ) : ?>
 					<a href="<?php echo esc_url( $this->get_tab_url( $tab_key ) ); ?>" 
-					   class="orbital-tab-link <?php echo $active_tab === $tab_key ? 'active' : ''; ?>"
-					   data-tab="<?php echo esc_attr( $tab_key ); ?>">
+					   class="orbi-admin__tab-link <?php echo $active_tab === $tab_key ? 'orbi-admin__tab-link--active' : ''; ?>"
+					   data-tab="<?php echo esc_attr( $tab_key ); ?>"
+					   role="tab"
+					   aria-selected="<?php echo $active_tab === $tab_key ? 'true' : 'false'; ?>"
+					   id="orbi-tab-<?php echo esc_attr( $tab_key ); ?>">
 						<?php echo esc_html( $tab_label ); ?>
 					</a>
 				<?php endforeach; ?>
@@ -671,14 +770,15 @@ class Orbital_Admin_Framework {
 		$tabs = $this->get_tabs();
 		
 		?>
-		<form method="post" action="<?php echo esc_url( admin_url( 'admin-ajax.php' ) ); ?>" class="orbital-settings-form">
+		<form method="post" action="<?php echo esc_url( admin_url( 'admin-ajax.php' ) ); ?>" class="orbi-admin__settings-form" id="orbi-settings-form">
 			<?php wp_nonce_field( 'orbital_admin_' . $this->slug, 'orbital_nonce' ); ?>
 			<input type="hidden" name="action" value="orbital_admin_save_settings">
 			<input type="hidden" name="slug" value="<?php echo esc_attr( $this->slug ); ?>">
 			
 			<?php foreach ( $tabs as $tab_key => $tab_title ) : ?>
-				<div class="orbital-tab-content" 
+				<div class="orbi-admin__tab-content" 
 				     data-tab="<?php echo esc_attr( $tab_key ); ?>"
+				     aria-labelledby="orbi-tab-<?php echo esc_attr( $tab_key ); ?>"
 				     style="<?php echo $active_tab === $tab_key ? 'display: block;' : 'display: none;'; ?>">
 					
 					<?php 
@@ -689,15 +789,18 @@ class Orbital_Admin_Framework {
 						if ( $display_mode === 'tabs' ) : 
 						?>
 							<!-- Sub-tabs for sections -->
-							<div class="orbital-subtabs-wrapper">
-								<nav class="orbital-subtabs-nav">
+							<div class="orbi-admin__subtabs-wrapper">
+								<nav class="orbi-admin__subtabs-nav">
 									<?php 
 									$active_section = $this->get_active_section( $tab_key );
 									foreach ( $sections as $section_key => $section_title ) : 
 									?>
 										<a href="#" 
-										   class="orbital-subtab-link <?php echo ( $active_tab === $tab_key && $active_section === $section_key ) ? 'active' : ''; ?>"
-										   data-section="<?php echo esc_attr( $section_key ); ?>">
+										   class="orbi-admin__subtab-link <?php echo ( $active_tab === $tab_key && $active_section === $section_key ) ? 'orbi-admin__subtab-link--active' : ''; ?>"
+										   data-section="<?php echo esc_attr( $section_key ); ?>"
+										   role="tab"
+										   aria-selected="<?php echo ( $active_tab === $tab_key && $active_section === $section_key ) ? 'true' : 'false'; ?>"
+										   id="orbi-subtab-<?php echo esc_attr( $section_key ); ?>">
 											<?php echo esc_html( $section_title ); ?>
 										</a>
 									<?php endforeach; ?>
@@ -706,15 +809,16 @@ class Orbital_Admin_Framework {
 							
 							<!-- Section content for tabs mode -->
 							<?php foreach ( $sections as $section_key => $section_title ) : ?>
-								<div class="orbital-section-content" 
+								<div class="orbi-admin__section-content" 
 								     data-section="<?php echo esc_attr( $section_key ); ?>"
+								     aria-labelledby="orbi-subtab-<?php echo esc_attr( $section_key ); ?>"
 								     style="<?php echo ( $active_tab === $tab_key && $active_section === $section_key ) ? 'display: block;' : 'display: none;'; ?>">
 									<?php
 									if ( isset( $settings[ $tab_key ] ) ) {
 										$section_fields = $this->get_section_fields( $settings[ $tab_key ], $section_key );
 										if ( ! empty( $section_fields ) ) {
 											?>
-											<div class="orbital-section-fields">
+											<div class="orbi-admin__section-fields">
 												<?php
 												foreach ( $section_fields as $field ) {
 													$this->render_field( $field );
@@ -734,14 +838,14 @@ class Orbital_Admin_Framework {
 						<?php else : ?>
 							<!-- Cards mode: sections as stacked cards -->
 							<?php foreach ( $sections as $section_key => $section_title ) : ?>
-								<div class="orbital-section-card" data-section="<?php echo esc_attr( $section_key ); ?>">
-									<h3 class="orbital-section-title"><?php echo esc_html( $section_title ); ?></h3>
+								<div class="orbi-admin__section-card" data-section="<?php echo esc_attr( $section_key ); ?>">
+									<h3 class="orbi-admin__section-title"><?php echo esc_html( $section_title ); ?></h3>
 									<?php
 									if ( isset( $settings[ $tab_key ] ) ) {
 										$section_fields = $this->get_section_fields( $settings[ $tab_key ], $section_key );
 										if ( ! empty( $section_fields ) ) {
 											?>
-											<div class="orbital-section-fields">
+											<div class="orbi-admin__section-fields">
 												<?php
 												foreach ( $section_fields as $field ) {
 													$this->render_field( $field );
@@ -764,7 +868,7 @@ class Orbital_Admin_Framework {
 						<?php
 						if ( isset( $settings[ $tab_key ] ) ) {
 							?>
-							<div class="orbital-section-fields">
+							<div class="orbi-admin__section-fields">
 								<?php
 								foreach ( $settings[ $tab_key ] as $field ) {
 									$this->render_field( $field );
@@ -795,7 +899,7 @@ class Orbital_Admin_Framework {
 	 */
 	private function render_footer() {
 		?>
-		<p class="orbital-admin-footer-text">
+		<p class="orbi-admin__footer-text">
 			<?php echo esc_html( sprintf( 'Powered by Orbital Admin Framework v%s', self::VERSION ) ); ?>
 		</p>
 		
@@ -871,8 +975,8 @@ class Orbital_Admin_Framework {
 	 */
 	private function render_no_fields_message( $section_title = '' ) {
 		?>
-		<div class="orbital-no-fields-message">
-			<div class="orbital-no-fields-icon">
+		<div class="orbi-admin__no-fields-message">
+			<div class="orbi-admin__no-fields-icon">
 				<span class="dashicons dashicons-admin-settings"></span>
 			</div>
 			<h4>No fields configured</h4>
@@ -883,7 +987,7 @@ class Orbital_Admin_Framework {
 					No fields have been configured for this section yet.
 				<?php endif; ?>
 			</p>
-			<p class="orbital-no-fields-help">
+			<p class="orbi-admin__no-fields-help">
 				<strong>For developers:</strong> Add fields using the <code><?php echo esc_html( $this->func_slug ); ?>_settings</code> filter.
 				<?php if ( $section_title ) : ?>
 					Make sure to set <code>'section' => '<?php echo esc_attr( strtolower( str_replace( ' ', '_', $section_title ) ) ); ?>'</code> on your field definitions.
@@ -1132,6 +1236,27 @@ class Orbital_Admin_Framework {
 		
 		// Return first tab as default
 		return empty( $tabs ) ? '' : key( $tabs );
+	}
+
+	/**
+	 * Get current tab (alias for breadcrumbs)
+	 *
+	 * @since 1.0.0
+	 * @return string Current tab key.
+	 */
+	private function get_current_tab() {
+		return $this->get_active_tab();
+	}
+
+	/**
+	 * Get current section (alias for breadcrumbs)
+	 *
+	 * @since 1.0.0
+	 * @return string Current section key.
+	 */
+	private function get_current_section() {
+		$current_tab = $this->get_current_tab();
+		return $this->get_active_section( $current_tab );
 	}
 
 	/**
