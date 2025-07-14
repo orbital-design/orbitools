@@ -54,11 +54,7 @@ add_action('plugins_loaded', function () {
     add_filter('orbital_editor_suite_registered_settings_sections', function ($subsections) {
         $subsections = array(
             'dashboard' => array(
-                'overview' => 'Plugin Overview',
                 'status'   => 'Module Controls',
-            ),
-            'modules' => array(
-                'settings' => 'Module Settings',
             ),
             'settings' => array(
                 'general'     => 'General Settings',
@@ -139,7 +135,6 @@ add_filter('orbital_editor_suite_new_admin_structure', function($structure) {
             'title' => 'Dashboard',
             'display_mode' => 'cards',
             'sections' => array(
-                'overview' => 'Plugin Overview',
                 'status'   => 'Module Controls',
             ),
         ),
@@ -147,7 +142,7 @@ add_filter('orbital_editor_suite_new_admin_structure', function($structure) {
             'title' => 'Modules',
             'display_mode' => 'tabs',
             'sections' => array(
-                'settings' => 'Module Settings',
+                // Module sections are registered by individual modules via hooks
             ),
         ),
         'settings' => array(
@@ -174,16 +169,6 @@ add_filter('orbital_editor_suite_new_admin_structure', function($structure) {
 add_filter('orbital_editor_suite_new_settings', function($settings) {
     return array(
         'dashboard' => array(
-            // Plugin status and version information
-            array(
-                'id'      => 'plugin_status',
-                'name'    => 'Plugin Status',
-                'type'    => 'html',
-                'std'     => '<p><strong>Status:</strong> Active</p>' .
-                             '<p><strong>Version:</strong> ' . ORBITAL_EDITOR_SUITE_VERSION . '</p>',
-                'section' => 'overview',
-            ),
-            
             // Active modules display (dynamically generated)
             array(
                 'id'      => 'active_modules_count',
@@ -205,24 +190,7 @@ add_filter('orbital_editor_suite_new_settings', function($settings) {
         ),
         
         'modules' => array(
-            // Information about module settings
-            array(
-                'id'      => 'modules_info',
-                'name'    => 'Module Settings',
-                'type'    => 'html',
-                'std'     => '<p>Settings for enabled modules will appear below.</p>',
-                'section' => 'settings',
-            ),
-            
-            // Test checkbox for structure verification
-            array(
-                'id'      => 'test_checkbox',
-                'name'    => 'Test Module Setting',
-                'desc'    => 'This is a test setting to verify module configuration works.',
-                'type'    => 'checkbox',
-                'std'     => false,
-                'section' => 'settings',
-            ),
+            // Module settings are registered by individual modules via hooks
         ),
         
         'settings' => array(

@@ -80,13 +80,13 @@ class Typography_Presets {
 	 * @since 1.0.0
 	 */
 	public function __construct() {
-		// Check if this module is enabled before registering anything
-		if ( $this->is_module_enabled() ) {
-			$this->register_optionskit_integration();
-		}
+		// Always register admin interface (users need to see settings to enable/configure)
+		$this->register_optionskit_integration();
 
-		// Always initialize core functionality for enabled modules
-		$this->init();
+		// Only initialize core functionality if module is enabled
+		if ( $this->is_module_enabled() ) {
+			$this->init();
+		}
 	}
 
 	/**
@@ -96,8 +96,18 @@ class Typography_Presets {
 	 * @return bool True if module is enabled, false otherwise
 	 */
 	private function is_module_enabled() {
-		$options = get_option( 'orbital_editor_suite_settings', array() );
-		$enabled = isset( $options['typography_presets_enabled'] ) ? $options['typography_presets_enabled'] : '0';
+		// Check both OptionsKit and new framework settings
+		$optionskit_settings = get_option( 'orbital_editor_suite_settings', array() );
+		$framework_settings = get_option( 'orbital_editor_suite_new', array() );
+		
+		$enabled = false;
+		
+		// Check new framework first (takes precedence)
+		if ( isset( $framework_settings['typography_presets_enabled'] ) ) {
+			$enabled = $framework_settings['typography_presets_enabled'];
+		} elseif ( isset( $optionskit_settings['typography_presets_enabled'] ) ) {
+			$enabled = $optionskit_settings['typography_presets_enabled'];
+		}
 
 		return ( '1' === $enabled || 1 === $enabled );
 	}
@@ -113,12 +123,17 @@ class Typography_Presets {
 	private function register_optionskit_integration() {
 		add_filter( 'orbital_editor_suite_registered_settings_sections', array( $this, 'register_sections' ) );
 		add_filter( 'orbital_editor_suite_registered_settings', array( $this, 'register_settings' ) );
+		
+		// Also register with new admin framework
+		add_filter( 'orbital_editor_suite_new_admin_structure', array( $this, 'register_new_framework_structure' ) );
+		add_filter( 'orbital_editor_suite_new_settings', array( $this, 'register_new_framework_settings' ) );
 	}
 
 	/**
 	 * Initialize module functionality
 	 *
 	 * Loads presets, settings, and sets up WordPress hooks for editor integration.
+	 * Only runs when module is enabled.
 	 *
 	 * @since 1.0.0
 	 */
@@ -891,6 +906,91 @@ class Typography_Presets {
 				'section' => 'typography',
 			),
 		);
+
+		return $settings;
+	}
+
+	/**
+	 * Register Typography sections in new admin framework
+	 *
+	 * @since 1.0.0
+	 * @param array $structure Existing structure array.
+	 * @return array Modified structure array
+	 */
+	public function register_new_framework_structure( $structure ) {
+		// Add Typography subsection to the modules tab
+		if ( ! isset( $structure['modules']['sections']['typography'] ) ) {
+			$structure['modules']['sections']['typography'] = 'Typography Presets';
+		}
+
+		return $structure;
+	}
+
+	/**
+	 * Register Typography settings in new admin framework
+	 *
+	 * @since 1.0.0
+	 * @param array $settings Existing settings array.
+	 * @return array Modified settings array
+	 */
+	public function register_new_framework_settings( $settings ) {
+		// Ensure $settings is an array
+		if ( ! is_array( $settings ) ) {
+			$settings = array();
+		}
+
+		// Ensure modules key exists
+		if ( ! isset( $settings['modules'] ) ) {
+			$settings['modules'] = array();
+		}
+
+		// Add Typography settings to modules tab
+		$typography_settings = array(
+			array(
+				'id'      => 'typography_replace_core_controls',
+				'name'    => 'Replace Core Controls',
+				'desc'    => 'Remove WordPress core typography controls and replace with preset system.',
+				'type'    => 'checkbox',
+				'std'     => false,
+				'section' => 'typography',
+			),
+			array(
+				'id'      => 'typography_show_groups',
+				'name'    => 'Show Groups in Dropdown',
+				'desc'    => 'Organize presets into groups in the block editor dropdown.',
+				'type'    => 'checkbox',
+				'std'     => true,
+				'section' => 'typography',
+			),
+			array(
+				'id'      => 'typography_output_preset_css',
+				'name'    => 'Output Preset CSS',
+				'desc'    => 'Automatically generate and include CSS for all presets.',
+				'type'    => 'checkbox',
+				'std'     => true,
+				'section' => 'typography',
+			),
+			array(
+				'id'      => 'typography_allowed_blocks',
+				'name'    => 'Allowed Blocks',
+				'desc'    => 'Select which blocks can use typography presets.',
+				'type'    => 'checkbox',
+				'options' => array(
+					'core/paragraph' => 'Paragraph',
+					'core/heading'   => 'Heading',
+					'core/list'      => 'List',
+					'core/quote'     => 'Quote',
+					'core/button'    => 'Button',
+					'core/cover'     => 'Cover',
+					'core/group'     => 'Group',
+				),
+				'std'     => array( 'core/paragraph', 'core/heading', 'core/list', 'core/quote', 'core/button' ),
+				'section' => 'typography',
+			),
+		);
+
+		// Merge with existing modules settings
+		$settings['modules'] = array_merge( $settings['modules'], $typography_settings );
 
 		return $settings;
 	}
