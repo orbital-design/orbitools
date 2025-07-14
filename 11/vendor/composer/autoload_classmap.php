@@ -7,4 +7,5 @@ $baseDir = dirname($vendorDir);
 
 return array(
     'Composer\\InstalledVersions' => $vendorDir . '/composer/InstalledVersions.php',
+    'TDP\\OptionsKit' => $vendorDir . '/wp-user-manager/wp-optionskit/wp-optionskit.php',
 );

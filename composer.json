@@ -1,20 +1,8 @@
 {
-    "name": "orbital/editor-suite",
-    "description": "Professional suite of editor enhancements with typography utilities and modern admin panel",
-    "type": "wordpress-plugin",
-    "require": {
-        "wp-user-manager/wp-optionskit": "^1.0"
-    },
     "autoload": {
-        "psr-4": {
-            "Orbital\\Editor_Suite\\": "includes/"
-        }
-    },
-    "minimum-stability": "dev",
-    "prefer-stable": true,
-    "config": {
-        "allow-plugins": {
-            "composer/installers": true
-        }
+      "psr-4": {
+        "Orbitools\\": "inc/",
+        "Orbitools\\Modules\\": "modules/"
+      }
     }
-}
+  }

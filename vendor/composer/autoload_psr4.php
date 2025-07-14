@@ -6,6 +6,6 @@ $vendorDir = dirname(__DIR__);
 $baseDir = dirname($vendorDir);
 
 return array(
-    'Orbital\\Editor_Suite\\' => array($baseDir . '/includes'),
-    'Composer\\Installers\\' => array($vendorDir . '/composer/installers/src/Composer/Installers'),
+    'Orbitools\\Modules\\' => array($baseDir . '/modules'),
+    'Orbitools\\' => array($baseDir . '/inc'),
 );

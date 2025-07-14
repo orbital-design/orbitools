@@ -9,24 +9,28 @@ class ComposerStaticInit2729b1ccb17b637437551504dec0f927
     public static $prefixLengthsPsr4 = array (
         'O' => 
         array (
-            'Orbitools\\Modules\\' => 18,
-            'Orbitools\\' => 10,
+            'Orbital\\Editor_Suite\\' => 21,
+        ),
+        'C' => 
+        array (
+            'Composer\\Installers\\' => 20,
         ),
     );
 
     public static $prefixDirsPsr4 = array (
-        'Orbitools\\Modules\\' => 
+        'Orbital\\Editor_Suite\\' => 
         array (
-            0 => __DIR__ . '/../..' . '/modules',
+            0 => __DIR__ . '/../..' . '/includes',
         ),
-        'Orbitools\\' => 
+        'Composer\\Installers\\' => 
         array (
-            0 => __DIR__ . '/../..' . '/inc',
+            0 => __DIR__ . '/..' . '/composer/installers/src/Composer/Installers',
         ),
     );
 
     public static $classMap = array (
         'Composer\\InstalledVersions' => __DIR__ . '/..' . '/composer/InstalledVersions.php',
+        'TDP\\OptionsKit' => __DIR__ . '/..' . '/wp-user-manager/wp-optionskit/wp-optionskit.php',
     );
 
     public static function getInitializer(ClassLoader $loader)
