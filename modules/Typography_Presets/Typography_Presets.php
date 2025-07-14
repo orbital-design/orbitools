@@ -74,6 +74,14 @@ class Typography_Presets
     private $settings;
 
     /**
+     * Whether the module has been initialized
+     *
+     * @since 1.0.0
+     * @var bool
+     */
+    private static $initialized = false;
+
+    /**
      * Initialize the Typography Presets module
      *
      * Sets up hooks for OptionsKit integration and initializes module functionality
@@ -83,6 +91,11 @@ class Typography_Presets
      */
     public function __construct()
     {
+        // Prevent multiple initialization
+        if (self::$initialized) {
+            return;
+        }
+        
         // Register module metadata
         add_filter('orbitools_available_modules', array($this, 'register_module_metadata'));
 
@@ -94,6 +107,8 @@ class Typography_Presets
         if ($this->is_module_enabled()) {
             $this->init();
         }
+        
+        self::$initialized = true;
     }
 
     /**
@@ -743,16 +758,20 @@ class Typography_Presets
      */
     public function enqueue_editor_assets()
     {
+        $script_dependencies = array('wp-hooks', 'wp-blocks', 'wp-element', 'wp-components', 'wp-block-editor');
+        
+        // Enqueue attribute registration first
         wp_enqueue_script(
-            'orbitools-typography-presets',
-            ORBITOOLS_URL . 'modules/Typography_Presets/typography-presets.js',
-            array('wp-hooks', 'wp-blocks', 'wp-element', 'wp-components', 'wp-block-editor'),
+            'orbitools-typography-attribute-registration',
+            ORBITOOLS_URL . 'modules/Typography_Presets/js/attribute-registration.js',
+            array('wp-hooks'),
             self::VERSION,
             true
         );
-
+        
+        // Localize data to the first script so all scripts can access it
         wp_localize_script(
-            'orbitools-typography-presets',
+            'orbitools-typography-attribute-registration',
             'orbitoolsTypographyPresets',
             array(
                 'presets'  => $this->get_presets(),
@@ -764,6 +783,33 @@ class Typography_Presets
                     'noPreset'     => __('No Preset', 'orbitools'),
                 ),
             )
+        );
+        
+        // Enqueue core controls removal
+        wp_enqueue_script(
+            'orbitools-typography-core-removal',
+            ORBITOOLS_URL . 'modules/Typography_Presets/js/core-controls-removal.js',
+            array('wp-hooks', 'orbitools-typography-attribute-registration'),
+            self::VERSION,
+            true
+        );
+        
+        // Enqueue editor controls
+        wp_enqueue_script(
+            'orbitools-typography-editor-controls',
+            ORBITOOLS_URL . 'modules/Typography_Presets/js/editor-controls.js',
+            array_merge($script_dependencies, array('orbitools-typography-attribute-registration')),
+            self::VERSION,
+            true
+        );
+        
+        // Enqueue class application
+        wp_enqueue_script(
+            'orbitools-typography-class-application',
+            ORBITOOLS_URL . 'modules/Typography_Presets/js/class-application.js',
+            array('wp-hooks', 'wp-element', 'wp-compose', 'orbitools-typography-attribute-registration'),
+            self::VERSION,
+            true
         );
     }
 
