@@ -301,7 +301,6 @@ class Typography_Presets
             
             // Map framework setting keys to module setting keys
             $setting_map = array(
-                'typography_replace_core_controls' => 'replace_core_controls',
                 'typography_show_groups'           => 'show_groups',
                 'typography_output_preset_css'     => 'output_preset_css',
                 'typography_allowed_blocks'        => 'allowed_blocks',
@@ -1068,14 +1067,6 @@ class Typography_Presets
 
         // Add Typography settings to modules tab
         $typography_settings = array(
-            array(
-                'id'      => 'typography_replace_core_controls',
-                'name'    => 'Replace Core Controls',
-                'desc'    => 'Remove WordPress core typography controls and replace with preset system.',
-                'type'    => 'checkbox',
-                'std'     => false,
-                'section' => 'typography',
-            ),
             array(
                 'id'      => 'typography_show_groups',
                 'name'    => 'Show Groups in Dropdown',
