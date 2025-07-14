@@ -406,35 +406,32 @@ class Orbital_Admin_Framework {
 		// Start output buffering to capture and move admin notices
 		ob_start();
 		?>
-		<div class="orbital-admin-framework" id="orbital-admin-<?php echo esc_attr( $this->slug ); ?>">
+		<main class="orbi-admin" id="orbi-admin-<?php echo esc_attr( $this->slug ); ?>" role="main" aria-labelledby="orbi-admin-title">
 			
 			<?php
 			// HOOK: Before header
 			do_action( $this->func_slug . '_before_header' );
 			?>
 			
-			<!-- HEADER SECTION -->
-			<div class="orbital-admin-header">
+			<header class="orbi-admin__header">
 				<?php $this->render_header(); ?>
-			</div>
+			</header>
 			
 			<?php
 			// HOOK: After header / Before nav
 			do_action( $this->func_slug . '_after_header' );
 			?>
 			
-			<!-- NAVIGATION SECTION -->
-			<div class="orbital-admin-nav">
+			<nav class="orbi-admin__nav" role="navigation" aria-label="<?php esc_attr_e( 'Admin page navigation', 'orbital-admin-framework' ); ?>">
 				<?php $this->render_navigation(); ?>
-			</div>
+			</nav>
 			
 			<?php
 			// HOOK: After nav / Before notices
 			do_action( $this->func_slug . '_after_nav' );
 			?>
 			
-			<!-- NOTICES SECTION -->
-			<div class="orbital-admin-notices">
+			<div class="orbi-admin__notices" id="orbi-notices-container" role="alert" aria-live="polite">
 				<?php $this->render_notices(); ?>
 			</div>
 			
@@ -443,8 +440,7 @@ class Orbital_Admin_Framework {
 			do_action( $this->func_slug . '_after_notices' );
 			?>
 			
-			<!-- TABS SECTION -->
-			<div class="orbital-admin-tabs">
+			<div class="orbi-admin__tabs" role="tablist" aria-label="<?php esc_attr_e( 'Settings sections', 'orbital-admin-framework' ); ?>">
 				<?php $this->render_tabs(); ?>
 			</div>
 			
@@ -453,27 +449,25 @@ class Orbital_Admin_Framework {
 			do_action( $this->func_slug . '_after_tabs' );
 			?>
 			
-			<!-- TAB CONTENT SECTION -->
-			<div class="orbital-admin-content">
+			<section class="orbi-admin__content" role="tabpanel" aria-labelledby="orbi-active-tab">
 				<?php $this->render_tab_content(); ?>
-			</div>
+			</section>
 			
 			<?php
 			// HOOK: After content / Before footer
 			do_action( $this->func_slug . '_after_content' );
 			?>
 			
-			<!-- FOOTER SECTION -->
-			<div class="orbital-admin-footer">
+			<footer class="orbi-admin__footer">
 				<?php $this->render_footer(); ?>
-			</div>
+			</footer>
 			
 			<?php
 			// HOOK: After footer
 			do_action( $this->func_slug . '_after_footer' );
 			?>
 			
-		</div>
+		</main>
 		<?php
 	}
 
@@ -484,10 +478,12 @@ class Orbital_Admin_Framework {
 	 */
 	private function render_header() {
 		?>
-		<h1><?php echo esc_html( $this->page_title ); ?></h1>
-		<?php if ( $this->page_description ) : ?>
-			<p class="description"><?php echo esc_html( $this->page_description ); ?></p>
-		<?php endif; ?>
+		<div class="orbi-admin__header-content">
+			<h1 class="orbi-admin__title" id="orbi-admin-title"><?php echo esc_html( $this->page_title ); ?></h1>
+			<?php if ( $this->page_description ) : ?>
+				<p class="orbi-admin__description"><?php echo esc_html( $this->page_description ); ?></p>
+			<?php endif; ?>
+		</div>
 		
 		<?php
 		// Hook for additional header content
@@ -507,18 +503,131 @@ class Orbital_Admin_Framework {
 	}
 
 	/**
-	 * Render notices section
+	 * Render notices section (BEM + custom notice system)
 	 *
 	 * @since 1.0.0
 	 */
 	private function render_notices() {
-		// Custom notice container for framework notices only
-		?>
-		<div id="orbital-notices-container"></div>
-		<?php
+		// Render any stored framework notices
+		$notices = $this->get_framework_notices();
+		
+		if ( ! empty( $notices ) ) {
+			foreach ( $notices as $notice ) {
+				$this->render_single_notice( $notice );
+			}
+		}
 		
 		// Hook for additional notices
 		do_action( $this->func_slug . '_render_notices' );
+	}
+	
+	/**
+	 * Get stored framework notices
+	 *
+	 * @since 1.0.0
+	 * @return array Array of notices.
+	 */
+	private function get_framework_notices() {
+		$notices_key = 'orbi_framework_notices_' . $this->slug;
+		$notices = get_transient( $notices_key );
+		
+		// Clear notices after displaying them
+		if ( ! empty( $notices ) ) {
+			delete_transient( $notices_key );
+		}
+		
+		return is_array( $notices ) ? $notices : array();
+	}
+	
+	/**
+	 * Add a framework notice
+	 *
+	 * @since 1.0.0
+	 * @param string $message Notice message.
+	 * @param string $type Notice type (success, error, warning, info).
+	 * @param bool   $dismissible Whether notice is dismissible.
+	 */
+	public function add_notice( $message, $type = 'info', $dismissible = true ) {
+		$notices_key = 'orbi_framework_notices_' . $this->slug;
+		$notices = get_transient( $notices_key );
+		
+		if ( ! is_array( $notices ) ) {
+			$notices = array();
+		}
+		
+		$notices[] = array(
+			'message'     => $message,
+			'type'        => $type,
+			'dismissible' => $dismissible,
+			'id'          => uniqid( 'orbi-notice-' ),
+		);
+		
+		// Store for 5 minutes
+		set_transient( $notices_key, $notices, 300 );
+	}
+	
+	/**
+	 * Render a single notice (BEM + accessible)
+	 *
+	 * @since 1.0.0
+	 * @param array $notice Notice data.
+	 */
+	private function render_single_notice( $notice ) {
+		$type = isset( $notice['type'] ) ? $notice['type'] : 'info';
+		$dismissible = isset( $notice['dismissible'] ) ? $notice['dismissible'] : true;
+		$id = isset( $notice['id'] ) ? $notice['id'] : uniqid( 'orbi-notice-' );
+		
+		$classes = array(
+			'orbi-notice',
+			'orbi-notice--' . $type
+		);
+		
+		if ( $dismissible ) {
+			$classes[] = 'orbi-notice--dismissible';
+		}
+		
+		?>
+		<div class="<?php echo esc_attr( implode( ' ', $classes ) ); ?>" 
+		     id="<?php echo esc_attr( $id ); ?>"
+		     role="alert"
+		     aria-live="polite">
+			
+			<div class="orbi-notice__icon" aria-hidden="true">
+				<?php echo $this->get_notice_icon( $type ); ?>
+			</div>
+			
+			<div class="orbi-notice__content">
+				<p class="orbi-notice__message"><?php echo wp_kses_post( $notice['message'] ); ?></p>
+			</div>
+			
+			<?php if ( $dismissible ) : ?>
+				<button type="button" 
+				        class="orbi-notice__dismiss" 
+				        aria-label="<?php esc_attr_e( 'Dismiss notice', 'orbital-admin-framework' ); ?>"
+				        onclick="this.parentElement.style.display='none';">
+					<span class="orbi-notice__dismiss-icon" aria-hidden="true">&times;</span>
+				</button>
+			<?php endif; ?>
+		</div>
+		<?php
+	}
+	
+	/**
+	 * Get notice icon by type
+	 *
+	 * @since 1.0.0
+	 * @param string $type Notice type.
+	 * @return string Icon HTML.
+	 */
+	private function get_notice_icon( $type ) {
+		$icons = array(
+			'success' => '✓',
+			'error'   => '✕',
+			'warning' => '⚠',
+			'info'    => 'ℹ',
+		);
+		
+		return isset( $icons[ $type ] ) ? $icons[ $type ] : $icons['info'];
 	}
 
 	/**
@@ -927,25 +1036,21 @@ class Orbital_Admin_Framework {
 			}
 		}
 		
-		// Show admin notice for duplicates (always, not just debug mode)
+		// Show framework notice for duplicates
 		if ( ! empty( $duplicates ) ) {
-			add_action( 'admin_notices', function() use ( $duplicates ) {
-				?>
-				<div class="notice notice-error">
-					<p>
-						<strong>Orbital Framework Error:</strong> 
-						Duplicate field IDs detected: <code><?php echo esc_html( implode( ', ', array_unique( $duplicates ) ) ); ?></code>
-					</p>
-					<p>Each field must have a unique <code>id</code> parameter. Duplicate IDs will cause data conflicts!</p>
-				</div>
-				<?php
-			} );
+			$duplicate_list = implode( ', ', array_unique( $duplicates ) );
+			$message = sprintf(
+				'<strong>Duplicate field IDs detected:</strong> <code>%s</code><br>Each field must have a unique <code>id</code> parameter. Duplicate IDs will cause data conflicts!',
+				esc_html( $duplicate_list )
+			);
+			
+			$this->add_notice( $message, 'error', false );
 			
 			if ( WP_DEBUG ) {
 				error_log( sprintf( 
 					'Orbital Framework Error: Duplicate field IDs detected in "%s": %s. This will cause data conflicts!', 
 					$this->slug,
-					implode( ', ', array_unique( $duplicates ) )
+					$duplicate_list
 				) );
 			}
 		}
