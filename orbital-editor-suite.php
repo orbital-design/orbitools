@@ -70,26 +70,13 @@ add_action('plugins_loaded', function () {
         return $subsections;
     });
 
-    add_filter('orbital_editor_suite_registered_settings', function ($settings) {
-        $settings = require ORBITAL_EDITOR_SUITE_PATH . 'orbital-settings.php';
-        return $settings;
-    });
+    // Settings are now handled by OrbiTools AdminKit (see filters below)
 
     // Initialize main OptionsKit (LEGACY - will be replaced)
     $kit = new \TDP\OptionsKit('orbital-editor-suite');
     $kit->set_page_title('Orbital Editor Suite');
     
-    // Enqueue custom admin notice styling
-    add_action('admin_enqueue_scripts', function($hook) {
-        if (strpos($hook, 'orbital-editor-suite') !== false) {
-            wp_enqueue_style(
-                'orbital-admin-notices',
-                ORBITAL_EDITOR_SUITE_URL . 'assets/css/admin-notices.css',
-                array(),
-                ORBITAL_EDITOR_SUITE_VERSION
-            );
-        }
-    });
+    // OrbiTools AdminKit handles its own styling, no additional admin CSS needed
 
 
     // Debug: Check what options are saved (both OptionsKit and new framework)
