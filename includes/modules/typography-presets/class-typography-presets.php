@@ -81,7 +81,7 @@ class Typography_Presets {
 	 */
 	public function __construct() {
 		// Always register admin interface (users need to see settings to enable/configure)
-		$this->register_optionskit_integration();
+		$this->register_admin_integration();
 
 		// Only initialize core functionality if module is enabled
 		if ( $this->is_module_enabled() ) {
@@ -96,35 +96,29 @@ class Typography_Presets {
 	 * @return bool True if module is enabled, false otherwise
 	 */
 	private function is_module_enabled() {
-		// Check both OptionsKit and new framework settings
-		$optionskit_settings = get_option( 'orbital_editor_suite_settings', array() );
 		$framework_settings = get_option( 'orbital_editor_suite_new', array() );
 		
-		$enabled = false;
-		
-		// Check new framework first (takes precedence)
 		if ( isset( $framework_settings['typography_presets_enabled'] ) ) {
 			$enabled = $framework_settings['typography_presets_enabled'];
-		} elseif ( isset( $optionskit_settings['typography_presets_enabled'] ) ) {
-			$enabled = $optionskit_settings['typography_presets_enabled'];
+			return ( '1' === $enabled || 1 === $enabled );
 		}
 
-		return ( '1' === $enabled || 1 === $enabled );
+		return false;
 	}
 
 	/**
-	 * Register OptionsKit integration hooks
+	 * Register admin integration hooks
 	 *
-	 * Hooks into the main plugin's OptionsKit filters to add Typography
+	 * Hooks into the main plugin's admin framework to add Typography
 	 * sections and settings to the admin interface.
 	 *
 	 * @since 1.0.0
 	 */
-	private function register_optionskit_integration() {
-		add_filter( 'orbital_editor_suite_registered_settings_sections', array( $this, 'register_sections' ) );
-		add_filter( 'orbital_editor_suite_registered_settings', array( $this, 'register_settings' ) );
+	private function register_admin_integration() {
+		// Register module metadata
+		add_filter( 'orbital_available_modules', array( $this, 'register_module_metadata' ) );
 		
-		// Also register with new admin framework
+		// Register with admin framework
 		add_filter( 'orbital_editor_suite_new_admin_structure', array( $this, 'register_new_framework_structure' ) );
 		add_filter( 'orbital_editor_suite_new_settings', array( $this, 'register_new_framework_settings' ) );
 	}
@@ -817,6 +811,38 @@ class Typography_Presets {
 	 */
 	public function get_settings() {
 		return $this->settings;
+	}
+
+	/**
+	 * Register module metadata for the admin interface
+	 *
+	 * @since 1.0.0
+	 * @param array $modules Existing modules array.
+	 * @return array Modified modules array with Typography Presets metadata.
+	 */
+	public function register_module_metadata( $modules ) {
+		$modules['typography_presets'] = array(
+			'name'        => 'Typography Presets',
+			'subtitle'    => 'Advanced text styling system',
+			'description' => 'Replace WordPress core typography controls with a comprehensive preset system for consistent text styling across your site.',
+			'version'     => self::VERSION,
+			'category'    => 'Editor Enhancement',
+			'icon'        => 'dashicons-editor-textcolor',
+			'author'      => 'Orbital Editor Suite',
+			'docs_url'    => 'https://docs.example.com/typography-presets',
+			'requires'    => array(
+				'wp_version' => '5.0',
+				'php_version' => '7.4',
+			),
+			'features'    => array(
+				'Theme.json integration',
+				'Visual preset management',
+				'Block editor controls',
+				'CSS auto-generation',
+			),
+		);
+		
+		return $modules;
 	}
 
 	/**

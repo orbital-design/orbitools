@@ -54,7 +54,7 @@ add_action('plugins_loaded', function () {
     add_filter('orbital_editor_suite_registered_settings_sections', function ($subsections) {
         $subsections = array(
             'dashboard' => array(
-                'status'   => 'Module Controls',
+                'modules'   => 'Module Management',
             ),
             'settings' => array(
                 'general'     => 'General Settings',
@@ -135,7 +135,7 @@ add_filter('orbital_editor_suite_new_admin_structure', function($structure) {
             'title' => 'Dashboard',
             'display_mode' => 'cards',
             'sections' => array(
-                'status'   => 'Module Controls',
+                'modules'   => 'Module Management',
             ),
         ),
         'modules' => array(
@@ -169,23 +169,13 @@ add_filter('orbital_editor_suite_new_admin_structure', function($structure) {
 add_filter('orbital_editor_suite_new_settings', function($settings) {
     return array(
         'dashboard' => array(
-            // Active modules display (dynamically generated)
+            // Module management grid
             array(
-                'id'      => 'active_modules_count',
-                'name'    => 'Active Modules',
-                'type'    => 'html',
-                'std'     => orbital_get_active_modules_html(),
-                'section' => 'status',
-            ),
-            
-            // Typography Presets module enable/disable
-            array(
-                'id'      => 'typography_presets_enabled',
-                'name'    => 'Typography Presets',
-                'desc'    => 'Enable typography presets module for advanced text styling options.',
-                'type'    => 'checkbox',
-                'std'     => '1',
-                'section' => 'status',
+                'id'      => 'module_management',
+                'name'    => 'Available Modules',
+                'desc'    => 'Enable, disable, and configure the various editor enhancement modules.',
+                'type'    => 'modules',
+                'section' => 'modules',
             ),
         ),
         
