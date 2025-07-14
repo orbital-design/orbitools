@@ -84,7 +84,12 @@ class Typography_Presets
     public function __construct()
     {
         // Always register admin interface (users need to see settings to enable/configure)
-        $this->register_admin_integration();
+        // Register module metadata
+        add_filter('orbitools_available_modules', array($this, 'register_module_metadata'));
+
+        // Register with admin framework
+        add_filter('orbitools_admin_structure', array($this, 'register_new_framework_structure'));
+        add_filter('orbitools_settings', array($this, 'register_new_framework_settings'));
 
         // Only initialize core functionality if module is enabled
         if ($this->is_module_enabled()) {
@@ -108,24 +113,6 @@ class Typography_Presets
         }
 
         return false;
-    }
-
-    /**
-     * Register admin integration hooks
-     *
-     * Hooks into the main plugin's admin framework to add Typography
-     * sections and settings to the admin interface.
-     *
-     * @since 1.0.0
-     */
-    private function register_admin_integration()
-    {
-        // Register module metadata
-        add_filter('orbital_available_modules', array($this, 'register_module_metadata'));
-
-        // Register with admin framework
-        add_filter('orbital_editor_suite_new_admin_structure', array($this, 'register_new_framework_structure'));
-        add_filter('orbital_editor_suite_new_settings', array($this, 'register_new_framework_settings'));
     }
 
     /**

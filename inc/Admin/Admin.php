@@ -16,6 +16,9 @@ class Admin
      */
     public function __construct()
     {
+        // Register custom field types for this plugin
+        add_action('orbi_register_fields', [$this, 'register_adminkit_custom_fields']);
+
         add_action('init', [$this, 'init_admin_page']);
         add_action('admin_enqueue_scripts', [$this, 'enqueue_scripts']);
 
@@ -24,6 +27,21 @@ class Admin
         add_filter('orbitools_registered_settings_sections', [$this, 'configure_settings_sections']);
         add_filter('orbitools_settings', [$this, 'get_settings_config']);
         add_filter('orbitools_admin_structure', [$this, 'configure_admin_structure']);
+    }
+
+    public function register_adminkit_custom_fields()
+    {
+        if (class_exists('Orbi\\AdminKit\\Field_Registry')) {
+            $field_file = ORBITOOLS_DIR . 'inc/Admin/adminkit/fields/modules/Orbitools_Modules_Field.php';
+            
+            if (file_exists($field_file)) {
+                \Orbi\AdminKit\Field_Registry::register_field_type(
+                    'modules',
+                    $field_file,
+                    'Orbitools_Modules_Field'
+                );
+            }
+        }
     }
 
     /**
@@ -44,21 +62,6 @@ class Admin
             'menu_title' => __('Orbitools', 'orbitools'),
             'capability' => 'manage_options',
         ));
-    }
-
-    /**
-     * Load and initialize modules based on settings.
-     *
-     * @return void
-     */
-    private function load_modules(): void
-    {
-        $settings = get_option('orbitools_settings', array());
-
-        // Load Typography Presets module if enabled
-        if (!empty($settings['typography_presets_enabled'])) {
-            $this->load_typography_presets_module();
-        }
     }
 
     /**
@@ -154,11 +157,10 @@ class Admin
         return array(
             'dashboard' => array(
                 array(
-                    'id'      => 'module_status',
-                    'name'    => __('Module Status', 'orbitools'),
-                    'desc'    => __('Current status of available modules.', 'orbitools'),
-                    'type'    => 'html',
-                    'std'     => $this->get_module_status_html(),
+                    'id'      => 'module_management',
+                    'name'    => __('Available Modules', 'orbitools'),
+                    'desc'    => __('Enable, disable, and configure the various modules.', 'orbitools'),
+                    'type'    => 'modules',
                     'section' => 'modules',
                 ),
             ),
@@ -217,24 +219,6 @@ class Admin
     }
 
     /**
-     * Load Typography Presets module.
-     *
-     * @return void
-     */
-    private function load_typography_presets_module(): void
-    {
-        $module_path = ORBITOOLS_DIR . 'modules/typography-presets/class-typography-presets.php';
-
-        if (file_exists($module_path)) {
-            require_once $module_path;
-
-            if (class_exists('\\Orbitools\\Modules\\TypographyPresets\\TypographyPresets')) {
-                new \Orbitools\Modules\TypographyPresets\TypographyPresets();
-            }
-        }
-    }
-
-    /**
      * Get module status HTML.
      *
      * @return string
@@ -246,7 +230,7 @@ class Admin
 
         // Typography Presets status
         $typography_enabled = !empty($settings['typography_presets_enabled']);
-        $typography_loaded = class_exists('\\Orbitools\\Modules\\TypographyPresets\\TypographyPresets');
+        $typography_loaded = class_exists('\\Orbitools\\Modules\\Typography_Presets\\Typography_Presets');
 
         if ($typography_enabled && $typography_loaded) {
             $status = '<span style="color: green;">✓ ' . __('Active', 'orbitools') . '</span>';

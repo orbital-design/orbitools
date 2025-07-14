@@ -43,7 +43,9 @@ class Loader
     public function init()
     {
         // Load the OrbiTools AdminKit
-        $this->load_orbi_admin_kit();
+        if (file_exists(ORBITOOLS_DIR . 'vendor/orbi-admin-kit/loader.php')) {
+            require_once ORBITOOLS_DIR . 'vendor/orbi-admin-kit/loader.php';
+        }
 
         // Initialize core classes.
         $this->admin = new Admin();
@@ -52,17 +54,5 @@ class Loader
         // Initialize modules.
         $this->modules[] = new ExampleModule();
         $this->modules[] = new Typography_Presets();
-    }
-
-    /**
-     * Load the OrbiTools AdminKit.
-     *
-     * @return void
-     */
-    private function load_orbi_admin_kit(): void
-    {
-        if (file_exists(ORBITOOLS_DIR . 'vendor/orbi-admin-kit/loader.php')) {
-            require_once ORBITOOLS_DIR . 'vendor/orbi-admin-kit/loader.php';
-        }
     }
 }
