@@ -58,17 +58,23 @@
             // Show active tab content, hide others
             const activeTab = this.getActiveTab();
             const tabContents = document.querySelectorAll('.orbi-admin__tab-content');
+            let activeSection = null;
             
             tabContents.forEach(function(content) {
                 const tabKey = content.getAttribute('data-tab');
                 if (tabKey === activeTab) {
                     content.style.display = 'block';
-                    // Initialize sub-tabs for the active tab
-                    this.initSubTabsForTab(content);
+                    // Initialize sub-tabs for the active tab and get the active section
+                    activeSection = this.initSubTabsForTab(content);
                 } else {
                     content.style.display = 'none';
                 }
             }.bind(this));
+            
+            // Update breadcrumbs for initial page load with the actual active section
+            if (activeTab) {
+                this.updateBreadcrumbs(activeTab, activeSection);
+            }
         },
 
         /**
@@ -181,8 +187,11 @@
                 if (activeContent) {
                     activeContent.style.display = 'block';
                     
-                    // Initialize sub-tabs for this tab
-                    this.initSubTabsForTab(activeContent);
+                    // Initialize sub-tabs for this tab first
+                    const activeSection = this.initSubTabsForTab(activeContent);
+                    
+                    // Update breadcrumbs with the active section (if any)
+                    this.updateBreadcrumbs(tabKey, activeSection);
                 }
                 
                 // Update URL without page reload for shareable links
@@ -218,12 +227,15 @@
          *   - If 'section' parameter exists and is valid: activates that section
          *   - If 'section' parameter missing/invalid: activates first section
          *   - If no sections exist: does nothing
+         * 
+         * @param {HTMLElement} tabContent - The tab content container
+         * @returns {string|null} The active section key, or null if no sections
          */
         initSubTabsForTab: function(tabContent) {
             const subTabLinks = tabContent.querySelectorAll('.orbi-admin__subtab-link');
             const sectionContents = tabContent.querySelectorAll('.orbi-admin__section-content');
             
-            if (subTabLinks.length === 0) return; // No sub-tabs in this tab
+            if (subTabLinks.length === 0) return null; // No sub-tabs in this tab
             
             // Check if there's a section specified in URL for deep linking
             const urlParams = new URLSearchParams(window.location.search);
@@ -247,7 +259,7 @@
                 activeSectionKey = activeSubTab.getAttribute('data-section');
             }
             
-            if (!activeSubTab) return;
+            if (!activeSubTab) return null;
             
             // Update sub-tab active states
             subTabLinks.forEach(subTabLink => subTabLink.classList.remove('orbi-admin__subtab-link--active'));
@@ -260,6 +272,9 @@
             if (activeContent) {
                 activeContent.style.display = 'block';
             }
+            
+            // Return the active section key so the caller can update breadcrumbs
+            return activeSectionKey;
         },
 
         /**
@@ -295,6 +310,10 @@
                 url.searchParams.set('section', sectionKey);
                 history.pushState(null, '', url.toString());
             }
+            
+            // Update breadcrumbs with current tab and new section
+            const currentTab = this.getActiveTab();
+            this.updateBreadcrumbs(currentTab, sectionKey);
             
             // Trigger custom event
             const event = new CustomEvent('orbital:sectionChanged', { 
@@ -436,6 +455,116 @@
             }
             
             requestAnimationFrame(step);
+        },
+
+        /**
+         * Update breadcrumbs dynamically
+         * 
+         * Updates the breadcrumb navigation to reflect current tab and section.
+         * This provides real-time feedback as users navigate through the interface.
+         * 
+         * @param {string} tabKey - Current active tab key
+         * @param {string|null} sectionKey - Current active section key (null to clear section)
+         */
+        updateBreadcrumbs: function(tabKey, sectionKey) {
+            const breadcrumbList = document.querySelector('.orbi-admin__breadcrumb-list');
+            if (!breadcrumbList) return;
+            
+            // Get tab and section data from DOM
+            const tabData = this.getTabData();
+            const sectionData = this.getSectionData(tabKey);
+            
+            // Clear existing breadcrumbs except the first one (page title)
+            const items = breadcrumbList.querySelectorAll('.orbi-admin__breadcrumb-item');
+            for (let i = 1; i < items.length; i++) {
+                items[i].remove();
+            }
+            
+            // Add current tab breadcrumb
+            if (tabKey && tabData[tabKey]) {
+                const tabItem = this.createBreadcrumbItem(tabData[tabKey], true);
+                breadcrumbList.appendChild(tabItem);
+                
+                // Add current section breadcrumb if we have one
+                if (sectionKey && sectionData[sectionKey]) {
+                    const sectionItem = this.createBreadcrumbItem(sectionData[sectionKey], true);
+                    breadcrumbList.appendChild(sectionItem);
+                }
+            }
+        },
+
+        /**
+         * Create a breadcrumb item element
+         * 
+         * @param {string} text - Text to display in breadcrumb
+         * @param {boolean} isCurrent - Whether this is the current/active item
+         * @returns {HTMLElement} Breadcrumb item element
+         */
+        createBreadcrumbItem: function(text, isCurrent) {
+            const item = document.createElement('li');
+            item.className = 'orbi-admin__breadcrumb-item';
+            
+            // Add separator
+            const separator = document.createElement('span');
+            separator.className = 'orbi-admin__breadcrumb-separator';
+            separator.setAttribute('aria-hidden', 'true');
+            separator.textContent = '›';
+            item.appendChild(separator);
+            
+            // Add text
+            const textSpan = document.createElement('span');
+            textSpan.className = 'orbi-admin__breadcrumb-text' + (isCurrent ? ' orbi-admin__breadcrumb-text--current' : '');
+            textSpan.textContent = text;
+            item.appendChild(textSpan);
+            
+            return item;
+        },
+
+        /**
+         * Get tab data from DOM
+         * 
+         * @returns {Object} Object mapping tab keys to tab labels
+         */
+        getTabData: function() {
+            const tabData = {};
+            const tabLinks = document.querySelectorAll('.orbi-admin__tab-link');
+            
+            tabLinks.forEach(function(link) {
+                const tabKey = link.getAttribute('data-tab');
+                const tabLabel = link.textContent.trim();
+                if (tabKey && tabLabel) {
+                    tabData[tabKey] = tabLabel;
+                }
+            });
+            
+            return tabData;
+        },
+
+        /**
+         * Get section data for a specific tab from DOM
+         * 
+         * @param {string} tabKey - Tab key to get sections for
+         * @returns {Object} Object mapping section keys to section labels
+         */
+        getSectionData: function(tabKey) {
+            const sectionData = {};
+            
+            // Find the active tab content
+            const tabContent = document.querySelector('.orbi-admin__tab-content[data-tab="' + tabKey + '"]');
+            if (!tabContent) return sectionData;
+            
+            // Get section links within this tab
+            const sectionLinks = tabContent.querySelectorAll('.orbi-admin__subtab-link');
+            
+            sectionLinks.forEach(function(link) {
+                const sectionKey = link.getAttribute('data-section');
+                const sectionLabel = link.textContent.trim();
+                if (sectionKey && sectionLabel) {
+                    sectionData[sectionKey] = sectionLabel;
+                }
+            });
+            
+            return sectionData;
         },
 
         /**
