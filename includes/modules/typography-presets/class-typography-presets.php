@@ -728,7 +728,7 @@ class Typography_Presets {
 	public function enqueue_editor_assets() {
 		wp_enqueue_script(
 			'orbital-typography-presets',
-			ORBITAL_EDITOR_SUITE_URL . 'assets/js/typography-presets.js',
+			ORBITAL_EDITOR_SUITE_URL . 'includes/modules/typography-presets/typography-presets.js',
 			array( 'wp-hooks', 'wp-blocks', 'wp-element', 'wp-components', 'wp-block-editor' ),
 			self::VERSION,
 			true
