@@ -102,9 +102,14 @@ class Orbitools_Modules_Field extends Orbi\AdminKit\Field_Base
         // Allow modules to register their metadata
         $modules = apply_filters('orbitools_available_modules', $modules);
 
-        // Add config URLs to each module
+        // Add config URLs to each module (only if not already provided)
         foreach ($modules as $module_id => &$module) {
-            $module['config_url'] = $this->get_module_config_url($module_id);
+            if (empty($module['configure_url']) && empty($module['config_url'])) {
+                $module['config_url'] = $this->get_module_config_url($module_id);
+            } elseif (!empty($module['configure_url'])) {
+                // Use the configure_url provided by the module
+                $module['config_url'] = $module['configure_url'];
+            }
         }
 
         return $modules;
