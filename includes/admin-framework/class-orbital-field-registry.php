@@ -64,7 +64,6 @@ class Orbital_Field_Registry {
 		self::register_field_type( 'textarea', $framework_path . '/fields/textarea/class-orbital-field-textarea.php', 'Orbital_Field_Textarea' );
 		self::register_field_type( 'number', $framework_path . '/fields/number/class-orbital-field-number.php', 'Orbital_Field_Number' );
 		self::register_field_type( 'html', $framework_path . '/fields/html/class-orbital-field-html.php', 'Orbital_Field_Html' );
-		self::register_field_type( 'modules', $framework_path . '/fields/modules/class-orbital-field-modules.php', 'Orbital_Field_Modules' );
 	}
 
 	/**

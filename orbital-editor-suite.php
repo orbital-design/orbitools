@@ -267,6 +267,15 @@ add_action('plugins_loaded', function() {
     // Load the framework
     require_once ORBITAL_EDITOR_SUITE_PATH . 'includes/admin-framework/loader.php';
     
+    // Register custom field types for this plugin
+    add_action('orbital_register_fields', function() {
+        Orbital_Field_Registry::register_field_type(
+            'modules',
+            ORBITAL_EDITOR_SUITE_PATH . 'includes/admin/fields/modules/class-orbital-modules-field.php',
+            'Orbital_Editor_Suite_Modules_Field'
+        );
+    });
+    
     // Create test admin page
     $demo_admin = orbital_admin_framework('orbital-framework-demo');
     $demo_admin->set_page_title('Framework Demo');
