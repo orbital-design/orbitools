@@ -79,7 +79,7 @@ add_action('plugins_loaded', function () {
         return $settings;
     });
 
-    // Initialize main OptionsKit
+    // Initialize main OptionsKit (LEGACY - will be replaced)
     $kit = new \TDP\OptionsKit('orbital-editor-suite');
     $kit->set_page_title('Orbital Editor Suite');
     
@@ -96,12 +96,20 @@ add_action('plugins_loaded', function () {
     });
 
 
-    // Debug: Check what options OptionsKit is actually saving
-    $all_options = get_option('orbital_editor_suite_settings', array());
-    error_log('OptionsKit settings: ' . print_r($all_options, true));
+    // Debug: Check what options are saved (both OptionsKit and new framework)
+    $optionskit_settings = get_option('orbital_editor_suite_settings', array());
+    $framework_settings = get_option('orbital_editor_suite_new', array());
+    error_log('OptionsKit settings: ' . print_r($optionskit_settings, true));
+    error_log('Framework settings: ' . print_r($framework_settings, true));
     
-    // Only initialize Typography Presets if enabled
-    $typography_enabled = isset($all_options['typography_presets_enabled']) ? $all_options['typography_presets_enabled'] : '0';
+    // Check both sources for Typography Presets setting (new framework takes precedence)
+    $typography_enabled = false;
+    if (!empty($framework_settings['typography_presets_enabled'])) {
+        $typography_enabled = $framework_settings['typography_presets_enabled'];
+    } elseif (!empty($optionskit_settings['typography_presets_enabled'])) {
+        $typography_enabled = $optionskit_settings['typography_presets_enabled'];
+    }
+    
     error_log('Typography enabled check: ' . $typography_enabled);
     
     if ($typography_enabled == '1' || $typography_enabled === 1) {
@@ -116,6 +124,175 @@ add_action('plugins_loaded', function () {
 
     error_log('MAIN: OptionsKit and conditional modules initialized');
 }, 1);
+
+/**
+ * REAL PLUGIN ADMIN: Orbital Editor Suite Main Settings
+ * 
+ * This defines the main plugin admin page using our new Orbital Admin Framework.
+ * This will replace the OptionsKit implementation above.
+ */
+
+// Define admin structure for main plugin page
+add_filter('orbital_editor_suite_new_admin_structure', function($structure) {
+    return array(
+        'dashboard' => array(
+            'title' => 'Dashboard',
+            'display_mode' => 'cards',
+            'sections' => array(
+                'overview' => 'Plugin Overview',
+                'status'   => 'Module Controls',
+            ),
+        ),
+        'modules' => array(
+            'title' => 'Modules',
+            'display_mode' => 'tabs',
+            'sections' => array(
+                'settings' => 'Module Settings',
+            ),
+        ),
+        'settings' => array(
+            'title' => 'Settings',
+            'display_mode' => 'tabs',
+            'sections' => array(
+                'general'     => 'General Settings',
+                'performance' => 'Performance',
+                'cleanup'     => 'Data Cleanup',
+            ),
+        ),
+        'updates' => array(
+            'title' => 'Updates',
+            'display_mode' => 'cards',
+            'sections' => array(
+                'version' => 'Version Information',
+                'auto'    => 'Automatic Updates',
+            ),
+        ),
+    );
+});
+
+// Define settings for main plugin page
+add_filter('orbital_editor_suite_new_settings', function($settings) {
+    return array(
+        'dashboard' => array(
+            // Plugin status and version information
+            array(
+                'id'      => 'plugin_status',
+                'name'    => 'Plugin Status',
+                'type'    => 'html',
+                'std'     => '<p><strong>Status:</strong> Active</p>' .
+                             '<p><strong>Version:</strong> ' . ORBITAL_EDITOR_SUITE_VERSION . '</p>',
+                'section' => 'overview',
+            ),
+            
+            // Active modules display (dynamically generated)
+            array(
+                'id'      => 'active_modules_count',
+                'name'    => 'Active Modules',
+                'type'    => 'html',
+                'std'     => orbital_get_active_modules_html(),
+                'section' => 'status',
+            ),
+            
+            // Typography Presets module enable/disable
+            array(
+                'id'      => 'typography_presets_enabled',
+                'name'    => 'Typography Presets',
+                'desc'    => 'Enable typography presets module for advanced text styling options.',
+                'type'    => 'checkbox',
+                'std'     => '1',
+                'section' => 'status',
+            ),
+        ),
+        
+        'modules' => array(
+            // Information about module settings
+            array(
+                'id'      => 'modules_info',
+                'name'    => 'Module Settings',
+                'type'    => 'html',
+                'std'     => '<p>Settings for enabled modules will appear below.</p>',
+                'section' => 'settings',
+            ),
+            
+            // Test checkbox for structure verification
+            array(
+                'id'      => 'test_checkbox',
+                'name'    => 'Test Module Setting',
+                'desc'    => 'This is a test setting to verify module configuration works.',
+                'type'    => 'checkbox',
+                'std'     => false,
+                'section' => 'settings',
+            ),
+        ),
+        
+        'settings' => array(
+            // Debug and development settings
+            array(
+                'id'      => 'debug_mode',
+                'name'    => 'Debug Mode',
+                'desc'    => 'Enable debug logging for troubleshooting issues.',
+                'type'    => 'checkbox',
+                'std'     => false,
+                'section' => 'general',
+            ),
+            
+            // Performance optimization settings
+            array(
+                'id'      => 'cache_css',
+                'name'    => 'Cache Generated CSS',
+                'desc'    => 'Cache CSS output for better performance.',
+                'type'    => 'checkbox',
+                'std'     => true,
+                'section' => 'performance',
+            ),
+            
+            // Data cleanup and maintenance settings
+            array(
+                'id'      => 'reset_on_deactivation',
+                'name'    => 'Reset Data on Deactivation',
+                'desc'    => 'Remove all plugin data when deactivating (cannot be undone).',
+                'type'    => 'checkbox',
+                'std'     => false,
+                'section' => 'cleanup',
+            ),
+        ),
+        
+        'updates' => array(
+            // Current version display
+            array(
+                'id'      => 'current_version',
+                'name'    => 'Current Version',
+                'type'    => 'html',
+                'std'     => '<p>Version: ' . ORBITAL_EDITOR_SUITE_VERSION . '</p>',
+                'section' => 'version',
+            ),
+            
+            // Automatic updates setting
+            array(
+                'id'      => 'auto_updates',
+                'name'    => 'Automatic Updates',
+                'desc'    => 'Enable automatic updates for this plugin.',
+                'type'    => 'checkbox',
+                'std'     => false,
+                'section' => 'auto',
+            ),
+            
+            // Update channel selection
+            array(
+                'id'      => 'update_channel',
+                'name'    => 'Update Channel',
+                'desc'    => 'Choose which updates to receive.',
+                'type'    => 'select',
+                'options' => array(
+                    'stable' => 'Stable releases only',
+                    'beta'   => 'Include beta releases',
+                ),
+                'std'     => 'stable',
+                'section' => 'auto',
+            ),
+        ),
+    );
+});
 
 /**
  * DEMO: Orbital Admin Framework Test Page
@@ -142,6 +319,19 @@ add_action('plugins_loaded', function() {
         'parent'     => 'tools.php',
         'page_title' => 'Orbital Framework Demo',
         'menu_title' => 'Framework Demo',
+        'capability' => 'manage_options',
+    ));
+    
+    // NEW: Initialize Orbital Admin Framework for main plugin settings
+    $orbital_admin = orbital_admin_framework('orbital-editor-suite-new');
+    $orbital_admin->set_page_title('Orbital Editor Suite (New)');
+    $orbital_admin->set_page_description('Advanced WordPress editor enhancements and typography tools.');
+    
+    // Configure menu
+    $orbital_admin->set_menu_config(array(
+        'parent'     => 'options-general.php',
+        'page_title' => 'Orbital Editor Suite (New)',
+        'menu_title' => 'Orbital Editor Suite (New)',
         'capability' => 'manage_options',
     ));
 });
@@ -544,9 +734,18 @@ add_action('orbital_framework_demo_post_save_settings', function($settings_data,
 function orbital_get_active_modules_html() {
     $html = '';
     
-    // Check if Typography Presets module is enabled and loaded
-    $all_options = get_option('orbital_editor_suite_settings', array());
-    $typography_enabled = isset($all_options['typography_presets_enabled']) ? $all_options['typography_presets_enabled'] : '0';
+    // Check both OptionsKit and new framework settings
+    $optionskit_settings = get_option('orbital_editor_suite_settings', array());
+    $framework_settings = get_option('orbital_editor_suite_new', array());
+    
+    // Check Typography Presets module (new framework takes precedence)
+    $typography_enabled = false;
+    if (!empty($framework_settings['typography_presets_enabled'])) {
+        $typography_enabled = $framework_settings['typography_presets_enabled'];
+    } elseif (!empty($optionskit_settings['typography_presets_enabled'])) {
+        $typography_enabled = $optionskit_settings['typography_presets_enabled'];
+    }
+    
     $typography_loaded = class_exists('\Orbital\Editor_Suite\Modules\Typography_Presets\Typography_Presets');
     
     if (($typography_enabled == '1' || $typography_enabled === 1) && $typography_loaded) {
