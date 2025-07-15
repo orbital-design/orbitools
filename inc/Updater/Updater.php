@@ -56,14 +56,12 @@ class Updater
      * Initialize the updater.
      *
      * @since 1.0.0
-     * @param string $plugin_file Plugin file path.
-     * @param string $version Current plugin version.
      */
-    public function __construct($plugin_file, $version)
+    public function __construct()
     {
-        $this->plugin_file = $plugin_file;
-        $this->plugin_slug = plugin_basename($plugin_file);
-        $this->version = $version;
+        $this->plugin_file = ORBITOOLS_FILE;
+        $this->plugin_slug = plugin_basename(ORBITOOLS_FILE);
+        $this->version = ORBITOOLS_VERSION;
         
         $this->github_config = array(
             'user' => 'orbital-design',
