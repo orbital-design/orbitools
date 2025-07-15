@@ -458,7 +458,7 @@ class Admin_Kit {
 	 */
 	public function sanitize_settings_data( $input ) {
 		$sanitized = array();
-		$settings = $this->get_settings();
+		$settings = $this->get_content_fields();
 
 		// Flatten settings array to get all field configurations
 		$all_fields = array();
@@ -575,17 +575,45 @@ class Admin_Kit {
 		return $result;
 	}
 
-	// Data access methods that are used by view components
-
+	// ============================================================================
+	// CORE CONTENT FILTERS - Required for page initialization
+	// ============================================================================
+	
 	/**
-	 * Get admin structure
+	 * Get content structure configuration
+	 *
+	 * This filter is essential for page initialization. It defines:
+	 * - Available tabs and their titles
+	 * - Sections within each tab
+	 * - Display modes (cards/tabs) for each section
+	 * - Overall page navigation structure
 	 *
 	 * @since 1.0.0
-	 * @return array Admin structure.
+	 * @return array Complete content structure configuration
 	 */
-	public function get_admin_structure() {
-		return apply_filters( $this->func_slug . '_admin_structure', array() );
+	public function get_content_structure() {
+		return apply_filters( $this->func_slug . '_adminkit_structure', array() );
 	}
+
+	/**
+	 * Get content fields configuration
+	 *
+	 * This filter is essential for content rendering. It defines:
+	 * - All form fields and their properties
+	 * - Field types, default values, and validation rules
+	 * - Which section each field belongs to
+	 * - Field descriptions and labels
+	 *
+	 * @since 1.0.0
+	 * @return array Complete content fields configuration
+	 */
+	public function get_content_fields() {
+		return apply_filters( $this->func_slug . '_adminkit_fields', array() );
+	}
+
+	// ============================================================================
+	// DATA ACCESS METHODS - Used by view components
+	// ============================================================================
 
 	/**
 	 * Get tabs
@@ -594,7 +622,7 @@ class Admin_Kit {
 	 * @return array Tabs array.
 	 */
 	public function get_tabs() {
-		$structure = $this->get_admin_structure();
+		$structure = $this->get_content_structure();
 		$tabs = array();
 
 		foreach ( $structure as $tab_key => $tab_config ) {
@@ -612,7 +640,7 @@ class Admin_Kit {
 	 * @return array Sections array.
 	 */
 	public function get_sections( $tab_key ) {
-		$structure = $this->get_admin_structure();
+		$structure = $this->get_content_structure();
 		return isset( $structure[ $tab_key ]['sections'] ) ? $structure[ $tab_key ]['sections'] : array();
 	}
 
@@ -624,19 +652,10 @@ class Admin_Kit {
 	 * @return string Display mode (tabs or cards).
 	 */
 	public function get_section_display_mode( $tab_key ) {
-		$structure = $this->get_admin_structure();
+		$structure = $this->get_content_structure();
 		return isset( $structure[ $tab_key ]['display_mode'] ) ? $structure[ $tab_key ]['display_mode'] : 'cards';
 	}
 
-	/**
-	 * Get settings configuration
-	 *
-	 * @since 1.0.0
-	 * @return array Settings configuration.
-	 */
-	public function get_settings() {
-		return apply_filters( $this->func_slug . '_settings', array() );
-	}
 
 	/**
 	 * Get active tab

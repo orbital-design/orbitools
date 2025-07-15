@@ -85,7 +85,7 @@ class Content_View {
 	 */
 	public function render_tab_content() {
 		$active_tab = $this->admin_kit->get_active_tab();
-		$settings = $this->admin_kit->get_settings();
+		$settings = $this->admin_kit->get_content_fields();
 		$tabs = $this->admin_kit->get_tabs();
 		
 		?>

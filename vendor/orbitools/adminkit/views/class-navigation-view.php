@@ -94,7 +94,7 @@ class Navigation_View {
 				
 				<?php if ( $current_section ) : ?>
 					<?php
-					$structure = $this->admin_kit->get_admin_structure();
+					$structure = $this->admin_kit->get_content_structure();
 					$sections = isset( $structure[ $current_tab ]['sections'] ) ? $structure[ $current_tab ]['sections'] : array();
 					?>
 					<?php if ( isset( $sections[ $current_section ] ) ) : ?>

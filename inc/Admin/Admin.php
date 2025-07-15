@@ -27,10 +27,10 @@ class Admin
         // add_action('orbitools_post_save_settings', [$this, 'detect_module_changes'], 10, 2);
 
         // Setup filters (these don't use translations immediately)
-        add_filter('orbitools_settings_tabs', [$this, 'configure_settings_tabs']);
+        add_filter('orbitools_adminkit_structure', [$this, 'configure_admin_structure']);
         add_filter('orbitools_registered_settings_sections', [$this, 'configure_settings_sections']);
-        add_filter('orbitools_settings', [$this, 'get_settings_config']);
-        add_filter('orbitools_admin_structure', [$this, 'configure_admin_structure']);
+        add_filter('orbitools_adminkit_fields', [$this, 'get_settings_config']);
+
 
         // Override the default AJAX save handler to add module change detection
         // COMMENTED OUT FOR DEBUGGING
