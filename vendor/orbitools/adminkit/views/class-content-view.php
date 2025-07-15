@@ -65,7 +65,7 @@ class Content_View
         <div class="orbi-admin__tabs-wrapper">
             <nav class="orbi-admin__tabs-nav">
                 <?php foreach ($tabs as $tab_key => $tab_label) : ?>
-                    <a href="<?php echo esc_url($this->admin_kit->get_tab_url($tab_key)); ?>"
+                    <a href="#"
                         class="orbi-admin__tab-link <?php echo $active_tab === $tab_key ? 'orbi-admin__tab-link--active' : ''; ?>"
                         data-tab="<?php echo esc_attr($tab_key); ?>"
                         role="tab"

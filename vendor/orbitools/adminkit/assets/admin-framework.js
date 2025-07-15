@@ -30,7 +30,6 @@
 
             // Sub-tab switching
             this.addEventListener('.orbi-admin__subtab-link', 'click', this.handleSubTabSwitch.bind(this));
-
         },
 
         /**
@@ -78,50 +77,46 @@
          * Handle tab switching
          */
         handleTabSwitch: function(e, link) {
-            const tabsNav = link.closest('.orbi-admin__tabs-nav');
+            // Always prevent default for tab links
+            e.preventDefault();
 
-            // Don't follow the link if it's just for switching tabs
-            if (tabsNav) {
-                e.preventDefault();
+            const tabKey = link.getAttribute('data-tab');
 
-                const tabKey = link.getAttribute('data-tab');
+            // Update active states
+            const allTabLinks = document.querySelectorAll('.orbi-admin__tab-link');
+            allTabLinks.forEach(tabLink => tabLink.classList.remove('orbi-admin__tab-link--active'));
+            link.classList.add('orbi-admin__tab-link--active');
 
-                // Update active states
-                const allTabLinks = document.querySelectorAll('.orbi-admin__tab-link');
-                allTabLinks.forEach(tabLink => tabLink.classList.remove('orbi-admin__tab-link--active'));
-                link.classList.add('orbi-admin__tab-link--active');
+            // Switch tab content
+            const allTabContent = document.querySelectorAll('.orbi-admin__tab-content');
+            allTabContent.forEach(content => content.style.display = 'none');
 
-                // Switch tab content
-                const allTabContent = document.querySelectorAll('.orbi-admin__tab-content');
-                allTabContent.forEach(content => content.style.display = 'none');
+            const activeContent = document.querySelector('.orbi-admin__tab-content[data-tab="' + tabKey + '"]');
+            if (activeContent) {
+                activeContent.style.display = 'block';
 
-                const activeContent = document.querySelector('.orbi-admin__tab-content[data-tab="' + tabKey + '"]');
-                if (activeContent) {
-                    activeContent.style.display = 'block';
+                // Initialize sub-tabs for this tab first
+                const activeSection = this.initSubTabsForTab(activeContent);
 
-                    // Initialize sub-tabs for this tab first
-                    const activeSection = this.initSubTabsForTab(activeContent);
-
-                    // Update breadcrumbs with the active section (if any)
-                    this.updateBreadcrumbs(tabKey, activeSection);
-                }
-
-                // Update URL without page reload for shareable links
-                // Creates URLs like: ?page=your-page&tab=tab-key
-                if (history.pushState) {
-                    const url = new URL(window.location);
-                    url.searchParams.set('tab', tabKey);
-                    // Clear section when switching tabs (will default to first section)
-                    url.searchParams.delete('section');
-                    history.pushState(null, '', url.toString());
-                }
-
-                // Trigger custom event
-                const event = new CustomEvent('orbital:tabChanged', {
-                    detail: { tabKey: tabKey }
-                });
-                document.dispatchEvent(event);
+                // Update breadcrumbs with the active section (if any)
+                this.updateBreadcrumbs(tabKey, activeSection);
             }
+
+            // Update URL without page reload for shareable links
+            // Creates URLs like: ?page=your-page&tab=tab-key
+            if (history.pushState) {
+                const url = new URL(window.location);
+                url.searchParams.set('tab', tabKey);
+                // Clear section when switching tabs (will default to first section)
+                url.searchParams.delete('section');
+                history.pushState(null, '', url.toString());
+            }
+
+            // Trigger custom event
+            const event = new CustomEvent('orbital:tabChanged', {
+                detail: { tabKey: tabKey }
+            });
+            document.dispatchEvent(event);
         },
 
         /**
@@ -514,6 +509,28 @@
         if (document.querySelector('.orbi-admin')) {
             OrbitoolsAdminKit.init();
         }
+        
+        // Direct tab click handler
+        document.addEventListener('click', function(e) {
+            if (e.target.matches('.orbi-admin__tab-link') || e.target.closest('.orbi-admin__tab-link')) {
+                e.preventDefault();
+                const link = e.target.matches('.orbi-admin__tab-link') ? e.target : e.target.closest('.orbi-admin__tab-link');
+                
+                if (window.OrbitoolsAdminKit && window.OrbitoolsAdminKit.handleTabSwitch) {
+                    window.OrbitoolsAdminKit.handleTabSwitch(e, link);
+                }
+            }
+            
+            // Direct sub-tab click handler
+            if (e.target.matches('.orbi-admin__subtab-link') || e.target.closest('.orbi-admin__subtab-link')) {
+                e.preventDefault();
+                const link = e.target.matches('.orbi-admin__subtab-link') ? e.target : e.target.closest('.orbi-admin__subtab-link');
+                
+                if (window.OrbitoolsAdminKit && window.OrbitoolsAdminKit.handleSubTabSwitch) {
+                    window.OrbitoolsAdminKit.handleSubTabSwitch(e, link);
+                }
+            }
+        });
         
         // Direct form handler as backup
         const form = document.getElementById('orbi-settings-form');

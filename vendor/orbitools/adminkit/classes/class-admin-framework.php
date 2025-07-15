@@ -461,11 +461,11 @@ class Admin_Kit
             self::VERSION
         );
 
-        // Enqueue scripts
+        // Enqueue single script file (reverting from modular approach)
         wp_enqueue_script(
             'orbitools-adminkit',
             $this->get_framework_url() . 'assets/admin-framework.js',
-            array('jquery'),
+            array(),
             self::VERSION,
             true
         );

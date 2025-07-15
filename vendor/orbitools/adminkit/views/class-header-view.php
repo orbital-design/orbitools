@@ -181,18 +181,20 @@ class Header_View {
 			return;
 		}
 		?>
-		<nav class="orbi-admin__tabs-nav" role="navigation" aria-label="<?php esc_attr_e( 'Main navigation', 'orbitools-adminkit' ); ?>">
-			<?php foreach ( $tabs as $tab_key => $tab_label ) : ?>
-				<a href="<?php echo esc_url( $this->admin_kit->get_tab_url( $tab_key ) ); ?>"
-					class="orbi-admin__tab-link <?php echo $active_tab === $tab_key ? 'orbi-admin__tab-link--active' : ''; ?>"
-					data-tab="<?php echo esc_attr( $tab_key ); ?>"
-					role="tab"
-					aria-selected="<?php echo $active_tab === $tab_key ? 'true' : 'false'; ?>"
-					id="orbi-tab-<?php echo esc_attr( $tab_key ); ?>">
-					<?php echo esc_html( $tab_label ); ?>
-				</a>
-			<?php endforeach; ?>
-		</nav>
+		<div class="orbi-admin__header-tabs">
+			<nav class="orbi-admin__tabs-nav" role="navigation" aria-label="<?php esc_attr_e( 'Main navigation', 'orbitools-adminkit' ); ?>">
+				<?php foreach ( $tabs as $tab_key => $tab_label ) : ?>
+					<a href="<?php echo esc_url( $this->admin_kit->get_tab_url( $tab_key ) ); ?>"
+						class="orbi-admin__tab-link <?php echo $active_tab === $tab_key ? 'orbi-admin__tab-link--active' : ''; ?>"
+						data-tab="<?php echo esc_attr( $tab_key ); ?>"
+						role="tab"
+						aria-selected="<?php echo $active_tab === $tab_key ? 'true' : 'false'; ?>"
+						id="orbi-tab-<?php echo esc_attr( $tab_key ); ?>">
+						<?php echo esc_html( $tab_label ); ?>
+					</a>
+				<?php endforeach; ?>
+			</nav>
+		</div>
 		<?php
 	}
 }
