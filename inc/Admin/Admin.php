@@ -19,7 +19,7 @@ class Admin
         // Register custom field types for this plugin
         add_action('orbi_register_fields', [$this, 'register_adminkit_custom_fields']);
 
-        add_action('init', [$this, 'init_admin_page']);
+        add_action('init', [$this, 'init_adminkit']);
         add_action('admin_enqueue_scripts', [$this, 'enqueue_scripts']);
 
         // Hook into settings save to detect module changes
@@ -60,26 +60,21 @@ class Admin
     }
 
     /**
-     * Initialize admin page after translations are loaded.
+     * Initialize AdminKit with configuration.
      *
      * @return void
      */
-    public function init_admin_page(): void
+    public function init_adminkit(): void
     {
-        $orbitools_page = orbi_admin_kit('orbitools');
-        $orbitools_page->set_page_title(__('Orbitools', 'orbitools'));
-        $orbitools_page->set_page_description(__('Advanced WordPress tools and utilities.', 'orbitools'));
-
-        // Set header image and background color
-        $orbitools_page->set_page_header_image(ORBITOOLS_URL . 'assets/images/orbitools-logo.svg');
-        $orbitools_page->set_page_header_bg_color('#32A3E2');
-
-        // Configure menu
-        $orbitools_page->set_menu_config(array(
-            'parent'     => 'options-general.php',
-            'page_title' => __('Orbitools', 'orbitools'),
-            'menu_title' => __('Orbitools', 'orbitools'),
-            'capability' => 'manage_options',
+        orbi_admin_kit('orbitools')->init(array(
+            'title' => __('Orbitools', 'orbitools'),
+            'description' => __('Advanced WordPress tools and utilities.', 'orbitools'),
+            'header_image' => ORBITOOLS_URL . 'assets/images/orbitools-logo.svg',
+            'header_bg_color' => '#32A3E2',
+            'menu' => array(
+                'parent' => 'options-general.php',
+                'capability' => 'manage_options',
+            ),
         ));
     }
 

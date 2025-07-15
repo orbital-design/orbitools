@@ -14,23 +14,20 @@ A lightweight, standalone admin page framework for WordPress plugins. Provides a
 ## Basic Usage
 
 ```php
-// Initialize the framework
-$admin_kit = orbi_admin_kit('my-plugin');
-
-// Configure the page
-$admin_kit->set_page_title('My Plugin Settings');
-$admin_kit->set_page_description('Configure your plugin settings.');
-$admin_kit->set_page_header_image('path/to/logo.svg');
-$admin_kit->set_page_header_bg_color('#32A3E2'); // Optional: defaults to Orbital blue
-
-// Configure menu
-$admin_kit->set_menu_config(array(
-    'parent'     => 'options-general.php',
-    'page_title' => 'My Plugin',
-    'menu_title' => 'My Plugin',
-    'capability' => 'manage_options',
+// Initialize AdminKit with configuration array
+orbi_admin_kit('my-plugin')->init(array(
+    'title' => 'My Plugin Settings',
+    'description' => 'Configure your plugin settings.',
+    'header_image' => 'path/to/logo.svg',
+    'header_bg_color' => '#32A3E2',
+    'menu' => array(
+        'parent' => 'options-general.php',
+        'capability' => 'manage_options',
+    ),
 ));
 ```
+
+**Note**: You must call `init()` to set up the admin page. The framework no longer auto-initializes.
 
 ## Header Customization
 

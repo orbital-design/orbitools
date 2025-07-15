@@ -121,8 +121,6 @@ class Admin_Kit {
 
 		// Set default header image
 		$this->page_header_image = $this->get_framework_url() . 'assets/orbi-logo.svg';
-
-		$this->init();
 	}
 
 	/**
@@ -130,7 +128,7 @@ class Admin_Kit {
 	 *
 	 * @since 1.0.0
 	 */
-	private function init() {
+	private function init_hooks() {
 		add_action( 'admin_menu', array( $this, 'add_admin_page' ) );
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_assets' ) );
 		add_action( 'admin_init', array( $this, 'register_settings' ) );
@@ -185,6 +183,53 @@ class Admin_Kit {
 	 */
 	public function set_menu_config( $config ) {
 		$this->menu_config = wp_parse_args( $config, $this->menu_config );
+	}
+
+	/**
+	 * Initialize adminkit with configuration array
+	 *
+	 * @since 1.0.0
+	 * @param array $config Configuration array.
+	 * @return self For method chaining.
+	 */
+	public function init( $config = array() ) {
+		// Set page title
+		if ( isset( $config['title'] ) ) {
+			$this->set_page_title( $config['title'] );
+		}
+
+		// Set page description
+		if ( isset( $config['description'] ) ) {
+			$this->set_page_description( $config['description'] );
+		}
+
+		// Set header image
+		if ( isset( $config['header_image'] ) ) {
+			$this->set_page_header_image( $config['header_image'] );
+		}
+
+		// Set header background color
+		if ( isset( $config['header_bg_color'] ) ) {
+			$this->set_page_header_bg_color( $config['header_bg_color'] );
+		}
+
+		// Set menu configuration
+		if ( isset( $config['menu'] ) ) {
+			// Add title to menu config if not set
+			if ( ! isset( $config['menu']['page_title'] ) && isset( $config['title'] ) ) {
+				$config['menu']['page_title'] = $config['title'];
+			}
+			if ( ! isset( $config['menu']['menu_title'] ) && isset( $config['title'] ) ) {
+				$config['menu']['menu_title'] = $config['title'];
+			}
+			
+			$this->set_menu_config( $config['menu'] );
+		}
+
+		// Initialize WordPress hooks
+		$this->init_hooks();
+
+		return $this;
 	}
 
 	/**
