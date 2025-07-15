@@ -133,6 +133,9 @@
     line-height: 1.4;
     color: #1e1e1e;
     min-height: 20px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 /* Element: preset-card__meta */
