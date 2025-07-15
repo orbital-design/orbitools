@@ -27,6 +27,12 @@ class Admin
         add_filter('orbitools_registered_settings_sections', [$this, 'configure_settings_sections']);
         add_filter('orbitools_settings', [$this, 'get_settings_config']);
         add_filter('orbitools_admin_structure', [$this, 'configure_admin_structure']);
+
+        // Hook into settings save to detect module changes
+        add_action('orbitools_post_save_settings', [$this, 'detect_module_changes'], 10, 2);
+        
+        // Override the default AJAX save handler to add module change detection
+        add_action('wp_ajax_orbi_admin_save_settings_orbitools', [$this, 'custom_ajax_save_settings'], 5);
     }
 
     public function register_adminkit_custom_fields()
@@ -263,5 +269,147 @@ class Admin
             ORBITOOLS_VERSION,
             true
         );
+    }
+
+    /**
+     * Detect module state changes during settings save.
+     *
+     * @param array $new_settings The new settings being saved.
+     * @param bool $save_result The result of the save operation.
+     * @return void
+     */
+    public function detect_module_changes(array $new_settings, bool $save_result): void
+    {
+        if (!$save_result) {
+            return;
+        }
+
+        // Get the previous settings
+        $previous_settings = get_option('orbitools_settings', array());
+
+        // Find all module enable/disable settings
+        $module_changes = $this->compare_module_states($previous_settings, $new_settings);
+
+        if (!empty($module_changes)) {
+            // Store a flag that modules have changed for the AJAX response
+            set_transient('orbitools_modules_changed_' . get_current_user_id(), $module_changes, 60);
+        }
+    }
+
+    /**
+     * Compare module states between old and new settings.
+     *
+     * @param array $old_settings Previous settings.
+     * @param array $new_settings New settings.
+     * @return array Array of changed modules.
+     */
+    private function compare_module_states(array $old_settings, array $new_settings): array
+    {
+        $changes = array();
+
+        // Get all settings that end with '_enabled' (module settings)
+        $all_keys = array_unique(array_merge(array_keys($old_settings), array_keys($new_settings)));
+
+        foreach ($all_keys as $key) {
+            if (substr($key, -8) === '_enabled') {
+                $old_value = isset($old_settings[$key]) ? $old_settings[$key] : '';
+                $new_value = isset($new_settings[$key]) ? $new_settings[$key] : '';
+
+                // Normalize values for comparison (1, '1', true should all be considered enabled)
+                $old_enabled = !empty($old_value) && $old_value !== '0';
+                $new_enabled = !empty($new_value) && $new_value !== '0';
+
+                if ($old_enabled !== $new_enabled) {
+                    $module_id = str_replace('_enabled', '', $key);
+                    $changes[$module_id] = array(
+                        'from' => $old_enabled,
+                        'to' => $new_enabled,
+                        'action' => $new_enabled ? 'enabled' : 'disabled'
+                    );
+                }
+            }
+        }
+
+        return $changes;
+    }
+
+    /**
+     * Custom AJAX save settings handler that includes module change detection.
+     *
+     * @return void
+     */
+    public function custom_ajax_save_settings(): void
+    {
+        // Remove the default handler to prevent double execution
+        remove_action('wp_ajax_orbi_admin_save_settings_orbitools', [$this, 'custom_ajax_save_settings'], 5);
+        
+        // Verify nonce
+        $nonce = isset($_POST['nonce']) ? $_POST['nonce'] : '';
+        $nonce_action = 'orbi_admin_orbitools';
+        
+        if (!wp_verify_nonce($nonce, $nonce_action)) {
+            wp_send_json_error('Invalid nonce');
+        }
+
+        // Check permissions
+        if (!current_user_can('manage_options')) {
+            wp_send_json_error('Insufficient permissions');
+        }
+
+        // Process and save settings
+        $settings_json = isset($_POST['settings']) ? $_POST['settings'] : '{}';
+        $settings_json = stripslashes($settings_json);
+        $settings_data = json_decode($settings_json, true);
+        
+        if (!is_array($settings_data)) {
+            $settings_data = array();
+        }
+
+        // Get previous settings before saving for comparison
+        $previous_settings = get_option('orbitools_settings', array());
+        
+        // Save the settings (this will trigger our post-save hook)
+        $result = $this->save_orbitools_settings($settings_data);
+
+        if ($result) {
+            // Check if modules changed by looking for the transient we set
+            $module_changes = get_transient('orbitools_modules_changed_' . get_current_user_id());
+            
+            // Clean up the transient
+            if ($module_changes) {
+                delete_transient('orbitools_modules_changed_' . get_current_user_id());
+            }
+
+            // Prepare success response with module change information
+            $response_data = array(
+                'message' => 'Settings saved successfully',
+                'modules_changed' => !empty($module_changes),
+                'module_changes' => $module_changes ?: array()
+            );
+
+            wp_send_json_success($response_data);
+        } else {
+            wp_send_json_error('Failed to save settings');
+        }
+    }
+
+    /**
+     * Save orbitools settings using the same logic as AdminKit.
+     *
+     * @param array $settings_data Settings data to save.
+     * @return bool Success status.
+     */
+    private function save_orbitools_settings(array $settings_data): bool
+    {
+        // Apply pre-save filters (similar to AdminKit)
+        $sanitized_data = apply_filters('orbitools_pre_save_settings', $settings_data);
+
+        // Save settings
+        $result = update_option('orbitools_settings', $sanitized_data);
+
+        // Trigger post-save action (this will run our module detection)
+        do_action('orbitools_post_save_settings', $sanitized_data, $result);
+
+        return $result;
     }
 }

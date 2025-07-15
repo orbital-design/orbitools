@@ -1,0 +1,24 @@
+/**
+ * Orbitools Admin Styles
+ * 
+ * Additional styles for admin pages that complement the AdminKit framework.
+ */
+
+/* Module reload notice styling */
+.orbi-notice--module-reload {
+    border-left-color: #0073aa;
+}
+
+.orbi-notice--module-reload .orbi-notice__message {
+    font-weight: 500;
+}
+
+/* Loading state for module cards during reload */
+.orbi-admin--reloading .orbi-module-card {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+.orbi-admin--reloading .orbi-toggle {
+    opacity: 0.5;
+}
