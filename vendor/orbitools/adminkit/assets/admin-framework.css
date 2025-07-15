@@ -1,10 +1,19 @@
 /**
  * Orbital Admin Framework CSS (BEM + Semantic)
- * 
+ *
  * Clean, modern styling for admin pages built with the framework.
  * Uses BEM methodology with 'orbi' prefix for better organization.
  * Follows WordPress admin design patterns with accessibility enhancements.
  */
+
+ :root {
+    --gap-half: 12px;
+    --gap-mid: 18px;
+    --gap: 24px;
+    --gapx2: 48px;
+    --gap-page: 32px;
+    --wpcontent--left: 20px;
+ }
 
 /* =============================================================================
    FRAMEWORK CONTAINER (BEM)
@@ -33,16 +42,23 @@ body.orbital-framework-page .updated {
 
 .orbi-admin__header {
     background: #f9f9f9;
-    border-bottom: 1px solid #e5e5e5;
-    padding: 30px 40px;
+    padding: var(--gap-mid) var(--gap-page);
+    margin-left: calc(var(--wpcontent--left)*-1);
 }
 
 .orbi-admin__header-content {
     display: flex;
-    flex-direction: column;
-    gap: 8px;
+    flex-direction: row;
+    gap: var(--gap);
 }
 
+.orbi-admin__header-image img{
+    display: block;
+    max-height: var(--gapx2);
+    height: 100%;
+    width: auto;
+    max-width: none;
+}
 .orbi-admin__title {
     margin: 0;
     font-size: 24px;
@@ -1060,16 +1076,16 @@ body.orbital-framework-page .updated {
         padding-left: 20px;
         padding-right: 20px;
     }
-    
+
     .orbi-admin__tabs-nav {
         flex-wrap: wrap;
     }
-    
+
     .orbi-admin__tab-link {
         padding: 12px 16px 9px;
         font-size: 13px;
     }
-    
+
     .orbi-admin__section-fields {
         gap: 16px;
     }
@@ -1079,15 +1095,15 @@ body.orbital-framework-page .updated {
     .orbi-admin__header h1 {
         font-size: 20px;
     }
-    
+
     .orbi-admin__section-title {
         font-size: 16px;
     }
-    
+
     .orbi-admin__tabs-nav {
         border-bottom: none;
     }
-    
+
     .orbi-admin__tab-link {
         border: 1px solid #e5e5e5;
         border-bottom: none;
@@ -1095,7 +1111,7 @@ body.orbital-framework-page .updated {
         text-align: left;
         width: 100%;
     }
-    
+
     .orbi-admin__tab-link--active {
         background: #f6f7f7;
         border-bottom: 1px solid #e5e5e5;

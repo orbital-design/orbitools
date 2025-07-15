@@ -115,7 +115,7 @@ class Page_Builder {
 	public function build_page() {
 		// Define the page structure and components to include
 		$page_components = array(
-			'navigation',
+			'nav_actions',
 			'notices', 
 			'content',
 			'footer'
@@ -162,13 +162,13 @@ class Page_Builder {
 	 */
 	private function render_component( $component ) {
 		switch ( $component ) {
-			case 'navigation':
+			case 'nav_actions':
 				?>
-				<nav class="orbi-admin__nav">
-					<?php $this->navigation_view->render_navigation(); ?>
-				</nav>
+				<div class="orbi-admin__nav-actions-wrapper">
+					<?php $this->navigation_view->render_nav_actions(); ?>
+				</div>
 				<?php
-				do_action( $this->admin_kit->get_func_slug() . '_after_nav' );
+				do_action( $this->admin_kit->get_func_slug() . '_after_nav_actions' );
 				break;
 
 			case 'notices':

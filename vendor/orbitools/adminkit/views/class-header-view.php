@@ -66,6 +66,7 @@ class Header_View {
 					<p class="orbi-admin__description"><?php echo esc_html( $this->admin_kit->get_page_description() ); ?></p>
 				<?php endif; ?>
 			</div>
+			<?php $this->render_header_tabs(); ?>
 		</div>
 		
 		<?php
@@ -96,8 +97,58 @@ class Header_View {
 		?>
 		<div class="orbi-global-header orbi-admin__header"<?php echo $header_style; ?>>
 			<?php $this->render_header(); ?>
-			<?php $this->render_header_tabs(); ?>
 		</div>
+		<div class="orbi-admin__breadcrumbs-wrapper">
+			<?php $this->render_breadcrumbs(); ?>
+		</div>
+		<?php
+	}
+
+	/**
+	 * Render breadcrumbs underneath the header
+	 *
+	 * @since 1.0.0
+	 */
+	private function render_breadcrumbs() {
+		$current_tab = $this->admin_kit->get_current_tab();
+		$current_section = $this->admin_kit->get_current_section();
+		$tabs = $this->admin_kit->get_tabs();
+
+		if ( empty( $tabs ) ) {
+			return;
+		}
+		?>
+		<nav class="orbi-admin__breadcrumbs" aria-label="<?php esc_attr_e( 'Breadcrumb navigation', 'orbitools-adminkit' ); ?>">
+			<ol class="orbi-admin__breadcrumb-list">
+				<li class="orbi-admin__breadcrumb-item">
+					<span class="orbi-admin__breadcrumb-text"><?php echo esc_html( $this->admin_kit->get_page_title() ); ?></span>
+				</li>
+
+				<?php if ( $current_tab && isset( $tabs[ $current_tab ] ) ) : ?>
+					<li class="orbi-admin__breadcrumb-item">
+						<span class="orbi-admin__breadcrumb-separator" aria-hidden="true">›</span>
+						<span class="orbi-admin__breadcrumb-text orbi-admin__breadcrumb-text--current">
+							<?php echo esc_html( $tabs[ $current_tab ] ); ?>
+						</span>
+					</li>
+				<?php endif; ?>
+
+				<?php if ( $current_section ) : ?>
+					<?php
+					$structure = $this->admin_kit->get_content_structure();
+					$sections = isset( $structure[ $current_tab ]['sections'] ) ? $structure[ $current_tab ]['sections'] : array();
+					?>
+					<?php if ( isset( $sections[ $current_section ] ) ) : ?>
+						<li class="orbi-admin__breadcrumb-item">
+							<span class="orbi-admin__breadcrumb-separator" aria-hidden="true">›</span>
+							<span class="orbi-admin__breadcrumb-text orbi-admin__breadcrumb-text--current">
+								<?php echo esc_html( $sections[ $current_section ] ); ?>
+							</span>
+						</li>
+					<?php endif; ?>
+				<?php endif; ?>
+			</ol>
+		</nav>
 		<?php
 	}
 
@@ -114,20 +165,18 @@ class Header_View {
 			return;
 		}
 		?>
-		<div class="orbi-admin__header-tabs">
-			<nav class="orbi-admin__tabs-nav" role="navigation" aria-label="<?php esc_attr_e( 'Main navigation', 'orbitools-adminkit' ); ?>">
-				<?php foreach ( $tabs as $tab_key => $tab_label ) : ?>
-					<a href="<?php echo esc_url( $this->admin_kit->get_tab_url( $tab_key ) ); ?>"
-						class="orbi-admin__tab-link <?php echo $active_tab === $tab_key ? 'orbi-admin__tab-link--active' : ''; ?>"
-						data-tab="<?php echo esc_attr( $tab_key ); ?>"
-						role="tab"
-						aria-selected="<?php echo $active_tab === $tab_key ? 'true' : 'false'; ?>"
-						id="orbi-tab-<?php echo esc_attr( $tab_key ); ?>">
-						<?php echo esc_html( $tab_label ); ?>
-					</a>
-				<?php endforeach; ?>
-			</nav>
-		</div>
+		<nav class="orbi-admin__tabs-nav" role="navigation" aria-label="<?php esc_attr_e( 'Main navigation', 'orbitools-adminkit' ); ?>">
+			<?php foreach ( $tabs as $tab_key => $tab_label ) : ?>
+				<a href="<?php echo esc_url( $this->admin_kit->get_tab_url( $tab_key ) ); ?>"
+					class="orbi-admin__tab-link <?php echo $active_tab === $tab_key ? 'orbi-admin__tab-link--active' : ''; ?>"
+					data-tab="<?php echo esc_attr( $tab_key ); ?>"
+					role="tab"
+					aria-selected="<?php echo $active_tab === $tab_key ? 'true' : 'false'; ?>"
+					id="orbi-tab-<?php echo esc_attr( $tab_key ); ?>">
+					<?php echo esc_html( $tab_label ); ?>
+				</a>
+			<?php endforeach; ?>
+		</nav>
 		<?php
 	}
 }

@@ -121,7 +121,7 @@ class Navigation_View
      *
      * @since 1.0.0
      */
-    private function render_nav_actions()
+    public function render_nav_actions()
     {
     ?>
         <div class="orbi-admin__nav-actions">
