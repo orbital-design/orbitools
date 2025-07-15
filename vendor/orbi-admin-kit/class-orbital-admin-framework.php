@@ -59,7 +59,7 @@ class Admin_Kit {
 	 * @since 1.0.0
 	 * @var string
 	 */
-	private $page_title = 'AdminKit';
+	private $page_title = '';
 
 	/**
 	 * Page description
@@ -67,7 +67,7 @@ class Admin_Kit {
 	 * @since 1.0.0
 	 * @var string
 	 */
-	private $page_description = 'Extensible modular admin framework by Orbital';
+	private $page_description = '';
 
 	/**
 	 * Page header image URL
@@ -83,7 +83,7 @@ class Admin_Kit {
 	 * @since 1.0.0
 	 * @var string
 	 */
-	private $page_header_bg_color = '#32A3E2';
+	private $page_header_bg_color = '';
 
 	/**
 	 * Hide title and description visually
@@ -119,6 +119,13 @@ class Admin_Kit {
 		$this->slug      = $slug;
 		$this->func_slug = str_replace( '-', '_', $slug );
 
+		// Set all default values
+		$this->page_title = 'AdminKit';
+		$this->page_description = 'Extensible modular admin framework by Orbital';
+		$this->page_header_image = $this->get_framework_url() . 'assets/orbi-logo.svg';
+		$this->page_header_bg_color = '#32A3E2';
+		$this->hide_title_description = false;
+		
 		// Set default menu configuration
 		$this->menu_config = array(
 			'parent'     => 'options-general.php',
@@ -126,9 +133,6 @@ class Admin_Kit {
 			'menu_title' => 'Settings',
 			'capability' => 'manage_options',
 		);
-
-		// Set default header image
-		$this->page_header_image = $this->get_framework_url() . 'assets/orbi-logo.svg';
 	}
 
 	/**
@@ -212,12 +216,14 @@ class Admin_Kit {
 	 */
 	public function init( $config = array() ) {
 		// Set page title (use default if not provided)
-		$title = isset( $config['title'] ) ? $config['title'] : $this->page_title;
-		$this->set_page_title( $title );
+		if ( isset( $config['title'] ) ) {
+			$this->set_page_title( $config['title'] );
+		}
 
 		// Set page description (use default if not provided)
-		$description = isset( $config['description'] ) ? $config['description'] : $this->page_description;
-		$this->set_page_description( $description );
+		if ( isset( $config['description'] ) ) {
+			$this->set_page_description( $config['description'] );
+		}
 
 		// Set header image (use default if not provided)
 		if ( isset( $config['header_image'] ) ) {
@@ -238,10 +244,10 @@ class Admin_Kit {
 		if ( isset( $config['menu'] ) ) {
 			// Add title to menu config if not set
 			if ( ! isset( $config['menu']['page_title'] ) ) {
-				$config['menu']['page_title'] = $title;
+				$config['menu']['page_title'] = $this->page_title;
 			}
 			if ( ! isset( $config['menu']['menu_title'] ) ) {
-				$config['menu']['menu_title'] = $title;
+				$config['menu']['menu_title'] = $this->page_title;
 			}
 			
 			$this->set_menu_config( $config['menu'] );

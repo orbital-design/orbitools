@@ -69,7 +69,7 @@ class Admin
         orbi_admin_kit('orbitools')->init(array(
             'title' => __('Orbitools', 'orbitools'),
             'description' => __('Advanced WordPress tools and utilities.', 'orbitools'),
-            'hide_title_description' => false,
+            'hide_title_description' => true,
             'header_image' => ORBITOOLS_URL . 'assets/images/orbitools-logo.svg',
             'header_bg_color' => '#32A3E2',
             'menu' => array(
