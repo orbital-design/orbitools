@@ -35,18 +35,25 @@ class Admin
         add_action('wp_ajax_orbi_admin_save_settings_orbitools', [$this, 'custom_ajax_save_settings'], 5);
     }
 
-    public function register_adminkit_custom_fields()
+    /**
+     * Register custom field types for AdminKit.
+     *
+     * @return void
+     */
+    public function register_adminkit_custom_fields(): void
     {
-        if (class_exists('Orbi\\AdminKit\\Field_Registry')) {
-            $field_file = ORBITOOLS_DIR . 'inc/Admin/adminkit/fields/modules/Orbitools_Modules_Field.php';
+        if (!class_exists('Orbi\\AdminKit\\Field_Registry')) {
+            return;
+        }
 
-            if (file_exists($field_file)) {
-                \Orbi\AdminKit\Field_Registry::register_field_type(
-                    'modules',
-                    $field_file,
-                    'Orbitools_Modules_Field'
-                );
-            }
+        $field_file = ORBITOOLS_DIR . 'inc/Admin/adminkit/fields/modules/Orbitools_Modules_Field.php';
+
+        if (file_exists($field_file)) {
+            \Orbi\AdminKit\Field_Registry::register_field_type(
+                'modules',
+                $field_file,
+                'Orbitools_Modules_Field'
+            );
         }
     }
 
@@ -73,10 +80,10 @@ class Admin
     /**
      * Configure settings tabs.
      *
-     * @param array $tabs
-     * @return array
+     * @param array $tabs Existing tabs array.
+     * @return array Modified tabs array.
      */
-    public function configure_settings_tabs($tabs)
+    public function configure_settings_tabs(array $tabs): array
     {
         return array(
             'dashboard' => __('Dashboard', 'orbitools'),
@@ -89,10 +96,10 @@ class Admin
     /**
      * Configure settings sections.
      *
-     * @param array $sections
-     * @return array
+     * @param array $sections Existing sections array.
+     * @return array Modified sections array.
      */
-    public function configure_settings_sections($sections)
+    public function configure_settings_sections(array $sections): array
     {
         return array(
             'dashboard' => array(
@@ -113,10 +120,10 @@ class Admin
     /**
      * Configure admin structure for orbi-admin-kit.
      *
-     * @param array $structure
-     * @return array
+     * @param array $structure Existing structure array.
+     * @return array Modified structure array.
      */
-    public function configure_admin_structure($structure)
+    public function configure_admin_structure(array $structure): array
     {
         return array(
             'dashboard' => array(
@@ -215,9 +222,12 @@ class Admin
     }
 
     /**
-     * Get module status HTML.
+     * Get module status HTML for display.
+     * 
+     * NOTE: This method appears to be unused and may be legacy code.
+     * Consider removing if not needed.
      *
-     * @return string
+     * @return string HTML markup for module status.
      */
     private function get_module_status_html(): string
     {
@@ -273,6 +283,9 @@ class Admin
 
     /**
      * Detect module state changes during settings save.
+     * 
+     * Compares previous and new module states and stores change information
+     * in a transient for the AJAX response to trigger page reload.
      *
      * @param array $new_settings The new settings being saved.
      * @param bool $save_result The result of the save operation.
@@ -284,49 +297,49 @@ class Admin
             return;
         }
 
-        // Get the previous settings
         $previous_settings = get_option('orbitools_settings', array());
-
-        // Find all module enable/disable settings
         $module_changes = $this->compare_module_states($previous_settings, $new_settings);
 
         if (!empty($module_changes)) {
-            // Store a flag that modules have changed for the AJAX response
+            // Store changes in transient for AJAX response (60 second expiry)
             set_transient('orbitools_modules_changed_' . get_current_user_id(), $module_changes, 60);
         }
     }
 
     /**
      * Compare module states between old and new settings.
+     * 
+     * Identifies modules that have been enabled or disabled by comparing
+     * settings that end with '_enabled'.
      *
      * @param array $old_settings Previous settings.
      * @param array $new_settings New settings.
-     * @return array Array of changed modules.
+     * @return array Array of changed modules with from/to states.
      */
     private function compare_module_states(array $old_settings, array $new_settings): array
     {
         $changes = array();
-
-        // Get all settings that end with '_enabled' (module settings)
         $all_keys = array_unique(array_merge(array_keys($old_settings), array_keys($new_settings)));
 
         foreach ($all_keys as $key) {
-            if (substr($key, -8) === '_enabled') {
-                $old_value = isset($old_settings[$key]) ? $old_settings[$key] : '';
-                $new_value = isset($new_settings[$key]) ? $new_settings[$key] : '';
+            if (substr($key, -8) !== '_enabled') {
+                continue;
+            }
 
-                // Normalize values for comparison (1, '1', true should all be considered enabled)
-                $old_enabled = !empty($old_value) && $old_value !== '0';
-                $new_enabled = !empty($new_value) && $new_value !== '0';
+            $old_value = $old_settings[$key] ?? '';
+            $new_value = $new_settings[$key] ?? '';
 
-                if ($old_enabled !== $new_enabled) {
-                    $module_id = str_replace('_enabled', '', $key);
-                    $changes[$module_id] = array(
-                        'from' => $old_enabled,
-                        'to' => $new_enabled,
-                        'action' => $new_enabled ? 'enabled' : 'disabled'
-                    );
-                }
+            // Normalize boolean values for comparison
+            $old_enabled = !empty($old_value) && $old_value !== '0';
+            $new_enabled = !empty($new_value) && $new_value !== '0';
+
+            if ($old_enabled !== $new_enabled) {
+                $module_id = str_replace('_enabled', '', $key);
+                $changes[$module_id] = array(
+                    'from' => $old_enabled,
+                    'to' => $new_enabled,
+                    'action' => $new_enabled ? 'enabled' : 'disabled'
+                );
             }
         }
 
@@ -334,60 +347,52 @@ class Admin
     }
 
     /**
-     * Custom AJAX save settings handler that includes module change detection.
+     * Custom AJAX save settings handler with module change detection.
+     * 
+     * Overrides the default AdminKit AJAX handler to add module change detection
+     * and communicate changes back to the frontend for auto-reload functionality.
      *
      * @return void
      */
     public function custom_ajax_save_settings(): void
     {
-        // Remove the default handler to prevent double execution
+        // Prevent double execution
         remove_action('wp_ajax_orbi_admin_save_settings_orbitools', [$this, 'custom_ajax_save_settings'], 5);
         
-        // Verify nonce
-        $nonce = isset($_POST['nonce']) ? $_POST['nonce'] : '';
-        $nonce_action = 'orbi_admin_orbitools';
-        
-        if (!wp_verify_nonce($nonce, $nonce_action)) {
+        // Security checks
+        $nonce = $_POST['nonce'] ?? '';
+        if (!wp_verify_nonce($nonce, 'orbi_admin_orbitools')) {
             wp_send_json_error('Invalid nonce');
         }
 
-        // Check permissions
         if (!current_user_can('manage_options')) {
             wp_send_json_error('Insufficient permissions');
         }
 
-        // Process and save settings
-        $settings_json = isset($_POST['settings']) ? $_POST['settings'] : '{}';
-        $settings_json = stripslashes($settings_json);
-        $settings_data = json_decode($settings_json, true);
+        // Process settings data
+        $settings_json = $_POST['settings'] ?? '{}';
+        $settings_data = json_decode(stripslashes($settings_json), true);
         
         if (!is_array($settings_data)) {
             $settings_data = array();
         }
 
-        // Get previous settings before saving for comparison
-        $previous_settings = get_option('orbitools_settings', array());
-        
-        // Save the settings (this will trigger our post-save hook)
+        // Save settings and trigger hooks
         $result = $this->save_orbitools_settings($settings_data);
 
         if ($result) {
-            // Check if modules changed by looking for the transient we set
+            // Check for module changes via transient
             $module_changes = get_transient('orbitools_modules_changed_' . get_current_user_id());
             
-            // Clean up the transient
             if ($module_changes) {
                 delete_transient('orbitools_modules_changed_' . get_current_user_id());
             }
 
-            // Prepare success response with module change information
-            $response_data = array(
+            wp_send_json_success(array(
                 'message' => 'Settings saved successfully',
                 'modules_changed' => !empty($module_changes),
                 'module_changes' => $module_changes ?: array()
-            );
-
-            wp_send_json_success($response_data);
+            ));
         } else {
             wp_send_json_error('Failed to save settings');
         }
