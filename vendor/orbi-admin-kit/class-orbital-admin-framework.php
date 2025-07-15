@@ -70,6 +70,22 @@ class Admin_Kit {
 	private $page_description = '';
 
 	/**
+	 * Page header image URL
+	 *
+	 * @since 1.0.0
+	 * @var string
+	 */
+	private $page_header_image = '';
+
+	/**
+	 * Page header background color
+	 *
+	 * @since 1.0.0
+	 * @var string
+	 */
+	private $page_header_bg_color = '#32A3E2';
+
+	/**
 	 * Menu configuration
 	 *
 	 * @since 1.0.0
@@ -102,6 +118,9 @@ class Admin_Kit {
 			'menu_title' => 'Settings',
 			'capability' => 'manage_options',
 		);
+
+		// Set default header image
+		$this->page_header_image = $this->get_framework_url() . 'assets/orbi-logo.svg';
 
 		$this->init();
 	}
@@ -136,6 +155,26 @@ class Admin_Kit {
 	 */
 	public function set_page_description( $description ) {
 		$this->page_description = $description;
+	}
+
+	/**
+	 * Set page header image
+	 *
+	 * @since 1.0.0
+	 * @param string $image_url Header image URL.
+	 */
+	public function set_page_header_image( $image_url ) {
+		$this->page_header_image = $image_url;
+	}
+
+	/**
+	 * Set page header background color
+	 *
+	 * @since 1.0.0
+	 * @param string $color Header background color (any valid CSS color value).
+	 */
+	public function set_page_header_bg_color( $color ) {
+		$this->page_header_bg_color = $color;
 	}
 
 	/**
@@ -435,7 +474,15 @@ class Admin_Kit {
 			do_action( $this->func_slug . '_before_header' );
 			?>
 			
-			<header class="orbi-admin__header">
+			<?php
+			// Add inline styles for header background color if set
+			if ( $this->page_header_bg_color ) {
+				$header_style = ' style="background-color: ' . esc_attr( $this->page_header_bg_color ) . '"';
+			} else {
+				$header_style = '';
+			}
+			?>
+			<header class="orbi-admin__header"<?php echo $header_style; ?>>
 				<?php $this->render_header(); ?>
 			</header>
 			
@@ -501,10 +548,17 @@ class Admin_Kit {
 	private function render_header() {
 		?>
 		<div class="orbi-admin__header-content">
-			<h1 class="orbi-admin__title" id="orbi-admin-title"><?php echo esc_html( $this->page_title ); ?></h1>
-			<?php if ( $this->page_description ) : ?>
-				<p class="orbi-admin__description"><?php echo esc_html( $this->page_description ); ?></p>
+			<?php if ( $this->page_header_image ) : ?>
+				<div class="orbi-admin__header-image">
+					<img src="<?php echo esc_url( $this->page_header_image ); ?>" alt="<?php echo esc_attr( $this->page_title ); ?>" class="orbi-admin__header-img" />
+				</div>
 			<?php endif; ?>
+			<div class="orbi-admin__header-text">
+				<h1 class="orbi-admin__title" id="orbi-admin-title"><?php echo esc_html( $this->page_title ); ?></h1>
+				<?php if ( $this->page_description ) : ?>
+					<p class="orbi-admin__description"><?php echo esc_html( $this->page_description ); ?></p>
+				<?php endif; ?>
+			</div>
 		</div>
 		
 		<?php

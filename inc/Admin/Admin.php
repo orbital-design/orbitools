@@ -70,6 +70,10 @@ class Admin
         $orbitools_page->set_page_title(__('Orbitools', 'orbitools'));
         $orbitools_page->set_page_description(__('Advanced WordPress tools and utilities.', 'orbitools'));
 
+        // Set header image and background color
+        $orbitools_page->set_page_header_image(ORBITOOLS_URL . 'assets/images/orbitools-logo.svg');
+        $orbitools_page->set_page_header_bg_color('#32A3E2');
+
         // Configure menu
         $orbitools_page->set_menu_config(array(
             'parent'     => 'options-general.php',
