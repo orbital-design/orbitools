@@ -28,7 +28,6 @@ class Admin
 
         // Setup filters (these don't use translations immediately)
         add_filter('orbitools_adminkit_structure', [$this, 'configure_admin_structure']);
-        add_filter('orbitools_registered_settings_sections', [$this, 'configure_settings_sections']);
         add_filter('orbitools_adminkit_fields', [$this, 'get_settings_config']);
 
 
