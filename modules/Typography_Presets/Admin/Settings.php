@@ -28,6 +28,17 @@ if (!defined('ABSPATH')) {
 class Settings
 {
     /**
+     * Initialize the Settings class
+     *
+     * @since 1.0.0
+     */
+    public static function init(): void
+    {
+        // Add AJAX handler for saving accordion state
+        add_action('wp_ajax_orbitools_save_accordion_state', array(self::class, 'save_accordion_state'));
+    }
+
+    /**
      * Get default settings configuration
      *
      * @since 1.0.0
@@ -310,8 +321,6 @@ class Settings
             true
         );
         
-        // Add AJAX handler for saving accordion state
-        add_action('wp_ajax_orbitools_save_accordion_state', array(self::class, 'save_accordion_state'));
     }
 
     /**

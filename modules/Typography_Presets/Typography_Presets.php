@@ -14,6 +14,7 @@
 namespace Orbitools\Modules\Typography_Presets;
 
 use Orbitools\Modules\Typography_Presets\Admin\Admin;
+use Orbitools\Modules\Typography_Presets\Admin\Settings;
 use Orbitools\Modules\Typography_Presets\Core\Preset_Manager;
 use Orbitools\Modules\Typography_Presets\Core\CSS_Generator;
 use Orbitools\Modules\Typography_Presets\Frontend\Block_Editor;
@@ -115,6 +116,9 @@ class Typography_Presets
 
         // Always initialize admin functionality for module registration
         $this->admin = new Admin();
+        
+        // Initialize Settings class for AJAX handlers
+        Settings::init();
 
         // Always initialize preset manager and CSS generator for CSS output
         $this->preset_manager = new Preset_Manager();
