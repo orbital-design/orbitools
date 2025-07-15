@@ -42,8 +42,8 @@ class Loader
     public function init()
     {
         // Load the OrbiTools AdminKit
-        if (file_exists(ORBITOOLS_DIR . 'vendor/orbi-admin-kit/loader.php')) {
-            require_once ORBITOOLS_DIR . 'vendor/orbi-admin-kit/loader.php';
+        if (file_exists(ORBITOOLS_DIR . 'vendor/orbitools/adminkit/loader.php')) {
+            require_once ORBITOOLS_DIR . 'vendor/orbitools/adminkit/loader.php';
         }
 
         // Initialize core classes.
