@@ -145,6 +145,9 @@ class Admin_Kit {
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_assets' ) );
 		add_action( 'admin_init', array( $this, 'register_settings' ) );
 		add_action( 'wp_ajax_orbi_admin_save_settings_' . $this->slug, array( $this, 'ajax_save_settings' ) );
+		
+		// Always add global header after admin bar but before #wpbody
+		add_action( 'in_admin_header', array( $this, 'render_global_header' ) );
 	}
 
 	/**
@@ -542,24 +545,7 @@ class Admin_Kit {
 		<main class="orbi-admin" id="orbi-admin-<?php echo esc_attr( $this->slug ); ?>" role="main" aria-labelledby="orbi-admin-title">
 			
 			<?php
-			// HOOK: Before header
-			do_action( $this->func_slug . '_before_header' );
-			?>
-			
-			<?php
-			// Add inline styles for header background color if set
-			if ( $this->page_header_bg_color ) {
-				$header_style = ' style="background-color: ' . esc_attr( $this->page_header_bg_color ) . '"';
-			} else {
-				$header_style = '';
-			}
-			?>
-			<header class="orbi-admin__header"<?php echo $header_style; ?>>
-				<?php $this->render_header(); ?>
-			</header>
-			
-			<?php
-			// HOOK: After header / Before nav
+			// HOOK: Before nav (header is now global, so skip header hooks)
 			do_action( $this->func_slug . '_after_header' );
 			?>
 			
@@ -639,6 +625,31 @@ class Admin_Kit {
 		// Hook for additional header content
 		do_action( $this->func_slug . '_render_header' );
 		?>
+		<?php
+	}
+
+	/**
+	 * Render global header (public method for use outside admin pages)
+	 *
+	 * @since 1.0.0
+	 */
+	public function render_global_header() {
+		// Only show on AdminKit pages
+		$screen = get_current_screen();
+		if ( ! $screen || strpos( $screen->id, $this->slug ) === false ) {
+			return;
+		}
+
+		// Add inline styles for header background color if set
+		if ( $this->page_header_bg_color ) {
+			$header_style = ' style="background-color: ' . esc_attr( $this->page_header_bg_color ) . '"';
+		} else {
+			$header_style = '';
+		}
+		?>
+		<div class="orbi-global-header orbi-admin__header"<?php echo $header_style; ?>>
+			<?php $this->render_header(); ?>
+		</div>
 		<?php
 	}
 
