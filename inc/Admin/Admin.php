@@ -44,14 +44,14 @@ class Admin
      */
     public function register_adminkit_custom_fields(): void
     {
-        if (!class_exists('Orbi\\AdminKit\\Field_Registry')) {
+        if (!class_exists('Orbitools\AdminKit\\Field_Registry')) {
             return;
         }
 
         $field_file = ORBITOOLS_DIR . 'inc/Admin/adminkit/fields/modules/Orbitools_Modules_Field.php';
 
         if (file_exists($field_file)) {
-            \Orbi\AdminKit\Field_Registry::register_field_type(
+            \Orbitools\AdminKit\Field_Registry::register_field_type(
                 'modules',
                 $field_file,
                 'Orbitools_Modules_Field'

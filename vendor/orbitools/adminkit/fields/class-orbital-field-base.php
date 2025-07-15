@@ -13,12 +13,12 @@
  * 
  * Duplicate IDs will cause fields to overwrite each other's values!
  *
- * @package    Orbi\AdminKit
+ * @package    Orbitools\AdminKit
  * @subpackage Fields
  * @since      1.0.0
  */
 
-namespace Orbi\AdminKit;
+namespace Orbitools\AdminKit;
 
 // Prevent direct access
 if ( ! defined( 'ABSPATH' ) ) {

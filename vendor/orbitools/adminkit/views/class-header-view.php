@@ -4,13 +4,13 @@
  *
  * Handles rendering of header components for AdminKit pages.
  *
- * @package    Orbi\AdminKit
+ * @package    Orbitools\AdminKit
  * @version    1.0.0
  * @author     OrbiTools
  * @since      1.0.0
  */
 
-namespace Orbi\AdminKit\Views;
+namespace Orbitools\AdminKit\Views;
 
 // Prevent direct access
 if ( ! defined( 'ABSPATH' ) ) {
@@ -31,7 +31,7 @@ class Header_View {
 	 * Reference to the main AdminKit instance
 	 *
 	 * @since 1.0.0
-	 * @var \Orbi\AdminKit\Admin_Kit
+	 * @var \Orbitools\AdminKit\Admin_Kit
 	 */
 	private $admin_kit;
 
@@ -39,7 +39,7 @@ class Header_View {
 	 * Constructor
 	 *
 	 * @since 1.0.0
-	 * @param \Orbi\AdminKit\Admin_Kit $admin_kit AdminKit instance
+	 * @param \Orbitools\AdminKit\Admin_Kit $admin_kit AdminKit instance
 	 */
 	public function __construct( $admin_kit ) {
 		$this->admin_kit = $admin_kit;

@@ -5,12 +5,12 @@
  * Handles rendering and functionality for radio input fields.
  * Supports both single radio button and radio set options.
  *
- * @package    Orbi\AdminKit
+ * @package    Orbitools\AdminKit
  * @subpackage Fields
  * @since      1.0.0
  */
 
-namespace Orbi\AdminKit;
+namespace Orbitools\AdminKit;
 
 // Prevent direct access
 if ( ! defined( 'ABSPATH' ) ) {

@@ -5,12 +5,12 @@
  * Handles rendering HTML content fields (for informational displays, 
  * dynamic content, etc.). This field type doesn't save data.
  *
- * @package    Orbi\AdminKit
+ * @package    Orbitools\AdminKit
  * @subpackage Fields
  * @since      1.0.0
  */
 
-namespace Orbi\AdminKit;
+namespace Orbitools\AdminKit;
 
 // Prevent direct access
 if ( ! defined( 'ABSPATH' ) ) {

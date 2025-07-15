@@ -6,12 +6,12 @@
  * Handles rendering and functionality for checkbox input fields.
  * Supports both single checkbox and multiple checkbox options.
  *
- * @package    Orbi\AdminKit
+ * @package    Orbitools\AdminKit
  * @subpackage Fields
  * @since      1.0.0
  */
 
-namespace Orbi\AdminKit;
+namespace Orbitools\AdminKit;
 
 // Prevent direct access
 if (! defined('ABSPATH')) {

@@ -6,13 +6,13 @@
  * Provides a clean API for building admin pages with tabs, sections, and fields
  * using WordPress hooks and filters.
  *
- * @package    Orbi\AdminKit
+ * @package    Orbitools\AdminKit
  * @version    1.0.0
  * @author     OrbiTools
  * @since      1.0.0
  */
 
-namespace Orbi\AdminKit;
+namespace Orbitools\AdminKit;
 
 
 // Prevent direct access
@@ -254,7 +254,7 @@ class Admin_Kit {
 	 * @param bool   $dismissible Whether notice is dismissible.
 	 */
 	public function add_notice( $message, $type = 'info', $dismissible = true ) {
-		$notice_manager = new \Orbi\AdminKit\Views\Notice_Manager( $this );
+		$notice_manager = new \Orbitools\AdminKit\Views\Notice_Manager( $this );
 		$notice_manager->add_notice( $message, $type, $dismissible );
 	}
 
@@ -264,7 +264,7 @@ class Admin_Kit {
 	 * @since 1.0.0
 	 */
 	public function render_admin_page() {
-		$page_builder = new \Orbi\AdminKit\Classes\Page_Builder( $this );
+		$page_builder = new \Orbitools\AdminKit\Classes\Page_Builder( $this );
 		$page_builder->build_page();
 	}
 
@@ -274,7 +274,7 @@ class Admin_Kit {
 	 * @since 1.0.0
 	 */
 	public function render_global_header() {
-		$page_builder = new \Orbi\AdminKit\Classes\Page_Builder( $this );
+		$page_builder = new \Orbitools\AdminKit\Classes\Page_Builder( $this );
 		$page_builder->build_global_header();
 	}
 

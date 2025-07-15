@@ -4,12 +4,12 @@
  *
  * Handles rendering and functionality for textarea fields.
  *
- * @package    Orbi\AdminKit
+ * @package    Orbitools\AdminKit
  * @subpackage Fields
  * @since      1.0.0
  */
 
-namespace Orbi\AdminKit;
+namespace Orbitools\AdminKit;
 
 // Prevent direct access
 if ( ! defined( 'ABSPATH' ) ) {

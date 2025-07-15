@@ -5,12 +5,12 @@
  * Manages registration and instantiation of field types in the OrbiTools AdminKit.
  * Follows the modular approach allowing external field registration.
  *
- * @package    Orbi\AdminKit
+ * @package    Orbitools\AdminKit
  * @subpackage Fields
  * @since      1.0.0
  */
 
-namespace Orbi\AdminKit;
+namespace Orbitools\AdminKit;
 
 // Prevent direct access
 if ( ! defined( 'ABSPATH' ) ) {
@@ -56,16 +56,14 @@ class Field_Registry {
 	 * @since 1.0.0
 	 */
 	private static function register_core_fields() {
-		$framework_path = dirname( __FILE__ );
-		
 		// Register core fields
-		self::register_field_type( 'text', $framework_path . '/fields/text/class-orbital-field-text.php', 'Orbi\\AdminKit\\Field_Text' );
-		self::register_field_type( 'checkbox', $framework_path . '/fields/checkbox/class-orbital-field-checkbox.php', 'Orbi\\AdminKit\\Field_Checkbox' );
-		self::register_field_type( 'radio', $framework_path . '/fields/radio/class-orbital-field-radio.php', 'Orbi\\AdminKit\\Field_Radio' );
-		self::register_field_type( 'select', $framework_path . '/fields/select/class-orbital-field-select.php', 'Orbi\\AdminKit\\Field_Select' );
-		self::register_field_type( 'textarea', $framework_path . '/fields/textarea/class-orbital-field-textarea.php', 'Orbi\\AdminKit\\Field_Textarea' );
-		self::register_field_type( 'number', $framework_path . '/fields/number/class-orbital-field-number.php', 'Orbi\\AdminKit\\Field_Number' );
-		self::register_field_type( 'html', $framework_path . '/fields/html/class-orbital-field-html.php', 'Orbi\\AdminKit\\Field_Html' );
+		self::register_field_type( 'text', ORBI_ADMIN_KIT_PATH . 'fields/text/class-orbital-field-text.php', 'Orbitools\\AdminKit\\Field_Text' );
+		self::register_field_type( 'checkbox', ORBI_ADMIN_KIT_PATH . 'fields/checkbox/class-orbital-field-checkbox.php', 'Orbitools\\AdminKit\\Field_Checkbox' );
+		self::register_field_type( 'radio', ORBI_ADMIN_KIT_PATH . 'fields/radio/class-orbital-field-radio.php', 'Orbitools\\AdminKit\\Field_Radio' );
+		self::register_field_type( 'select', ORBI_ADMIN_KIT_PATH . 'fields/select/class-orbital-field-select.php', 'Orbitools\\AdminKit\\Field_Select' );
+		self::register_field_type( 'textarea', ORBI_ADMIN_KIT_PATH . 'fields/textarea/class-orbital-field-textarea.php', 'Orbitools\\AdminKit\\Field_Textarea' );
+		self::register_field_type( 'number', ORBI_ADMIN_KIT_PATH . 'fields/number/class-orbital-field-number.php', 'Orbitools\\AdminKit\\Field_Number' );
+		self::register_field_type( 'html', ORBI_ADMIN_KIT_PATH . 'fields/html/class-orbital-field-html.php', 'Orbitools\\AdminKit\\Field_Html' );
 	}
 
 	/**

@@ -4,19 +4,19 @@
  *
  * Coordinates all view components to build admin pages for AdminKit.
  *
- * @package    Orbi\AdminKit
+ * @package    Orbitools\AdminKit
  * @version    1.0.0
  * @author     OrbiTools
  * @since      1.0.0
  */
 
-namespace Orbi\AdminKit\Classes;
+namespace Orbitools\AdminKit\Classes;
 
-use Orbi\AdminKit\Views\Header_View;
-use Orbi\AdminKit\Views\Navigation_View;
-use Orbi\AdminKit\Views\Notice_Manager;
-use Orbi\AdminKit\Views\Content_View;
-use Orbi\AdminKit\Views\Footer_View;
+use Orbitools\AdminKit\Views\Header_View;
+use Orbitools\AdminKit\Views\Navigation_View;
+use Orbitools\AdminKit\Views\Notice_Manager;
+use Orbitools\AdminKit\Views\Content_View;
+use Orbitools\AdminKit\Views\Footer_View;
 
 // Prevent direct access
 if ( ! defined( 'ABSPATH' ) ) {
@@ -37,7 +37,7 @@ class Page_Builder {
 	 * Reference to the main AdminKit instance
 	 *
 	 * @since 1.0.0
-	 * @var \Orbi\AdminKit\Admin_Kit
+	 * @var \Orbitools\AdminKit\Admin_Kit
 	 */
 	private $admin_kit;
 
@@ -85,7 +85,7 @@ class Page_Builder {
 	 * Constructor
 	 *
 	 * @since 1.0.0
-	 * @param \Orbi\AdminKit\Admin_Kit $admin_kit AdminKit instance
+	 * @param \Orbitools\AdminKit\Admin_Kit $admin_kit AdminKit instance
 	 */
 	public function __construct( $admin_kit ) {
 		$this->admin_kit = $admin_kit;
