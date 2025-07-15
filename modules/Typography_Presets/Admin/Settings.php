@@ -59,6 +59,14 @@ class Settings
     {
         return array(
             array(
+                'id'      => 'typography_presets_preview',
+                'name'    => __('Available Presets', 'orbitools'),
+                'desc'    => __('Preview of typography presets from your theme.json file.', 'orbitools'),
+                'type'    => 'html',
+                'std'     => self::get_presets_preview_html(),
+                'section' => 'typography',
+            ),
+            array(
                 'id'      => 'typography_show_groups_in_dropdown',
                 'name'    => __('Show Groups in Dropdown', 'orbitools'),
                 'desc'    => __('Display preset groups as separate dropdown options.', 'orbitools'),
@@ -96,14 +104,6 @@ class Settings
                     'core/quote',
                     'core/button'
                 ),
-                'section' => 'typography',
-            ),
-            array(
-                'id'      => 'typography_presets_preview',
-                'name'    => __('Available Presets', 'orbitools'),
-                'desc'    => __('Preview of typography presets from your theme.json file.', 'orbitools'),
-                'type'    => 'html',
-                'std'     => self::get_presets_preview_html(),
                 'section' => 'typography',
             ),
         );
@@ -246,7 +246,9 @@ class Settings
         $html .= '<div class="preset-card__meta">';
         if (!empty($properties)) {
             foreach ($properties as $property => $value) {
-                $html .= '<strong>' . esc_html($property) . ':</strong> ' . esc_html($value) . '<br>';
+                $clean_property = self::clean_property_name($property);
+                $clean_value = self::clean_property_value($value);
+                $html .= esc_html($clean_property) . ': ' . esc_html($clean_value) . '<br>';
             }
         } else {
             $html .= '<em>No properties defined</em>';
@@ -273,6 +275,9 @@ class Settings
             '1.0.0'
         );
         
+        // Load theme CSS variables for font families
+        self::enqueue_theme_css_vars();
+        
         wp_enqueue_script(
             'orbitools-typography-presets-admin',
             ORBITOOLS_URL . 'modules/Typography_Presets/js/admin-presets.js',
@@ -280,6 +285,95 @@ class Settings
             '1.0.0',
             true
         );
+    }
+
+    /**
+     * Enqueue theme CSS variables for font families
+     *
+     * @since 1.0.0
+     */
+    private static function enqueue_theme_css_vars(): void
+    {
+        // Get theme.json data
+        $theme_json_path = get_template_directory() . '/theme.json';
+        
+        if (!file_exists($theme_json_path)) {
+            return;
+        }
+        
+        $theme_json_content = file_get_contents($theme_json_path);
+        $theme_json = json_decode($theme_json_content, true);
+        
+        if (!$theme_json || JSON_ERROR_NONE !== json_last_error()) {
+            return;
+        }
+        
+        // Extract font family variables
+        $font_families = $theme_json['settings']['typography']['fontFamilies'] ?? array();
+        
+        if (empty($font_families)) {
+            return;
+        }
+        
+        // Generate CSS variables
+        $css_vars = ':root {';
+        
+        foreach ($font_families as $font_family) {
+            if (isset($font_family['slug']) && isset($font_family['fontFamily'])) {
+                $slug = $font_family['slug'];
+                $family = $font_family['fontFamily'];
+                $css_vars .= "--wp--preset--font-family--{$slug}: {$family};";
+            }
+        }
+        
+        $css_vars .= '}';
+        
+        // Add inline CSS
+        wp_add_inline_style('orbitools-typography-presets-admin', $css_vars);
+    }
+
+    /**
+     * Clean property name for display
+     *
+     * @since 1.0.0
+     * @param string $property CSS property name.
+     * @return string Cleaned property name.
+     */
+    private static function clean_property_name(string $property): string
+    {
+        // Convert camelCase to kebab-case for CSS property format
+        $property = strtolower(preg_replace('/([a-z])([A-Z])/', '$1-$2', $property));
+        
+        return $property;
+    }
+
+    /**
+     * Clean property value for display
+     *
+     * @since 1.0.0
+     * @param string $value CSS property value.
+     * @return string Cleaned property value.
+     */
+    private static function clean_property_value(string $value): string
+    {
+        // Convert CSS variables to readable names
+        if (strpos($value, 'var(--wp--preset--font-family--') === 0) {
+            // Extract the slug from var(--wp--preset--font-family--slug)
+            preg_match('/var\(--wp--preset--font-family--([^)]+)\)/', $value, $matches);
+            if (!empty($matches[1])) {
+                return ucwords(str_replace('-', ' ', $matches[1]));
+            }
+        }
+        
+        // Convert other CSS variables to readable names
+        if (strpos($value, 'var(--wp--preset--') === 0) {
+            preg_match('/var\(--wp--preset--[^-]+--([^)]+)\)/', $value, $matches);
+            if (!empty($matches[1])) {
+                return ucwords(str_replace('-', ' ', $matches[1]));
+            }
+        }
+        
+        return $value;
     }
 
     /**
