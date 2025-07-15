@@ -13,6 +13,8 @@
     --gapx2: 48px;
     --gap-page: 32px;
     --wpcontent--left: 20px;
+    --orb-blue: #32A3E2;
+    --orb-navy: #1D303A;
  }
 
 /* =============================================================================
@@ -40,26 +42,26 @@ body.orbital-framework-page .updated {
    HEADER SECTION (BEM)
    ============================================================================= */
 
-.orbi-admin__header {
-    background: #f9f9f9;
+.adminkit-header {
+    background: var(--orb-blue);
     padding: var(--gap-mid) var(--gap-page);
     margin-left: calc(var(--wpcontent--left)*-1);
 }
 
-.orbi-admin__header-content {
+.adminkit-header__content {
     display: flex;
     flex-direction: row;
     gap: var(--gap);
 }
 
-.orbi-admin__header-image img{
+.adminkit-header__image img{
     display: block;
     max-height: var(--gapx2);
     height: 100%;
     width: auto;
     max-width: none;
 }
-.orbi-admin__title {
+.adminkit-header__title {
     margin: 0;
     font-size: 24px;
     font-weight: 600;
@@ -67,7 +69,7 @@ body.orbital-framework-page .updated {
     line-height: 1.3;
 }
 
-.orbi-admin__description {
+.adminkit-header__description {
     margin: 0;
     color: #646970;
     font-size: 14px;
@@ -93,6 +95,15 @@ body.orbital-framework-page .updated {
     justify-content: space-between;
     width: 100%;
     gap: 20px;
+}
+
+/* Toolbar */
+.adminkit-toolbar {
+    background: var(--orb-navy);
+    padding: var(--gap-mid) var(--gap-page);
+    margin-left: calc(var(--wpcontent--left)*-1);
+    display: flex;
+    align-items: center;
 }
 
 /* Breadcrumbs */
@@ -1068,7 +1079,8 @@ body.orbital-framework-page .updated {
    ============================================================================= */
 
 @media (max-width: 782px) {
-    .orbi-admin__header,
+    .adminkit-header,
+    .adminkit-toolbar,
     .orbi-admin__nav,
     .orbi-admin__notices,
     .orbi-admin__content,

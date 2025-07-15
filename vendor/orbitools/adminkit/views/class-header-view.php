@@ -52,18 +52,18 @@ class Header_View {
 	 */
 	public function render_header() {
 		// Determine if title and description should be hidden visually
-		$text_class = $this->admin_kit->get_hide_title_description() ? 'orbi-admin__header-text screen-reader-text' : 'orbi-admin__header-text';
+		$text_class = $this->admin_kit->get_hide_title_description() ? 'adminkit-header__text screen-reader-text' : 'adminkit-header__text';
 		?>
-		<div class="orbi-admin__header-content">
+		<div class="adminkit-header__content">
 			<?php if ( $this->admin_kit->get_page_header_image() ) : ?>
-				<div class="orbi-admin__header-image">
-					<img src="<?php echo esc_url( $this->admin_kit->get_page_header_image() ); ?>" alt="<?php echo esc_attr( $this->admin_kit->get_page_title() ); ?>" class="orbi-admin__header-img" />
+				<div class="adminkit-header__image">
+					<img src="<?php echo esc_url( $this->admin_kit->get_page_header_image() ); ?>" alt="<?php echo esc_attr( $this->admin_kit->get_page_title() ); ?>" class="adminkit-header__img" />
 				</div>
 			<?php endif; ?>
-			<div class="<?php echo esc_attr( $text_class ); ?>">
-				<h1 class="orbi-admin__title" id="orbi-admin-title"><?php echo esc_html( $this->admin_kit->get_page_title() ); ?></h1>
+			<div class="<?php echo esc_attr( str_replace('adminKit__header-text', 'adminkit-header__text', $text_class) ); ?>">
+				<h1 class="adminkit-header__title" id="orbi-admin-title"><?php echo esc_html( $this->admin_kit->get_page_title() ); ?></h1>
 				<?php if ( $this->admin_kit->get_page_description() ) : ?>
-					<p class="orbi-admin__description"><?php echo esc_html( $this->admin_kit->get_page_description() ); ?></p>
+					<p class="adminkit-header__description"><?php echo esc_html( $this->admin_kit->get_page_description() ); ?></p>
 				<?php endif; ?>
 			</div>
 			<?php $this->render_header_tabs(); ?>
@@ -95,10 +95,10 @@ class Header_View {
 			$header_style = '';
 		}
 		?>
-		<div class="orbi-global-header orbi-admin__header"<?php echo $header_style; ?>>
+		<div class="orbi-global-header adminkit-header"<?php echo $header_style; ?>>
 			<?php $this->render_header(); ?>
 		</div>
-		<div class="orbi-admin__breadcrumbs-wrapper">
+		<div class="adminkit-toolbar">
 			<?php $this->render_breadcrumbs(); ?>
 		</div>
 		<?php
