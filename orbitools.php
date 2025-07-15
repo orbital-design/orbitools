@@ -99,18 +99,10 @@ final class Orbitools
     private static ?Orbitools $instance = null;
 
     /**
-     * Debug mode flag.
-     *
-     * @var bool
-     */
-    private bool $debug_mode = false;
-
-    /**
      * Prevent direct instantiation.
      */
     private function __construct()
     {
-        $this->debug_mode = defined('WP_DEBUG') && WP_DEBUG;
     }
 
     /**
@@ -185,31 +177,6 @@ final class Orbitools
         return $field ? ($plugin_data[$field] ?? '') : $plugin_data;
     }
 
-    /**
-     * Log debug messages.
-     *
-     * @param string $message The message to log.
-     * @param string $level Log level (info, warning, error).
-     * @return void
-     */
-    public function log(string $message, string $level = 'info'): void
-    {
-        if (!$this->debug_mode) {
-            return;
-        }
-
-        $timestamp = current_time('Y-m-d H:i:s');
-        $log_message = sprintf(
-            '[%s] [%s] Orbitools: %s',
-            $timestamp,
-            strtoupper($level),
-            $message
-        );
-
-        if (function_exists('error_log')) {
-            error_log($log_message);
-        }
-    }
 }
 
 /**

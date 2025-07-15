@@ -185,14 +185,6 @@ class Admin
                     'section' => 'utils',
                 ),
                 array(
-                    'id'      => 'debug_mode',
-                    'name'    => __('Debug Mode', 'orbitools'),
-                    'desc'    => __('Enable debug logging for troubleshooting.', 'orbitools'),
-                    'type'    => 'checkbox',
-                    'std'     => false,
-                    'section' => 'utils',
-                ),
-                array(
                     'id'      => 'cache_css',
                     'name'    => __('Cache Generated CSS', 'orbitools'),
                     'desc'    => __('Cache CSS output for better performance.', 'orbitools'),
