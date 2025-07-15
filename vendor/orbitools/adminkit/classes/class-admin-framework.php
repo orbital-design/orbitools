@@ -618,6 +618,11 @@ class Admin_Kit
             case 'number':
                 return intval($value);
             case 'checkbox':
+                // Multi-checkbox (has options) should return array
+                if (isset($field['options']) && is_array($field['options'])) {
+                    return is_array($value) ? array_map('sanitize_text_field', $value) : array();
+                }
+                // Single checkbox returns 1 or 0
                 return $value ? 1 : 0;
             case 'select':
             case 'radio':
