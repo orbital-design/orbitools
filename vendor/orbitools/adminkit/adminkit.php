@@ -30,57 +30,162 @@ if (! defined('ORBITOOLS_ADMINKIT_URL')) {
 }
 
 /**
- * Load the main framework class
+ * AdminKit Loader Class
+ *
+ * Singleton pattern to ensure framework is loaded only once.
  *
  * @since 1.0.0
  */
+class AdminKit_Loader
+{
+    private static $instance = null;
+    private static $loaded = false;
+
+    /**
+     * Get singleton instance
+     *
+     * @return AdminKit_Loader
+     */
+    public static function getInstance()
+    {
+        if (self::$instance === null) {
+            self::$instance = new self();
+        }
+        return self::$instance;
+    }
+
+    /**
+     * Private constructor to prevent direct instantiation
+     */
+    private function __construct()
+    {
+        // Empty constructor
+    }
+
+    /**
+     * Load the framework classes
+     *
+     * @since 1.0.0
+     * @return bool True if loaded successfully, false otherwise
+     */
+    public function load()
+    {
+        if (self::$loaded) {
+            return true;
+        }
+
+        try {
+            // Register autoloader
+            spl_autoload_register([$this, 'autoload']);
+
+            // Load core dependencies in order
+            $this->loadCoreDependencies();
+
+            // Initialize field registry
+            if (class_exists('Orbitools\AdminKit\\Field_Registry')) {
+                Orbitools\AdminKit\Field_Registry::init();
+            }
+
+            self::$loaded = true;
+            return true;
+        } catch (Exception $e) {
+            error_log('AdminKit Load Error: ' . $e->getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * PSR-4 Autoloader for AdminKit classes
+     *
+     * @param string $class The class name
+     */
+    public function autoload($class)
+    {
+        $prefix = 'Orbitools\\AdminKit\\';
+        $baseDir = ORBITOOLS_ADMINKIT_PATH;
+
+        // Check if class uses the namespace prefix
+        $len = strlen($prefix);
+        if (strncmp($prefix, $class, $len) !== 0) {
+            return;
+        }
+
+        // Get the relative class name
+        $relativeClass = substr($class, $len);
+
+        // Map class to file path
+        $file = $this->mapClassToFile($relativeClass, $baseDir);
+
+        // If file exists, require it
+        if ($file && file_exists($file)) {
+            require_once $file;
+        }
+    }
+
+    /**
+     * Map class name to file path
+     *
+     * @param string $class
+     * @param string $baseDir
+     * @return string|null
+     */
+    private function mapClassToFile($class, $baseDir)
+    {
+        $classMap = [
+            'Field_Base' => 'fields/class-orbital-field-base.php',
+            'Field_Registry' => 'classes/class-orbital-field-registry.php',
+            'Views\\Header_View' => 'views/class-header-view.php',
+            'Views\\Navigation_View' => 'views/class-navigation-view.php',
+            'Views\\Notice_Manager' => 'views/class-notice-manager.php',
+            'Views\\Content_View' => 'views/class-content-view.php',
+            'Views\\Footer_View' => 'views/class-footer-view.php',
+            'Classes\\Page_Builder' => 'classes/class-page-builder.php',
+            'Admin_Kit' => 'classes/class-orbital-admin-framework.php',
+        ];
+
+        return isset($classMap[$class]) ? $baseDir . $classMap[$class] : null;
+    }
+
+    /**
+     * Load core dependencies that need to be loaded first
+     */
+    private function loadCoreDependencies()
+    {
+        $coreFiles = [
+            'fields/class-orbital-field-base.php',
+            'classes/class-orbital-field-registry.php',
+        ];
+
+        foreach ($coreFiles as $file) {
+            $filePath = ORBITOOLS_ADMINKIT_PATH . $file;
+            if (file_exists($filePath)) {
+                require_once $filePath;
+            } else {
+                throw new Exception("Core file not found: {$filePath}");
+            }
+        }
+    }
+
+    /**
+     * Check if framework is loaded
+     *
+     * @return bool
+     */
+    public static function isLoaded()
+    {
+        return self::$loaded;
+    }
+}
+
+/**
+ * Load the main framework class
+ *
+ * @since 1.0.0
+ * @return bool True if loaded successfully
+ */
 function AdminKit_load()
 {
-    // Load base field class
-    if (! class_exists('Orbitools\AdminKit\\Field_Base')) {
-        require_once ORBITOOLS_ADMINKIT_PATH . 'fields/class-orbital-field-base.php';
-    }
-
-    // Load field registry
-    if (! class_exists('Orbitools\AdminKit\\Field_Registry')) {
-        require_once ORBITOOLS_ADMINKIT_PATH . 'classes/class-orbital-field-registry.php';
-    }
-
-    // Load view classes
-    if (! class_exists('Orbitools\AdminKit\\Views\\Header_View')) {
-        require_once ORBITOOLS_ADMINKIT_PATH . 'views/class-header-view.php';
-    }
-
-    if (! class_exists('Orbitools\AdminKit\\Views\\Navigation_View')) {
-        require_once ORBITOOLS_ADMINKIT_PATH . 'views/class-navigation-view.php';
-    }
-
-    if (! class_exists('Orbitools\AdminKit\\Views\\Notice_Manager')) {
-        require_once ORBITOOLS_ADMINKIT_PATH . 'views/class-notice-manager.php';
-    }
-
-    if (! class_exists('Orbitools\AdminKit\\Views\\Content_View')) {
-        require_once ORBITOOLS_ADMINKIT_PATH . 'views/class-content-view.php';
-    }
-
-    if (! class_exists('Orbitools\AdminKit\\Views\\Footer_View')) {
-        require_once ORBITOOLS_ADMINKIT_PATH . 'views/class-footer-view.php';
-    }
-
-    // Load page builder
-    if (! class_exists('Orbitools\AdminKit\\Classes\\Page_Builder')) {
-        require_once ORBITOOLS_ADMINKIT_PATH . 'classes/class-page-builder.php';
-    }
-
-    // Load main framework class
-    if (! class_exists('Orbitools\AdminKit\\Admin_Kit')) {
-        require_once ORBITOOLS_ADMINKIT_PATH . 'classes/class-orbital-admin-framework.php';
-    }
-
-    // Initialize field registry
-    if (class_exists('Orbitools\AdminKit\\Field_Registry')) {
-        Orbitools\AdminKit\Field_Registry::init();
-    }
+    return AdminKit_Loader::getInstance()->load();
 }
 
 /**
@@ -90,10 +195,19 @@ function AdminKit_load()
  *
  * @since 1.0.0
  * @param string $slug Unique slug for the admin page.
- * @return Orbitools\AdminKit\Admin_Kit Framework instance.
+ * @return Orbitools\AdminKit\Admin_Kit|null Framework instance or null on failure.
  */
 function AdminKit($slug)
 {
-    AdminKit_load();
+    if (!AdminKit_load()) {
+        return null;
+    }
+    
+    if (empty($slug) || !is_string($slug)) {
+        error_log('AdminKit Error: Invalid slug provided');
+        return null;
+    }
+    
     return new Orbitools\AdminKit\Admin_Kit($slug);
 }
+
