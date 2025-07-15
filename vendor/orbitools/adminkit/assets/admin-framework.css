@@ -38,6 +38,12 @@ body.orbital-framework-page .updated {
     overflow: hidden;
 }
 
+.adminkit-content {
+    margin-top: var(--gapx2);
+    margin-right: var(--gap-page);
+    margin-bottom: 0;
+    margin-left: var(--gap-half);
+}
 /* =============================================================================
    HEADER SECTION (BEM)
    ============================================================================= */
@@ -104,6 +110,14 @@ body.orbital-framework-page .updated {
     margin-left: calc(var(--wpcontent--left)*-1);
     display: flex;
     align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+}
+
+.adminkit-toolbar__actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
 }
 
 /* Breadcrumbs */

@@ -100,6 +100,22 @@ class Header_View {
 		</div>
 		<div class="adminkit-toolbar">
 			<?php $this->render_breadcrumbs(); ?>
+			<?php $this->render_toolbar_actions(); ?>
+		</div>
+		<?php
+	}
+
+	/**
+	 * Render toolbar actions (nav actions)
+	 *
+	 * @since 1.0.0
+	 */
+	private function render_toolbar_actions() {
+		// Get the navigation view instance from the page builder
+		$navigation_view = new \Orbitools\AdminKit\Views\Navigation_View( $this->admin_kit );
+		?>
+		<div class="adminkit-toolbar__actions">
+			<?php $navigation_view->render_nav_actions(); ?>
 		</div>
 		<?php
 	}
