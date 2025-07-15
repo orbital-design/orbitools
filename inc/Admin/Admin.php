@@ -184,14 +184,6 @@ class Admin
                     'std'     => false,
                     'section' => 'utils',
                 ),
-                array(
-                    'id'      => 'cache_css',
-                    'name'    => __('Cache Generated CSS', 'orbitools'),
-                    'desc'    => __('Cache CSS output for better performance.', 'orbitools'),
-                    'type'    => 'checkbox',
-                    'std'     => true,
-                    'section' => 'utils',
-                ),
             ),
         );
     }
