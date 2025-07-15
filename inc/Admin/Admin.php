@@ -33,7 +33,7 @@ class Admin
 
         // Override the default AJAX save handler to add module change detection
         // COMMENTED OUT FOR DEBUGGING
-        // add_action('wp_ajax_orbi_admin_save_settings_orbitools', [$this, 'custom_ajax_save_settings'], 5);
+        // add_action('wp_ajax_orbitools_adminkit_save_settings_orbitools', [$this, 'custom_ajax_save_settings'], 5);
     }
 
     /**
@@ -360,11 +360,11 @@ class Admin
     public function custom_ajax_save_settings(): void
     {
         // Prevent double execution
-        remove_action('wp_ajax_orbi_admin_save_settings_orbitools', [$this, 'custom_ajax_save_settings'], 5);
+        remove_action('wp_ajax_orbitools_adminkit_save_settings_orbitools', [$this, 'custom_ajax_save_settings'], 5);
 
         // Security checks
         $nonce = $_POST['nonce'] ?? '';
-        if (!wp_verify_nonce($nonce, 'orbi_admin_orbitools')) {
+        if (!wp_verify_nonce($nonce, 'orbitools_adminkit_orbitools')) {
             wp_send_json_error('Invalid nonce');
         }
 
