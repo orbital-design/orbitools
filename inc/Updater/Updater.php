@@ -82,26 +82,8 @@ class Updater
         add_filter('pre_set_site_transient_update_plugins', array($this, 'check_for_update'));
         add_filter('plugins_api', array($this, 'plugin_popup'), 10, 3);
         add_filter('upgrader_post_install', array($this, 'after_install'), 10, 3);
-        add_action('admin_init', array($this, 'handle_manual_check'));
     }
 
-    /**
-     * Handle manual update check.
-     *
-     * @since 1.0.0
-     */
-    public function handle_manual_check(): void
-    {
-        if (isset($_GET['orbitools_check_update']) && $_GET['orbitools_check_update'] === '1') {
-            if (!current_user_can('manage_options')) {
-                wp_die('Insufficient permissions.');
-            }
-            
-            $this->force_update_check();
-            wp_redirect(admin_url('admin.php?page=orbitools&tab=updates&checked=1'));
-            exit;
-        }
-    }
 
     /**
      * Check for plugin updates.

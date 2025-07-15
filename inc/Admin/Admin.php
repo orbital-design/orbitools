@@ -21,7 +21,7 @@ class Admin
 
         add_action('init', [$this, 'init_admin_page']);
         add_action('admin_enqueue_scripts', [$this, 'enqueue_scripts']);
-        
+
         // Hook into settings save to detect module changes
         // COMMENTED OUT FOR DEBUGGING
         // add_action('orbitools_post_save_settings', [$this, 'detect_module_changes'], 10, 2);
@@ -31,7 +31,7 @@ class Admin
         add_filter('orbitools_registered_settings_sections', [$this, 'configure_settings_sections']);
         add_filter('orbitools_settings', [$this, 'get_settings_config']);
         add_filter('orbitools_admin_structure', [$this, 'configure_admin_structure']);
-        
+
         // Override the default AJAX save handler to add module change detection
         // COMMENTED OUT FOR DEBUGGING
         // add_action('wp_ajax_orbi_admin_save_settings_orbitools', [$this, 'custom_ajax_save_settings'], 5);
@@ -114,7 +114,7 @@ class Admin
             ),
             'updates' => array(
                 'version' => __('Version Information', 'orbitools'),
-                'auto'    => __('Automatic Updates', 'orbitools'),
+                'auto'    => __('Update Management', 'orbitools'),
             ),
         );
     }
@@ -140,21 +140,12 @@ class Admin
                 'display_mode' => 'tabs',
                 'sections' => array(),
             ),
-            'settings' => array(
-                'title' => __('Settings', 'orbitools'),
-                'display_mode' => 'tabs',
-                'sections' => array(
-                    'general'     => __('General Settings', 'orbitools'),
-                    'performance' => __('Performance', 'orbitools'),
-                    'cleanup'     => __('Data Cleanup', 'orbitools'),
-                ),
-            ),
-            'updates' => array(
-                'title' => __('Updates', 'orbitools'),
+            'tools' => array(
+                'title' => __('Tools/Info', 'orbitools'),
                 'display_mode' => 'cards',
                 'sections' => array(
-                    'version' => __('Version Information', 'orbitools'),
-                    'auto'    => __('Automatic Updates', 'orbitools'),
+                    'plugin' => __('Version Information', 'orbitools'),
+                    'utils'    => __('Utilities', 'orbitools'),
                 ),
             ),
         );
@@ -177,22 +168,13 @@ class Admin
                     'section' => 'modules',
                 )
             ),
-            'settings' => array(
+            'tools' => array(
                 array(
-                    'id'      => 'debug_mode',
-                    'name'    => __('Debug Mode', 'orbitools'),
-                    'desc'    => __('Enable debug logging for troubleshooting.', 'orbitools'),
-                    'type'    => 'checkbox',
-                    'std'     => false,
-                    'section' => 'general',
-                ),
-                array(
-                    'id'      => 'cache_css',
-                    'name'    => __('Cache Generated CSS', 'orbitools'),
-                    'desc'    => __('Cache CSS output for better performance.', 'orbitools'),
-                    'type'    => 'checkbox',
-                    'std'     => true,
-                    'section' => 'performance',
+                    'id'      => 'current_version',
+                    'name'    => __('Version Information', 'orbitools'),
+                    'type'    => 'html',
+                    'std'     => $this->get_version_info_html(),
+                    'section' => 'plugin',
                 ),
                 array(
                     'id'      => 'reset_on_deactivation',
@@ -200,32 +182,68 @@ class Admin
                     'desc'    => __('Remove all plugin data when deactivating.', 'orbitools'),
                     'type'    => 'checkbox',
                     'std'     => false,
-                    'section' => 'cleanup',
-                ),
-            ),
-            'updates' => array(
-                array(
-                    'id'      => 'current_version',
-                    'name'    => __('Current Version', 'orbitools'),
-                    'type'    => 'html',
-                    'std'     => '<p>' . sprintf(__('Version: %s', 'orbitools'), ORBITOOLS_VERSION) . '</p>',
-                    'section' => 'version',
+                    'section' => 'utils',
                 ),
                 array(
-                    'id'      => 'auto_updates',
-                    'name'    => __('Automatic Updates', 'orbitools'),
-                    'desc'    => __('Enable automatic updates for this plugin.', 'orbitools'),
+                    'id'      => 'debug_mode',
+                    'name'    => __('Debug Mode', 'orbitools'),
+                    'desc'    => __('Enable debug logging for troubleshooting.', 'orbitools'),
                     'type'    => 'checkbox',
                     'std'     => false,
-                    'section' => 'auto',
+                    'section' => 'utils',
+                ),
+                array(
+                    'id'      => 'cache_css',
+                    'name'    => __('Cache Generated CSS', 'orbitools'),
+                    'desc'    => __('Cache CSS output for better performance.', 'orbitools'),
+                    'type'    => 'checkbox',
+                    'std'     => true,
+                    'section' => 'utils',
                 ),
             ),
         );
     }
 
     /**
+     * Get version information HTML.
+     *
+     * @since 1.0.0
+     * @return string HTML for version information display.
+     */
+    private function get_version_info_html(): string
+    {
+        $html = '<div id="orbitools-version-info">';
+        $html .= '<p><strong>' . __('Current Version:', 'orbitools') . '</strong> ' . ORBITOOLS_VERSION . '</p>';
+
+        // Get last checked time
+        $last_checked = get_transient('orbitools_last_checked');
+        if ($last_checked) {
+            $html .= '<p><strong>' . __('Last Checked:', 'orbitools') . '</strong> ' . $last_checked . '</p>';
+        }
+
+        // Get remote version if available
+        $remote_version = get_transient('orbitools_remote_version');
+        if ($remote_version) {
+            $html .= '<p><strong>' . __('Latest Available:', 'orbitools') . '</strong> ' . $remote_version . '</p>';
+
+            $has_update = version_compare(ORBITOOLS_VERSION, $remote_version, '<');
+            if ($has_update) {
+                $html .= '<p style="color: #d63638;"><strong>' . __('Status:', 'orbitools') . '</strong> ' . __('Update Available', 'orbitools') . '</p>';
+            } else {
+                $html .= '<p style="color: #00a32a;"><strong>' . __('Status:', 'orbitools') . '</strong> ' . __('Up to Date', 'orbitools') . '</p>';
+            }
+        }
+
+        $html .= '<p><strong>' . __('Repository:', 'orbitools') . '</strong> <a href="https://github.com/orbital-design/orbitools" target="_blank">GitHub</a></p>';
+        $html .= '</div>';
+
+        return $html;
+    }
+
+
+    /**
      * Get module status HTML for display.
-     * 
+     *
      * NOTE: This method appears to be unused and may be legacy code.
      * Consider removing if not needed.
      *
@@ -285,7 +303,7 @@ class Admin
 
     /**
      * Detect module state changes during settings save.
-     * 
+     *
      * Compares previous and new module states and stores change information
      * in a transient for the AJAX response to trigger page reload.
      *
@@ -310,7 +328,7 @@ class Admin
 
     /**
      * Compare module states between old and new settings.
-     * 
+     *
      * Identifies modules that have been enabled or disabled by comparing
      * settings that end with '_enabled'.
      *
@@ -350,7 +368,7 @@ class Admin
 
     /**
      * Custom AJAX save settings handler with module change detection.
-     * 
+     *
      * Overrides the default AdminKit AJAX handler to add module change detection
      * and communicate changes back to the frontend for auto-reload functionality.
      *
@@ -360,7 +378,7 @@ class Admin
     {
         // Prevent double execution
         remove_action('wp_ajax_orbi_admin_save_settings_orbitools', [$this, 'custom_ajax_save_settings'], 5);
-        
+
         // Security checks
         $nonce = $_POST['nonce'] ?? '';
         if (!wp_verify_nonce($nonce, 'orbi_admin_orbitools')) {
@@ -374,7 +392,7 @@ class Admin
         // Process settings data
         $settings_json = $_POST['settings'] ?? '{}';
         $settings_data = json_decode(stripslashes($settings_json), true);
-        
+
         if (!is_array($settings_data)) {
             $settings_data = array();
         }
@@ -385,7 +403,7 @@ class Admin
         if ($result) {
             // Check for module changes via transient
             $module_changes = get_transient('orbitools_modules_changed_' . get_current_user_id());
-            
+
             if ($module_changes) {
                 delete_transient('orbitools_modules_changed_' . get_current_user_id());
             }
