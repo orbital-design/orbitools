@@ -231,6 +231,50 @@ register_activation_hook(__FILE__, 'orbitools_activate');
 function orbitools_deactivate(): void
 {
     flush_rewrite_rules();
+    
+    // Check if data cleanup is enabled
+    $settings = get_option('orbitools_settings', array());
+    $reset_on_deactivation = !empty($settings['reset_on_deactivation']) && $settings['reset_on_deactivation'] !== '0';
+    
+    if ($reset_on_deactivation) {
+        // Clean up plugin data
+        orbitools_cleanup_plugin_data();
+    }
+}
+
+/**
+ * Clean up all plugin data.
+ *
+ * @return void
+ */
+function orbitools_cleanup_plugin_data(): void
+{
+    global $wpdb;
+    
+    // Remove plugin options
+    delete_option('orbitools_settings');
+    
+    // Clean up Typography Presets transients
+    $wpdb->query("DELETE FROM {$wpdb->options} WHERE option_name LIKE '_transient_orbitools_%'");
+    $wpdb->query("DELETE FROM {$wpdb->options} WHERE option_name LIKE '_transient_timeout_orbitools_%'");
+    
+    // Clean up updater transients
+    delete_transient('orbitools_remote_version');
+    delete_transient('orbitools_changelog');
+    delete_transient('orbitools_last_checked');
+    
+    // Clean up WordPress object cache
+    wp_cache_delete('orbitools_typography_presets', 'theme_json');
+    
+    // Clear theme.json related transients
+    delete_transient('theme_json_data_user');
+    delete_transient('theme_json_data_theme');
+    
+    // Clear any other plugin-related transients
+    delete_site_transient('update_plugins');
+    
+    // Force flush caches
+    wp_cache_flush();
 }
 register_deactivation_hook(__FILE__, 'orbitools_deactivate');
 
