@@ -48,7 +48,10 @@ class Orbitools_Modules_Field extends Orbi\AdminKit\Field_Base
     <div class="<?php echo esc_attr($card_classes); ?>">
         <div class="orbi-module-card__header">
             <div class="orbi-module-card__icon">
-                <span class="dashicons <?php echo esc_attr($module['icon']); ?>"></span>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512">
+                    <path fill="#32a3e2" d="M64 416c0-17.7 14.3-32 32-32h320v64H96c-17.7 0-32-14.3-32-32z" class="fa-secondary" opacity=".4"/>
+                    <path fill="#32a3e2" d="M96 0C43 0 0 43 0 96v320c0 53 43 96 96 96h320c17.7 0 32-14.3 32-32s-14.3-32-32-32H96c-17.7 0-32-14.3-32-32s14.3-32 32-32h320c17.7 0 32-14.3 32-32V32c0-17.7-14.3-32-32-32H96zm158.3 72.8 64 128 32 64c4 7.9.7 17.5-7.2 21.5s-17.5.7-21.5-7.2L294.1 224H185.9l-27.6 55.2c-4 7.9-13.6 11.1-21.5 7.2s-11.1-13.6-7.2-21.5l32-64 64-128c2.7-5.4 8.3-8.8 14.3-8.8s11.6 3.4 14.3 8.8zm-14.3 43L201.9 192h76.2L240 115.8z" class="fa-primary"/>
+                </svg>
             </div>
             <div class="orbi-module-card__title-area">
                 <h4 class="orbi-module-card__title"><?php echo esc_html($module['name']); ?></h4>

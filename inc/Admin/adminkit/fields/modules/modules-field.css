@@ -32,7 +32,7 @@
 
 .orbi-module-card {
 	background: #fff;
-	border: 1px solid #ddd;
+	border: 1px solid #e0e0e0;
 	border-radius: 8px;
 	padding: 20px;
 	transition: all 0.2s ease;
@@ -40,18 +40,23 @@
 	overflow: hidden;
 	max-width: 400px;
 	width: 100%;
+	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+	border-left: 4px solid #f0f0f0;
 }
 
 .orbi-module-card:hover {
-	border-color: #0073aa;
-	box-shadow: 0 2px 8px rgba(0, 115, 170, 0.1);
+	border-color: #2271b1;
+	box-shadow: 0 2px 8px rgba(34, 113, 177, 0.15);
+	transform: translateY(-1px);
+	border-left-color: #2271b1;
 }
 
 /* Enabled state styling */
 .orbi-module-card--enabled {
-	background: linear-gradient(135deg, #f8f9ff 0%, #fff 100%);
-	border-color: #0073aa;
-	box-shadow: 0 2px 4px rgba(0, 115, 170, 0.1);
+	background: #f8f9ff;
+	border-color: #2271b1;
+	box-shadow: 0 1px 3px rgba(34, 113, 177, 0.1);
+	border-left-color: #2271b1;
 }
 
 .orbi-module-card--enabled::before {
@@ -60,8 +65,8 @@
 	top: 0;
 	left: 0;
 	right: 0;
-	height: 3px;
-	background: linear-gradient(90deg, #0073aa 0%, #005a87 100%);
+	height: 2px;
+	background: #2271b1;
 }
 
 /* ==========================================================================
@@ -79,23 +84,28 @@
 	flex-shrink: 0;
 	width: 40px;
 	height: 40px;
-	background: #f1f1f1;
-	border-radius: 6px;
+	background: #f8f9fa;
+	border-radius: 8px;
 	display: flex;
 	align-items: center;
 	justify-content: center;
 	transition: all 0.2s ease;
+	border: 1px solid #e0e0e0;
 }
 
 .orbi-module-card--enabled .orbi-module-card__icon {
-	background: linear-gradient(135deg, #0073aa 0%, #005a87 100%);
+	background: #2271b1;
 	color: #fff;
+	border-color: #2271b1;
 }
 
-.orbi-module-card__icon .dashicons {
-	font-size: 20px;
+.orbi-module-card__icon svg {
 	width: 20px;
 	height: 20px;
+}
+
+.orbi-module-card--enabled .orbi-module-card__icon svg path {
+	fill: #fff;
 }
 
 .orbi-module-card__title-area {
@@ -312,10 +322,10 @@
 }
 
 .orbi-module-card:hover {
-	transform: translateY(-2px);
+	transform: translateY(-1px);
 }
 
 .orbi-module-card--enabled:hover {
-	transform: translateY(-3px);
-	box-shadow: 0 4px 12px rgba(0, 115, 170, 0.15);
+	transform: translateY(-1px);
+	box-shadow: 0 2px 8px rgba(34, 113, 177, 0.2);
 }
