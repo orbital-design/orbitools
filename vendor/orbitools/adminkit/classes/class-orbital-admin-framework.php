@@ -367,7 +367,7 @@ class Admin_Kit {
 	 * @return string Framework URL.
 	 */
 	public function get_framework_url() {
-		return ORBI_ADMIN_KIT_URL;
+		return ORBITOOLS_ADMINKIT_URL;
 	}
 
 

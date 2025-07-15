@@ -16,16 +16,16 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // Define framework constants
-if ( ! defined( 'ORBI_ADMIN_KIT_VERSION' ) ) {
-	define( 'ORBI_ADMIN_KIT_VERSION', '1.0.0' );
+if ( ! defined( 'ORBITOOLS_ADMINKIT_VERSION' ) ) {
+	define( 'ORBITOOLS_ADMINKIT_VERSION', '1.0.0' );
 }
 
-if ( ! defined( 'ORBI_ADMIN_KIT_PATH' ) ) {
-	define( 'ORBI_ADMIN_KIT_PATH', plugin_dir_path( __FILE__ ) );
+if ( ! defined( 'ORBITOOLS_ADMINKIT_PATH' ) ) {
+	define( 'ORBITOOLS_ADMINKIT_PATH', plugin_dir_path( __FILE__ ) );
 }
 
-if ( ! defined( 'ORBI_ADMIN_KIT_URL' ) ) {
-	define( 'ORBI_ADMIN_KIT_URL', plugin_dir_url( __FILE__ ) );
+if ( ! defined( 'ORBITOOLS_ADMINKIT_URL' ) ) {
+	define( 'ORBITOOLS_ADMINKIT_URL', plugin_dir_url( __FILE__ ) );
 }
 
 /**
@@ -36,43 +36,43 @@ if ( ! defined( 'ORBI_ADMIN_KIT_URL' ) ) {
 function orbi_admin_kit_load() {
 	// Load base field class
 	if ( ! class_exists( 'Orbitools\AdminKit\\Field_Base' ) ) {
-		require_once ORBI_ADMIN_KIT_PATH . 'fields/class-orbital-field-base.php';
+		require_once ORBITOOLS_ADMINKIT_PATH . 'fields/class-orbital-field-base.php';
 	}
 
 	// Load field registry
 	if ( ! class_exists( 'Orbitools\AdminKit\\Field_Registry' ) ) {
-		require_once ORBI_ADMIN_KIT_PATH . 'classes/class-orbital-field-registry.php';
+		require_once ORBITOOLS_ADMINKIT_PATH . 'classes/class-orbital-field-registry.php';
 	}
 
 	// Load view classes
 	if ( ! class_exists( 'Orbitools\AdminKit\\Views\\Header_View' ) ) {
-		require_once ORBI_ADMIN_KIT_PATH . 'views/class-header-view.php';
+		require_once ORBITOOLS_ADMINKIT_PATH . 'views/class-header-view.php';
 	}
 	
 	if ( ! class_exists( 'Orbitools\AdminKit\\Views\\Navigation_View' ) ) {
-		require_once ORBI_ADMIN_KIT_PATH . 'views/class-navigation-view.php';
+		require_once ORBITOOLS_ADMINKIT_PATH . 'views/class-navigation-view.php';
 	}
 	
 	if ( ! class_exists( 'Orbitools\AdminKit\\Views\\Notice_Manager' ) ) {
-		require_once ORBI_ADMIN_KIT_PATH . 'views/class-notice-manager.php';
+		require_once ORBITOOLS_ADMINKIT_PATH . 'views/class-notice-manager.php';
 	}
 	
 	if ( ! class_exists( 'Orbitools\AdminKit\\Views\\Content_View' ) ) {
-		require_once ORBI_ADMIN_KIT_PATH . 'views/class-content-view.php';
+		require_once ORBITOOLS_ADMINKIT_PATH . 'views/class-content-view.php';
 	}
 	
 	if ( ! class_exists( 'Orbitools\AdminKit\\Views\\Footer_View' ) ) {
-		require_once ORBI_ADMIN_KIT_PATH . 'views/class-footer-view.php';
+		require_once ORBITOOLS_ADMINKIT_PATH . 'views/class-footer-view.php';
 	}
 	
 	// Load page builder
 	if ( ! class_exists( 'Orbitools\AdminKit\\Classes\\Page_Builder' ) ) {
-		require_once ORBI_ADMIN_KIT_PATH . 'classes/class-page-builder.php';
+		require_once ORBITOOLS_ADMINKIT_PATH . 'classes/class-page-builder.php';
 	}
 
 	// Load main framework class
 	if ( ! class_exists( 'Orbitools\AdminKit\\Admin_Kit' ) ) {
-		require_once ORBI_ADMIN_KIT_PATH . 'classes/class-orbital-admin-framework.php';
+		require_once ORBITOOLS_ADMINKIT_PATH . 'classes/class-orbital-admin-framework.php';
 	}
 
 	// Initialize field registry
