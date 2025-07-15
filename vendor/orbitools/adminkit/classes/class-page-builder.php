@@ -14,7 +14,6 @@
 namespace Orbitools\AdminKit\Classes;
 
 use Orbitools\AdminKit\Views\Header_View;
-use Orbitools\AdminKit\Views\Navigation_View;
 use Orbitools\AdminKit\Views\Content_View;
 
 // Prevent direct access
@@ -50,15 +49,6 @@ class Page_Builder
     private $header_view;
 
     /**
-     * Navigation view instance
-     *
-     * @since 1.0.0
-     * @var Navigation_View
-     */
-    private $navigation_view;
-
-
-    /**
      * Content view instance
      *
      * @since 1.0.0
@@ -87,7 +77,6 @@ class Page_Builder
     private function init_view_components()
     {
         $this->header_view = new Header_View($this->admin_kit);
-        $this->navigation_view = new Navigation_View($this->admin_kit);
         $this->content_view = new Content_View($this->admin_kit);
     }
 
@@ -151,16 +140,6 @@ class Page_Builder
     private function render_component($component)
     {
         switch ($component) {
-            case 'nav_actions':
-        ?>
-                <div class="orbi-admin__nav-actions-wrapper">
-                    <?php $this->navigation_view->render_nav_actions(); ?>
-                </div>
-            <?php
-                do_action($this->admin_kit->get_func_slug() . '_after_nav_actions');
-                break;
-
-
             case 'content':
             ?>
                 <div class="orbi-admin__content">
@@ -192,18 +171,6 @@ class Page_Builder
     {
         return $this->header_view;
     }
-
-    /**
-     * Get navigation view instance
-     *
-     * @since 1.0.0
-     * @return Navigation_View
-     */
-    public function get_navigation_view()
-    {
-        return $this->navigation_view;
-    }
-
 
     /**
      * Get content view instance
