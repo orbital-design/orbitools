@@ -16,7 +16,6 @@ namespace Orbitools\AdminKit\Classes;
 use Orbitools\AdminKit\Views\Header_View;
 use Orbitools\AdminKit\Views\Navigation_View;
 use Orbitools\AdminKit\Views\Content_View;
-use Orbitools\AdminKit\Views\Footer_View;
 
 // Prevent direct access
 if (! defined('ABSPATH')) {
@@ -67,13 +66,6 @@ class Page_Builder
      */
     private $content_view;
 
-    /**
-     * Footer view instance
-     *
-     * @since 1.0.0
-     * @var Footer_View
-     */
-    private $footer_view;
 
     /**
      * Constructor
@@ -97,7 +89,6 @@ class Page_Builder
         $this->header_view = new Header_View($this->admin_kit);
         $this->navigation_view = new Navigation_View($this->admin_kit);
         $this->content_view = new Content_View($this->admin_kit);
-        $this->footer_view = new Footer_View($this->admin_kit);
     }
 
     /**
@@ -111,8 +102,7 @@ class Page_Builder
     {
         // Define the page structure and components to include
         $page_components = array(
-            'content',
-            'footer'
+            'content'
         );
 
         // Allow filtering of page components
@@ -180,13 +170,6 @@ class Page_Builder
                 do_action($this->admin_kit->get_func_slug() . '_after_content');
                 break;
 
-            case 'footer':
-            ?>
-                <div class="orbi-admin__footer">
-                    <?php $this->footer_view->render_footer(); ?>
-                </div>
-<?php
-                break;
 
             case 'global_header':
                 $this->header_view->render_header();
@@ -232,18 +215,6 @@ class Page_Builder
     {
         return $this->content_view;
     }
-
-    /**
-     * Get footer view instance
-     *
-     * @since 1.0.0
-     * @return Footer_View
-     */
-    public function get_footer_view()
-    {
-        return $this->footer_view;
-    }
-
 
     /**
      * Add a component to the page structure

@@ -113,6 +113,13 @@ class Admin_Kit
      */
     private $field_ids_validated = false;
 
+    /**
+     * Page builder instance
+     *
+     * @since 1.0.0
+     * @var \Orbitools\AdminKit\Classes\Page_Builder
+     */
+    private $page_builder;
 
     /**
      * Initialize the framework
@@ -265,9 +272,9 @@ class Admin_Kit
      */
     public function add_notice($message, $type = 'info', $dismissible = true)
     {
-        add_action('admin_notices', function() use ($message, $type, $dismissible) {
+        add_action('admin_notices', function () use ($message, $type, $dismissible) {
             $class = 'notice';
-            
+
             // Convert type to WordPress notice class
             switch ($type) {
                 case 'success':
@@ -284,11 +291,11 @@ class Admin_Kit
                     $class .= ' notice-info';
                     break;
             }
-            
+
             if ($dismissible) {
                 $class .= ' is-dismissible';
             }
-            
+
             printf('<div class="%s"><p>%s</p></div>', esc_attr($class), esc_html($message));
         });
     }
@@ -300,8 +307,7 @@ class Admin_Kit
      */
     public function render_admin_page()
     {
-        $page_builder = new \Orbitools\AdminKit\Classes\Page_Builder($this);
-        $page_builder->build_page();
+        $this->get_page_builder()->build_page();
     }
 
     /**
@@ -311,8 +317,21 @@ class Admin_Kit
      */
     public function render_header()
     {
-        $page_builder = new \Orbitools\AdminKit\Classes\Page_Builder($this);
-        $page_builder->build_header();
+        $this->get_page_builder()->build_header();
+    }
+
+    /**
+     * Get page builder instance (lazy loading)
+     *
+     * @since 1.0.0
+     * @return \Orbitools\AdminKit\Classes\Page_Builder
+     */
+    private function get_page_builder()
+    {
+        if (!$this->page_builder) {
+            $this->page_builder = new \Orbitools\AdminKit\Classes\Page_Builder($this);
+        }
+        return $this->page_builder;
     }
 
     // Public getter methods for view components to access private properties
@@ -638,7 +657,7 @@ class Admin_Kit
 
         // Get current settings to compare
         $current_settings = get_option($this->slug . '_settings', array());
-        
+
         // Save to database
         $result = update_option($this->slug . '_settings', $sanitized_data);
 

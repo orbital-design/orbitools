@@ -1,116 +1,341 @@
 <?php
 
+/**
+ * Header View Class
+ *
+ * Handles rendering of the admin page header including branding,
+ * navigation tabs, and breadcrumb toolbar.
+ *
+ * @package    Orbitools\AdminKit\Views
+ * @since      1.0.0
+ */
+
 namespace Orbitools\AdminKit\Views;
 
 if (!defined('ABSPATH')) {
     exit;
 }
 
+/**
+ * Header View Class
+ *
+ * @since 1.0.0
+ */
 class Header_View
 {
+    /**
+     * AdminKit instance
+     *
+     * @since 1.0.0
+     * @var \Orbitools\AdminKit\Admin_Kit
+     */
     private $admin_kit;
 
+    /**
+     * Constructor
+     *
+     * @since 1.0.0
+     * @param \Orbitools\AdminKit\Admin_Kit $admin_kit AdminKit instance
+     */
     public function __construct($admin_kit)
     {
         $this->admin_kit = $admin_kit;
     }
 
+    /**
+     * Render the complete header section
+     *
+     * @since 1.0.0
+     */
     public function render_header()
     {
-        $screen = get_current_screen();
-        if (!$screen || strpos($screen->id, $this->admin_kit->get_slug()) === false) {
+        if (!$this->should_render_header()) {
             return;
         }
 
-        $header_style = $this->admin_kit->get_page_header_bg_color() 
-            ? ' style="background-color: ' . esc_attr($this->admin_kit->get_page_header_bg_color()) . '"' 
-            : '';
+        $header_data = $this->get_header_data();
+        
+        $this->render_header_section($header_data);
+        $this->render_toolbar_section();
+    }
+
+    /**
+     * Check if header should be rendered on current screen
+     *
+     * @since 1.0.0
+     * @return bool
+     */
+    private function should_render_header()
+    {
+        $screen = get_current_screen();
+        return $screen && strpos($screen->id, $this->admin_kit->get_slug()) !== false;
+    }
+
+    /**
+     * Get header data array
+     *
+     * @since 1.0.0
+     * @return array
+     */
+    private function get_header_data()
+    {
+        return array(
+            'bg_color' => $this->admin_kit->get_page_header_bg_color(),
+            'image_url' => $this->admin_kit->get_page_header_image(),
+            'title' => $this->admin_kit->get_page_title(),
+            'description' => $this->admin_kit->get_page_description(),
+            'hide_text' => $this->admin_kit->get_hide_title_description()
+        );
+    }
+
+    /**
+     * Render the main header section
+     *
+     * @since 1.0.0
+     * @param array $data Header data
+     */
+    private function render_header_section($data)
+    {
         ?>
-        <div class="adminkit-header"<?php echo $header_style; ?>>
+        <div class="adminkit-header" <?php $this->render_header_style($data['bg_color']); ?>>
             <div class="adminkit-header__content">
-                <?php if ($this->admin_kit->get_page_header_image()) : ?>
-                    <div class="adminkit-header__image">
-                        <img src="<?php echo esc_url($this->admin_kit->get_page_header_image()); ?>" 
-                             alt="<?php echo esc_attr($this->admin_kit->get_page_title()); ?>" 
-                             class="adminkit-header__img" />
-                    </div>
-                <?php endif; ?>
-
-                <div class="<?php echo $this->admin_kit->get_hide_title_description() ? 'adminkit-header__text screen-reader-text' : 'adminkit-header__text'; ?>">
-                    <h1 class="adminkit-header__title"><?php echo esc_html($this->admin_kit->get_page_title()); ?></h1>
-                    <?php if ($this->admin_kit->get_page_description()) : ?>
-                        <p class="adminkit-header__description"><?php echo esc_html($this->admin_kit->get_page_description()); ?></p>
-                    <?php endif; ?>
-                </div>
-
+                <?php $this->render_header_image($data['image_url'], $data['title']); ?>
+                <?php $this->render_header_text($data); ?>
                 <?php $this->render_tabs(); ?>
             </div>
-        </div>
-
-        <div class="adminkit-toolbar">
-            <?php $this->render_breadcrumbs(); ?>
         </div>
         <?php
     }
 
+    /**
+     * Render header background style
+     *
+     * @since 1.0.0
+     * @param string $bg_color Background color
+     */
+    private function render_header_style($bg_color)
+    {
+        if ($bg_color) {
+            echo 'style="background-color: ' . esc_attr($bg_color) . '"';
+        }
+    }
+
+    /**
+     * Render header image
+     *
+     * @since 1.0.0
+     * @param string $image_url Image URL
+     * @param string $title Page title for alt text
+     */
+    private function render_header_image($image_url, $title)
+    {
+        if (!$image_url) {
+            return;
+        }
+        ?>
+        <div class="adminkit-header__image">
+            <img src="<?php echo esc_url($image_url); ?>" 
+                 alt="<?php echo esc_attr($title); ?>" 
+                 class="adminkit-header__img" />
+        </div>
+        <?php
+    }
+
+    /**
+     * Render header text content
+     *
+     * @since 1.0.0
+     * @param array $data Header data
+     */
+    private function render_header_text($data)
+    {
+        $text_class = 'adminkit-header__text';
+        if ($data['hide_text']) {
+            $text_class .= ' screen-reader-text';
+        }
+        ?>
+        <div class="<?php echo esc_attr($text_class); ?>">
+            <h1 class="adminkit-header__title"><?php echo esc_html($data['title']); ?></h1>
+            <?php if ($data['description']) : ?>
+                <p class="adminkit-header__description"><?php echo esc_html($data['description']); ?></p>
+            <?php endif; ?>
+        </div>
+        <?php
+    }
+
+    /**
+     * Render navigation tabs
+     *
+     * @since 1.0.0
+     */
     private function render_tabs()
     {
-        $tabs = $this->admin_kit->get_tabs();
-        $active_tab = $this->admin_kit->get_active_tab();
-
-        if (empty($tabs)) return;
+        $tabs_data = $this->get_tabs_data();
+        
+        if (empty($tabs_data['tabs'])) {
+            return;
+        }
         ?>
         <div class="orbi-admin__header-tabs">
             <nav class="orbi-admin__tabs-nav">
-                <?php foreach ($tabs as $tab_key => $tab_label) : ?>
-                    <a href="<?php echo esc_url($this->admin_kit->get_tab_url($tab_key)); ?>"
-                       class="orbi-admin__tab-link <?php echo $active_tab === $tab_key ? 'orbi-admin__tab-link--active' : ''; ?>"
-                       data-tab="<?php echo esc_attr($tab_key); ?>">
-                        <?php echo esc_html($tab_label); ?>
-                    </a>
+                <?php foreach ($tabs_data['tabs'] as $tab_key => $tab_label) : ?>
+                    <?php $this->render_tab_link($tab_key, $tab_label, $tabs_data['active_tab']); ?>
                 <?php endforeach; ?>
             </nav>
         </div>
         <?php
     }
 
+    /**
+     * Get tabs data
+     *
+     * @since 1.0.0
+     * @return array
+     */
+    private function get_tabs_data()
+    {
+        return array(
+            'tabs' => $this->admin_kit->get_tabs(),
+            'active_tab' => $this->admin_kit->get_active_tab()
+        );
+    }
+
+    /**
+     * Render individual tab link
+     *
+     * @since 1.0.0
+     * @param string $tab_key Tab key
+     * @param string $tab_label Tab label
+     * @param string $active_tab Currently active tab
+     */
+    private function render_tab_link($tab_key, $tab_label, $active_tab)
+    {
+        $link_class = 'orbi-admin__tab-link';
+        if ($active_tab === $tab_key) {
+            $link_class .= ' orbi-admin__tab-link--active';
+        }
+        ?>
+        <a href="<?php echo esc_url($this->admin_kit->get_tab_url($tab_key)); ?>"
+           class="<?php echo esc_attr($link_class); ?>"
+           data-tab="<?php echo esc_attr($tab_key); ?>">
+            <?php echo esc_html($tab_label); ?>
+        </a>
+        <?php
+    }
+
+    /**
+     * Render toolbar section
+     *
+     * @since 1.0.0
+     */
+    private function render_toolbar_section()
+    {
+        ?>
+        <div class="adminkit-toolbar">
+            <?php $this->render_breadcrumbs(); ?>
+        </div>
+        <?php
+    }
+
+    /**
+     * Render breadcrumb navigation
+     *
+     * @since 1.0.0
+     */
     private function render_breadcrumbs()
     {
-        $current_tab = $this->admin_kit->get_current_tab();
-        $current_section = $this->admin_kit->get_current_section();
-        $tabs = $this->admin_kit->get_tabs();
-
-        if (empty($tabs)) return;
+        $breadcrumb_data = $this->get_breadcrumb_data();
+        
+        if (empty($breadcrumb_data['tabs'])) {
+            return;
+        }
         ?>
         <nav class="orbi-admin__breadcrumbs">
             <ol class="orbi-admin__breadcrumb-list">
-                <li class="orbi-admin__breadcrumb-item">
-                    <span class="orbi-admin__breadcrumb-text"><?php echo esc_html($this->admin_kit->get_page_title()); ?></span>
-                </li>
-                <?php if ($current_tab && isset($tabs[$current_tab])) : ?>
-                    <li class="orbi-admin__breadcrumb-item">
-                        <span class="orbi-admin__breadcrumb-separator">›</span>
-                        <span class="orbi-admin__breadcrumb-text orbi-admin__breadcrumb-text--current">
-                            <?php echo esc_html($tabs[$current_tab]); ?>
-                        </span>
-                    </li>
-                <?php endif; ?>
-                <?php if ($current_section) : ?>
-                    <?php
-                    $structure = $this->admin_kit->get_content_structure();
-                    $sections = isset($structure[$current_tab]['sections']) ? $structure[$current_tab]['sections'] : array();
-                    if (isset($sections[$current_section])) :
-                    ?>
-                        <li class="orbi-admin__breadcrumb-item">
-                            <span class="orbi-admin__breadcrumb-separator">›</span>
-                            <span class="orbi-admin__breadcrumb-text orbi-admin__breadcrumb-text--current">
-                                <?php echo esc_html($sections[$current_section]); ?>
-                            </span>
-                        </li>
-                    <?php endif; ?>
-                <?php endif; ?>
+                <?php $this->render_breadcrumb_items($breadcrumb_data); ?>
             </ol>
         </nav>
+        <?php
+    }
+
+    /**
+     * Get breadcrumb data
+     *
+     * @since 1.0.0
+     * @return array
+     */
+    private function get_breadcrumb_data()
+    {
+        $current_tab = $this->admin_kit->get_current_tab();
+        $current_section = $this->admin_kit->get_current_section();
+        
+        return array(
+            'page_title' => $this->admin_kit->get_page_title(),
+            'tabs' => $this->admin_kit->get_tabs(),
+            'current_tab' => $current_tab,
+            'current_section' => $current_section,
+            'sections' => $this->get_current_sections($current_tab)
+        );
+    }
+
+    /**
+     * Get sections for current tab
+     *
+     * @since 1.0.0
+     * @param string $current_tab Current tab key
+     * @return array
+     */
+    private function get_current_sections($current_tab)
+    {
+        $structure = $this->admin_kit->get_content_structure();
+        return isset($structure[$current_tab]['sections']) ? $structure[$current_tab]['sections'] : array();
+    }
+
+    /**
+     * Render breadcrumb items
+     *
+     * @since 1.0.0
+     * @param array $data Breadcrumb data
+     */
+    private function render_breadcrumb_items($data)
+    {
+        // Page title
+        $this->render_breadcrumb_item($data['page_title']);
+        
+        // Current tab
+        if ($data['current_tab'] && isset($data['tabs'][$data['current_tab']])) {
+            $this->render_breadcrumb_item($data['tabs'][$data['current_tab']], true, true);
+        }
+        
+        // Current section
+        if ($data['current_section'] && isset($data['sections'][$data['current_section']])) {
+            $this->render_breadcrumb_item($data['sections'][$data['current_section']], true, true);
+        }
+    }
+
+    /**
+     * Render individual breadcrumb item
+     *
+     * @since 1.0.0
+     * @param string $text Item text
+     * @param bool   $with_separator Whether to include separator
+     * @param bool   $is_current Whether this is the current item
+     */
+    private function render_breadcrumb_item($text, $with_separator = false, $is_current = false)
+    {
+        $text_class = 'orbi-admin__breadcrumb-text';
+        if ($is_current) {
+            $text_class .= ' orbi-admin__breadcrumb-text--current';
+        }
+        ?>
+        <li class="orbi-admin__breadcrumb-item">
+            <?php if ($with_separator) : ?>
+                <span class="orbi-admin__breadcrumb-separator">›</span>
+            <?php endif; ?>
+            <span class="<?php echo esc_attr($text_class); ?>">
+                <?php echo esc_html($text); ?>
+            </span>
+        </li>
         <?php
     }
 }
