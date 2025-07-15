@@ -9,15 +9,20 @@ wp.hooks.addFilter(
     'blocks.registerBlockType',
     'orbitools/add-preset-attribute',
     function(settings, name) {
-        const { settings: moduleSettings } = window.orbitoolsTypographyPresets || {};
-        
-        if (!moduleSettings) {
+        // Check if orbitoolsTypographyPresets is available
+        if (!window.orbitoolsTypographyPresets || !window.orbitoolsTypographyPresets.settings) {
             return settings;
         }
-
-        const allowedBlocks = moduleSettings.allowed_blocks || [
-            'core/paragraph', 'core/heading', 'core/list', 'core/quote', 'core/button'
-        ];
+        
+        const moduleSettings = window.orbitoolsTypographyPresets.settings;
+        
+        // Ensure allowed_blocks is an array
+        let allowedBlocks = moduleSettings.typography_allowed_blocks;
+        if (!Array.isArray(allowedBlocks)) {
+            allowedBlocks = [
+                'core/paragraph', 'core/heading', 'core/list', 'core/quote', 'core/button'
+            ];
+        }
 
         if (allowedBlocks.includes(name)) {
             settings.attributes = {

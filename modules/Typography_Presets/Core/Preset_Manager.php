@@ -123,7 +123,7 @@ class Preset_Manager
 
         $defaults = array(
             'typography_show_groups_in_dropdown' => false,
-            'output_preset_css'     => true,
+            'typography_output_preset_css' => true,
         );
 
         $this->settings = wp_parse_args($admin_settings, $defaults);

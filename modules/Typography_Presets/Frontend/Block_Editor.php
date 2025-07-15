@@ -78,7 +78,7 @@ class Block_Editor
         $admin_settings = get_option('orbitools_settings', array());
 
         $defaults = array(
-            'allowed_blocks' => array(
+            'typography_allowed_blocks' => array(
                 'core/paragraph',
                 'core/heading',
                 'core/list',
@@ -99,7 +99,7 @@ class Block_Editor
      */
     public function get_allowed_blocks(): array
     {
-        return $this->settings['allowed_blocks'];
+        return $this->settings['typography_allowed_blocks'];
     }
 
     /**
@@ -226,10 +226,13 @@ class Block_Editor
      */
     private function get_localized_data(): array
     {
+        // Normalize settings for JavaScript
+        $normalized_settings = $this->normalize_settings_for_js($this->settings);
+        
         return array(
             'presets'  => $this->preset_manager->get_presets(),
             'groups'   => $this->get_preset_groups(),
-            'settings' => $this->settings,
+            'settings' => $normalized_settings,
             'strings'  => array(
                 'selectPreset' => __('Select Typography Preset', 'orbitools'),
                 'customPreset' => __('Custom Preset', 'orbitools'),
@@ -237,6 +240,40 @@ class Block_Editor
                 'noPresetsFound' => __('No typography presets found. Add presets to your theme.json file to use this feature.', 'orbitools'),
             ),
         );
+    }
+
+    /**
+     * Normalize settings for JavaScript consumption
+     *
+     * @since 1.0.0
+     * @param array $settings Raw settings array.
+     * @return array Normalized settings.
+     */
+    private function normalize_settings_for_js(array $settings): array
+    {
+        $normalized = array();
+        
+        foreach ($settings as $key => $value) {
+            // Handle arrays differently based on the setting type
+            if ($key === 'typography_allowed_blocks' && is_array($value)) {
+                // Keep typography_allowed_blocks as an array
+                $normalized[$key] = $value;
+            } elseif (is_array($value)) {
+                // For checkbox arrays, convert to boolean
+                $normalized[$key] = !empty($value[0]) && $value[0] !== '0';
+            } elseif (is_string($value)) {
+                // For checkbox strings, convert to boolean
+                if (in_array($key, ['typography_show_groups_in_dropdown', 'typography_output_preset_css'])) {
+                    $normalized[$key] = !empty($value) && $value !== '0';
+                } else {
+                    $normalized[$key] = $value;
+                }
+            } else {
+                $normalized[$key] = $value;
+            }
+        }
+        
+        return $normalized;
     }
 
     /**

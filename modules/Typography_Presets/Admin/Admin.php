@@ -13,6 +13,9 @@
 
 namespace Orbitools\Modules\Typography_Presets\Admin;
 
+use Orbitools\Modules\Typography_Presets\Admin\Settings;
+use Orbitools\Modules\Typography_Presets\Admin\Settings_Helper;
+
 // Prevent direct access
 if (!defined('ABSPATH')) {
     exit;
@@ -69,8 +72,7 @@ class Admin
      */
     public function is_module_enabled(): bool
     {
-        $settings = get_option('orbitools_settings', array());
-        return !empty($settings['typography_presets_enabled']);
+        return Settings_Helper::is_module_enabled();
     }
 
     /**
@@ -120,7 +122,12 @@ class Admin
             $structure['modules']['sections'] = array();
         }
 
-        $structure['modules']['sections']['typography'] = __('Typography Presets', 'orbitools');
+        // Get structure from Settings class
+        $settings_structure = Settings::get_admin_structure();
+        $structure['modules']['sections'] = array_merge(
+            $structure['modules']['sections'],
+            $settings_structure['sections']
+        );
 
         return $structure;
     }
@@ -138,23 +145,12 @@ class Admin
             $settings['modules'] = array();
         }
 
-        $settings['modules'][] = array(
-            'id'      => 'typography_presets_enabled',
-            'name'    => __('Enable Typography Presets', 'orbitools'),
-            'desc'    => __('Replace core typography controls with preset system.', 'orbitools'),
-            'type'    => 'checkbox',
-            'std'     => false,
-            'section' => 'typography',
-        );
-
-        $settings['modules'][] = array(
-            'id'      => 'typography_show_groups_in_dropdown',
-            'name'    => __('Show Groups in Dropdown', 'orbitools'),
-            'desc'    => __('Display preset groups as separate dropdown options.', 'orbitools'),
-            'type'    => 'checkbox',
-            'std'     => false,
-            'section' => 'typography',
-        );
+        // Get field definitions from Settings class
+        $field_definitions = Settings::get_field_definitions();
+        
+        foreach ($field_definitions as $field) {
+            $settings['modules'][] = $field;
+        }
 
         return $settings;
     }

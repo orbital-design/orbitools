@@ -13,6 +13,8 @@
 
 namespace Orbitools\Modules\Typography_Presets\Core;
 
+use Orbitools\Modules\Typography_Presets\Admin\Settings_Helper;
+
 // Prevent direct access
 if (!defined('ABSPATH')) {
     exit;
@@ -199,6 +201,11 @@ class CSS_Generator
      */
     public function output_preset_css(): void
     {
+        // Check if CSS output is enabled
+        if (!Settings_Helper::output_preset_css()) {
+            return;
+        }
+
         $css = $this->get_cached_css();
         
         if (empty($css)) {
