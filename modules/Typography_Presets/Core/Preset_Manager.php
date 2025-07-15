@@ -13,6 +13,8 @@
 
 namespace Orbitools\Modules\Typography_Presets\Core;
 
+use Orbitools\Modules\Typography_Presets\Admin\Settings;
+
 // Prevent direct access
 if (!defined('ABSPATH')) {
     exit;
@@ -187,8 +189,8 @@ class Preset_Manager
             return false;
         }
 
-        // Navigate to our plugin data: settings -> custom -> orbital -> plugins -> oes -> Typography_Presets
-        $plugin_path = array('settings', 'custom', 'orbital', 'plugins', 'oes', 'Typography_Presets');
+        // Get configurable path from settings
+        $plugin_path = Settings::get_theme_json_path();
         $data = $theme_json;
 
         foreach ($plugin_path as $key) {

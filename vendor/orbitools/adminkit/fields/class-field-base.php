@@ -231,7 +231,16 @@ abstract class Field_Base {
 		}
 		?>
 		<div class="field__description" id="<?php echo esc_attr( $this->get_field_id() ); ?>-description">
-			<?php echo esc_html( $this->get_field_description() ); ?>
+			<?php echo wp_kses( $this->get_field_description(), array(
+				'br' => array(),
+				'strong' => array(),
+				'em' => array(),
+				'code' => array(),
+				'a' => array(
+					'href' => array(),
+					'target' => array(),
+				),
+			) ); ?>
 		</div>
 		<?php
 	}

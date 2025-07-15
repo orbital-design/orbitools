@@ -50,6 +50,7 @@ class Settings
             'typography_presets_enabled' => false,
             'typography_show_groups_in_dropdown' => false,
             'typography_output_preset_css' => true,
+            'typography_theme_json_path' => 'orbitools',
             'typography_allowed_blocks' => array(
                 'core/paragraph',
                 'core/heading',
@@ -91,6 +92,14 @@ class Settings
                 'desc'    => __('Automatically output CSS for typography presets in the page head.', 'orbitools'),
                 'type'    => 'checkbox',
                 'std'     => true,
+                'section' => 'typography',
+            ),
+            array(
+                'id'      => 'typography_theme_json_path',
+                'name'    => __('Theme.json Path', 'orbitools'),
+                'desc'    => __('Specify where your presets are located in theme.json. Use dot notation for nested paths.<br><br><strong>Examples:</strong><br>• <code>orbitools</code> → <code>settings.custom.orbitools.Typography_Presets</code><br>• <code>orbital.plugins.orbitools</code> → <code>settings.custom.orbital.plugins.orbitools.Typography_Presets</code><br>• <code>mytheme.components</code> → <code>settings.custom.mytheme.components.Typography_Presets</code><br><br><strong>Note:</strong> Path automatically starts with "settings.custom" and ends with "Typography_Presets"', 'orbitools'),
+                'type'    => 'text',
+                'std'     => 'orbitools',
                 'section' => 'typography',
             ),
             array(
@@ -146,6 +155,34 @@ class Settings
     {
         $saved_settings = get_option('orbitools_settings', array());
         return wp_parse_args($saved_settings, self::get_defaults());
+    }
+
+    /**
+     * Get theme.json path array based on user settings
+     *
+     * @since 1.0.0
+     * @return array Path array for navigating theme.json structure.
+     */
+    public static function get_theme_json_path(): array
+    {
+        $settings = self::get_current_settings();
+        $path_setting = $settings['typography_theme_json_path'] ?? 'orbitools';
+        
+        // Always start with settings.custom and end with Typography_Presets
+        $path = array('settings', 'custom');
+        
+        // Parse the path setting and add segments
+        $segments = explode('.', trim($path_setting, '.'));
+        foreach ($segments as $segment) {
+            if (!empty($segment)) {
+                $path[] = $segment;
+            }
+        }
+        
+        // Always end with Typography_Presets
+        $path[] = 'Typography_Presets';
+        
+        return $path;
     }
 
     /**

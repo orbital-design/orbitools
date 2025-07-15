@@ -197,6 +197,17 @@ class Admin
             return false;
         }
 
-        return isset($theme_json['settings']['custom']['orbital']['plugins']['oes']['Typography_Presets']['items']);
+        // Get configurable path from settings
+        $plugin_path = Settings::get_theme_json_path();
+        $data = $theme_json;
+
+        foreach ($plugin_path as $key) {
+            if (!isset($data[$key])) {
+                return false;
+            }
+            $data = $data[$key];
+        }
+
+        return isset($data['items']);
     }
 }
