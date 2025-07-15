@@ -5,7 +5,7 @@
  * and page reload when modules are enabled/disabled.
  */
 
-(function($) {
+(function() {
     'use strict';
 
     /**
@@ -83,13 +83,16 @@
                             // Check if this is a settings save action
                             if (formData.get && formData.get('action') === 'orbi_admin_save_settings_orbitools') {
                                 responseClone.json().then(function(data) {
-                                    if (data.success && data.data && data.data.modules_changed) {
-                                        const changes = data.data.module_changes || {};
-                                        const changeDetails = OrbitoolsAdmin.formatModuleChanges(changes);
-                                        
-                                        OrbitoolsAdmin.reloadPage(
-                                            'Modules have been updated: ' + changeDetails + '. Reloading page to initialize changes...'
-                                        );
+                                    if (data.success) {
+                                        // Check if we have detected module changes
+                                        if (OrbitoolsAdmin.hasModuleChanges()) {
+                                            const changes = OrbitoolsAdmin.getModuleChanges();
+                                            const changeDetails = OrbitoolsAdmin.formatModuleChanges(changes);
+                                            
+                                            OrbitoolsAdmin.reloadPage(
+                                                'Modules have been updated: ' + changeDetails + '. Reloading page to initialize changes...'
+                                            );
+                                        }
                                     }
                                 }).catch(function(error) {
                                     console.log('Orbitools: Error parsing AJAX response', error);
@@ -194,4 +197,4 @@
     // Make available globally for debugging
     window.OrbitoolsAdmin = OrbitoolsAdmin;
 
-})(jQuery);
+})();

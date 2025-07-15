@@ -21,6 +21,9 @@ class Admin
 
         add_action('init', [$this, 'init_admin_page']);
         add_action('admin_enqueue_scripts', [$this, 'enqueue_scripts']);
+        
+        // Hook into settings save to detect module changes
+        add_action('orbitools_post_save_settings', [$this, 'detect_module_changes'], 10, 2);
 
         // Setup filters (these don't use translations immediately)
         add_filter('orbitools_settings_tabs', [$this, 'configure_settings_tabs']);
@@ -265,7 +268,7 @@ class Admin
         wp_enqueue_script(
             'orbitools-admin',
             ORBITOOLS_URL . 'assets/js/admin.js',
-            array('jquery'),
+            array(),
             ORBITOOLS_VERSION,
             true
         );
