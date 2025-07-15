@@ -41,7 +41,7 @@ function orbi_admin_kit_load() {
 
 	// Load field registry
 	if ( ! class_exists( 'Orbi\\AdminKit\\Field_Registry' ) ) {
-		require_once ORBI_ADMIN_KIT_PATH . 'class-orbital-field-registry.php';
+		require_once ORBI_ADMIN_KIT_PATH . 'classes/class-orbital-field-registry.php';
 	}
 
 	// Load view classes
@@ -72,7 +72,7 @@ function orbi_admin_kit_load() {
 
 	// Load main framework class
 	if ( ! class_exists( 'Orbi\\AdminKit\\Admin_Kit' ) ) {
-		require_once ORBI_ADMIN_KIT_PATH . 'class-orbital-admin-framework.php';
+		require_once ORBI_ADMIN_KIT_PATH . 'classes/class-orbital-admin-framework.php';
 	}
 
 	// Initialize field registry
