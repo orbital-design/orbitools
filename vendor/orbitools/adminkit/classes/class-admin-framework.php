@@ -162,6 +162,9 @@ class Admin_Kit
 
         // Always add global header after admin bar but before #wpbody
         add_action('in_admin_header', array($this, 'render_header'));
+
+        // Modify admin footer on our pages
+        add_filter('admin_footer_text', array($this, 'admin_footer_text'));
     }
 
     /**
@@ -318,6 +321,29 @@ class Admin_Kit
     public function render_header()
     {
         $this->get_page_builder()->build_header();
+    }
+
+    /**
+     * Modify admin footer text on our pages
+     *
+     * @since 1.0.0
+     * @param string $text The current admin footer text
+     * @return string
+     */
+    public function admin_footer_text($text)
+    {
+        // Only modify footer on our admin pages
+        $screen = get_current_screen();
+        if (!$screen || strpos($screen->id, $this->slug) === false) {
+            return $text;
+        }
+
+        return sprintf(
+            /* translators: %1$s: Link to OrbiTools website */
+            ' Modular and extensible admin page built with <a href="%1$s" target="_blank">AdminKit</a> lovingly created by <a href="%2$s" target="_blank">Orbital Design</a>.',
+            esc_url('https://github.com/orbital-design/orbitools'),
+            esc_url('https://orbital.co.uk/'),
+        );
     }
 
     /**
