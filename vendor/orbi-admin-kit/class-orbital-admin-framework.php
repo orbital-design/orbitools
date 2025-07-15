@@ -86,6 +86,14 @@ class Admin_Kit {
 	private $page_header_bg_color = '#32A3E2';
 
 	/**
+	 * Hide title and description visually
+	 *
+	 * @since 1.0.0
+	 * @var bool
+	 */
+	private $hide_title_description = false;
+
+	/**
 	 * Menu configuration
 	 *
 	 * @since 1.0.0
@@ -176,6 +184,16 @@ class Admin_Kit {
 	}
 
 	/**
+	 * Set whether to hide title and description visually
+	 *
+	 * @since 1.0.0
+	 * @param bool $hide Whether to hide title and description visually.
+	 */
+	public function set_hide_title_description( $hide ) {
+		$this->hide_title_description = (bool) $hide;
+	}
+
+	/**
 	 * Configure menu settings
 	 *
 	 * @since 1.0.0
@@ -209,6 +227,11 @@ class Admin_Kit {
 		// Set header background color (use default if not provided)
 		if ( isset( $config['header_bg_color'] ) ) {
 			$this->set_page_header_bg_color( $config['header_bg_color'] );
+		}
+
+		// Set hide title and description option
+		if ( isset( $config['hide_title_description'] ) ) {
+			$this->set_hide_title_description( $config['hide_title_description'] );
 		}
 
 		// Set menu configuration
@@ -589,6 +612,8 @@ class Admin_Kit {
 	 * @since 1.0.0
 	 */
 	private function render_header() {
+		// Determine if title and description should be hidden visually
+		$text_class = $this->hide_title_description ? 'orbi-admin__header-text screen-reader-text' : 'orbi-admin__header-text';
 		?>
 		<div class="orbi-admin__header-content">
 			<?php if ( $this->page_header_image ) : ?>
@@ -596,7 +621,7 @@ class Admin_Kit {
 					<img src="<?php echo esc_url( $this->page_header_image ); ?>" alt="<?php echo esc_attr( $this->page_title ); ?>" class="orbi-admin__header-img" />
 				</div>
 			<?php endif; ?>
-			<div class="orbi-admin__header-text">
+			<div class="<?php echo esc_attr( $text_class ); ?>">
 				<h1 class="orbi-admin__title" id="orbi-admin-title"><?php echo esc_html( $this->page_title ); ?></h1>
 				<?php if ( $this->page_description ) : ?>
 					<p class="orbi-admin__description"><?php echo esc_html( $this->page_description ); ?></p>

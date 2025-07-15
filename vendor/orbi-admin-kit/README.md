@@ -20,6 +20,7 @@ orbi_admin_kit('my-plugin')->init(array(
     'description' => 'Configure your plugin settings.',
     'header_image' => 'path/to/logo.svg',
     'header_bg_color' => '#32A3E2',
+    'hide_title_description' => false, // Set to true to hide title/description visually
     'menu' => array(
         'parent' => 'options-general.php',
         'capability' => 'manage_options',
@@ -66,6 +67,20 @@ $admin_kit->set_page_header_bg_color('linear-gradient(90deg, #32A3E2, #1e5a8a)')
 ```
 
 **Default**: The header background color defaults to Orbital blue (`#32A3E2`) if not specified.
+
+### Hide Title and Description
+You can hide the title and description visually while keeping them accessible to screen readers:
+
+```php
+orbi_admin_kit('my-plugin')->init(array(
+    'title' => 'My Plugin Settings',
+    'description' => 'Configure your plugin settings.',
+    'hide_title_description' => true, // Hides title/description visually
+    'header_image' => 'path/to/logo.svg',
+));
+```
+
+When `hide_title_description` is set to `true`, the title and description receive the WordPress `screen-reader-text` class, making them invisible to sighted users but still accessible to screen readers for SEO and accessibility purposes.
 
 ## Admin Structure
 
