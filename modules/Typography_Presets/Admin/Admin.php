@@ -59,9 +59,6 @@ class Admin
         // Register with admin framework
         add_filter('orbitools_adminkit_structure', array($this, 'register_new_framework_structure'));
         add_filter('orbitools_adminkit_fields', array($this, 'register_new_framework_settings'));
-
-        // Add admin notices for missing presets
-        add_action('admin_notices', array($this, 'check_and_show_missing_presets_notice'));
     }
 
     /**
