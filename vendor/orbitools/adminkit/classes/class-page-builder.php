@@ -117,7 +117,6 @@ class Page_Builder {
 		$page_components = array(
 			'navigation',
 			'notices', 
-			'tabs',
 			'content',
 			'footer'
 		);
@@ -181,14 +180,6 @@ class Page_Builder {
 				do_action( $this->admin_kit->get_func_slug() . '_after_notices' );
 				break;
 
-			case 'tabs':
-				?>
-				<div class="orbi-admin__tabs">
-					<?php $this->content_view->render_tabs(); ?>
-				</div>
-				<?php
-				do_action( $this->admin_kit->get_func_slug() . '_after_tabs' );
-				break;
 
 			case 'content':
 				?>
