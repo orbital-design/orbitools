@@ -30,10 +30,7 @@ class Settings_Helper
     /**
      * Normalize a setting value to boolean
      *
-     * AdminKit sometimes stores checkbox values as:
-     * - Arrays: ["1"] or []
-     * - Strings: "1" or ""
-     * - Booleans: true or false
+     * AdminKit stores checkbox values as strings: "1" or ""
      *
      * @since 1.0.0
      * @param mixed $value The setting value to normalize.
@@ -41,15 +38,7 @@ class Settings_Helper
      */
     public static function normalize_boolean($value): bool
     {
-        if (is_array($value)) {
-            return !empty($value[0]) && $value[0] !== '0';
-        }
-        
-        if (is_string($value)) {
-            return !empty($value) && $value !== '0';
-        }
-        
-        return (bool) $value;
+        return !empty($value) && $value !== '0';
     }
 
     /**

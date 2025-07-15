@@ -19,7 +19,7 @@
             }
 
             // Define allowed blocks (with fallback)
-            const allowedBlocks = moduleSettings.allowed_blocks || [
+            const allowedBlocks = moduleSettings.typography_allowed_blocks || [
                 'core/paragraph', 'core/heading', 'core/list', 'core/quote', 'core/button'
             ];
 
@@ -56,7 +56,7 @@
         }
 
         // Define allowed blocks (with fallback)
-        const allowedBlocks = moduleSettings.allowed_blocks || [
+        const allowedBlocks = moduleSettings.typography_allowed_blocks || [
             'core/paragraph', 'core/heading', 'core/list', 'core/quote', 'core/button'
         ];
 

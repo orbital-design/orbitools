@@ -116,29 +116,27 @@ class Typography_Presets
         // Always initialize admin functionality for module registration
         $this->admin = new Admin();
 
-        // Only initialize core functionality if module is enabled
+        // Always initialize preset manager and CSS generator for CSS output
+        $this->preset_manager = new Preset_Manager();
+        $this->css_generator = new CSS_Generator($this->preset_manager);
+
+        // Only initialize frontend functionality if module is enabled
         if ($this->admin->is_module_enabled()) {
-            $this->init_core_functionality();
+            $this->init_frontend_functionality();
         }
 
         self::$initialized = true;
     }
 
     /**
-     * Initialize core module functionality
+     * Initialize frontend module functionality
      *
-     * Sets up preset management and frontend integration when the module is enabled.
+     * Sets up frontend integration when the module is enabled.
      *
      * @since 1.0.0
      */
-    private function init_core_functionality(): void
+    private function init_frontend_functionality(): void
     {
-        // Initialize preset management
-        $this->preset_manager = new Preset_Manager();
-
-        // Initialize CSS generation
-        $this->css_generator = new CSS_Generator($this->preset_manager);
-
         // Initialize asset management
         $this->assets = new Assets();
 
@@ -223,7 +221,7 @@ class Typography_Presets
      */
     public function is_fully_initialized(): bool
     {
-        return $this->preset_manager !== null && $this->block_editor !== null && $this->css_generator !== null && $this->assets !== null;
+        return $this->preset_manager !== null && $this->css_generator !== null;
     }
 
     /**

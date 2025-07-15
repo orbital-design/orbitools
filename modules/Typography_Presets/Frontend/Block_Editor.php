@@ -167,6 +167,20 @@ class Block_Editor
             self::VERSION,
             true
         );
+
+        // Enqueue class application
+        wp_enqueue_script(
+            'orbitools-typography-class-application',
+            ORBITOOLS_URL . 'modules/Typography_Presets/js/class-application.js',
+            array(
+                'wp-hooks',
+                'wp-element',
+                'wp-compose',
+                'orbitools-typography-attribute-registration'
+            ),
+            self::VERSION,
+            true
+        );
     }
 
     /**

@@ -23,7 +23,8 @@ class Admin
         add_action('admin_enqueue_scripts', [$this, 'enqueue_scripts']);
         
         // Hook into settings save to detect module changes
-        add_action('orbitools_post_save_settings', [$this, 'detect_module_changes'], 10, 2);
+        // COMMENTED OUT FOR DEBUGGING
+        // add_action('orbitools_post_save_settings', [$this, 'detect_module_changes'], 10, 2);
 
         // Setup filters (these don't use translations immediately)
         add_filter('orbitools_settings_tabs', [$this, 'configure_settings_tabs']);
@@ -32,7 +33,8 @@ class Admin
         add_filter('orbitools_admin_structure', [$this, 'configure_admin_structure']);
         
         // Override the default AJAX save handler to add module change detection
-        add_action('wp_ajax_orbi_admin_save_settings_orbitools', [$this, 'custom_ajax_save_settings'], 5);
+        // COMMENTED OUT FOR DEBUGGING
+        // add_action('wp_ajax_orbi_admin_save_settings_orbitools', [$this, 'custom_ajax_save_settings'], 5);
     }
 
     /**

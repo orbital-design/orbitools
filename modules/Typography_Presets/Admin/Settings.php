@@ -59,14 +59,6 @@ class Settings
     {
         return array(
             array(
-                'id'      => 'typography_presets_enabled',
-                'name'    => __('Enable Typography Presets', 'orbitools'),
-                'desc'    => __('Replace core typography controls with preset system.', 'orbitools'),
-                'type'    => 'checkbox',
-                'std'     => false,
-                'section' => 'typography',
-            ),
-            array(
                 'id'      => 'typography_show_groups_in_dropdown',
                 'name'    => __('Show Groups in Dropdown', 'orbitools'),
                 'desc'    => __('Display preset groups as separate dropdown options.', 'orbitools'),
@@ -99,7 +91,7 @@ class Settings
                 ),
                 'std'     => array(
                     'core/paragraph',
-                    'core/heading', 
+                    'core/heading',
                     'core/list',
                     'core/quote',
                     'core/button'
@@ -124,37 +116,6 @@ class Settings
         );
     }
 
-    /**
-     * Validate and sanitize settings
-     *
-     * @since 1.0.0
-     * @param array $input Raw input values.
-     * @return array Sanitized settings.
-     */
-    public static function validate_settings(array $input): array
-    {
-        $validated = array();
-        $defaults = self::get_defaults();
-
-        // Validate enabled checkbox
-        $validated['typography_presets_enabled'] = !empty($input['typography_presets_enabled']);
-
-        // Validate show groups checkbox
-        $validated['typography_show_groups_in_dropdown'] = !empty($input['typography_show_groups_in_dropdown']);
-
-        // Validate output CSS checkbox
-        $validated['typography_output_preset_css'] = !empty($input['typography_output_preset_css']);
-
-        // Validate allowed blocks checkboxes
-        if (isset($input['typography_allowed_blocks']) && is_array($input['typography_allowed_blocks'])) {
-            $validated['typography_allowed_blocks'] = array_map('sanitize_text_field', $input['typography_allowed_blocks']);
-        } else {
-            $validated['typography_allowed_blocks'] = $defaults['typography_allowed_blocks'];
-        }
-
-        // Merge with defaults to ensure all required keys exist
-        return wp_parse_args($validated, $defaults);
-    }
 
     /**
      * Get current settings with defaults

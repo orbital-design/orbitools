@@ -127,7 +127,7 @@ class CSS_Generator
      */
     private function get_preset_css_selector(string $preset_id): string
     {
-        return sprintf('.orbitools-typography-preset-%s', esc_attr($preset_id));
+        return sprintf('.has-type-preset-%s', esc_attr($preset_id));
     }
 
     /**

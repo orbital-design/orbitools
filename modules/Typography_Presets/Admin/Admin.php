@@ -145,12 +145,9 @@ class Admin
             $settings['modules'] = array();
         }
 
-        // Get field definitions from Settings class
-        $field_definitions = Settings::get_field_definitions();
-        
-        foreach ($field_definitions as $field) {
-            $settings['modules'][] = $field;
-        }
+        // Get settings from Settings class
+        $module_settings = Settings::get_field_definitions();
+        $settings['modules'] = array_merge($settings['modules'], $module_settings);
 
         return $settings;
     }

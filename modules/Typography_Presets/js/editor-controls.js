@@ -25,7 +25,7 @@
             const hasPresets = presets && Object.keys(presets).length > 0;
 
             // Define allowed blocks (with fallback)
-            const allowedBlocks = settings.allowed_blocks || [
+            const allowedBlocks = settings.typography_allowed_blocks || [
                 'core/paragraph', 'core/heading', 'core/list', 'core/quote', 'core/button'
             ];
 
@@ -116,7 +116,7 @@
                 const options = [];
 
                 // Group by group if enabled
-                if (settings.show_groups) {
+                if (settings.typography_show_groups_in_dropdown) {
                     const grouped = {};
 
                     Object.keys(presets).forEach(id => {
