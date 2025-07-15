@@ -48,39 +48,6 @@ class Content_View
         $this->admin_kit = $admin_kit;
     }
 
-    /**
-     * Render tabs section
-     *
-     * @since 1.0.0
-     */
-    public function render_tabs()
-    {
-        $tabs = $this->admin_kit->get_tabs();
-        $active_tab = $this->admin_kit->get_active_tab();
-
-        if (empty($tabs)) {
-            return;
-        }
-?>
-        <div class="orbi-admin__tabs-wrapper">
-            <nav class="orbi-admin__tabs-nav">
-                <?php foreach ($tabs as $tab_key => $tab_label) : ?>
-                    <a href="#"
-                        class="orbi-admin__tab-link <?php echo $active_tab === $tab_key ? 'orbi-admin__tab-link--active' : ''; ?>"
-                        data-tab="<?php echo esc_attr($tab_key); ?>"
-                        role="tab"
-                        aria-selected="<?php echo $active_tab === $tab_key ? 'true' : 'false'; ?>"
-                        id="orbi-tab-<?php echo esc_attr($tab_key); ?>">
-                        <?php echo esc_html($tab_label); ?>
-                    </a>
-                <?php endforeach; ?>
-            </nav>
-        </div>
-
-    <?php
-        // Hook for additional tab content
-        do_action($this->admin_kit->get_func_slug() . '_render_tabs', $tabs, $active_tab);
-    }
 
     /**
      * Render tab content section

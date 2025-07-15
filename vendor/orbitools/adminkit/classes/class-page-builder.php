@@ -147,7 +147,7 @@ class Page_Builder
      *
      * @since 1.0.0
      */
-    public function build_global_header()
+    public function build_header()
     {
         $this->render_component('global_header');
     }
@@ -189,7 +189,7 @@ class Page_Builder
                 break;
 
             case 'global_header':
-                $this->header_view->render_global_header();
+                $this->header_view->render_header();
                 break;
 
             default:

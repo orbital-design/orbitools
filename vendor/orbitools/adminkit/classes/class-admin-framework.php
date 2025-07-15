@@ -154,7 +154,7 @@ class Admin_Kit
         add_action('wp_ajax_orbitools_adminkit_save_settings_' . $this->slug, array($this, 'ajax_save_settings'));
 
         // Always add global header after admin bar but before #wpbody
-        add_action('in_admin_header', array($this, 'render_global_header'));
+        add_action('in_admin_header', array($this, 'render_header'));
     }
 
     /**
@@ -305,14 +305,14 @@ class Admin_Kit
     }
 
     /**
-     * Render global header using page builder
+     * Render header using page builder
      *
      * @since 1.0.0
      */
-    public function render_global_header()
+    public function render_header()
     {
         $page_builder = new \Orbitools\AdminKit\Classes\Page_Builder($this);
-        $page_builder->build_global_header();
+        $page_builder->build_header();
     }
 
     // Public getter methods for view components to access private properties
