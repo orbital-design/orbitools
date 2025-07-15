@@ -146,11 +146,12 @@
                 if (changes.hasOwnProperty(moduleId)) {
                     const change = changes[moduleId];
                     const moduleName = moduleId.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-                    changeList.push(moduleName + ' ' + change.action);
+                    const action = change.to ? 'enabled' : 'disabled';
+                    changeList.push(moduleName + ' ' + action);
                 }
             }
             
-            return changeList.join(', ') || 'modules updated';
+            return changeList.length > 0 ? changeList.join(', ') : 'modules updated';
         },
         
         /**
