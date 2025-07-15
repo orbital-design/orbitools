@@ -15,7 +15,6 @@ namespace Orbitools\AdminKit\Classes;
 
 use Orbitools\AdminKit\Views\Header_View;
 use Orbitools\AdminKit\Views\Navigation_View;
-use Orbitools\AdminKit\Views\Notice_Manager;
 use Orbitools\AdminKit\Views\Content_View;
 use Orbitools\AdminKit\Views\Footer_View;
 
@@ -59,13 +58,6 @@ class Page_Builder
      */
     private $navigation_view;
 
-    /**
-     * Notice manager instance
-     *
-     * @since 1.0.0
-     * @var Notice_Manager
-     */
-    private $notice_manager;
 
     /**
      * Content view instance
@@ -104,7 +96,6 @@ class Page_Builder
     {
         $this->header_view = new Header_View($this->admin_kit);
         $this->navigation_view = new Navigation_View($this->admin_kit);
-        $this->notice_manager = new Notice_Manager($this->admin_kit);
         $this->content_view = new Content_View($this->admin_kit);
         $this->footer_view = new Footer_View($this->admin_kit);
     }
@@ -120,7 +111,6 @@ class Page_Builder
     {
         // Define the page structure and components to include
         $page_components = array(
-            'notices',
             'content',
             'footer'
         );
@@ -180,15 +170,6 @@ class Page_Builder
                 do_action($this->admin_kit->get_func_slug() . '_after_nav_actions');
                 break;
 
-            case 'notices':
-            ?>
-                <div class="orbi-admin__notices">
-                    <?php $this->notice_manager->render_notices(); ?>
-                </div>
-            <?php
-                do_action($this->admin_kit->get_func_slug() . '_after_notices');
-                break;
-
 
             case 'content':
             ?>
@@ -240,16 +221,6 @@ class Page_Builder
         return $this->navigation_view;
     }
 
-    /**
-     * Get notice manager instance
-     *
-     * @since 1.0.0
-     * @return Notice_Manager
-     */
-    public function get_notice_manager()
-    {
-        return $this->notice_manager;
-    }
 
     /**
      * Get content view instance
@@ -273,18 +244,6 @@ class Page_Builder
         return $this->footer_view;
     }
 
-    /**
-     * Add a notice through the notice manager
-     *
-     * @since 1.0.0
-     * @param string $message Notice message.
-     * @param string $type Notice type (success, error, warning, info).
-     * @param bool   $dismissible Whether notice is dismissible.
-     */
-    public function add_notice($message, $type = 'info', $dismissible = true)
-    {
-        $this->notice_manager->add_notice($message, $type, $dismissible);
-    }
 
     /**
      * Add a component to the page structure

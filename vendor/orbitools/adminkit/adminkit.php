@@ -136,7 +136,6 @@ class AdminKit_Loader
             'Field_Registry' => 'classes/class-field-registry.php',
             'Views\\Header_View' => 'views/class-header-view.php',
             'Views\\Navigation_View' => 'views/class-navigation-view.php',
-            'Views\\Notice_Manager' => 'views/class-notice-manager.php',
             'Views\\Content_View' => 'views/class-content-view.php',
             'Views\\Footer_View' => 'views/class-footer-view.php',
             'Classes\\Page_Builder' => 'classes/class-page-builder.php',

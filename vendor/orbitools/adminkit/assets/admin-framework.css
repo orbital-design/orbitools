@@ -21,12 +21,6 @@
    FRAMEWORK CONTAINER (BEM)
    ============================================================================= */
 
-/* Hide all WordPress admin notices on framework pages */
-body.orbital-framework-page .notice,
-body.orbital-framework-page .error,
-body.orbital-framework-page .updated {
-    display: none !important;
-}
 
 /* Main Framework Container */
 .orbi-admin {
@@ -39,7 +33,7 @@ body.orbital-framework-page .updated {
 }
 
 .adminkit-content {
-    margin-top: var(--gapx2);
+    margin-top: var(--gap-page);
     margin-right: var(--gap-page);
     margin-bottom: 0;
     margin-left: var(--gap-half);
@@ -187,179 +181,7 @@ body.orbital-framework-page .updated {
     outline: none;
 }
 
-/* =============================================================================
-   NOTICES SECTION (BEM + Accessible)
-   ============================================================================= */
 
-.orbi-admin__notices {
-    padding: 20px 40px 0;
-}
-
-.orbi-admin__notices:empty {
-    padding: 0;
-}
-
-/* Notice Block */
-.orbi-notice {
-    display: flex;
-    align-items: flex-start;
-    gap: 12px;
-    background: #fff;
-    border-radius: 4px;
-    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.04);
-    margin: 0 0 20px 0;
-    padding: 12px 16px;
-    border-left: 4px solid #72aee6;
-    position: relative;
-}
-
-/* Notice Type Modifiers */
-.orbi-notice--success {
-    border-left-color: #00a32a;
-    background: #f6fff6;
-}
-
-.orbi-notice--error {
-    border-left-color: #d63638;
-    background: #fff6f6;
-}
-
-.orbi-notice--warning {
-    border-left-color: #dba617;
-    background: #fffdf6;
-}
-
-.orbi-notice--info {
-    border-left-color: #72aee6;
-    background: #f6f9ff;
-}
-
-/* Notice Elements */
-.orbi-notice__icon {
-    flex-shrink: 0;
-    width: 20px;
-    height: 20px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: bold;
-    font-size: 14px;
-    border-radius: 50%;
-    color: #fff;
-}
-
-.orbi-notice--success .orbi-notice__icon {
-    background: #00a32a;
-}
-
-.orbi-notice--error .orbi-notice__icon {
-    background: #d63638;
-}
-
-.orbi-notice--warning .orbi-notice__icon {
-    background: #dba617;
-}
-
-.orbi-notice--info .orbi-notice__icon {
-    background: #72aee6;
-}
-
-.orbi-notice__content {
-    flex: 1;
-    min-width: 0;
-}
-
-.orbi-notice__message {
-    margin: 0;
-    color: #1d2327;
-    font-size: 14px;
-    line-height: 1.4;
-}
-
-.orbi-notice__message code {
-    background: rgba(0, 0, 0, 0.1);
-    padding: 2px 6px;
-    border-radius: 3px;
-    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
-    font-size: 13px;
-}
-
-/* Dismissible Notice */
-.orbi-notice--dismissible {
-    padding-right: 50px;
-}
-
-.orbi-notice__dismiss {
-    position: absolute;
-    top: 8px;
-    right: 8px;
-    background: none;
-    border: none;
-    cursor: pointer;
-    padding: 4px;
-    border-radius: 2px;
-    color: #646970;
-    font-size: 16px;
-    line-height: 1;
-    transition: color 0.2s ease;
-}
-
-.orbi-notice__dismiss:hover,
-.orbi-notice__dismiss:focus {
-    color: #1d2327;
-    background: rgba(0, 0, 0, 0.05);
-}
-
-.orbi-notice__dismiss:focus {
-    outline: 2px solid #2271b1;
-    outline-offset: 1px;
-}
-
-.orbi-notice__dismiss-icon {
-    display: block;
-    width: 16px;
-    height: 16px;
-    text-align: center;
-}
-
-/* =============================================================================
-   NOTICES SECTION
-   ============================================================================= */
-
-.orbital-admin-notices {
-    padding: 20px 40px 0;
-}
-
-.orbital-admin-notices:empty {
-    padding: 0;
-}
-
-#orbital-notices-container .notice {
-    margin: 0 0 20px 0;
-    border-radius: 4px;
-}
-
-/* Custom notice styling */
-.orbital-notice {
-    background: #fff;
-    border-left: 4px solid #72aee6;
-    border-radius: 0 4px 4px 0;
-    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.04);
-    margin: 0 0 20px 0;
-    padding: 12px 16px;
-}
-
-.orbital-notice.notice-success {
-    border-left-color: #00a32a;
-}
-
-.orbital-notice.notice-error {
-    border-left-color: #d63638;
-}
-
-.orbital-notice.notice-warning {
-    border-left-color: #dba617;
-}
 
 /* =============================================================================
    TABS SECTION (BEM)

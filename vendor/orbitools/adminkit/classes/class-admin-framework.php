@@ -256,7 +256,7 @@ class Admin_Kit
     }
 
     /**
-     * Add a notice
+     * Add WordPress admin notice
      *
      * @since 1.0.0
      * @param string $message Notice message.
@@ -265,8 +265,32 @@ class Admin_Kit
      */
     public function add_notice($message, $type = 'info', $dismissible = true)
     {
-        $notice_manager = new \Orbitools\AdminKit\Views\Notice_Manager($this);
-        $notice_manager->add_notice($message, $type, $dismissible);
+        add_action('admin_notices', function() use ($message, $type, $dismissible) {
+            $class = 'notice';
+            
+            // Convert type to WordPress notice class
+            switch ($type) {
+                case 'success':
+                    $class .= ' notice-success';
+                    break;
+                case 'error':
+                    $class .= ' notice-error';
+                    break;
+                case 'warning':
+                    $class .= ' notice-warning';
+                    break;
+                case 'info':
+                default:
+                    $class .= ' notice-info';
+                    break;
+            }
+            
+            if ($dismissible) {
+                $class .= ' is-dismissible';
+            }
+            
+            printf('<div class="%s"><p>%s</p></div>', esc_attr($class), esc_html($message));
+        });
     }
 
     /**
@@ -577,7 +601,12 @@ class Admin_Kit
         }
 
         // Process settings
-        $settings_data = isset($_POST['settings']) ? json_decode(stripslashes($_POST['settings']), true) : array();
+        $settings_raw = isset($_POST['settings']) ? $_POST['settings'] : '';
+        if (is_string($settings_raw)) {
+            $settings_data = json_decode(stripslashes($settings_raw), true);
+        } else {
+            $settings_data = is_array($settings_raw) ? $settings_raw : array();
+        }
 
         if (! is_array($settings_data)) {
             $settings_data = array();
@@ -607,8 +636,22 @@ class Admin_Kit
         // Sanitize data
         $sanitized_data = $this->sanitize_settings_data($settings_data);
 
+        // Get current settings to compare
+        $current_settings = get_option($this->slug . '_settings', array());
+        
         // Save to database
         $result = update_option($this->slug . '_settings', $sanitized_data);
+
+        // update_option returns false if the value is the same (no change)
+        // In this case, we still consider it a "success" since the data is correct
+        if ($result === false) {
+            // Check if the data is actually the same (no change) vs a real error
+            $updated_settings = get_option($this->slug . '_settings', array());
+            if ($updated_settings === $sanitized_data) {
+                // Data is correct, just no change - treat as success
+                $result = true;
+            }
+        }
 
         // Trigger post-save action
         do_action($this->func_slug . '_post_save_settings', $sanitized_data, $result);

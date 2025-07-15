@@ -19,24 +19,18 @@
         init: function() {
             this.bindEvents();
             this.initTabs();
-            this.initNotices();
         },
 
         /**
          * Bind event handlers
          */
         bindEvents: function() {
-            // Form submission
-            this.addEventListener('.orbi-admin__settings-form', 'submit', this.handleFormSubmit.bind(this));
-
             // Tab switching
             this.addEventListener('.orbi-admin__tab-link', 'click', this.handleTabSwitch.bind(this));
 
             // Sub-tab switching
             this.addEventListener('.orbi-admin__subtab-link', 'click', this.handleSubTabSwitch.bind(this));
 
-            // Notice dismissal
-            this.addEventListener('.orbi-notice__dismiss', 'click', this.dismissNotice.bind(this));
         },
 
         /**
@@ -77,90 +71,8 @@
             }
         },
 
-        /**
-         * Initialize notice system
-         */
-        initNotices: function() {
-            // Auto-dismiss success notices after 5 seconds
-            setTimeout(function() {
-                const successNotices = document.querySelectorAll('.orbi-notice--success');
-                successNotices.forEach(function(notice) {
-                    notice.style.opacity = '0';
-                    setTimeout(function() {
-                        if (notice.parentNode) {
-                            notice.parentNode.removeChild(notice);
-                        }
-                    }, 300);
-                });
-            }, 5000);
-        },
 
 
-        /**
-         * Handle form submission via AJAX
-         */
-        handleFormSubmit: function(e, form) {
-            e.preventDefault();
-
-            const submitButton = form.querySelector('.button-primary');
-            const originalText = submitButton.textContent;
-
-            // Show loading state
-            this.setLoadingState(true);
-            submitButton.textContent = orbitoolsAdminKit.strings.saving;
-
-            // Collect form data
-            const formData = new FormData();
-            formData.append('action', 'orbitools_adminkit_save_settings_' + orbitoolsAdminKit.slug);
-            formData.append('orbi_nonce', orbitoolsAdminKit.nonce);
-            formData.append('slug', orbitoolsAdminKit.slug);
-
-            // Serialize settings data
-            const settingsData = this.serializeFormData(form);
-            formData.append('settings', JSON.stringify(settingsData));
-
-            // Send AJAX request
-            fetch(orbitoolsAdminKit.ajaxurl, {
-                method: 'POST',
-                body: formData
-            })
-            .then(response => response.json())
-            .then(data => this.handleSaveSuccess(data))
-            .catch(error => this.handleSaveError(error))
-            .finally(() => {
-                // Reset loading state
-                this.setLoadingState(false);
-                submitButton.textContent = originalText;
-            });
-        },
-
-        /**
-         * Handle successful save
-         */
-        handleSaveSuccess: function(response) {
-            if (response.success) {
-                this.showNotice(
-                    orbitoolsAdminKit.strings.saved,
-                    'success'
-                );
-            } else {
-                this.showNotice(
-                    response.data || orbitoolsAdminKit.strings.error,
-                    'error'
-                );
-            }
-        },
-
-        /**
-         * Handle save error
-         */
-        handleSaveError: function(error) {
-            console.error('Save error:', error);
-            this.showNotice(
-                orbitoolsAdminKit.strings.error,
-                'error'
-            );
-        },
 
         /**
          * Handle tab switching
@@ -408,75 +320,7 @@
             }
         },
 
-        /**
-         * Show WordPress admin notice
-         */
-        showNotice: function(message, type = 'info') {
-            // Convert type to WordPress admin notice classes
-            let noticeClass = 'notice-info';
-            if (type === 'success') {
-                noticeClass = 'notice-success';
-            } else if (type === 'error') {
-                noticeClass = 'notice-error';
-            }
 
-            // Create WordPress admin notice
-            const notice = document.createElement('div');
-            notice.className = `notice ${noticeClass} is-dismissible`;
-            notice.innerHTML = `<p>${message}</p>`;
-
-            // Add dismiss button
-            const dismissBtn = document.createElement('button');
-            dismissBtn.type = 'button';
-            dismissBtn.className = 'notice-dismiss';
-            dismissBtn.innerHTML = '<span class="screen-reader-text">Dismiss this notice.</span>';
-            dismissBtn.onclick = function() {
-                notice.remove();
-            };
-            notice.appendChild(dismissBtn);
-
-            // Find the best place to insert the notice
-            const wpbody = document.getElementById('wpbody-content');
-            const h1 = wpbody ? wpbody.querySelector('h1') : null;
-
-            if (h1) {
-                // Insert after the h1 tag
-                h1.parentNode.insertBefore(notice, h1.nextSibling);
-            } else {
-                // Fallback: insert at the beginning of wpbody-content
-                if (wpbody) {
-                    wpbody.insertBefore(notice, wpbody.firstChild);
-                }
-            }
-
-            // Auto-dismiss success notices after 5 seconds
-            if (type === 'success') {
-                setTimeout(() => {
-                    notice.remove();
-                }, 5000);
-            }
-
-            // Scroll to notice
-            notice.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        },
-
-        /**
-         * Dismiss notice
-         */
-        dismissNotice: function(e, button) {
-            e.preventDefault();
-            const notice = button.closest('.orbi-notice');
-
-            if (notice) {
-                notice.style.transition = 'opacity 0.3s ease';
-                notice.style.opacity = '0';
-                setTimeout(() => {
-                    if (notice.parentNode) {
-                        notice.parentNode.removeChild(notice);
-                    }
-                }, 300);
-            }
-        },
 
         /**
          * Smooth scroll to element
@@ -669,6 +513,73 @@
         // Only initialize on admin framework pages
         if (document.querySelector('.orbi-admin')) {
             OrbitoolsAdminKit.init();
+        }
+        
+        // Direct form handler as backup
+        const form = document.getElementById('orbi-settings-form');
+        if (form) {
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                // Check if orbitoolsAdminKit exists
+                if (typeof orbitoolsAdminKit === 'undefined') {
+                    alert('AdminKit not loaded properly');
+                    return;
+                }
+                
+                // Create FormData from form
+                const formData = new FormData(form);
+                
+                
+                // Send AJAX request
+                fetch(orbitoolsAdminKit.ajaxurl, {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Create and show success notice
+                        const notice = document.createElement('div');
+                        notice.className = 'notice notice-success is-dismissible';
+                        notice.innerHTML = '<p>' + (data.data.message || 'Settings saved successfully') + '</p>';
+                        
+                        // Insert notice at top of content
+                        const content = document.querySelector('.adminkit-content, .orbi-admin, #wpbody-content');
+                        if (content) {
+                            content.insertBefore(notice, content.firstChild);
+                        }
+                        
+                        // Auto-dismiss after 5 seconds
+                        setTimeout(() => notice.remove(), 5000);
+                    } else {
+                        // Show error notice instead of alert
+                        const notice = document.createElement('div');
+                        notice.className = 'notice notice-error is-dismissible';
+                        notice.innerHTML = '<p>Error: ' + (data.data || 'Unknown error') + '</p>';
+                        
+                        const content = document.querySelector('.adminkit-content, .orbi-admin, #wpbody-content');
+                        if (content) {
+                            content.insertBefore(notice, content.firstChild);
+                        }
+                        
+                        setTimeout(() => notice.remove(), 8000);
+                    }
+                })
+                .catch(error => {
+                    // Show network error notice instead of alert
+                    const notice = document.createElement('div');
+                    notice.className = 'notice notice-error is-dismissible';
+                    notice.innerHTML = '<p>Network error: ' + error.message + '</p>';
+                    
+                    const content = document.querySelector('.adminkit-content, .orbi-admin, #wpbody-content');
+                    if (content) {
+                        content.insertBefore(notice, content.firstChild);
+                    }
+                    
+                    setTimeout(() => notice.remove(), 8000);
+                });
+            });
         }
     }
 
