@@ -15,7 +15,7 @@ A lightweight, standalone admin page framework for WordPress plugins. Provides a
 
 ```php
 // Initialize AdminKit with configuration array
-orbi_admin_kit('my-plugin')->init(array(
+AdminKit('my-plugin')->init(array(
     'title' => 'My Plugin Settings',
     'description' => 'Configure your plugin settings.',
     'header_image' => 'path/to/logo.svg',
@@ -72,7 +72,7 @@ $admin_kit->set_page_header_bg_color('linear-gradient(90deg, #32A3E2, #1e5a8a)')
 You can hide the title and description visually while keeping them accessible to screen readers:
 
 ```php
-orbi_admin_kit('my-plugin')->init(array(
+AdminKit('my-plugin')->init(array(
     'title' => 'My Plugin Settings',
     'description' => 'Configure your plugin settings.',
     'hide_title_description' => true, // Hides title/description visually

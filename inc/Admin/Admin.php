@@ -66,7 +66,7 @@ class Admin
      */
     public function init_adminkit(): void
     {
-        orbi_admin_kit('orbitools')->init(array(
+        AdminKit('orbitools')->init(array(
             'title' => __('Orbitools', 'orbitools'),
             'description' => __('Advanced WordPress tools and utilities.', 'orbitools'),
             'hide_title_description' => true,

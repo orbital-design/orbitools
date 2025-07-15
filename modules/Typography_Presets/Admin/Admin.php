@@ -165,7 +165,7 @@ class Admin
         }
 
         // Get the admin framework instance
-        $admin_framework = orbi_admin_kit('orbitools');
+        $admin_framework = AdminKit('orbitools');
         if (!$admin_framework) {
             return;
         }
@@ -188,14 +188,14 @@ class Admin
     private function has_theme_presets(): bool
     {
         $theme_json_path = get_template_directory() . '/theme.json';
-        
+
         if (!file_exists($theme_json_path)) {
             return false;
         }
 
         $theme_json_content = file_get_contents($theme_json_path);
         $theme_json = json_decode($theme_json_content, true);
-        
+
         if (!$theme_json || JSON_ERROR_NONE !== json_last_error()) {
             return false;
         }
