@@ -98,6 +98,14 @@ class Settings
                 ),
                 'section' => 'typography',
             ),
+            array(
+                'id'      => 'typography_presets_preview',
+                'name'    => __('Available Presets', 'orbitools'),
+                'desc'    => __('Preview of typography presets from your theme.json file.', 'orbitools'),
+                'type'    => 'html',
+                'std'     => self::get_presets_preview_html(),
+                'section' => 'typography',
+            ),
         );
     }
 
@@ -127,5 +135,157 @@ class Settings
     {
         $saved_settings = get_option('orbitools_settings', array());
         return wp_parse_args($saved_settings, self::get_defaults());
+    }
+
+    /**
+     * Get presets preview HTML
+     *
+     * @since 1.0.0
+     * @return string HTML for presets preview.
+     */
+    public static function get_presets_preview_html(): string
+    {
+        // Enqueue the CSS
+        self::enqueue_preset_styles();
+        
+        // Try to get preset manager
+        try {
+            $preset_manager = new \Orbitools\Modules\Typography_Presets\Core\Preset_Manager();
+            $presets = $preset_manager->get_presets();
+        } catch (Exception $e) {
+            return '<p>' . __('Unable to load presets. Please check your theme.json configuration.', 'orbitools') . '</p>';
+        }
+
+        if (empty($presets)) {
+            return '<div class="presets-empty">
+                <p class="presets-empty__text"><strong>' . __('No presets found.', 'orbitools') . '</strong></p>
+                <p class="presets-empty__text">' . __('Add typography presets to your theme.json file to see them here.', 'orbitools') . '</p>
+                <p class="presets-empty__text presets-empty__text--last"><a href="https://github.com/orbital-design/orbitools/blob/main/modules/Typography_Presets/README.md" target="_blank">' . __('View Documentation', 'orbitools') . '</a></p>
+            </div>';
+        }
+
+        $html = '<div class="presets-grid">';
+        
+        // Check if we should group presets
+        $settings = self::get_current_settings();
+        $show_groups = !empty($settings['typography_show_groups_in_dropdown']);
+        
+        if ($show_groups) {
+            $grouped_presets = array();
+            foreach ($presets as $id => $preset) {
+                $group = $preset['group'] ?? 'ungrouped';
+                if (!isset($grouped_presets[$group])) {
+                    $grouped_presets[$group] = array();
+                }
+                $grouped_presets[$group][$id] = $preset;
+            }
+            
+            foreach ($grouped_presets as $group => $group_presets) {
+                $html .= '<div class="presets-group">';
+                $html .= '<h3 class="presets-group__title">' . esc_html($group) . '</h3>';
+                $html .= '<hr class="presets-group__separator">';
+                $html .= '</div>';
+                
+                foreach ($group_presets as $id => $preset) {
+                    $html .= self::get_preset_card_html($id, $preset);
+                }
+            }
+        } else {
+            foreach ($presets as $id => $preset) {
+                $html .= self::get_preset_card_html($id, $preset);
+            }
+        }
+        
+        $html .= '</div>';
+        
+        return $html;
+    }
+
+    /**
+     * Get HTML for individual preset card
+     *
+     * @since 1.0.0
+     * @param string $id Preset ID.
+     * @param array $preset Preset data.
+     * @return string HTML for preset card.
+     */
+    private static function get_preset_card_html(string $id, array $preset): string
+    {
+        $label = $preset['label'] ?? $id;
+        $description = $preset['description'] ?? '';
+        $properties = $preset['properties'] ?? array();
+        
+        // Build inline styles from properties for the sample text
+        $inline_styles = array();
+        foreach ($properties as $property => $value) {
+            $css_property = self::sanitize_css_property($property);
+            if ($css_property) {
+                $inline_styles[] = $css_property . ': ' . esc_attr($value);
+            }
+        }
+        $style_attr = !empty($inline_styles) ? ' style="' . implode('; ', $inline_styles) . '"' : '';
+        
+        $html = '<div class="preset-card">';
+        $html .= '<div class="preset-card__header">';
+        $html .= '<h4 class="preset-card__title">' . esc_html($label) . '</h4>';
+        $html .= '<div class="preset-card__meta">';
+        $html .= '<strong>Class:</strong> .has-type-preset-' . esc_html($id);
+        $html .= '</div>';
+        $html .= '</div>';
+        
+        $html .= '<div class="preset-card__preview">';
+        $html .= '<div class="preset-card__sample"' . $style_attr . '>';
+        $html .= __('The quick brown fox jumps over the lazy dog', 'orbitools');
+        $html .= '</div>';
+        $html .= '</div>';
+        
+        $html .= '<div class="preset-card__meta">';
+        if (!empty($properties)) {
+            foreach ($properties as $property => $value) {
+                $html .= '<strong>' . esc_html($property) . ':</strong> ' . esc_html($value) . '<br>';
+            }
+        } else {
+            $html .= '<em>No properties defined</em>';
+        }
+        $html .= '</div>';
+        
+        $html .= '</div>';
+        
+        return $html;
+    }
+
+    /**
+     * Enqueue preset preview styles
+     *
+     * @since 1.0.0
+     */
+    private static function enqueue_preset_styles(): void
+    {
+        wp_enqueue_style(
+            'orbitools-typography-presets-admin',
+            ORBITOOLS_URL . 'modules/Typography_Presets/css/admin-presets.css',
+            array(),
+            '1.0.0'
+        );
+    }
+
+    /**
+     * Sanitize CSS property name
+     *
+     * @since 1.0.0
+     * @param string $property CSS property name.
+     * @return string|null Sanitized property or null if invalid.
+     */
+    private static function sanitize_css_property(string $property): ?string
+    {
+        // Convert camelCase to kebab-case
+        $property = strtolower(preg_replace('/([a-z])([A-Z])/', '$1-$2', $property));
+        
+        // Basic validation - only allow letters, numbers, and hyphens
+        if (preg_match('/^[a-z0-9-]+$/', $property)) {
+            return $property;
+        }
+
+        return null;
     }
 }
