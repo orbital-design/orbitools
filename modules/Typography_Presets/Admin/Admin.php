@@ -88,22 +88,8 @@ class Admin
             'name'        => 'Typography Presets',
             'subtitle'    => 'Advanced text styling system',
             'description' => 'Replace WordPress core typography controls with a comprehensive preset system for consistent text styling across your site.',
-            'version'     => self::VERSION,
-            'category'    => 'Editor Enhancement',
             'icon'        => 'dashicons-editor-textcolor',
-            'author'      => 'Orbitools',
-            'docs_url'    => '',
             'configure_url' => admin_url('admin.php?page=orbitools&tab=modules&section=typography'),
-            'requires'    => array(
-                'wp_version' => '5.0',
-                'php_version' => '7.4',
-            ),
-            'features'    => array(
-                'Theme.json integration',
-                'Visual preset management',
-                'Block editor controls',
-                'CSS auto-generation',
-            ),
         );
 
         return $modules;

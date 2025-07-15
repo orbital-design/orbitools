@@ -15,9 +15,15 @@
 
 .orbi-modules-grid {
 	display: grid;
-	grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-	gap: 20px;
+	grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+	gap: 15px;
 	margin-top: 16px;
+	max-width: 100%;
+}
+
+/* Ensure cards don't exceed a reasonable width */
+.orbi-module-card {
+	max-width: 400px;
 }
 
 /* ==========================================================================
@@ -32,6 +38,8 @@
 	transition: all 0.2s ease;
 	position: relative;
 	overflow: hidden;
+	max-width: 400px;
+	width: 100%;
 }
 
 .orbi-module-card:hover {
@@ -110,8 +118,11 @@
 	line-height: 1.4;
 }
 
-.orbi-module-card__toggle {
+.orbi-module-card__controls {
 	flex-shrink: 0;
+	display: flex;
+	align-items: center;
+	gap: 8px;
 }
 
 /* ==========================================================================
@@ -250,6 +261,29 @@
 	height: 16px;
 }
 
+.orbi-button--icon {
+	background: #f1f1f1;
+	color: #646970;
+	padding: 0;
+	border-radius: 50%;
+	width: 24px;
+	height: 24px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.orbi-button--icon:hover {
+	background: #e1e1e1;
+	color: #1d2327;
+}
+
+.orbi-button--icon .dashicons {
+	font-size: 16px;
+	width: 16px;
+	height: 16px;
+}
+
 /* ==========================================================================
    Responsive Design
    ========================================================================== */
@@ -263,7 +297,7 @@
 		flex-wrap: wrap;
 	}
 	
-	.orbi-module-card__toggle {
+	.orbi-module-card__controls {
 		order: -1;
 		margin-left: auto;
 	}

@@ -56,7 +56,12 @@ class Orbitools_Modules_Field extends Orbi\AdminKit\Field_Base
                 <p class="orbi-module-card__subtitle"><?php echo esc_html($module['subtitle']); ?></p>
                 <?php endif; ?>
             </div>
-            <div class="orbi-module-card__toggle">
+            <div class="orbi-module-card__controls">
+                <?php if ($is_enabled && ! empty($module['config_url'])) : ?>
+                <a href="<?php echo esc_url($module['config_url']); ?>" class="orbi-button orbi-button--icon" title="Configure">
+                    <span class="dashicons dashicons-admin-generic"></span>
+                </a>
+                <?php endif; ?>
                 <label class="orbi-toggle">
                     <input type="checkbox" name="settings[<?php echo esc_attr($module_id . '_enabled'); ?>]" value="1"
                         <?php checked($is_enabled); ?> class="orbi-toggle__input">
@@ -67,21 +72,8 @@ class Orbitools_Modules_Field extends Orbi\AdminKit\Field_Base
 
         <div class="orbi-module-card__content">
             <p class="orbi-module-card__description"><?php echo esc_html($module['description']); ?></p>
-
-            <div class="orbi-module-card__meta">
-                <span class="orbi-module-card__version">v<?php echo esc_html($module['version']); ?></span>
-                <span class="orbi-module-card__category"><?php echo esc_html($module['category']); ?></span>
-            </div>
         </div>
 
-        <?php if ($is_enabled && ! empty($module['config_url'])) : ?>
-        <div class="orbi-module-card__actions">
-            <a href="<?php echo esc_url($module['config_url']); ?>" class="orbi-button orbi-button--secondary">
-                <span class="dashicons dashicons-admin-generic"></span>
-                Configure
-            </a>
-        </div>
-        <?php endif; ?>
     </div>
     <?php endforeach; ?>
 </div>
