@@ -97,7 +97,7 @@ class Settings
             array(
                 'id'      => 'typography_theme_json_path',
                 'name'    => __('Theme.json Path', 'orbitools'),
-                'desc'    => __('Specify where your presets are located in theme.json. Use dot notation for nested paths.<br><br><strong>Examples:</strong><br>• <code>orbitools</code> → <code>settings.custom.orbitools.Typography_Presets</code><br>• <code>orbital.plugins.orbitools</code> → <code>settings.custom.orbital.plugins.orbitools.Typography_Presets</code><br>• <code>mytheme.components</code> → <code>settings.custom.mytheme.components.Typography_Presets</code><br><br><strong>Note:</strong> Path automatically starts with "settings.custom" and ends with "Typography_Presets"', 'orbitools'),
+                'desc'    => __('Specify where your presets are located in theme.json. Use dot notation for nested paths.<br><br><strong>Examples:</strong><br>• <code>orbitools</code> → <code>settings.custom.orbitools.Typography_Presets</code><br>• <code>mytheme.components</code> → <code>settings.custom.mytheme.components.Typography_Presets</code><br><br><strong>Note:</strong> Path automatically starts with "settings.custom" and ends with "Typography_Presets"', 'orbitools'),
                 'type'    => 'text',
                 'std'     => 'orbitools',
                 'section' => 'typography',
