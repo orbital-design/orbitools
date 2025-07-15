@@ -225,11 +225,15 @@ class Settings
         }
         $style_attr = !empty($inline_styles) ? ' style="' . implode('; ', $inline_styles) . '"' : '';
         
-        $html = '<div class="preset-card">';
+        $class_name = 'has-type-preset-' . $id;
+        $html = '<div class="preset-card" data-copy-text="' . esc_attr($class_name) . '" title="Click to copy class name">';
+        $html .= '<div class="preset-card__inner">';
         $html .= '<div class="preset-card__header">';
+        $html .= '<div class="preset-card__content">';
         $html .= '<h4 class="preset-card__title">' . esc_html($label) . '</h4>';
         $html .= '<div class="preset-card__meta">';
-        $html .= '<strong>Class:</strong> .has-type-preset-' . esc_html($id);
+        $html .= '.' . esc_html($class_name);
+        $html .= '</div>';
         $html .= '</div>';
         $html .= '</div>';
         
@@ -248,6 +252,7 @@ class Settings
             $html .= '<em>No properties defined</em>';
         }
         $html .= '</div>';
+        $html .= '</div>';
         
         $html .= '</div>';
         
@@ -264,8 +269,16 @@ class Settings
         wp_enqueue_style(
             'orbitools-typography-presets-admin',
             ORBITOOLS_URL . 'modules/Typography_Presets/css/admin-presets.css',
-            array(),
+            array('dashicons'),
             '1.0.0'
+        );
+        
+        wp_enqueue_script(
+            'orbitools-typography-presets-admin',
+            ORBITOOLS_URL . 'modules/Typography_Presets/js/admin-presets.js',
+            array(),
+            '1.0.0',
+            true
         );
     }
 

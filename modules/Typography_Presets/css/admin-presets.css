@@ -45,11 +45,62 @@
     border-radius: 4px;
     padding: 15px;
     box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    position: relative;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.preset-card:hover .preset-card__inner {
+    opacity: 0.3;
+}
+
+.preset-card:hover::before {
+    content: "Click to copy class";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 8px 12px;
+    border-radius: 4px;
+    font-size: 14px;
+    white-space: nowrap;
+    z-index: 20;
+}
+
+/* Element: preset-card__inner */
+.preset-card__inner {
+    transition: opacity 0.2s ease;
 }
 
 /* Element: preset-card__header */
 .preset-card__header {
     margin-bottom: 12px;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.preset-card__header::after {
+    content: "";
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path fill="%2332a3e2" d="M0 176v288c0 26.5 21.5 48 48 48h224c26.5 0 48-21.5 48-48v-48h-64v32H64V192h64v-64H48c-26.5 0-48 21.5-48 48z" opacity="0.4"/><path fill="%2332a3e2" d="M160 48c0-26.5 21.5-48 48-48h124.1C344.8 0 357 5.1 366 14.1L433.9 82c9 9 14.1 21.2 14.1 33.9V336c0 26.5-21.5 48-48 48H208c-26.5 0-48-21.5-48-48V48z"/></svg>') no-repeat center;
+    background-size: 16px 16px;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+}
+
+
+/* Element: preset-card__content */
+.preset-card__content {
+    flex: 1;
+    min-width: 0;
 }
 
 /* Element: preset-card__title */
@@ -108,4 +159,27 @@
 /* Element: presets-empty__text with modifier --last */
 .presets-empty__text--last {
     margin-bottom: 0;
+}
+
+/* Copy feedback states */
+.preset-card--copied .preset-card__header::after {
+    content: "";
+    background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path fill="%2300a32a" d="M438.6 105.4c12.5 12.5 12.5 32.8 0 45.3l-256 256c-12.5 12.5-32.8 12.5-45.3 0l-128-128c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0L160 338.7 393.4 105.4c12.5-12.5 32.8-12.5 45.3 0z"/></svg>') no-repeat center;
+    background-size: 16px 16px;
+}
+
+.preset-card--copied::before,
+.preset-card--copied:hover::before {
+    content: "Copied!";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(0, 163, 42, 0.9);
+    color: white;
+    padding: 8px 12px;
+    border-radius: 4px;
+    font-size: 14px;
+    white-space: nowrap;
+    z-index: 20;
 }
