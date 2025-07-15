@@ -59,7 +59,7 @@ class Admin_Kit {
 	 * @since 1.0.0
 	 * @var string
 	 */
-	private $page_title = 'Settings';
+	private $page_title = 'AdminKit';
 
 	/**
 	 * Page description
@@ -67,7 +67,7 @@ class Admin_Kit {
 	 * @since 1.0.0
 	 * @var string
 	 */
-	private $page_description = '';
+	private $page_description = 'Extensible modular admin framework by Orbital';
 
 	/**
 	 * Page header image URL
@@ -193,22 +193,20 @@ class Admin_Kit {
 	 * @return self For method chaining.
 	 */
 	public function init( $config = array() ) {
-		// Set page title
-		if ( isset( $config['title'] ) ) {
-			$this->set_page_title( $config['title'] );
-		}
+		// Set page title (use default if not provided)
+		$title = isset( $config['title'] ) ? $config['title'] : $this->page_title;
+		$this->set_page_title( $title );
 
-		// Set page description
-		if ( isset( $config['description'] ) ) {
-			$this->set_page_description( $config['description'] );
-		}
+		// Set page description (use default if not provided)
+		$description = isset( $config['description'] ) ? $config['description'] : $this->page_description;
+		$this->set_page_description( $description );
 
-		// Set header image
+		// Set header image (use default if not provided)
 		if ( isset( $config['header_image'] ) ) {
 			$this->set_page_header_image( $config['header_image'] );
 		}
 
-		// Set header background color
+		// Set header background color (use default if not provided)
 		if ( isset( $config['header_bg_color'] ) ) {
 			$this->set_page_header_bg_color( $config['header_bg_color'] );
 		}
@@ -216,11 +214,11 @@ class Admin_Kit {
 		// Set menu configuration
 		if ( isset( $config['menu'] ) ) {
 			// Add title to menu config if not set
-			if ( ! isset( $config['menu']['page_title'] ) && isset( $config['title'] ) ) {
-				$config['menu']['page_title'] = $config['title'];
+			if ( ! isset( $config['menu']['page_title'] ) ) {
+				$config['menu']['page_title'] = $title;
 			}
-			if ( ! isset( $config['menu']['menu_title'] ) && isset( $config['title'] ) ) {
-				$config['menu']['menu_title'] = $config['title'];
+			if ( ! isset( $config['menu']['menu_title'] ) ) {
+				$config['menu']['menu_title'] = $title;
 			}
 			
 			$this->set_menu_config( $config['menu'] );
