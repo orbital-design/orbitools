@@ -14,20 +14,12 @@
 
 namespace Orbi\AdminKit;
 
-use Orbi\AdminKit\Classes\Page_Builder;
 
 // Prevent direct access
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-// Include all necessary files
-require_once __DIR__ . '/views/class-header-view.php';
-require_once __DIR__ . '/views/class-navigation-view.php';
-require_once __DIR__ . '/views/class-notice-manager.php';
-require_once __DIR__ . '/views/class-content-view.php';
-require_once __DIR__ . '/views/class-footer-view.php';
-require_once __DIR__ . '/classes/class-page-builder.php';
 
 /**
  * OrbiTools AdminKit Class
@@ -119,13 +111,6 @@ class Admin_Kit {
 	 */
 	private $field_ids_validated = false;
 
-	/**
-	 * Page builder instance
-	 *
-	 * @since 1.0.0
-	 * @var Page_Builder
-	 */
-	private $page_builder;
 
 	/**
 	 * Initialize the framework
@@ -152,8 +137,6 @@ class Admin_Kit {
 			'capability' => 'manage_options',
 		);
 
-		// Initialize page builder
-		$this->page_builder = new Page_Builder( $this );
 	}
 
 	/**
@@ -168,7 +151,7 @@ class Admin_Kit {
 		add_action( 'wp_ajax_orbi_admin_save_settings_' . $this->slug, array( $this, 'ajax_save_settings' ) );
 		
 		// Always add global header after admin bar but before #wpbody
-		add_action( 'in_admin_header', array( $this->page_builder, 'render_global_header' ) );
+		add_action( 'in_admin_header', array( $this, 'render_global_header' ) );
 	}
 
 	/**
@@ -263,7 +246,7 @@ class Admin_Kit {
 	}
 
 	/**
-	 * Add a notice through the page builder
+	 * Add a notice
 	 *
 	 * @since 1.0.0
 	 * @param string $message Notice message.
@@ -271,7 +254,8 @@ class Admin_Kit {
 	 * @param bool   $dismissible Whether notice is dismissible.
 	 */
 	public function add_notice( $message, $type = 'info', $dismissible = true ) {
-		$this->page_builder->add_notice( $message, $type, $dismissible );
+		$notice_manager = new \Orbi\AdminKit\Views\Notice_Manager( $this );
+		$notice_manager->add_notice( $message, $type, $dismissible );
 	}
 
 	/**
@@ -280,7 +264,8 @@ class Admin_Kit {
 	 * @since 1.0.0
 	 */
 	public function render_admin_page() {
-		$this->page_builder->render_admin_page();
+		$page_builder = new \Orbi\AdminKit\Classes\Page_Builder( $this );
+		$page_builder->build_page();
 	}
 
 	/**
@@ -289,7 +274,8 @@ class Admin_Kit {
 	 * @since 1.0.0
 	 */
 	public function render_global_header() {
-		$this->page_builder->render_global_header();
+		$page_builder = new \Orbi\AdminKit\Classes\Page_Builder( $this );
+		$page_builder->build_global_header();
 	}
 
 	// Public getter methods for view components to access private properties
@@ -383,6 +369,7 @@ class Admin_Kit {
 	public function get_framework_url() {
 		return plugin_dir_url( __FILE__ );
 	}
+
 
 	// The following methods are preserved from the original implementation
 	// to maintain full functionality. They handle WordPress admin integration,

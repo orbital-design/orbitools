@@ -44,6 +44,32 @@ function orbi_admin_kit_load() {
 		require_once ORBI_ADMIN_KIT_PATH . 'class-orbital-field-registry.php';
 	}
 
+	// Load view classes
+	if ( ! class_exists( 'Orbi\\AdminKit\\Views\\Header_View' ) ) {
+		require_once ORBI_ADMIN_KIT_PATH . 'views/class-header-view.php';
+	}
+	
+	if ( ! class_exists( 'Orbi\\AdminKit\\Views\\Navigation_View' ) ) {
+		require_once ORBI_ADMIN_KIT_PATH . 'views/class-navigation-view.php';
+	}
+	
+	if ( ! class_exists( 'Orbi\\AdminKit\\Views\\Notice_Manager' ) ) {
+		require_once ORBI_ADMIN_KIT_PATH . 'views/class-notice-manager.php';
+	}
+	
+	if ( ! class_exists( 'Orbi\\AdminKit\\Views\\Content_View' ) ) {
+		require_once ORBI_ADMIN_KIT_PATH . 'views/class-content-view.php';
+	}
+	
+	if ( ! class_exists( 'Orbi\\AdminKit\\Views\\Footer_View' ) ) {
+		require_once ORBI_ADMIN_KIT_PATH . 'views/class-footer-view.php';
+	}
+	
+	// Load page builder
+	if ( ! class_exists( 'Orbi\\AdminKit\\Classes\\Page_Builder' ) ) {
+		require_once ORBI_ADMIN_KIT_PATH . 'classes/class-page-builder.php';
+	}
+
 	// Load main framework class
 	if ( ! class_exists( 'Orbi\\AdminKit\\Admin_Kit' ) ) {
 		require_once ORBI_ADMIN_KIT_PATH . 'class-orbital-admin-framework.php';
