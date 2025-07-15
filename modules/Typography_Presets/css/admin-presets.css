@@ -8,12 +8,93 @@
  * @subpackage Modules/Typography_Presets
  */
 
+/* Block: presets-accordion */
+.presets-accordion {
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    margin: 10px 0;
+}
+
+/* Element: presets-accordion__toggle */
+.presets-accordion__toggle {
+    width: 100%;
+    padding: 12px 15px;
+    background: #f9f9f9;
+    border: none;
+    border-radius: 4px 4px 0 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    color: #1d2327;
+    transition: background 0.2s ease;
+}
+
+.presets-accordion__toggle:hover {
+    background: #f0f0f1;
+}
+
+.presets-accordion__toggle:focus {
+    outline: 2px solid #2271b1;
+    outline-offset: -2px;
+}
+
+/* Element: presets-accordion__icon */
+.presets-accordion__icon {
+    width: 16px;
+    height: 16px;
+    position: relative;
+    transition: transform 0.2s ease;
+}
+
+.presets-accordion__icon::before,
+.presets-accordion__icon::after {
+    content: '';
+    position: absolute;
+    background: #646970;
+    border-radius: 1px;
+}
+
+.presets-accordion__icon::before {
+    width: 12px;
+    height: 2px;
+    top: 7px;
+    left: 2px;
+}
+
+.presets-accordion__icon::after {
+    width: 2px;
+    height: 12px;
+    top: 2px;
+    left: 7px;
+    transition: transform 0.2s ease;
+}
+
+.presets-accordion--expanded .presets-accordion__icon::after {
+    transform: rotate(90deg);
+}
+
+/* Element: presets-accordion__content */
+.presets-accordion__content {
+    padding: 0 15px;
+    height: 0;
+    overflow: hidden;
+    transition: height 0.3s ease, padding 0.3s ease;
+}
+
+.presets-accordion--expanded .presets-accordion__content {
+    height: auto;
+    padding: 15px;
+}
+
 /* Block: presets-grid */
 .presets-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
     gap: 15px;
-    margin: 10px 0;
+    margin: 0 0 10px 0;
 }
 
 /* Block: presets-group */

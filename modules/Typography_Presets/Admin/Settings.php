@@ -60,8 +60,8 @@ class Settings
         return array(
             array(
                 'id'      => 'typography_presets_preview',
-                'name'    => __('Available Presets', 'orbitools'),
-                'desc'    => __('Preview of typography presets from your theme.json file.', 'orbitools'),
+                'name'    => '',
+                'desc'    => '',
                 'type'    => 'html',
                 'std'     => self::get_presets_preview_html(),
                 'section' => 'typography',
@@ -148,6 +148,13 @@ class Settings
         // Enqueue the CSS
         self::enqueue_preset_styles();
         
+        // Get user preference for accordion state (default to open)
+        $user_id = get_current_user_id();
+        $is_expanded = get_user_meta($user_id, 'orbitools_presets_accordion_expanded', true);
+        if ($is_expanded === '') {
+            $is_expanded = 'true'; // Default to open
+        }
+        
         // Try to get preset manager
         try {
             $preset_manager = new \Orbitools\Modules\Typography_Presets\Core\Preset_Manager();
@@ -156,47 +163,64 @@ class Settings
             return '<p>' . __('Unable to load presets. Please check your theme.json configuration.', 'orbitools') . '</p>';
         }
 
+        $expanded_class = $is_expanded === 'true' ? 'presets-accordion--expanded' : '';
+        $expanded_attr = $is_expanded === 'true' ? 'true' : 'false';
+        
+        $html = '<div class="presets-accordion ' . $expanded_class . '">';
+        $html .= '<button class="presets-accordion__toggle" type="button" aria-expanded="' . $expanded_attr . '" data-toggle="presets-accordion">';
+        $html .= '<span class="presets-accordion__icon"></span>';
+        $html .= '<span class="presets-accordion__label">' . __('Preview Typography Presets', 'orbitools') . '</span>';
+        $html .= '</button>';
+        $html .= '<div class="presets-accordion__content">';
+
         if (empty($presets)) {
-            return '<div class="presets-empty">
+            $html .= '<div class="presets-empty">
                 <p class="presets-empty__text"><strong>' . __('No presets found.', 'orbitools') . '</strong></p>
                 <p class="presets-empty__text">' . __('Add typography presets to your theme.json file to see them here.', 'orbitools') . '</p>
                 <p class="presets-empty__text presets-empty__text--last"><a href="https://github.com/orbital-design/orbitools/blob/main/modules/Typography_Presets/README.md" target="_blank">' . __('View Documentation', 'orbitools') . '</a></p>
             </div>';
+        } else {
+            $html .= '<div class="presets-grid">';
         }
 
-        $html = '<div class="presets-grid">';
-        
-        // Check if we should group presets
-        $settings = self::get_current_settings();
-        $show_groups = !empty($settings['typography_show_groups_in_dropdown']);
-        
-        if ($show_groups) {
-            $grouped_presets = array();
-            foreach ($presets as $id => $preset) {
-                $group = $preset['group'] ?? 'ungrouped';
-                if (!isset($grouped_presets[$group])) {
-                    $grouped_presets[$group] = array();
-                }
-                $grouped_presets[$group][$id] = $preset;
-            }
+        if (!empty($presets)) {
+            // Check if we should group presets
+            $settings = self::get_current_settings();
+            $show_groups = !empty($settings['typography_show_groups_in_dropdown']);
             
-            foreach ($grouped_presets as $group => $group_presets) {
-                $html .= '<div class="presets-group">';
-                $html .= '<h3 class="presets-group__title">' . esc_html($group) . '</h3>';
-                $html .= '<hr class="presets-group__separator">';
-                $html .= '</div>';
+            if ($show_groups) {
+                $grouped_presets = array();
+                foreach ($presets as $id => $preset) {
+                    $group = $preset['group'] ?? 'ungrouped';
+                    if (!isset($grouped_presets[$group])) {
+                        $grouped_presets[$group] = array();
+                    }
+                    $grouped_presets[$group][$id] = $preset;
+                }
                 
-                foreach ($group_presets as $id => $preset) {
+                foreach ($grouped_presets as $group => $group_presets) {
+                    $html .= '<div class="presets-group">';
+                    $html .= '<h3 class="presets-group__title">' . esc_html($group) . '</h3>';
+                    $html .= '<hr class="presets-group__separator">';
+                    $html .= '</div>';
+                    
+                    foreach ($group_presets as $id => $preset) {
+                        $html .= self::get_preset_card_html($id, $preset);
+                    }
+                }
+            } else {
+                foreach ($presets as $id => $preset) {
                     $html .= self::get_preset_card_html($id, $preset);
                 }
             }
-        } else {
-            foreach ($presets as $id => $preset) {
-                $html .= self::get_preset_card_html($id, $preset);
-            }
+            
+            // Close presets-grid (only if we have presets)
+            $html .= '</div>';
         }
         
-        $html .= '</div>';
+        // Close accordion content and container
+        $html .= '</div>'; // Close presets-accordion__content
+        $html .= '</div>'; // Close presets-accordion
         
         return $html;
     }
@@ -285,6 +309,9 @@ class Settings
             '1.0.0',
             true
         );
+        
+        // Add AJAX handler for saving accordion state
+        add_action('wp_ajax_orbitools_save_accordion_state', array(self::class, 'save_accordion_state'));
     }
 
     /**
@@ -394,5 +421,28 @@ class Settings
         }
 
         return null;
+    }
+
+    /**
+     * AJAX handler for saving accordion state
+     *
+     * @since 1.0.0
+     */
+    public static function save_accordion_state(): void
+    {
+        // Basic security check
+        if (!current_user_can('manage_options')) {
+            wp_die(__('You do not have sufficient permissions to access this page.'));
+        }
+        
+        $expanded = sanitize_text_field($_POST['expanded'] ?? 'false');
+        $user_id = get_current_user_id();
+        
+        if ($user_id && in_array($expanded, array('true', 'false'))) {
+            update_user_meta($user_id, 'orbitools_presets_accordion_expanded', $expanded);
+            wp_send_json_success();
+        } else {
+            wp_send_json_error();
+        }
     }
 }

@@ -13,6 +13,7 @@
     // Wait for DOM to be ready
     document.addEventListener('DOMContentLoaded', function() {
         initPresetCardCopy();
+        initAccordionToggle();
     });
     
     /**
@@ -84,6 +85,84 @@
         setTimeout(function() {
             card.classList.remove('preset-card--copied');
         }, 1500);
+    }
+    
+    /**
+     * Initialize accordion toggle functionality
+     */
+    function initAccordionToggle() {
+        const accordionToggle = document.querySelector('[data-toggle="presets-accordion"]');
+        if (!accordionToggle) return;
+        
+        accordionToggle.addEventListener('click', function() {
+            const accordion = accordionToggle.closest('.presets-accordion');
+            const content = accordion.querySelector('.presets-accordion__content');
+            const isExpanded = accordion.classList.contains('presets-accordion--expanded');
+            
+            // Toggle the accordion
+            if (isExpanded) {
+                // Collapse
+                const height = content.scrollHeight;
+                content.style.height = height + 'px';
+                
+                // Force a repaint before setting height to 0
+                content.offsetHeight;
+                
+                content.style.height = '0';
+                accordion.classList.remove('presets-accordion--expanded');
+                accordionToggle.setAttribute('aria-expanded', 'false');
+            } else {
+                // Expand
+                accordion.classList.add('presets-accordion--expanded');
+                accordionToggle.setAttribute('aria-expanded', 'true');
+                
+                const height = content.scrollHeight;
+                content.style.height = height + 'px';
+                
+                // Remove the height style after transition to allow for dynamic content
+                setTimeout(function() {
+                    if (accordion.classList.contains('presets-accordion--expanded')) {
+                        content.style.height = 'auto';
+                    }
+                }, 300);
+            }
+            
+            // Save user preference
+            saveAccordionState(!isExpanded);
+        });
+    }
+    
+    /**
+     * Save accordion state to user meta
+     * @param {boolean} isExpanded - Whether the accordion is expanded
+     */
+    function saveAccordionState(isExpanded) {
+        // Use WordPress AJAX
+        const formData = new FormData();
+        formData.append('action', 'orbitools_save_accordion_state');
+        formData.append('expanded', isExpanded ? 'true' : 'false');
+        formData.append('nonce', getAjaxNonce());
+        
+        fetch(ajaxurl, {
+            method: 'POST',
+            body: formData
+        }).catch(function(error) {
+            console.error('Error saving accordion state:', error);
+        });
+    }
+    
+    /**
+     * Get AJAX nonce (from WordPress admin)
+     * @returns {string} AJAX nonce
+     */
+    function getAjaxNonce() {
+        // Try to get from WordPress admin
+        if (typeof window.wpApiSettings !== 'undefined' && window.wpApiSettings.nonce) {
+            return window.wpApiSettings.nonce;
+        }
+        
+        // Fallback - generate a basic nonce-like string
+        return 'orbitools_nonce_' + Date.now();
     }
     
 })();
