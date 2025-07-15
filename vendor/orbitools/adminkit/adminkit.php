@@ -132,15 +132,15 @@ class AdminKit_Loader
     private function mapClassToFile($class, $baseDir)
     {
         $classMap = [
-            'Field_Base' => 'fields/class-orbital-field-base.php',
-            'Field_Registry' => 'classes/class-orbital-field-registry.php',
+            'Field_Base' => 'fields/class-field-base.php',
+            'Field_Registry' => 'classes/class-field-registry.php',
             'Views\\Header_View' => 'views/class-header-view.php',
             'Views\\Navigation_View' => 'views/class-navigation-view.php',
             'Views\\Notice_Manager' => 'views/class-notice-manager.php',
             'Views\\Content_View' => 'views/class-content-view.php',
             'Views\\Footer_View' => 'views/class-footer-view.php',
             'Classes\\Page_Builder' => 'classes/class-page-builder.php',
-            'Admin_Kit' => 'classes/class-orbital-admin-framework.php',
+            'Admin_Kit' => 'classes/class-admin-framework.php',
         ];
 
         return isset($classMap[$class]) ? $baseDir . $classMap[$class] : null;
@@ -152,8 +152,8 @@ class AdminKit_Loader
     private function loadCoreDependencies()
     {
         $coreFiles = [
-            'fields/class-orbital-field-base.php',
-            'classes/class-orbital-field-registry.php',
+            'fields/class-field-base.php',
+            'classes/class-field-registry.php',
         ];
 
         foreach ($coreFiles as $file) {

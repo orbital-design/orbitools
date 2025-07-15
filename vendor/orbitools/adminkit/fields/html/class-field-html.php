@@ -34,7 +34,7 @@ class Field_Html extends Field_Base {
 		$html_content = isset( $this->field['std'] ) ? $this->field['std'] : '';
 		
 		// Allow filtering of the HTML content
-		$html_content = apply_filters( 'orbital_html_field_content', $html_content, $this->field );
+		$html_content = apply_filters( 'adminkit_html_field_content', $html_content, $this->field );
 		
 		// Render the HTML content
 		?>
