@@ -41,7 +41,7 @@ class Settings_Helper
 
         // Validate and normalize specific settings
         $normalized['layout_guides_grid_columns'] = max(1, min(24, intval($normalized['layout_guides_grid_columns'])));
-        $normalized['layout_guides_grid_gutter'] = max(0, min(100, intval($normalized['layout_guides_grid_gutter'])));
+        $normalized['layout_guides_grid_gutter'] = sanitize_text_field($normalized['layout_guides_grid_gutter']);
         $normalized['layout_guides_opacity'] = max(0.1, min(1.0, floatval($normalized['layout_guides_opacity'])));
         $normalized['layout_guides_color'] = sanitize_hex_color($normalized['layout_guides_color']) ?: $defaults['layout_guides_color'];
 
@@ -67,7 +67,7 @@ class Settings_Helper
 
         $css = ':root {';
         $css .= '--layout-guides-columns: ' . $settings['layout_guides_grid_columns'] . ';';
-        $css .= '--layout-guides-gutter: ' . $settings['layout_guides_grid_gutter'] . 'px;';
+        $css .= '--layout-guides-gutter: ' . $settings['layout_guides_grid_gutter'] . ';';
         $css .= '--layout-guides-opacity: ' . $settings['layout_guides_opacity'] . ';';
         $css .= '--layout-guides-color: ' . $settings['layout_guides_color'] . ';';
         $css .= '}';

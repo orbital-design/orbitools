@@ -229,8 +229,15 @@
         updateCSSProperties: function() {
             const root = document.documentElement;
             
+            console.log('Setting CSS properties:', {
+                columns: this.config.gridColumns,
+                gutter: this.config.gridGutter,
+                opacity: this.config.opacity,
+                color: this.config.color
+            });
+            
             root.style.setProperty('--layout-guides-columns', this.config.gridColumns);
-            root.style.setProperty('--layout-guides-gutter', this.config.gridGutter + 'px');
+            root.style.setProperty('--layout-guides-gutter', this.config.gridGutter);
             root.style.setProperty('--layout-guides-opacity', this.config.opacity);
             root.style.setProperty('--layout-guides-color', this.config.color);
         },

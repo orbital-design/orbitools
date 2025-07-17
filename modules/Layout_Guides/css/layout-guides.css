@@ -39,8 +39,8 @@
     bottom: 0;
     display: grid;
     grid-template-columns: repeat(var(--layout-guides-columns), 1fr);
-    gap: var(--layout-guides-gutter);
-    padding: 0 var(--layout-guides-gutter);
+    gap: var(--gutter, var(--layout-guides-gutter));
+    padding: 0 var(--gutter, var(--layout-guides-gutter));
     max-width: 1200px;
     margin: 0 auto;
 }
@@ -306,6 +306,7 @@
 /* Body class states - container is visible when enabled */
 .has-layout-guides--enabled .orbitools-layout-guides {
     display: block;
+    opacity: var(--layout-guides-opacity);
 }
 
 /* Hide container by default when not enabled */
