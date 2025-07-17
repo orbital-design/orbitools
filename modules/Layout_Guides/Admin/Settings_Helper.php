@@ -42,7 +42,9 @@ class Settings_Helper
         // Validate and normalize specific settings
         $normalized['layout_guides_grid_columns'] = max(1, min(24, intval($normalized['layout_guides_grid_columns'])));
         $normalized['layout_guides_grid_gutter'] = sanitize_text_field($normalized['layout_guides_grid_gutter']);
+        
         $normalized['layout_guides_opacity'] = max(0.1, min(1.0, floatval($normalized['layout_guides_opacity'])));
+        
         $normalized['layout_guides_color'] = sanitize_hex_color($normalized['layout_guides_color']) ?: $defaults['layout_guides_color'];
 
         // Validate keyboard shortcut
@@ -110,29 +112,21 @@ class Settings_Helper
         $settings = Settings::get_current_settings();
         $settings = self::normalize_settings($settings);
 
-        // Debug logging
-        error_log('Layout Guides Debug - settings: ' . print_r($settings, true));
-        error_log('Layout Guides Debug - enabled: ' . ($settings['layout_guides_enabled'] ? 'true' : 'false'));
 
         // Module must be enabled
         if (!$settings['layout_guides_enabled']) {
-            error_log('Layout Guides Debug - Module not enabled');
             return false;
         }
 
         // Only show on frontend (never in admin)
         if (is_admin()) {
-            error_log('Layout Guides Debug - In admin, not showing guides');
             return false;
         }
 
         // Don't show in login page
         if (in_array($GLOBALS['pagenow'], array('wp-login.php', 'wp-register.php'))) {
-            error_log('Layout Guides Debug - On login page');
             return false;
         }
-
-        error_log('Layout Guides Debug - Should show guides: true');
         return true;
     }
 

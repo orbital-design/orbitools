@@ -96,12 +96,8 @@ class Layout_Guides
         $this->init_core();
 
         // Only initialize frontend when module is enabled
-        error_log('Layout Guides Debug - Module enabled check: ' . ($this->is_enabled() ? 'true' : 'false'));
         if ($this->is_enabled()) {
-            error_log('Layout Guides Debug - Initializing frontend');
             $this->init_frontend();
-        } else {
-            error_log('Layout Guides Debug - Not initializing frontend - module not enabled');
         }
     }
 
@@ -134,10 +130,8 @@ class Layout_Guides
      */
     private function init_frontend()
     {
-        error_log('Layout Guides Debug - init_frontend called');
         $this->assets = new Frontend\Assets();
         $this->assets->init();
-        error_log('Layout Guides Debug - Frontend assets initialized');
     }
 
     /**

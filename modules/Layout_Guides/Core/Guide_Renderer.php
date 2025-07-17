@@ -64,16 +64,13 @@ class Guide_Renderer
     public function render_layout_guides()
     {
         if (!Settings_Helper::should_show_guides()) {
-            error_log('Layout Guides Debug - should_show_guides returned false, not rendering');
             return;
         }
 
-        error_log('Layout Guides Debug - Rendering layout guides HTML');
         echo $this->get_guides_html();
         
         // Render FAB separately (not inside the guides container)
         if (!is_admin() && is_user_logged_in()) {
-            error_log('Layout Guides Debug - Rendering FAB separately');
             echo $this->get_fab_html(Settings_Helper::get_js_config());
         }
     }

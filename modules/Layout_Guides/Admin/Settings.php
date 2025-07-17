@@ -42,7 +42,7 @@ class Settings
             'layout_guides_show_spacing' => true,
             'layout_guides_grid_columns' => 12,
             'layout_guides_grid_gutter' => 'var(--gutter)',
-            'layout_guides_opacity' => 0.3,
+            'layout_guides_opacity' => '0.3',
             'layout_guides_color' => '#ff0000',
             'layout_guides_toggle_key' => 'ctrl+shift+g',
         );
@@ -110,12 +110,9 @@ class Settings
             array(
                 'id'      => 'layout_guides_opacity',
                 'name'    => __('Guide Opacity', 'orbitools'),
-                'desc'    => __('Opacity of layout guides (0.1 = very transparent, 1.0 = fully opaque).', 'orbitools'),
-                'type'    => 'number',
-                'std'     => 0.3,
-                'min'     => 0.1,
-                'max'     => 1.0,
-                'step'    => 0.1,
+                'desc'    => __('Opacity of layout guides. Enter a decimal between 0.1 (very transparent) and 1.0 (fully opaque).', 'orbitools'),
+                'type'    => 'text',
+                'std'     => '0.3',
                 'section' => 'layout_guides',
             ),
             array(

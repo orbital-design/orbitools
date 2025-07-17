@@ -12,8 +12,6 @@
 (function() {
     'use strict';
 
-    // Debug: Log that the script is loading
-    console.log('Layout Guides JavaScript file loaded');
 
     // Layout Guides Controller
     const LayoutGuides = {
@@ -47,8 +45,6 @@
 
             this.state.initialized = true;
             
-            // Debug: log configuration
-            console.log('Layout Guides Config:', this.config);
             
             this.cacheElements();
             this.bindEvents();
@@ -87,16 +83,11 @@
             const toggleKey = this.config.toggleKey || 'ctrl+shift+g';
             
             const shortcut = this.parseShortcut(toggleKey);
-            console.log('Setting up keyboard shortcut:', toggleKey, shortcut);
             
             document.addEventListener('keydown', (e) => {
                 if (this.matchesShortcut(e, shortcut)) {
-                    console.log('Keyboard shortcut matched! Toggling guides...');
                     e.preventDefault();
                     this.toggleGuides();
-                } else if (e.ctrlKey && e.shiftKey) {
-                    // Debug: log when ctrl+shift is pressed with any key
-                    console.log('Ctrl+Shift+' + e.key + ' pressed, but not matching toggle key');
                 }
             });
         },
@@ -143,7 +134,6 @@
          * Toggle guides visibility
          */
         toggleGuides: function() {
-            console.log('toggleGuides called, current state:', this.state.visible);
             if (this.state.visible) {
                 this.hideGuides();
             } else {
@@ -228,13 +218,6 @@
          */
         updateCSSProperties: function() {
             const root = document.documentElement;
-            
-            console.log('Setting CSS properties:', {
-                columns: this.config.gridColumns,
-                gutter: this.config.gridGutter,
-                opacity: this.config.opacity,
-                color: this.config.color
-            });
             
             root.style.setProperty('--layout-guides-columns', this.config.gridColumns);
             root.style.setProperty('--layout-guides-gutter', this.config.gridGutter);
@@ -357,17 +340,14 @@
          * Open FAB panel
          */
         openFAB: function() {
-            console.log('Opening FAB panel');
             this.state.fabOpen = true;
             this.elements.fab.classList.add('orbitools-layout-guides__fab--open');
-            console.log('FAB classes:', this.elements.fab.className);
         },
 
         /**
          * Close FAB panel
          */
         closeFAB: function() {
-            console.log('Closing FAB panel');
             this.state.fabOpen = false;
             this.elements.fab.classList.remove('orbitools-layout-guides__fab--open');
         },
@@ -533,14 +513,10 @@
     // Initialize when DOM is ready
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('DOM ready, initializing Layout Guides...');
-            console.log('Available config:', window.orbitoolsLayoutGuides);
             LayoutGuides.init();
             SpacingVisualizer.init();
         });
     } else {
-        console.log('DOM already ready, initializing Layout Guides...');
-        console.log('Available config:', window.orbitoolsLayoutGuides);
         LayoutGuides.init();
         SpacingVisualizer.init();
     }
