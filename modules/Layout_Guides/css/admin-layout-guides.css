@@ -1,0 +1,172 @@
+/**
+ * Layout Guides Admin CSS
+ *
+ * Admin-specific styles for the Layout Guides module.
+ *
+ * @package    Orbitools
+ * @subpackage Modules/Layout_Guides
+ * @since      1.0.0
+ */
+
+/* Admin settings preview styles */
+.layout-guides-settings-preview {
+    background: #f9f9f9;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.layout-guides-settings-preview__header h3 {
+    margin-top: 0;
+    color: #333;
+    font-size: 16px;
+}
+
+.layout-guides-settings-preview__header p {
+    color: #666;
+    margin-bottom: 15px;
+    font-size: 13px;
+}
+
+.layout-guides-settings-preview__demo {
+    position: relative;
+    height: 120px;
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    margin-bottom: 15px;
+    overflow: hidden;
+}
+
+.layout-guides-settings-preview__grid {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    padding: 10px;
+}
+
+.layout-guides-settings-preview__column {
+    background: rgba(255, 0, 0, 0.1);
+    border: 1px solid rgba(255, 0, 0, 0.3);
+}
+
+.layout-guides-settings-preview__baseline {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: linear-gradient(
+        to bottom,
+        transparent 19px,
+        rgba(255, 0, 0, 0.3) 19px,
+        rgba(255, 0, 0, 0.3) 20px
+    );
+    background-size: 100% 20px;
+    background-repeat: repeat;
+}
+
+.layout-guides-settings-preview__content {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    right: 20px;
+    bottom: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+.layout-guides-settings-preview__box {
+    background: #0073aa;
+    color: white;
+    padding: 10px 15px;
+    border-radius: 4px;
+    font-size: 12px;
+    text-align: center;
+}
+
+.layout-guides-settings-preview__features {
+    margin-top: 15px;
+}
+
+.layout-guides-settings-preview__features ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 5px;
+}
+
+.layout-guides-settings-preview__features li {
+    font-size: 13px;
+    color: #666;
+}
+
+/* Module preview styles */
+.layout-guides-preview {
+    position: relative;
+    height: 100px;
+    background: #f9f9f9;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.layout-guides-preview__container {
+    position: relative;
+    height: 100%;
+    padding: 10px;
+}
+
+.layout-guides-preview__grid {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    padding: 8px;
+}
+
+.layout-guides-preview__item {
+    background: rgba(255, 0, 0, 0.1);
+    border: 1px solid rgba(255, 0, 0, 0.3);
+}
+
+.layout-guides-preview__baseline {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: linear-gradient(
+        to bottom,
+        transparent 15px,
+        rgba(255, 0, 0, 0.3) 15px,
+        rgba(255, 0, 0, 0.3) 16px
+    );
+    background-size: 100% 16px;
+    background-repeat: repeat;
+}
+
+.layout-guides-preview__label {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    background: rgba(0, 0, 0, 0.7);
+    color: white;
+    padding: 4px 8px;
+    border-radius: 3px;
+    font-size: 11px;
+}
