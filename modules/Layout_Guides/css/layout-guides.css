@@ -302,7 +302,8 @@ body:not(.has-layout-guides--enabled) .orbitools-layout-guides {
     display: none;
 }
 
-.has-layout-guides--enabled.has-layout-guides--grid .orbitools-layout-guides__grid {
+.has-layout-guides--enabled.has-layout-guides--12-grid .orbitools-layout-guides__grid,
+.has-layout-guides--enabled.has-layout-guides--5-grid .orbitools-layout-guides__grid {
     display: grid;
 }
 

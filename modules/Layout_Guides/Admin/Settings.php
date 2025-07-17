@@ -37,9 +37,9 @@ class Settings
     {
         return array(
             'layout_guides_enabled' => false,
-            'layout_guides_show_grid' => true,
+            'layout_guides_show_12_grid' => true,
+            'layout_guides_show_5_grid' => false,
             'layout_guides_show_rulers' => true,
-            'layout_guides_grid_columns' => 12,
             'layout_guides_grid_gutter' => 'var(--gutter)',
             'layout_guides_opacity' => '0.3',
             'layout_guides_color' => '#32a3e2',
@@ -65,11 +65,19 @@ class Settings
                 'section' => 'layout_guides',
             ),
             array(
-                'id'      => 'layout_guides_show_grid',
-                'name'    => __('Enable Grid', 'orbitools'),
-                'desc'    => __('Enable grid overlay feature. Use the FAB to show/hide when active.', 'orbitools'),
+                'id'      => 'layout_guides_show_12_grid',
+                'name'    => __('Enable 12 Column Grid', 'orbitools'),
+                'desc'    => __('Enable 12 column grid overlay. Use the FAB to show/hide when active.', 'orbitools'),
                 'type'    => 'checkbox',
                 'std'     => true,
+                'section' => 'layout_guides',
+            ),
+            array(
+                'id'      => 'layout_guides_show_5_grid',
+                'name'    => __('Enable 5 Column Grid', 'orbitools'),
+                'desc'    => __('Enable 5 column grid overlay. Use the FAB to show/hide when active.', 'orbitools'),
+                'type'    => 'checkbox',
+                'std'     => false,
                 'section' => 'layout_guides',
             ),
             array(
@@ -78,16 +86,6 @@ class Settings
                 'desc'    => __('Enable measurement rulers feature. Use the FAB to show/hide when active.', 'orbitools'),
                 'type'    => 'checkbox',
                 'std'     => true,
-                'section' => 'layout_guides',
-            ),
-            array(
-                'id'      => 'layout_guides_grid_columns',
-                'name'    => __('Grid Columns', 'orbitools'),
-                'desc'    => __('Number of columns in the grid overlay.', 'orbitools'),
-                'type'    => 'number',
-                'std'     => 12,
-                'min'     => 1,
-                'max'     => 24,
                 'section' => 'layout_guides',
             ),
             array(

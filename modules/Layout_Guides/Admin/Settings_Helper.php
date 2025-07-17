@@ -40,7 +40,6 @@ class Settings_Helper
         $normalized = wp_parse_args($settings, $defaults);
 
         // Validate and normalize specific settings
-        $normalized['layout_guides_grid_columns'] = max(1, min(24, intval($normalized['layout_guides_grid_columns'])));
         $normalized['layout_guides_grid_gutter'] = sanitize_text_field($normalized['layout_guides_grid_gutter']);
         
         $normalized['layout_guides_opacity'] = max(0.1, min(1.0, floatval($normalized['layout_guides_opacity'])));
@@ -68,7 +67,16 @@ class Settings_Helper
         $settings = self::normalize_settings($settings);
 
         $css = ':root {';
-        $css .= '--layout-guides-columns: ' . $settings['layout_guides_grid_columns'] . ';';
+        
+        // Set grid columns based on which grid type is enabled
+        $gridColumns = 12; // default
+        if ($settings['layout_guides_show_12_grid']) {
+            $gridColumns = 12;
+        } elseif ($settings['layout_guides_show_5_grid']) {
+            $gridColumns = 5;
+        }
+        
+        $css .= '--layout-guides-columns: ' . $gridColumns . ';';
         $css .= '--layout-guides-gutter: ' . $settings['layout_guides_grid_gutter'] . ';';
         $css .= '--layout-guides-opacity: ' . $settings['layout_guides_opacity'] . ';';
         $css .= '--layout-guides-color: ' . $settings['layout_guides_color'] . ';';
@@ -90,9 +98,9 @@ class Settings_Helper
 
         return array(
             'enabled' => $settings['layout_guides_enabled'],
-            'showGrid' => $settings['layout_guides_show_grid'],
+            'show12Grid' => $settings['layout_guides_show_12_grid'],
+            'show5Grid' => $settings['layout_guides_show_5_grid'],
             'showRulers' => $settings['layout_guides_show_rulers'],
-            'gridColumns' => $settings['layout_guides_grid_columns'],
             'gridGutter' => $settings['layout_guides_grid_gutter'],
             'opacity' => $settings['layout_guides_opacity'],
             'color' => $settings['layout_guides_color'],
@@ -145,8 +153,11 @@ class Settings_Helper
             $classes[] = 'has-layout-guides';
             $classes[] = 'has-layout-guides--enabled';
 
-            if ($settings['layout_guides_show_grid']) {
-                $classes[] = 'has-layout-guides--grid';
+            // Only enable one grid type - prioritize 12-grid if both are enabled
+            if ($settings['layout_guides_show_12_grid']) {
+                $classes[] = 'has-layout-guides--12-grid';
+            } elseif ($settings['layout_guides_show_5_grid']) {
+                $classes[] = 'has-layout-guides--5-grid';
             }
 
             if ($settings['layout_guides_show_rulers']) {

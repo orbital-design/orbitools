@@ -87,8 +87,8 @@ class Guide_Renderer
         
         $html = '<div id="orbitools-layout-guides" class="orbitools-layout-guides">';
         
-        // Grid overlay
-        if ($settings['showGrid']) {
+        // Grid overlay - show if either grid type is enabled
+        if ($settings['show12Grid'] || $settings['show5Grid']) {
             $html .= $this->get_grid_html($settings);
         }
         
@@ -114,7 +114,13 @@ class Guide_Renderer
     {
         $html = '<div class="orbitools-layout-guides__grid">';
         
-        for ($i = 0; $i < $settings['gridColumns']; $i++) {
+        // Determine column count based on which grid is enabled
+        $gridColumns = 12; // default
+        if ($settings['show5Grid'] && !$settings['show12Grid']) {
+            $gridColumns = 5;
+        }
+        
+        for ($i = 0; $i < $gridColumns; $i++) {
             $html .= '<div class="orbitools-layout-guides__grid-column"></div>';
         }
         
@@ -158,12 +164,22 @@ class Guide_Renderer
         
         $html .= '<div class="orbitools-layout-guides__fab-panel">';
         
-        // Grid toggle
-        if ($settings['showGrid']) {
+        // 12 Column Grid toggle
+        if ($settings['show12Grid']) {
             $html .= '<div class="orbitools-layout-guides__fab-control">';
-            $html .= '<button class="orbitools-layout-guides__fab-btn" data-action="toggle-grid">';
+            $html .= '<button class="orbitools-layout-guides__fab-btn" data-action="toggle-12-grid">';
             $html .= '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" class="orbitools-layout-guides__fab-icon"><path fill="currentColor" d="M0 72c0-22.1 17.9-40 40-40h48c22.1 0 40 17.9 40 40v48c0 22.1-17.9 40-40 40H40c-22.1 0-40-17.9-40-40V72zm0 160c0-22.1 17.9-40 40-40h48c22.1 0 40 17.9 40 40v48c0 22.1-17.9 40-40 40H40c-22.1 0-40-17.9-40-40v-48zm128 160v48c0 22.1-17.9 40-40 40H40c-22.1 0-40-17.9-40-40v-48c0-22.1 17.9-40 40-40h48c22.1 0 40 17.9 40 40zm32-320c0-22.1 17.9-40 40-40h48c22.1 0 40 17.9 40 40v48c0 22.1-17.9 40-40 40h-48c-22.1 0-40-17.9-40-40V72zm128 160v48c0 22.1-17.9 40-40 40h-48c-22.1 0-40-17.9-40-40v-48c0-22.1 17.9-40 40-40h48c22.1 0 40 17.9 40 40zM160 392c0-22.1 17.9-40 40-40h48c22.1 0 40 17.9 40 40v48c0 22.1-17.9 40-40 40h-48c-22.1 0-40-17.9-40-40v-48zM448 72v48c0 22.1-17.9 40-40 40h-48c-22.1 0-40-17.9-40-40V72c0-22.1 17.9-40 40-40h48c22.1 0 40 17.9 40 40zM320 232c0-22.1 17.9-40 40-40h48c22.1 0 40 17.9 40 40v48c0 22.1-17.9 40-40 40h-48c-22.1 0-40-17.9-40-40v-48zm128 160v48c0 22.1-17.9 40-40 40h-48c-22.1 0-40-17.9-40-40v-48c0-22.1 17.9-40 40-40h48c22.1 0 40 17.9 40 40z"/></svg>';
-            $html .= '<span class="orbitools-layout-guides__fab-label">Grid</span>';
+            $html .= '<span class="orbitools-layout-guides__fab-label">12 Grid</span>';
+            $html .= '</button>';
+            $html .= '</div>';
+        }
+        
+        // 5 Column Grid toggle
+        if ($settings['show5Grid']) {
+            $html .= '<div class="orbitools-layout-guides__fab-control">';
+            $html .= '<button class="orbitools-layout-guides__fab-btn" data-action="toggle-5-grid">';
+            $html .= '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" class="orbitools-layout-guides__fab-icon"><path fill="currentColor" d="M0 72c0-22.1 17.9-40 40-40h48c22.1 0 40 17.9 40 40v48c0 22.1-17.9 40-40 40H40c-22.1 0-40-17.9-40-40V72zm0 160c0-22.1 17.9-40 40-40h48c22.1 0 40 17.9 40 40v48c0 22.1-17.9 40-40 40H40c-22.1 0-40-17.9-40-40v-48zm128 160v48c0 22.1-17.9 40-40 40H40c-22.1 0-40-17.9-40-40v-48c0-22.1 17.9-40 40-40h48c22.1 0 40 17.9 40 40zm32-320c0-22.1 17.9-40 40-40h48c22.1 0 40 17.9 40 40v48c0 22.1-17.9 40-40 40h-48c-22.1 0-40-17.9-40-40V72zm128 160v48c0 22.1-17.9 40-40 40h-48c-22.1 0-40-17.9-40-40v-48c0-22.1 17.9-40 40-40h48c22.1 0 40 17.9 40 40zM160 392c0-22.1 17.9-40 40-40h48c22.1 0 40 17.9 40 40v48c0 22.1-17.9 40-40 40h-48c-22.1 0-40-17.9-40-40v-48zM448 72v48c0 22.1-17.9 40-40 40h-48c-22.1 0-40-17.9-40-40V72c0-22.1 17.9-40 40-40h48c22.1 0 40 17.9 40 40zM320 232c0-22.1 17.9-40 40-40h48c22.1 0 40 17.9 40 40v48c0 22.1-17.9 40-40 40h-48c-22.1 0-40-17.9-40-40v-48zm128 160v48c0 22.1-17.9 40-40 40h-48c-22.1 0-40-17.9-40-40v-48c0-22.1 17.9-40 40-40h48c22.1 0 40 17.9 40 40z"/></svg>';
+            $html .= '<span class="orbitools-layout-guides__fab-label">5 Grid</span>';
             $html .= '</button>';
             $html .= '</div>';
         }

@@ -163,9 +163,13 @@
             this.elements.body.classList.add('has-layout-guides--enabled');
             
             // Add feature-specific classes
-            if (this.config.showGrid) {
-                this.elements.body.classList.add('has-layout-guides--grid');
+            // Only enable one grid type - prioritize 12-grid if both are enabled
+            if (this.config.show12Grid) {
+                this.elements.body.classList.add('has-layout-guides--12-grid');
+            } else if (this.config.show5Grid) {
+                this.elements.body.classList.add('has-layout-guides--5-grid');
             }
+            
             if (this.config.showRulers) {
                 this.elements.body.classList.add('has-layout-guides--rulers');
             }
@@ -188,7 +192,8 @@
             
             this.elements.body.classList.remove('has-layout-guides--visible');
             this.elements.body.classList.remove('has-layout-guides--enabled');
-            this.elements.body.classList.remove('has-layout-guides--grid');
+            this.elements.body.classList.remove('has-layout-guides--12-grid');
+            this.elements.body.classList.remove('has-layout-guides--5-grid');
             this.elements.body.classList.remove('has-layout-guides--rulers');
             
             // Store state
@@ -206,7 +211,7 @@
             this.updateCSSProperties();
             
             // Update grid
-            if (this.config.showGrid) {
+            if (this.config.show12Grid || this.config.show5Grid) {
                 this.updateGrid();
             }
             
@@ -222,7 +227,15 @@
         updateCSSProperties: function() {
             const root = document.documentElement;
             
-            root.style.setProperty('--layout-guides-columns', this.config.gridColumns);
+            // Set grid columns based on which grid is active
+            let gridColumns = 12; // default
+            if (this.elements.body.classList.contains('has-layout-guides--5-grid')) {
+                gridColumns = 5;
+            } else if (this.elements.body.classList.contains('has-layout-guides--12-grid')) {
+                gridColumns = 12;
+            }
+            
+            root.style.setProperty('--layout-guides-columns', gridColumns);
             root.style.setProperty('--layout-guides-gutter', this.config.gridGutter);
             root.style.setProperty('--layout-guides-opacity', this.config.opacity);
             root.style.setProperty('--layout-guides-color', this.config.color);
@@ -241,7 +254,12 @@
             
             // Update column count if needed
             const currentColumns = columns.length;
-            const targetColumns = this.config.gridColumns;
+            let targetColumns = 12; // default
+            if (this.elements.body.classList.contains('has-layout-guides--5-grid')) {
+                targetColumns = 5;
+            } else if (this.elements.body.classList.contains('has-layout-guides--12-grid')) {
+                targetColumns = 12;
+            }
             
             if (currentColumns !== targetColumns) {
                 // Remove existing columns
@@ -361,12 +379,47 @@
          */
         handleFABAction: function(action, button) {
             switch (action) {
-                case 'toggle-grid':
-                    this.toggleFeature('grid', button);
+                case 'toggle-12-grid':
+                    this.toggleGridFeature('12-grid', button);
+                    break;
+                case 'toggle-5-grid':
+                    this.toggleGridFeature('5-grid', button);
                     break;
                 case 'toggle-rulers':
                     this.toggleFeature('rulers', button);
                     break;
+            }
+        },
+
+        /**
+         * Toggle grid feature with exclusive selection
+         */
+        toggleGridFeature: function(gridType, button) {
+            const className = `has-layout-guides--${gridType}`;
+            const isActive = this.elements.body.classList.contains(className);
+            
+            if (isActive) {
+                // Disable this grid
+                this.elements.body.classList.remove(className);
+                button.classList.remove('orbitools-layout-guides__fab-btn--active');
+            } else {
+                // Enable this grid and disable the other
+                this.elements.body.classList.remove('has-layout-guides--12-grid');
+                this.elements.body.classList.remove('has-layout-guides--5-grid');
+                this.elements.body.classList.add(className);
+                
+                // Update button states - disable other grid buttons
+                const allGridButtons = this.elements.fab.querySelectorAll('[data-action^="toggle-"][data-action$="-grid"]');
+                allGridButtons.forEach(btn => {
+                    btn.classList.remove('orbitools-layout-guides__fab-btn--active');
+                });
+                
+                // Activate current button
+                button.classList.add('orbitools-layout-guides__fab-btn--active');
+                
+                // Update grid display
+                this.updateGrid();
+                this.updateCSSProperties();
             }
         },
 
@@ -398,7 +451,7 @@
             if (!this.elements.fab) return;
 
             // Update feature button states
-            const features = ['grid', 'rulers'];
+            const features = ['12-grid', '5-grid', 'rulers'];
             features.forEach(feature => {
                 const btn = this.elements.fab.querySelector(`[data-action="toggle-${feature}"]`);
                 if (btn) {
@@ -418,9 +471,14 @@
         setInitialFeatureClasses: function() {
             // Add enabled feature classes even when guides aren't visible
             // This ensures FAB buttons show correct state
-            if (this.config.showGrid) {
-                this.elements.body.classList.add('has-layout-guides--grid');
+            
+            // Only enable one grid type - prioritize 12-grid if both are enabled
+            if (this.config.show12Grid) {
+                this.elements.body.classList.add('has-layout-guides--12-grid');
+            } else if (this.config.show5Grid) {
+                this.elements.body.classList.add('has-layout-guides--5-grid');
             }
+            
             if (this.config.showRulers) {
                 this.elements.body.classList.add('has-layout-guides--rulers');
             }
