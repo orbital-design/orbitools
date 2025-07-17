@@ -35,12 +35,12 @@ class Admin
     public function init()
     {
         // Register the module with the main plugin
-        add_filter('orbitools_available_modules', array($this, 'register_module'));
-        
+        add_filter('orbitools_available_modules', array($this, 'register_module_metadata'));
+
         // Add admin structure and fields
         add_filter('orbitools_adminkit_structure', array($this, 'add_admin_structure'));
         add_filter('orbitools_adminkit_fields', array($this, 'add_admin_fields'));
-        
+
         // Add admin assets
         add_action('orbitools_enqueue_assets', array($this, 'enqueue_admin_assets'));
     }
@@ -52,20 +52,14 @@ class Admin
      * @param array $modules Existing modules array.
      * @return array Modified modules array.
      */
-    public function register_module($modules)
+    public function register_module_metadata($modules)
     {
         $modules['layout_guides'] = array(
             'name'        => __('Layout Guides', 'orbitools'),
-            'description' => __('Development tool that adds visual layout guides and debugging helpers for theme development.', 'orbitools'),
-            'version'     => '1.0.0',
-            'author'      => 'OrbiTools',
-            'category'    => 'development',
-            'tags'        => array('development', 'debugging', 'layout', 'guides'),
-            'requires'    => array(),
-            'settings'    => array(
-                'layout_guides_enabled' => false,
-            ),
-            'preview'     => $this->get_preview_html(),
+            'subtitle'    => __('Visual layout tools', 'orbitools'),
+            'description' => __('Visual development tools that add user toggleable guides and rulers to the front end of the website for theme development and debugging.', 'orbitools'),
+            'icon'        => '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="#32a3e2" d="M.2 468.9C2.7 493.1 23.1 512 48 512h416c26.5 0 48-21.5 48-48v-96c0-26.5-21.5-48-48-48h-48v80c0 8.8-7.2 16-16 16s-16-7.2-16-16v-80h-64v80c0 8.8-7.2 16-16 16s-16-7.2-16-16v-80h-64v80c0 8.8-7.2 16-16 16s-16-7.2-16-16v-80h-80c-8.8 0-16-7.2-16-16s7.2-16 16-16h80v-64h-80c-8.8 0-16-7.2-16-16s7.2-16 16-16h80v-64h-80c-8.8 0-16-7.2-16-16s7.2-16 16-16h80V48c0-26.5-21.5-48-48-48H48C21.5 0 0 21.5 0 48v416c0 1.7.1 3.3.2 4.9z"/></svg>',
+            'configure_url' => admin_url('admin.php?page=orbitools&tab=modules&section=layout_guides'),
         );
 
         return $modules;

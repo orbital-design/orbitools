@@ -10,14 +10,21 @@
  */
 
 /* ==========================================================================
+   Field Modifications
+   ========================================================================== */
+
+.field--modules .field__label {
+	display: none;
+}
+
+/* ==========================================================================
    Module Grid Layout
    ========================================================================== */
 
 .orbi-modules-grid {
 	display: grid;
-	grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-	gap: 15px;
-	margin-top: 16px;
+	grid-template-columns: repeat(4, 1fr);
+	gap: 20px;
 	max-width: 100%;
 }
 
@@ -84,24 +91,24 @@
 	flex-shrink: 0;
 	width: 40px;
 	height: 40px;
+    padding: 10px;
 	background: #f8f9fa;
-	border-radius: 8px;
+	border-radius: 100px;
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	transition: all 0.2s ease;
-	border: 1px solid #e0e0e0;
+	transition:none;
+    box-sizing: border-box;
 }
 
 .orbi-module-card--enabled .orbi-module-card__icon {
-	background: #2271b1;
+	background: var(--orb-blue);
 	color: #fff;
-	border-color: #2271b1;
 }
 
 .orbi-module-card__icon svg {
-	width: 20px;
-	height: 20px;
+	width: 100%;
+	height: auto;
 }
 
 .orbi-module-card--enabled .orbi-module-card__icon svg path {
@@ -298,15 +305,27 @@
    Responsive Design
    ========================================================================== */
 
+@media (max-width: 1200px) {
+	.orbi-modules-grid {
+		grid-template-columns: repeat(3, 1fr);
+	}
+}
+
+@media (max-width: 900px) {
+	.orbi-modules-grid {
+		grid-template-columns: repeat(2, 1fr);
+	}
+}
+
 @media (max-width: 768px) {
 	.orbi-modules-grid {
 		grid-template-columns: 1fr;
 	}
-	
+
 	.orbi-module-card__header {
 		flex-wrap: wrap;
 	}
-	
+
 	.orbi-module-card__controls {
 		order: -1;
 		margin-left: auto;
