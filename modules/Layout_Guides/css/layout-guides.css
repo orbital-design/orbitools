@@ -27,7 +27,6 @@
     bottom: 0;
     pointer-events: none;
     z-index: var(--layout-guides-z-index);
-    opacity: var(--layout-guides-opacity);
     padding-left: var(--gutter-page, 0);
     padding-right: var(--gutter-page, 0);
 }
@@ -45,6 +44,7 @@
     padding: 0;
     max-width: var(--wp--style--global--content-size, 1200px);
     margin: 0 auto;
+    opacity: var(--layout-guides-opacity);
 }
 
 .orbitools-layout-guides__grid-column {
@@ -292,7 +292,6 @@
 /* Body class states - container is visible when enabled */
 .has-layout-guides--enabled .orbitools-layout-guides {
     display: block;
-    opacity: var(--layout-guides-opacity);
 }
 
 /* Hide container by default when not enabled */
