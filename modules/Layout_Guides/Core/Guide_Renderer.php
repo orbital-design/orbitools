@@ -158,14 +158,6 @@ class Guide_Renderer
         
         $html .= '<div class="orbitools-layout-guides__fab-panel">';
         
-        // Main toggle
-        $html .= '<div class="orbitools-layout-guides__fab-control">';
-        $html .= '<button class="orbitools-layout-guides__fab-btn orbitools-layout-guides__fab-btn--toggle" data-action="toggle">';
-        $html .= '<span class="dashicons dashicons-visibility"></span>';
-        $html .= '<span class="orbitools-layout-guides__fab-label">Toggle Guides</span>';
-        $html .= '</button>';
-        $html .= '</div>';
-        
         // Grid toggle
         if ($settings['showGrid']) {
             $html .= '<div class="orbitools-layout-guides__fab-control">';

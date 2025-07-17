@@ -353,9 +353,6 @@
          */
         handleFABAction: function(action, button) {
             switch (action) {
-                case 'toggle':
-                    this.toggleGuides();
-                    break;
                 case 'toggle-grid':
                     this.toggleFeature('grid', button);
                     break;
@@ -386,15 +383,6 @@
          */
         updateFABStates: function() {
             if (!this.elements.fab) return;
-
-            const toggleBtn = this.elements.fab.querySelector('[data-action="toggle"]');
-            if (toggleBtn) {
-                if (this.state.visible) {
-                    toggleBtn.classList.add('orbitools-layout-guides__fab-btn--active');
-                } else {
-                    toggleBtn.classList.remove('orbitools-layout-guides__fab-btn--active');
-                }
-            }
 
             // Update feature button states
             const features = ['grid', 'rulers'];
