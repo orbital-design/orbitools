@@ -65,37 +65,40 @@
 
 .orbitools-layout-guides__ruler {
     position: absolute;
-    background: #1d303a;
-    opacity: 1;
+    background: #32A3E2;
+    opacity: .75;
 }
 
 .orbitools-layout-guides__ruler--horizontal {
     left: 0;
     right: 0;
-    height: 1px;
-    background-image: repeating-linear-gradient(
+    height: 0px;
+    /* background-image: repeating-linear-gradient(
         to right,
         transparent,
         transparent 9px,
         #1d303a 9px,
         #1d303a 10px
-    );
+    ); */
+    border-bottom: 1px solid rgba(255, 255, 255, 0.8);
+    border-top: 1px solid #32A3E2;
 }
 
 .orbitools-layout-guides__ruler--vertical {
     top: 0;
     bottom: 0;
-    width: 1px;
-    background-image: repeating-linear-gradient(
+    width: 0px;
+    /* background-image: repeating-linear-gradient(
         to bottom,
         transparent,
         transparent 9px,
         #1d303a 9px,
         #1d303a 10px
-    );
+    ); */
+    border-left: 1px solid rgba(255, 255, 255, 0.8);
+    border-right: 1px solid #32A3E2;
+
 }
-
-
 /* Admin bar toggle */
 #wp-admin-bar-orbitools-layout-guides-toggle .ab-icon {
     font-size: 16px;
@@ -112,7 +115,7 @@
         padding: 0 10px;
         gap: 10px;
     }
-    
+
     :root {
         --layout-guides-gutter: 10px;
     }
@@ -122,7 +125,7 @@
     .orbitools-layout-guides__grid {
         grid-template-columns: repeat(4, 1fr);
     }
-    
+
     :root {
         --layout-guides-columns: 4;
     }
@@ -450,12 +453,12 @@ body:not(.has-layout-guides--enabled) .orbitools-layout-guides {
         bottom: 80px;
         right: 16px;
     }
-    
+
     .orbitools-layout-guides__fab-toggle {
         width: 48px;
         height: 48px;
     }
-    
+
     .orbitools-layout-guides__fab-panel {
         min-width: 160px;
         bottom: 60px;
