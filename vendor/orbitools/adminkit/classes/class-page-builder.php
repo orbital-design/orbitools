@@ -101,7 +101,7 @@ class Page_Builder
         );
 
 ?>
-        <div class="adminkit-content wrap" id="orbi-admin-<?php echo esc_attr($this->admin_kit->get_slug()); ?>">
+        <div class="adminkit adminkit-content wrap" id="orbi-admin-<?php echo esc_attr($this->admin_kit->get_slug()); ?>">
             <h1 class="screen-reader-text">
                 <?php echo esc_html($this->admin_kit->get_page_title()); ?>
             </h1>

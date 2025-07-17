@@ -97,7 +97,7 @@ class Header_View
     private function render_header_section($data)
     {
         ?>
-        <div class="adminkit-header" <?php $this->render_header_style($data['bg_color']); ?>>
+        <div class="adminkit adminkit-header" <?php $this->render_header_style($data['bg_color']); ?>>
             <div class="adminkit-header__content">
                 <?php $this->render_header_image($data['image_url'], $data['title']); ?>
                 <?php $this->render_header_text($data); ?>
@@ -231,7 +231,7 @@ class Header_View
     private function render_toolbar_section()
     {
         ?>
-        <div class="adminkit-toolbar">
+        <div class="adminkit adminkit-toolbar">
             <?php $this->render_breadcrumbs(); ?>
             <?php $this->render_nav_actions(); ?>
         </div>

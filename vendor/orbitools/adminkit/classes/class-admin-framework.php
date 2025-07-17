@@ -168,6 +168,9 @@ class Admin_Kit
 
         // Modify admin footer on our pages
         add_filter('admin_footer_text', array($this, 'admin_footer_text'));
+
+        // Add AdminKit body class
+        add_filter('admin_body_class', array($this, 'add_admin_body_class'));
     }
 
     /**
@@ -996,5 +999,21 @@ class Admin_Kit
             ?>
         </div>
 <?php
+    }
+
+    /**
+     * Add AdminKit body class to admin pages
+     *
+     * @since 1.0.0
+     * @param string $classes Existing body classes.
+     * @return string Modified body classes.
+     */
+    public function add_admin_body_class($classes)
+    {
+        $screen = get_current_screen();
+        if ($screen && strpos($screen->id, $this->slug) !== false) {
+            $classes .= ' is-adminKit';
+        }
+        return $classes;
     }
 }
