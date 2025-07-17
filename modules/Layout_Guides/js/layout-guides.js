@@ -157,9 +157,6 @@
             if (this.config.showRulers) {
                 this.elements.body.classList.add('has-layout-guides--rulers');
             }
-            if (this.config.showSpacing) {
-                this.elements.body.classList.add('has-layout-guides--spacing');
-            }
             
             // Store state
             localStorage.setItem('orbitools-layout-guides-visible', 'true');
@@ -181,7 +178,6 @@
             this.elements.body.classList.remove('has-layout-guides--enabled');
             this.elements.body.classList.remove('has-layout-guides--grid');
             this.elements.body.classList.remove('has-layout-guides--rulers');
-            this.elements.body.classList.remove('has-layout-guides--spacing');
             
             // Store state
             localStorage.setItem('orbitools-layout-guides-visible', 'false');
@@ -366,9 +362,6 @@
                 case 'toggle-rulers':
                     this.toggleFeature('rulers', button);
                     break;
-                case 'toggle-spacing':
-                    this.toggleFeature('spacing', button);
-                    break;
             }
         },
 
@@ -404,7 +397,7 @@
             }
 
             // Update feature button states
-            const features = ['grid', 'rulers', 'spacing'];
+            const features = ['grid', 'rulers'];
             features.forEach(feature => {
                 const btn = this.elements.fab.querySelector(`[data-action="toggle-${feature}"]`);
                 if (btn) {
@@ -434,91 +427,14 @@
         }
     };
 
-    // Element spacing visualization
-    const SpacingVisualizer = {
-        
-        init: function() {
-            if (!LayoutGuides.config.showSpacing) {
-                return;
-            }
-
-            this.bindEvents();
-        },
-
-        bindEvents: function() {
-            document.addEventListener('mouseenter', this.showSpacing.bind(this), true);
-            document.addEventListener('mouseleave', this.hideSpacing.bind(this), true);
-        },
-
-        showSpacing: function(e) {
-            if (!LayoutGuides.state.visible || !LayoutGuides.config.showSpacing) {
-                return;
-            }
-
-            const element = e.target;
-            
-            // Only process actual elements, not text nodes
-            if (element.nodeType !== Node.ELEMENT_NODE) {
-                return;
-            }
-            
-            const computedStyle = window.getComputedStyle(element);
-            
-            // Create spacing visualization
-            this.createSpacingOverlay(element, computedStyle);
-        },
-
-        hideSpacing: function(e) {
-            const overlays = document.querySelectorAll('.orbitools-spacing-overlay');
-            overlays.forEach(overlay => overlay.remove());
-        },
-
-        createSpacingOverlay: function(element, computedStyle) {
-            const rect = element.getBoundingClientRect();
-            const margin = {
-                top: parseInt(computedStyle.marginTop, 10),
-                right: parseInt(computedStyle.marginRight, 10),
-                bottom: parseInt(computedStyle.marginBottom, 10),
-                left: parseInt(computedStyle.marginLeft, 10)
-            };
-            const padding = {
-                top: parseInt(computedStyle.paddingTop, 10),
-                right: parseInt(computedStyle.paddingRight, 10),
-                bottom: parseInt(computedStyle.paddingBottom, 10),
-                left: parseInt(computedStyle.paddingLeft, 10)
-            };
-
-            // Create overlay elements
-            const overlay = document.createElement('div');
-            overlay.className = 'orbitools-spacing-overlay';
-            
-            // Add to body
-            document.body.appendChild(overlay);
-            
-            // Position overlay
-            Object.assign(overlay.style, {
-                position: 'fixed',
-                top: (rect.top - margin.top) + 'px',
-                left: (rect.left - margin.left) + 'px',
-                width: (rect.width + margin.left + margin.right) + 'px',
-                height: (rect.height + margin.top + margin.bottom) + 'px',
-                pointerEvents: 'none',
-                zIndex: '10000',
-                border: '1px solid ' + LayoutGuides.config.color,
-                background: 'rgba(255, 0, 0, 0.1)'
-            });
-        }
-    };
 
     // Initialize when DOM is ready
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', function() {
             LayoutGuides.init();
-            SpacingVisualizer.init();
         });
     } else {
         LayoutGuides.init();
-        SpacingVisualizer.init();
     }
 
     // Expose to global scope

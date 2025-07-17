@@ -92,7 +92,6 @@ class Settings_Helper
             'enabled' => $settings['layout_guides_enabled'],
             'showGrid' => $settings['layout_guides_show_grid'],
             'showRulers' => $settings['layout_guides_show_rulers'],
-            'showSpacing' => $settings['layout_guides_show_spacing'],
             'gridColumns' => $settings['layout_guides_grid_columns'],
             'gridGutter' => $settings['layout_guides_grid_gutter'],
             'opacity' => $settings['layout_guides_opacity'],
@@ -150,13 +149,8 @@ class Settings_Helper
                 $classes[] = 'has-layout-guides--grid';
             }
 
-
             if ($settings['layout_guides_show_rulers']) {
                 $classes[] = 'has-layout-guides--rulers';
-            }
-
-            if ($settings['layout_guides_show_spacing']) {
-                $classes[] = 'has-layout-guides--spacing';
             }
         }
 

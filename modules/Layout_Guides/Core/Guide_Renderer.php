@@ -187,15 +187,6 @@ class Guide_Renderer
             $html .= '</div>';
         }
         
-        // Spacing toggle
-        if ($settings['showSpacing']) {
-            $html .= '<div class="orbitools-layout-guides__fab-control">';
-            $html .= '<button class="orbitools-layout-guides__fab-btn" data-action="toggle-spacing">';
-            $html .= '<span class="dashicons dashicons-screenoptions"></span>';
-            $html .= '<span class="orbitools-layout-guides__fab-label">Spacing</span>';
-            $html .= '</button>';
-            $html .= '</div>';
-        }
         
         $html .= '</div>'; // Close panel
         $html .= '</div>'; // Close FAB

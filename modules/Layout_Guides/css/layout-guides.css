@@ -92,23 +92,6 @@
     );
 }
 
-/* Element spacing visualization */
-.orbitools-layout-guides--spacing *:hover {
-    outline: 2px dashed var(--layout-guides-color) !important;
-    outline-offset: 2px !important;
-}
-
-.orbitools-layout-guides--spacing *:hover::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(255, 0, 0, 0.1);
-    pointer-events: none;
-    z-index: var(--layout-guides-z-index);
-}
 
 /* Admin bar toggle */
 #wp-admin-bar-orbitools-layout-guides-toggle .ab-icon {

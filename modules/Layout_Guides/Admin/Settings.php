@@ -39,7 +39,6 @@ class Settings
             'layout_guides_enabled' => false,
             'layout_guides_show_grid' => true,
             'layout_guides_show_rulers' => true,
-            'layout_guides_show_spacing' => true,
             'layout_guides_grid_columns' => 12,
             'layout_guides_grid_gutter' => 'var(--gutter)',
             'layout_guides_opacity' => '0.3',
@@ -77,14 +76,6 @@ class Settings
                 'id'      => 'layout_guides_show_rulers',
                 'name'    => __('Show Rulers', 'orbitools'),
                 'desc'    => __('Display measurement rulers on page edges.', 'orbitools'),
-                'type'    => 'checkbox',
-                'std'     => true,
-                'section' => 'layout_guides',
-            ),
-            array(
-                'id'      => 'layout_guides_show_spacing',
-                'name'    => __('Show Element Spacing', 'orbitools'),
-                'desc'    => __('Highlight element margins and padding when hovering.', 'orbitools'),
                 'type'    => 'checkbox',
                 'std'     => true,
                 'section' => 'layout_guides',
@@ -182,9 +173,7 @@ class Settings
             <div class="layout-guides-settings-preview__features">
                 <ul>
                     <li>✓ Grid overlay with customizable columns</li>
-                    <li>✓ Baseline grid for typography alignment</li>
                     <li>✓ Rulers for precise measurements</li>
-                    <li>✓ Element spacing visualization</li>
                     <li>✓ Keyboard shortcuts for quick toggling</li>
                 </ul>
             </div>
