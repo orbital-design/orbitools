@@ -251,8 +251,8 @@ class Header_View
             return;
         }
         ?>
-        <nav class="orbi-admin__breadcrumbs">
-            <ol class="orbi-admin__breadcrumb-list">
+        <nav class="adminkit-toolbar__breadcrumbs">
+            <ol class="adminkit-toolbar__breadcrumb-list">
                 <?php $this->render_breadcrumb_items($breadcrumb_data); ?>
             </ol>
         </nav>
@@ -324,14 +324,14 @@ class Header_View
      */
     private function render_breadcrumb_item($text, $with_separator = false, $is_current = false)
     {
-        $text_class = 'orbi-admin__breadcrumb-text';
+        $text_class = 'adminkit-toolbar__breadcrumb-text';
         if ($is_current) {
-            $text_class .= ' orbi-admin__breadcrumb-text--current';
+            $text_class .= ' adminkit-toolbar__breadcrumb-text--current';
         }
         ?>
-        <li class="orbi-admin__breadcrumb-item">
+        <li class="adminkit-toolbar__breadcrumb-item">
             <?php if ($with_separator) : ?>
-                <span class="orbi-admin__breadcrumb-separator">›</span>
+                <span class="adminkit-toolbar__breadcrumb-separator">›</span>
             <?php endif; ?>
             <span class="<?php echo esc_attr($text_class); ?>">
                 <?php echo esc_html($text); ?>
@@ -348,7 +348,7 @@ class Header_View
     private function render_nav_actions()
     {
         ?>
-        <div class="orbi-admin__nav-actions">
+        <div class="adminkit-toolbar__nav-actions">
             <?php
             // Hook for navigation actions (save buttons, etc.)
             do_action($this->admin_kit->get_func_slug() . '_render_nav_actions');
@@ -371,10 +371,10 @@ class Header_View
     {
         ?>
         <button type="submit"
-            class="orbi-admin__save-btn button button-primary"
+            class="adminkit-toolbar__save-btn button button-primary"
             form="orbi-settings-form"
             aria-describedby="orbi-save-btn-desc">
-            <span class="orbi-admin__save-btn-text"><?php esc_html_e('Save Settings', 'orbitools-adminkit'); ?></span>
+            <span class="adminkit-toolbar__save-btn-text"><?php esc_html_e('Save Settings', 'orbitools-adminkit'); ?></span>
         </button>
         <span id="orbi-save-btn-desc" class="screen-reader-text">
             <?php esc_html_e('Save all settings changes', 'orbitools-adminkit'); ?>

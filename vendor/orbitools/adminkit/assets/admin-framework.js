@@ -355,7 +355,7 @@
          * @param {string|null} sectionKey - Current active section key (null to clear section)
          */
         updateBreadcrumbs: function(tabKey, sectionKey) {
-            const breadcrumbList = document.querySelector('.orbi-admin__breadcrumb-list');
+            const breadcrumbList = document.querySelector('.adminkit-toolbar__breadcrumb-list');
             if (!breadcrumbList) return;
 
             // Get tab and section data from DOM
@@ -363,7 +363,7 @@
             const sectionData = this.getSectionData(tabKey);
 
             // Clear existing breadcrumbs except the first one (page title)
-            const items = breadcrumbList.querySelectorAll('.orbi-admin__breadcrumb-item');
+            const items = breadcrumbList.querySelectorAll('.adminkit-toolbar__breadcrumb-item');
             for (let i = 1; i < items.length; i++) {
                 items[i].remove();
             }
@@ -390,18 +390,18 @@
          */
         createBreadcrumbItem: function(text, isCurrent) {
             const item = document.createElement('li');
-            item.className = 'orbi-admin__breadcrumb-item';
+            item.className = 'adminkit-toolbar__breadcrumb-item';
 
             // Add separator
             const separator = document.createElement('span');
-            separator.className = 'orbi-admin__breadcrumb-separator';
+            separator.className = 'adminkit-toolbar__breadcrumb-separator';
             separator.setAttribute('aria-hidden', 'true');
             separator.textContent = '›';
             item.appendChild(separator);
 
             // Add text
             const textSpan = document.createElement('span');
-            textSpan.className = 'orbi-admin__breadcrumb-text' + (isCurrent ? ' orbi-admin__breadcrumb-text--current' : '');
+            textSpan.className = 'adminkit-toolbar__breadcrumb-text' + (isCurrent ? ' adminkit-toolbar__breadcrumb-text--current' : '');
             textSpan.textContent = text;
             item.appendChild(textSpan);
 

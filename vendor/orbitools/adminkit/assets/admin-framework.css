@@ -6,6 +6,8 @@
  * Follows WordPress admin design patterns with accessibility enhancements.
  */
 
+ @import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap');
+
  :root {
     --gap-half: 12px;
     --gap-mid: 18px;
@@ -15,6 +17,7 @@
     --wpcontent--left: 20px;
     --orb-blue: #32A3E2;
     --orb-navy: #1D303A;
+    --orb-white: #fff;
  }
 
 /* =============================================================================
@@ -115,11 +118,11 @@
 }
 
 /* Breadcrumbs */
-.orbi-admin__breadcrumbs {
+.adminkit-toolbar__breadcrumbs {
     flex: 1;
 }
 
-.orbi-admin__breadcrumb-list {
+.adminkit-toolbar__breadcrumb-list {
     display: flex;
     align-items: center;
     margin: 0;
@@ -128,36 +131,38 @@
     gap: 8px;
 }
 
-.orbi-admin__breadcrumb-item {
+.adminkit-toolbar__breadcrumb-item {
     display: flex;
     align-items: center;
     gap: 8px;
+    margin: 0;
 }
 
-.orbi-admin__breadcrumb-text {
-    color: #646970;
+.adminkit-toolbar__breadcrumb-text {
+    color: var(--orb-white);
     font-size: 13px;
     font-weight: 500;
 }
 
-.orbi-admin__breadcrumb-text--current {
-    color: #1d2327;
+.adminkit-toolbar__breadcrumb-item:last-of-type .adminkit-toolbar__breadcrumb-text--current {
+    color: var(--orb-blue);
+    font-weight: 600;
 }
 
-.orbi-admin__breadcrumb-separator {
-    color: #8c8f94;
+.adminkit-toolbar__breadcrumb-separator {
+    color: rgba(255, 255, 255, 0.6);
     font-size: 12px;
     user-select: none;
 }
 
 /* Navigation Actions */
-.orbi-admin__nav-actions {
+.adminkit-toolbar__nav-actions {
     display: flex;
     align-items: center;
     gap: 12px;
 }
 
-.orbi-admin__save-btn {
+.adminkit-toolbar__save-btn {
     background: #2271b1;
     border: 1px solid #2271b1;
     border-radius: 4px;
@@ -169,14 +174,14 @@
     transition: all 0.2s ease;
 }
 
-.orbi-admin__save-btn:hover,
-.orbi-admin__save-btn:focus {
+.adminkit-toolbar__save-btn:hover,
+.adminkit-toolbar__save-btn:focus {
     background: #135e96;
     border-color: #135e96;
     color: #fff;
 }
 
-.orbi-admin__save-btn:focus {
+.adminkit-toolbar__save-btn:focus {
     box-shadow: 0 0 0 2px rgba(34, 113, 177, 0.3);
     outline: none;
 }
@@ -201,17 +206,16 @@
     display: flex;
     margin: 0;
     padding: 0;
-    border-bottom: 1px solid #e5e5e5;
 }
 
 .orbi-admin__tab-link {
     background: none;
     border: none;
     border-bottom: 3px solid transparent;
-    color: #646970;
+    color: var(--orb-white);
     cursor: pointer;
     display: block;
-    font-size: 14px;
+    font-size: 16px;
     font-weight: 500;
     line-height: 1.4;
     margin: 0;
@@ -219,6 +223,7 @@
     text-decoration: none;
     transition: all 0.2s ease;
     position: relative;
+    border-radius: 8px;
 }
 
 .orbi-admin__tab-link:hover {
@@ -227,9 +232,7 @@
 }
 
 .orbi-admin__tab-link--active {
-    color: #2271b1;
-    border-bottom-color: #2271b1;
-    background: none;
+    background: var(--orb-navy);
 }
 
 .orbi-admin__tab-link:focus {
