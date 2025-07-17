@@ -436,8 +436,7 @@ body:not(.has-layout-guides--enabled) .orbitools-layout-guides {
     background: #1d303a !important;
 }
 
-.orbitools-layout-guides__fab-btn .dashicons {
-    font-size: 16px;
+.orbitools-layout-guides__fab-icon {
     width: 16px;
     height: 16px;
     flex-shrink: 0;

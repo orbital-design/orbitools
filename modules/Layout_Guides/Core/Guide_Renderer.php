@@ -162,7 +162,7 @@ class Guide_Renderer
         if ($settings['showGrid']) {
             $html .= '<div class="orbitools-layout-guides__fab-control">';
             $html .= '<button class="orbitools-layout-guides__fab-btn" data-action="toggle-grid">';
-            $html .= '<span class="dashicons dashicons-grid-view"></span>';
+            $html .= '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" class="orbitools-layout-guides__fab-icon"><path fill="currentColor" d="M0 72c0-22.1 17.9-40 40-40h48c22.1 0 40 17.9 40 40v48c0 22.1-17.9 40-40 40H40c-22.1 0-40-17.9-40-40V72zm0 160c0-22.1 17.9-40 40-40h48c22.1 0 40 17.9 40 40v48c0 22.1-17.9 40-40 40H40c-22.1 0-40-17.9-40-40v-48zm128 160v48c0 22.1-17.9 40-40 40H40c-22.1 0-40-17.9-40-40v-48c0-22.1 17.9-40 40-40h48c22.1 0 40 17.9 40 40zm32-320c0-22.1 17.9-40 40-40h48c22.1 0 40 17.9 40 40v48c0 22.1-17.9 40-40 40h-48c-22.1 0-40-17.9-40-40V72zm128 160v48c0 22.1-17.9 40-40 40h-48c-22.1 0-40-17.9-40-40v-48c0-22.1 17.9-40 40-40h48c22.1 0 40 17.9 40 40zM160 392c0-22.1 17.9-40 40-40h48c22.1 0 40 17.9 40 40v48c0 22.1-17.9 40-40 40h-48c-22.1 0-40-17.9-40-40v-48zM448 72v48c0 22.1-17.9 40-40 40h-48c-22.1 0-40-17.9-40-40V72c0-22.1 17.9-40 40-40h48c22.1 0 40 17.9 40 40zM320 232c0-22.1 17.9-40 40-40h48c22.1 0 40 17.9 40 40v48c0 22.1-17.9 40-40 40h-48c-22.1 0-40-17.9-40-40v-48zm128 160v48c0 22.1-17.9 40-40 40h-48c-22.1 0-40-17.9-40-40v-48c0-22.1 17.9-40 40-40h48c22.1 0 40 17.9 40 40z"/></svg>';
             $html .= '<span class="orbitools-layout-guides__fab-label">Grid</span>';
             $html .= '</button>';
             $html .= '</div>';
@@ -173,7 +173,7 @@ class Guide_Renderer
         if ($settings['showRulers']) {
             $html .= '<div class="orbitools-layout-guides__fab-control">';
             $html .= '<button class="orbitools-layout-guides__fab-btn" data-action="toggle-rulers">';
-            $html .= '<span class="dashicons dashicons-editor-table"></span>';
+            $html .= '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" class="orbitools-layout-guides__fab-icon"><path fill="currentColor" d="M0 32v416c0 35.3 28.7 64 64 64h416c17.7 0 32-14.3 32-32v-2.7c0-8.5-3.4-16.6-9.4-22.6l-51.3-51.3-24 24c-6.2 6.2-16.4 6.2-22.6 0s-6.2-16.4 0-22.6l24-24-57.4-57.4-24 24c-6.2 6.2-16.4 6.2-22.6 0s-6.2-16.4 0-22.6l24-24-57.4-57.4-24 24c-6.2 6.2-16.4 6.2-22.6 0s-6.2-16.4 0-22.6l24-24-57.4-57.4-24 24c-6.2 6.2-16.4 6.2-22.6 0s-6.2-16.4 0-22.6l24-24-57.4-57.5-24 24c-6.2 6.2-16.4 6.2-22.6 0s-6.2-16.4 0-22.6l24-24L57.4 9.4c-6-6-14.2-9.4-22.7-9.4H32C14.3 0 0 14.3 0 32zm128 224 128 128H128V256z"/></svg>';
             $html .= '<span class="orbitools-layout-guides__fab-label">Rulers</span>';
             $html .= '</button>';
             $html .= '</div>';
