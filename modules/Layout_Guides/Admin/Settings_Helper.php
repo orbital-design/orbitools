@@ -155,23 +155,23 @@ class Settings_Helper
         $settings = self::normalize_settings($settings);
 
         if (self::should_show_guides()) {
-            $classes[] = 'orbitools-layout-guides';
-            $classes[] = 'orbitools-layout-guides--enabled';
+            $classes[] = 'has-layout-guides';
+            $classes[] = 'has-layout-guides--enabled';
 
             if ($settings['layout_guides_show_grid']) {
-                $classes[] = 'orbitools-layout-guides--grid';
+                $classes[] = 'has-layout-guides--grid';
             }
 
             if ($settings['layout_guides_show_baseline']) {
-                $classes[] = 'orbitools-layout-guides--baseline';
+                $classes[] = 'has-layout-guides--baseline';
             }
 
             if ($settings['layout_guides_show_rulers']) {
-                $classes[] = 'orbitools-layout-guides--rulers';
+                $classes[] = 'has-layout-guides--rulers';
             }
 
             if ($settings['layout_guides_show_spacing']) {
-                $classes[] = 'orbitools-layout-guides--spacing';
+                $classes[] = 'has-layout-guides--spacing';
             }
         }
 

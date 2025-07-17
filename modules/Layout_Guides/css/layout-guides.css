@@ -16,6 +16,7 @@
     --layout-guides-opacity: 0.3;
     --layout-guides-color: #ff0000;
     --layout-guides-z-index: 9999;
+    --layout-guides-fab-z-index: 10000;
 }
 
 /* Main container */
@@ -320,24 +321,24 @@
 }
 
 /* Body class states - container is visible when enabled */
-.orbitools-layout-guides--enabled .orbitools-layout-guides {
+.has-layout-guides--enabled .orbitools-layout-guides {
     display: block;
 }
 
 /* Hide container by default when not enabled */
-body:not(.orbitools-layout-guides--enabled) .orbitools-layout-guides {
+body:not(.has-layout-guides--enabled) .orbitools-layout-guides {
     display: none;
 }
 
-.orbitools-layout-guides--enabled.orbitools-layout-guides--grid .orbitools-layout-guides__grid {
+.has-layout-guides--enabled.has-layout-guides--grid .orbitools-layout-guides__grid {
     display: grid;
 }
 
-.orbitools-layout-guides--enabled.orbitools-layout-guides--baseline .orbitools-layout-guides__baseline {
+.has-layout-guides--enabled.has-layout-guides--baseline .orbitools-layout-guides__baseline {
     display: block;
 }
 
-.orbitools-layout-guides--enabled.orbitools-layout-guides--rulers .orbitools-layout-guides__rulers {
+.has-layout-guides--enabled.has-layout-guides--rulers .orbitools-layout-guides__rulers {
     display: block;
 }
 
@@ -345,5 +346,157 @@ body:not(.orbitools-layout-guides--enabled) .orbitools-layout-guides {
 .orbitools-layout-guides__grid,
 .orbitools-layout-guides__baseline,
 .orbitools-layout-guides__rulers {
+    display: none;
+}
+
+/* FAB (Floating Action Button) Styles */
+.orbitools-layout-guides__fab {
+    position: fixed !important;
+    bottom: 20px !important;
+    right: 20px !important;
+    z-index: var(--layout-guides-fab-z-index) !important;
+    pointer-events: auto !important;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen-Sans, Ubuntu, Cantarell, 'Helvetica Neue', sans-serif !important;
+}
+
+.orbitools-layout-guides__fab-toggle {
+    width: 56px !important;
+    height: 56px !important;
+    border-radius: 50% !important;
+    background: #32a3e2 !important;
+    border: none !important;
+    cursor: pointer !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+    transition: all 0.3s ease !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    color: white !important;
+    font-size: 20px !important;
+    outline: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+.orbitools-layout-guides__fab-toggle:hover {
+    background: #1d303a !important;
+    transform: scale(1.1) !important;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4) !important;
+}
+
+.orbitools-layout-guides__fab-logo {
+    width: 24px !important;
+    height: 24px !important;
+    filter: brightness(0) invert(1) !important; /* Make SVG white */
+    pointer-events: none !important;
+}
+
+.orbitools-layout-guides__fab-panel {
+    position: absolute !important;
+    bottom: 70px !important;
+    right: 0 !important;
+    background: white !important;
+    border-radius: 8px !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2) !important;
+    padding: 8px !important;
+    min-width: 180px !important;
+    opacity: 0 !important;
+    transform: translateY(10px) scale(0.9) !important;
+    visibility: hidden !important;
+    transition: all 0.3s ease !important;
+    z-index: calc(var(--layout-guides-fab-z-index) + 1) !important;
+}
+
+.orbitools-layout-guides__fab--open .orbitools-layout-guides__fab-panel {
+    opacity: 1 !important;
+    transform: translateY(0) scale(1) !important;
+    visibility: visible !important;
+}
+
+.orbitools-layout-guides__fab-control {
+    margin-bottom: 4px;
+}
+
+.orbitools-layout-guides__fab-control:last-child {
+    margin-bottom: 0;
+}
+
+.orbitools-layout-guides__fab-btn {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: background-color 0.2s ease;
+    text-align: left;
+    font-size: 13px;
+    color: #333;
+}
+
+.orbitools-layout-guides__fab-btn:hover {
+    background: #f5f5f5;
+}
+
+.orbitools-layout-guides__fab-btn--active {
+    background: #e7f3ff !important;
+    color: #32a3e2 !important;
+}
+
+.orbitools-layout-guides__fab-btn--toggle {
+    background: #32a3e2 !important;
+    color: white !important;
+    font-weight: 500 !important;
+}
+
+.orbitools-layout-guides__fab-btn--toggle:hover {
+    background: #1d303a !important;
+}
+
+.orbitools-layout-guides__fab-btn .dashicons {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+}
+
+.orbitools-layout-guides__fab-label {
+    flex: 1;
+}
+
+/* FAB responsive styles */
+@media (max-width: 768px) {
+    .orbitools-layout-guides__fab {
+        bottom: 80px;
+        right: 16px;
+    }
+    
+    .orbitools-layout-guides__fab-toggle {
+        width: 48px;
+        height: 48px;
+    }
+    
+    .orbitools-layout-guides__fab-panel {
+        min-width: 160px;
+        bottom: 60px;
+    }
+}
+
+/* Admin bar adjustments */
+.admin-bar .orbitools-layout-guides__fab {
+    bottom: 52px;
+}
+
+@media screen and (max-width: 782px) {
+    .admin-bar .orbitools-layout-guides__fab {
+        bottom: 66px;
+    }
+}
+
+/* Hide FAB in admin area */
+.wp-admin .orbitools-layout-guides__fab {
     display: none;
 }

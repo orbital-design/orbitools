@@ -25,13 +25,17 @@
         elements: {
             container: null,
             adminBarToggle: null,
-            body: null
+            body: null,
+            fab: null,
+            fabToggle: null,
+            fabPanel: null
         },
         
         // State
         state: {
             visible: false,
-            initialized: false
+            initialized: false,
+            fabOpen: false
         },
 
         /**
@@ -50,6 +54,7 @@
             this.cacheElements();
             this.bindEvents();
             this.setupKeyboardShortcuts();
+            this.setupFAB();
             this.initializeState();
         },
 
@@ -60,6 +65,9 @@
             this.elements.container = document.getElementById('orbitools-layout-guides');
             this.elements.adminBarToggle = document.getElementById('wp-admin-bar-orbitools-layout-guides-toggle');
             this.elements.body = document.body;
+            this.elements.fab = document.getElementById('orbitools-layout-guides-fab');
+            this.elements.fabToggle = this.elements.fab ? this.elements.fab.querySelector('.orbitools-layout-guides__fab-toggle') : null;
+            this.elements.fabPanel = this.elements.fab ? this.elements.fab.querySelector('.orbitools-layout-guides__fab-panel') : null;
         },
 
         /**
@@ -160,21 +168,21 @@
                 this.elements.adminBarToggle.classList.add('active');
             }
             
-            this.elements.body.classList.add('orbitools-layout-guides--visible');
-            this.elements.body.classList.add('orbitools-layout-guides--enabled');
+            this.elements.body.classList.add('has-layout-guides--visible');
+            this.elements.body.classList.add('has-layout-guides--enabled');
             
             // Add feature-specific classes
             if (this.config.showGrid) {
-                this.elements.body.classList.add('orbitools-layout-guides--grid');
+                this.elements.body.classList.add('has-layout-guides--grid');
             }
             if (this.config.showBaseline) {
-                this.elements.body.classList.add('orbitools-layout-guides--baseline');
+                this.elements.body.classList.add('has-layout-guides--baseline');
             }
             if (this.config.showRulers) {
-                this.elements.body.classList.add('orbitools-layout-guides--rulers');
+                this.elements.body.classList.add('has-layout-guides--rulers');
             }
             if (this.config.showSpacing) {
-                this.elements.body.classList.add('orbitools-layout-guides--spacing');
+                this.elements.body.classList.add('has-layout-guides--spacing');
             }
             
             // Store state
@@ -182,6 +190,9 @@
             
             // Update guides
             this.updateGuides();
+            
+            // Update FAB states
+            this.updateFABStates();
         },
 
         /**
@@ -194,15 +205,18 @@
                 this.elements.adminBarToggle.classList.remove('active');
             }
             
-            this.elements.body.classList.remove('orbitools-layout-guides--visible');
-            this.elements.body.classList.remove('orbitools-layout-guides--enabled');
-            this.elements.body.classList.remove('orbitools-layout-guides--grid');
-            this.elements.body.classList.remove('orbitools-layout-guides--baseline');
-            this.elements.body.classList.remove('orbitools-layout-guides--rulers');
-            this.elements.body.classList.remove('orbitools-layout-guides--spacing');
+            this.elements.body.classList.remove('has-layout-guides--visible');
+            this.elements.body.classList.remove('has-layout-guides--enabled');
+            this.elements.body.classList.remove('has-layout-guides--grid');
+            this.elements.body.classList.remove('has-layout-guides--baseline');
+            this.elements.body.classList.remove('has-layout-guides--rulers');
+            this.elements.body.classList.remove('has-layout-guides--spacing');
             
             // Store state
             localStorage.setItem('orbitools-layout-guides-visible', 'false');
+            
+            // Update FAB states
+            this.updateFABStates();
         },
 
         /**
@@ -318,6 +332,137 @@
             if (this.state.visible) {
                 this.updateGuides();
             }
+        },
+
+        /**
+         * Setup FAB functionality
+         */
+        setupFAB: function() {
+            if (!this.elements.fab || !this.elements.fabToggle) {
+                return;
+            }
+
+            // Toggle FAB panel
+            this.elements.fabToggle.addEventListener('click', (e) => {
+                e.preventDefault();
+                this.toggleFAB();
+            });
+
+            // Handle FAB button clicks
+            const fabButtons = this.elements.fab.querySelectorAll('.orbitools-layout-guides__fab-btn');
+            fabButtons.forEach(button => {
+                button.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const action = button.getAttribute('data-action');
+                    this.handleFABAction(action, button);
+                });
+            });
+
+            // Close FAB when clicking outside
+            document.addEventListener('click', (e) => {
+                if (!this.elements.fab.contains(e.target) && this.state.fabOpen) {
+                    this.closeFAB();
+                }
+            });
+        },
+
+        /**
+         * Toggle FAB panel
+         */
+        toggleFAB: function() {
+            if (this.state.fabOpen) {
+                this.closeFAB();
+            } else {
+                this.openFAB();
+            }
+        },
+
+        /**
+         * Open FAB panel
+         */
+        openFAB: function() {
+            console.log('Opening FAB panel');
+            this.state.fabOpen = true;
+            this.elements.fab.classList.add('orbitools-layout-guides__fab--open');
+            console.log('FAB classes:', this.elements.fab.className);
+        },
+
+        /**
+         * Close FAB panel
+         */
+        closeFAB: function() {
+            console.log('Closing FAB panel');
+            this.state.fabOpen = false;
+            this.elements.fab.classList.remove('orbitools-layout-guides__fab--open');
+        },
+
+        /**
+         * Handle FAB action
+         */
+        handleFABAction: function(action, button) {
+            switch (action) {
+                case 'toggle':
+                    this.toggleGuides();
+                    break;
+                case 'toggle-grid':
+                    this.toggleFeature('grid', button);
+                    break;
+                case 'toggle-baseline':
+                    this.toggleFeature('baseline', button);
+                    break;
+                case 'toggle-rulers':
+                    this.toggleFeature('rulers', button);
+                    break;
+                case 'toggle-spacing':
+                    this.toggleFeature('spacing', button);
+                    break;
+            }
+        },
+
+        /**
+         * Toggle individual feature
+         */
+        toggleFeature: function(feature, button) {
+            const className = `has-layout-guides--${feature}`;
+            const isActive = this.elements.body.classList.contains(className);
+            
+            if (isActive) {
+                this.elements.body.classList.remove(className);
+                button.classList.remove('orbitools-layout-guides__fab-btn--active');
+            } else {
+                this.elements.body.classList.add(className);
+                button.classList.add('orbitools-layout-guides__fab-btn--active');
+            }
+        },
+
+        /**
+         * Update FAB button states
+         */
+        updateFABStates: function() {
+            if (!this.elements.fab) return;
+
+            const toggleBtn = this.elements.fab.querySelector('[data-action="toggle"]');
+            if (toggleBtn) {
+                if (this.state.visible) {
+                    toggleBtn.classList.add('orbitools-layout-guides__fab-btn--active');
+                } else {
+                    toggleBtn.classList.remove('orbitools-layout-guides__fab-btn--active');
+                }
+            }
+
+            // Update feature button states
+            const features = ['grid', 'baseline', 'rulers', 'spacing'];
+            features.forEach(feature => {
+                const btn = this.elements.fab.querySelector(`[data-action="toggle-${feature}"]`);
+                if (btn) {
+                    const className = `has-layout-guides--${feature}`;
+                    if (this.elements.body.classList.contains(className)) {
+                        btn.classList.add('orbitools-layout-guides__fab-btn--active');
+                    } else {
+                        btn.classList.remove('orbitools-layout-guides__fab-btn--active');
+                    }
+                }
+            });
         },
 
         /**

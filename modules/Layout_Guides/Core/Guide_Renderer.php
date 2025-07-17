@@ -68,10 +68,18 @@ class Guide_Renderer
     public function render_layout_guides()
     {
         if (!Settings_Helper::should_show_guides()) {
+            error_log('Layout Guides Debug - should_show_guides returned false, not rendering');
             return;
         }
 
+        error_log('Layout Guides Debug - Rendering layout guides HTML');
         echo $this->get_guides_html();
+        
+        // Render FAB separately (not inside the guides container)
+        if (!is_admin() && is_user_logged_in()) {
+            error_log('Layout Guides Debug - Rendering FAB separately');
+            echo $this->get_fab_html(Settings_Helper::get_js_config());
+        }
     }
 
     /**
@@ -178,5 +186,75 @@ class Guide_Renderer
                 'title' => __('Toggle Layout Guides', 'orbitools'),
             ),
         ));
+    }
+
+    /**
+     * Get FAB (Floating Action Button) HTML
+     *
+     * @since 1.0.0
+     * @param array $settings Settings configuration.
+     * @return string FAB HTML.
+     */
+    private function get_fab_html($settings)
+    {
+        $html = '<div class="orbitools-layout-guides__fab" id="orbitools-layout-guides-fab">';
+        $html .= '<button class="orbitools-layout-guides__fab-toggle" title="Layout Guides Controls">';
+        $html .= '<img src="' . ORBITOOLS_URL . 'assets/images/orbitools-logo.svg" alt="Orbitools" class="orbitools-layout-guides__fab-logo" />';
+        $html .= '</button>';
+        
+        $html .= '<div class="orbitools-layout-guides__fab-panel">';
+        
+        // Main toggle
+        $html .= '<div class="orbitools-layout-guides__fab-control">';
+        $html .= '<button class="orbitools-layout-guides__fab-btn orbitools-layout-guides__fab-btn--toggle" data-action="toggle">';
+        $html .= '<span class="dashicons dashicons-visibility"></span>';
+        $html .= '<span class="orbitools-layout-guides__fab-label">Toggle Guides</span>';
+        $html .= '</button>';
+        $html .= '</div>';
+        
+        // Grid toggle
+        if ($settings['showGrid']) {
+            $html .= '<div class="orbitools-layout-guides__fab-control">';
+            $html .= '<button class="orbitools-layout-guides__fab-btn" data-action="toggle-grid">';
+            $html .= '<span class="dashicons dashicons-grid-view"></span>';
+            $html .= '<span class="orbitools-layout-guides__fab-label">Grid</span>';
+            $html .= '</button>';
+            $html .= '</div>';
+        }
+        
+        // Baseline toggle
+        if ($settings['showBaseline']) {
+            $html .= '<div class="orbitools-layout-guides__fab-control">';
+            $html .= '<button class="orbitools-layout-guides__fab-btn" data-action="toggle-baseline">';
+            $html .= '<span class="dashicons dashicons-editor-alignleft"></span>';
+            $html .= '<span class="orbitools-layout-guides__fab-label">Baseline</span>';
+            $html .= '</button>';
+            $html .= '</div>';
+        }
+        
+        // Rulers toggle
+        if ($settings['showRulers']) {
+            $html .= '<div class="orbitools-layout-guides__fab-control">';
+            $html .= '<button class="orbitools-layout-guides__fab-btn" data-action="toggle-rulers">';
+            $html .= '<span class="dashicons dashicons-editor-table"></span>';
+            $html .= '<span class="orbitools-layout-guides__fab-label">Rulers</span>';
+            $html .= '</button>';
+            $html .= '</div>';
+        }
+        
+        // Spacing toggle
+        if ($settings['showSpacing']) {
+            $html .= '<div class="orbitools-layout-guides__fab-control">';
+            $html .= '<button class="orbitools-layout-guides__fab-btn" data-action="toggle-spacing">';
+            $html .= '<span class="dashicons dashicons-screenoptions"></span>';
+            $html .= '<span class="orbitools-layout-guides__fab-label">Spacing</span>';
+            $html .= '</button>';
+            $html .= '</div>';
+        }
+        
+        $html .= '</div>'; // Close panel
+        $html .= '</div>'; // Close FAB
+        
+        return $html;
     }
 }
