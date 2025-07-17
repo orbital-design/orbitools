@@ -50,7 +50,7 @@ class Settings
             'typography_presets_enabled' => false,
             'typography_show_groups_in_dropdown' => false,
             'typography_output_preset_css' => true,
-            'typography_theme_json_path' => 'orbitools',
+            'typography_theme_json_path' => 'settings.custom.orbitools',
             'typography_allowed_blocks' => array(
                 'core/paragraph',
                 'core/heading',
@@ -97,9 +97,9 @@ class Settings
             array(
                 'id'      => 'typography_theme_json_path',
                 'name'    => __('Theme.json Path', 'orbitools'),
-                'desc'    => __('Specify where your presets are located in theme.json. Use dot notation for nested paths.<br><br><strong>Examples:</strong><br>• <code>orbitools</code> → <code>settings.custom.orbitools.Typography_Presets</code><br>• <code>mytheme.components</code> → <code>settings.custom.mytheme.components.Typography_Presets</code><br><br><strong>Note:</strong> Path automatically starts with "settings.custom" and ends with "Typography_Presets"', 'orbitools'),
+                'desc'    => __('Specify the full path to your presets in theme.json. Use dot notation for nested paths.<br><br><strong>Examples:</strong><br>• <code>settings.custom.orbitools</code> → <code>settings.custom.orbitools.Typography_Presets</code><br>• <code>settings.custom.mytheme.components</code> → <code>settings.custom.mytheme.components.Typography_Presets</code><br>• <code>orbital.plugins.orbitools</code> → <code>orbital.plugins.orbitools.Typography_Presets</code><br><br><strong>Note:</strong> Path automatically ends with "Typography_Presets"', 'orbitools'),
                 'type'    => 'text',
-                'std'     => 'orbitools',
+                'std'     => 'settings.custom.orbitools',
                 'section' => 'typography',
             ),
             array(
@@ -166,22 +166,20 @@ class Settings
     public static function get_theme_json_path(): array
     {
         $settings = self::get_current_settings();
-        $path_setting = $settings['typography_theme_json_path'] ?? 'orbitools';
-        
-        // Always start with settings.custom and end with Typography_Presets
-        $path = array('settings', 'custom');
-        
+        $path_setting = $settings['typography_theme_json_path'] ?? 'settings.custom.orbitools';
+
         // Parse the path setting and add segments
         $segments = explode('.', trim($path_setting, '.'));
+        $path = array();
         foreach ($segments as $segment) {
             if (!empty($segment)) {
                 $path[] = $segment;
             }
         }
-        
+
         // Always end with Typography_Presets
         $path[] = 'Typography_Presets';
-        
+
         return $path;
     }
 
@@ -195,14 +193,14 @@ class Settings
     {
         // Enqueue the CSS
         self::enqueue_preset_styles();
-        
+
         // Get user preference for accordion state (default to open)
         $user_id = get_current_user_id();
         $is_expanded = get_user_meta($user_id, 'orbitools_presets_accordion_expanded', true);
         if ($is_expanded === '') {
             $is_expanded = 'true'; // Default to open
         }
-        
+
         // Try to get preset manager
         try {
             $preset_manager = new \Orbitools\Modules\Typography_Presets\Core\Preset_Manager();
@@ -213,7 +211,7 @@ class Settings
 
         $expanded_class = $is_expanded === 'true' ? 'presets-accordion--expanded' : '';
         $expanded_attr = $is_expanded === 'true' ? 'true' : 'false';
-        
+
         $html = '<div class="presets-accordion ' . $expanded_class . '">';
         $html .= '<button class="presets-accordion__toggle" type="button" aria-expanded="' . $expanded_attr . '" data-toggle="presets-accordion">';
         $html .= '<span class="presets-accordion__icon"></span>';
@@ -235,7 +233,7 @@ class Settings
             // Check if we should group presets
             $settings = self::get_current_settings();
             $show_groups = !empty($settings['typography_show_groups_in_dropdown']);
-            
+
             if ($show_groups) {
                 $grouped_presets = array();
                 foreach ($presets as $id => $preset) {
@@ -245,13 +243,13 @@ class Settings
                     }
                     $grouped_presets[$group][$id] = $preset;
                 }
-                
+
                 foreach ($grouped_presets as $group => $group_presets) {
                     $html .= '<div class="presets-group">';
                     $html .= '<h3 class="presets-group__title">' . esc_html($group) . '</h3>';
                     $html .= '<hr class="presets-group__separator">';
                     $html .= '</div>';
-                    
+
                     foreach ($group_presets as $id => $preset) {
                         $html .= self::get_preset_card_html($id, $preset);
                     }
@@ -261,15 +259,15 @@ class Settings
                     $html .= self::get_preset_card_html($id, $preset);
                 }
             }
-            
+
             // Close presets-grid (only if we have presets)
             $html .= '</div>';
         }
-        
+
         // Close accordion content and container
         $html .= '</div>'; // Close presets-accordion__content
         $html .= '</div>'; // Close presets-accordion
-        
+
         return $html;
     }
 
@@ -286,7 +284,7 @@ class Settings
         $label = $preset['label'] ?? $id;
         $description = $preset['description'] ?? '';
         $properties = $preset['properties'] ?? array();
-        
+
         // Build inline styles from properties for the sample text
         $inline_styles = array();
         foreach ($properties as $property => $value) {
@@ -296,7 +294,7 @@ class Settings
             }
         }
         $style_attr = !empty($inline_styles) ? ' style="' . implode('; ', $inline_styles) . '"' : '';
-        
+
         $class_name = 'has-type-preset-' . $id;
         $html = '<div class="preset-card" data-copy-text="' . esc_attr($class_name) . '" title="Click to copy class name">';
         $html .= '<div class="preset-card__inner">';
@@ -308,13 +306,13 @@ class Settings
         $html .= '</div>';
         $html .= '</div>';
         $html .= '</div>';
-        
+
         $html .= '<div class="preset-card__preview">';
         $html .= '<div class="preset-card__sample"' . $style_attr . '>';
         $html .= __('The quick brown fox jumps over the lazy dog', 'orbitools');
         $html .= '</div>';
         $html .= '</div>';
-        
+
         $html .= '<div class="preset-card__meta">';
         if (!empty($properties)) {
             foreach ($properties as $property => $value) {
@@ -327,9 +325,9 @@ class Settings
         }
         $html .= '</div>';
         $html .= '</div>';
-        
+
         $html .= '</div>';
-        
+
         return $html;
     }
 
@@ -346,10 +344,10 @@ class Settings
             array('dashicons'),
             '1.0.0'
         );
-        
+
         // Load theme CSS variables for font families
         self::enqueue_theme_css_vars();
-        
+
         wp_enqueue_script(
             'orbitools-typography-presets-admin',
             ORBITOOLS_URL . 'modules/Typography_Presets/js/admin-presets.js',
@@ -357,7 +355,6 @@ class Settings
             '1.0.0',
             true
         );
-        
     }
 
     /**
@@ -369,28 +366,28 @@ class Settings
     {
         // Get theme.json data
         $theme_json_path = get_template_directory() . '/theme.json';
-        
+
         if (!file_exists($theme_json_path)) {
             return;
         }
-        
+
         $theme_json_content = file_get_contents($theme_json_path);
         $theme_json = json_decode($theme_json_content, true);
-        
+
         if (!$theme_json || JSON_ERROR_NONE !== json_last_error()) {
             return;
         }
-        
+
         // Extract font family variables
         $font_families = $theme_json['settings']['typography']['fontFamilies'] ?? array();
-        
+
         if (empty($font_families)) {
             return;
         }
-        
+
         // Generate CSS variables
         $css_vars = ':root {';
-        
+
         foreach ($font_families as $font_family) {
             if (isset($font_family['slug']) && isset($font_family['fontFamily'])) {
                 $slug = $font_family['slug'];
@@ -398,9 +395,9 @@ class Settings
                 $css_vars .= "--wp--preset--font-family--{$slug}: {$family};";
             }
         }
-        
+
         $css_vars .= '}';
-        
+
         // Add inline CSS
         wp_add_inline_style('orbitools-typography-presets-admin', $css_vars);
     }
@@ -416,7 +413,7 @@ class Settings
     {
         // Convert camelCase to kebab-case for CSS property format
         $property = strtolower(preg_replace('/([a-z])([A-Z])/', '$1-$2', $property));
-        
+
         return $property;
     }
 
@@ -437,7 +434,7 @@ class Settings
                 return ucwords(str_replace('-', ' ', $matches[1]));
             }
         }
-        
+
         // Convert other CSS variables to readable names
         if (strpos($value, 'var(--wp--preset--') === 0) {
             preg_match('/var\(--wp--preset--[^-]+--([^)]+)\)/', $value, $matches);
@@ -445,7 +442,7 @@ class Settings
                 return ucwords(str_replace('-', ' ', $matches[1]));
             }
         }
-        
+
         return $value;
     }
 
@@ -460,7 +457,7 @@ class Settings
     {
         // Convert camelCase to kebab-case
         $property = strtolower(preg_replace('/([a-z])([A-Z])/', '$1-$2', $property));
-        
+
         // Basic validation - only allow letters, numbers, and hyphens
         if (preg_match('/^[a-z0-9-]+$/', $property)) {
             return $property;
@@ -480,10 +477,10 @@ class Settings
         if (!current_user_can('manage_options')) {
             wp_die(__('You do not have sufficient permissions to access this page.'));
         }
-        
+
         $expanded = sanitize_text_field($_POST['expanded'] ?? 'false');
         $user_id = get_current_user_id();
-        
+
         if ($user_id && in_array($expanded, array('true', 'false'))) {
             update_user_meta($user_id, 'orbitools_presets_accordion_expanded', $expanded);
             wp_send_json_success();
