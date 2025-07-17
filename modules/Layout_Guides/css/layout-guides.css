@@ -28,6 +28,8 @@
     pointer-events: none;
     z-index: var(--layout-guides-z-index);
     opacity: var(--layout-guides-opacity);
+    padding-left: var(--gutter-page, 0);
+    padding-right: var(--gutter-page, 0);
 }
 
 /* Grid overlay */
@@ -40,8 +42,8 @@
     display: grid;
     grid-template-columns: repeat(var(--layout-guides-columns), 1fr);
     gap: var(--gutter, var(--layout-guides-gutter));
-    padding: 0 var(--gutter, var(--layout-guides-gutter));
-    max-width: 1200px;
+    padding: 0;
+    max-width: var(--wp--style--global--content-size, 1200px);
     margin: 0 auto;
 }
 
