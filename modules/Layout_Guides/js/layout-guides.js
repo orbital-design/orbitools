@@ -133,9 +133,6 @@
                 this.setInitialFeatureClasses();
             }
             
-            // Always update FAB states on initialization
-            this.updateFABStates();
-            
             // Initialize rulers if enabled
             if (this.config.showRulers) {
                 this.updateRulers();
@@ -144,7 +141,12 @@
             // Initialize grid if enabled
             if (this.config.showGrids) {
                 this.updateGrid();
+                // Ensure CSS properties match the cached grid state
+                this.updateCSSProperties();
             }
+            
+            // Update FAB states AFTER cached states are applied
+            this.updateFABStates();
         },
 
         /**
@@ -167,13 +169,31 @@
             this.elements.body.classList.add('has-layout-guides--visible');
             this.elements.body.classList.add('has-layout-guides--enabled');
             
-            // Add feature-specific classes
+            // Add feature-specific classes based on cached preferences
             if (this.config.showGrids) {
-                this.elements.body.classList.add('has-layout-guides--12-grid'); // Default to 12-grid
+                // First remove any existing grid classes that might have been set by PHP
+                this.elements.body.classList.remove('has-layout-guides--12-grid');
+                this.elements.body.classList.remove('has-layout-guides--5-grid');
+                
+                const cachedGridType = localStorage.getItem('orbitools-layout-guides-grid-type');
+                if (cachedGridType === '5-grid') {
+                    this.elements.body.classList.add('has-layout-guides--5-grid');
+                } else if (cachedGridType === 'none') {
+                    // User previously disabled grids - don't add any grid class
+                } else {
+                    this.elements.body.classList.add('has-layout-guides--12-grid'); // Default to 12-grid
+                }
             }
             
             if (this.config.showRulers) {
-                this.elements.body.classList.add('has-layout-guides--rulers');
+                // First remove any existing rulers class that might have been set by PHP
+                this.elements.body.classList.remove('has-layout-guides--rulers');
+                
+                const cachedRulersState = localStorage.getItem('orbitools-layout-guides-rulers');
+                if (cachedRulersState === 'true') {
+                    this.elements.body.classList.add('has-layout-guides--rulers');
+                }
+                // If cachedRulersState is 'false' or null, rulers stay off
             }
             
             // Store state
@@ -415,6 +435,9 @@
                 this.elements.body.classList.remove(className);
                 button.classList.remove('orbitools-layout-guides__fab-btn--active');
                 
+                // Cache the disabled state (no grid active)
+                localStorage.setItem('orbitools-layout-guides-grid-type', 'none');
+                
                 // Update grid display when disabling
                 this.updateGrid();
                 this.updateCSSProperties();
@@ -423,6 +446,9 @@
                 this.elements.body.classList.remove('has-layout-guides--12-grid');
                 this.elements.body.classList.remove('has-layout-guides--5-grid');
                 this.elements.body.classList.add(className);
+                
+                // Cache the selected grid type
+                localStorage.setItem('orbitools-layout-guides-grid-type', gridType);
                 
                 // Update button states - disable other grid buttons
                 const allGridButtons = this.elements.fab.querySelectorAll('[data-action^="toggle-"][data-action$="-grid"]');
@@ -449,9 +475,19 @@
             if (isActive) {
                 this.elements.body.classList.remove(className);
                 button.classList.remove('orbitools-layout-guides__fab-btn--active');
+                
+                // Cache the disabled state
+                if (feature === 'rulers') {
+                    localStorage.setItem('orbitools-layout-guides-rulers', 'false');
+                }
             } else {
                 this.elements.body.classList.add(className);
                 button.classList.add('orbitools-layout-guides__fab-btn--active');
+                
+                // Cache the enabled state
+                if (feature === 'rulers') {
+                    localStorage.setItem('orbitools-layout-guides-rulers', 'true');
+                }
                 
                 // Initialize feature-specific functionality when enabled
                 if (feature === 'rulers' && this.config.showRulers) {
@@ -489,11 +525,31 @@
             // This ensures FAB buttons show correct state
             
             if (this.config.showGrids) {
-                this.elements.body.classList.add('has-layout-guides--12-grid'); // Default to 12-grid
+                // First remove any existing grid classes that might have been set by PHP
+                this.elements.body.classList.remove('has-layout-guides--12-grid');
+                this.elements.body.classList.remove('has-layout-guides--5-grid');
+                
+                // Check for cached grid type preference
+                const cachedGridType = localStorage.getItem('orbitools-layout-guides-grid-type');
+                if (cachedGridType === '5-grid') {
+                    this.elements.body.classList.add('has-layout-guides--5-grid');
+                } else if (cachedGridType === 'none') {
+                    // User previously disabled grids - don't add any grid class
+                } else {
+                    this.elements.body.classList.add('has-layout-guides--12-grid'); // Default to 12-grid
+                }
             }
             
             if (this.config.showRulers) {
-                this.elements.body.classList.add('has-layout-guides--rulers');
+                // First remove any existing rulers class that might have been set by PHP
+                this.elements.body.classList.remove('has-layout-guides--rulers');
+                
+                // Check for cached rulers state
+                const cachedRulersState = localStorage.getItem('orbitools-layout-guides-rulers');
+                if (cachedRulersState === 'true') {
+                    this.elements.body.classList.add('has-layout-guides--rulers');
+                }
+                // If cachedRulersState is 'false' or null, don't add the class (rulers off)
             }
         },
 
