@@ -140,6 +140,11 @@
             if (this.config.showRulers) {
                 this.updateRulers();
             }
+            
+            // Initialize grid if enabled
+            if (this.config.showGrids) {
+                this.updateGrid();
+            }
         },
 
         /**
@@ -163,11 +168,8 @@
             this.elements.body.classList.add('has-layout-guides--enabled');
             
             // Add feature-specific classes
-            // Only enable one grid type - prioritize 12-grid if both are enabled
-            if (this.config.show12Grid) {
-                this.elements.body.classList.add('has-layout-guides--12-grid');
-            } else if (this.config.show5Grid) {
-                this.elements.body.classList.add('has-layout-guides--5-grid');
+            if (this.config.showGrids) {
+                this.elements.body.classList.add('has-layout-guides--12-grid'); // Default to 12-grid
             }
             
             if (this.config.showRulers) {
@@ -211,7 +213,7 @@
             this.updateCSSProperties();
             
             // Update grid
-            if (this.config.show12Grid || this.config.show5Grid) {
+            if (this.config.showGrids) {
                 this.updateGrid();
             }
             
@@ -252,12 +254,22 @@
             
             const columns = grid.querySelectorAll('.orbitools-layout-guides__grid-column');
             
+            // Check if any grid is actually active
+            const has5Grid = this.elements.body.classList.contains('has-layout-guides--5-grid');
+            const has12Grid = this.elements.body.classList.contains('has-layout-guides--12-grid');
+            
+            if (!has5Grid && !has12Grid) {
+                // No grid active - remove all columns
+                columns.forEach(column => column.remove());
+                return;
+            }
+            
             // Update column count if needed
             const currentColumns = columns.length;
             let targetColumns = 12; // default
-            if (this.elements.body.classList.contains('has-layout-guides--5-grid')) {
+            if (has5Grid) {
                 targetColumns = 5;
-            } else if (this.elements.body.classList.contains('has-layout-guides--12-grid')) {
+            } else if (has12Grid) {
                 targetColumns = 12;
             }
             
@@ -402,6 +414,10 @@
                 // Disable this grid
                 this.elements.body.classList.remove(className);
                 button.classList.remove('orbitools-layout-guides__fab-btn--active');
+                
+                // Update grid display when disabling
+                this.updateGrid();
+                this.updateCSSProperties();
             } else {
                 // Enable this grid and disable the other
                 this.elements.body.classList.remove('has-layout-guides--12-grid');
@@ -472,11 +488,8 @@
             // Add enabled feature classes even when guides aren't visible
             // This ensures FAB buttons show correct state
             
-            // Only enable one grid type - prioritize 12-grid if both are enabled
-            if (this.config.show12Grid) {
-                this.elements.body.classList.add('has-layout-guides--12-grid');
-            } else if (this.config.show5Grid) {
-                this.elements.body.classList.add('has-layout-guides--5-grid');
+            if (this.config.showGrids) {
+                this.elements.body.classList.add('has-layout-guides--12-grid'); // Default to 12-grid
             }
             
             if (this.config.showRulers) {

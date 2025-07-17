@@ -67,16 +67,7 @@ class Settings_Helper
         $settings = self::normalize_settings($settings);
 
         $css = ':root {';
-        
-        // Set grid columns based on which grid type is enabled
-        $gridColumns = 12; // default
-        if ($settings['layout_guides_show_12_grid']) {
-            $gridColumns = 12;
-        } elseif ($settings['layout_guides_show_5_grid']) {
-            $gridColumns = 5;
-        }
-        
-        $css .= '--layout-guides-columns: ' . $gridColumns . ';';
+        $css .= '--layout-guides-columns: 12;'; // Default to 12, JavaScript will handle switching
         $css .= '--layout-guides-gutter: ' . $settings['layout_guides_grid_gutter'] . ';';
         $css .= '--layout-guides-opacity: ' . $settings['layout_guides_opacity'] . ';';
         $css .= '--layout-guides-color: ' . $settings['layout_guides_color'] . ';';
@@ -98,8 +89,7 @@ class Settings_Helper
 
         return array(
             'enabled' => $settings['layout_guides_enabled'],
-            'show12Grid' => $settings['layout_guides_show_12_grid'],
-            'show5Grid' => $settings['layout_guides_show_5_grid'],
+            'showGrids' => $settings['layout_guides_show_grids'],
             'showRulers' => $settings['layout_guides_show_rulers'],
             'gridGutter' => $settings['layout_guides_grid_gutter'],
             'opacity' => $settings['layout_guides_opacity'],
@@ -153,11 +143,8 @@ class Settings_Helper
             $classes[] = 'has-layout-guides';
             $classes[] = 'has-layout-guides--enabled';
 
-            // Only enable one grid type - prioritize 12-grid if both are enabled
-            if ($settings['layout_guides_show_12_grid']) {
-                $classes[] = 'has-layout-guides--12-grid';
-            } elseif ($settings['layout_guides_show_5_grid']) {
-                $classes[] = 'has-layout-guides--5-grid';
+            if ($settings['layout_guides_show_grids']) {
+                $classes[] = 'has-layout-guides--12-grid'; // Default to 12-grid
             }
 
             if ($settings['layout_guides_show_rulers']) {
