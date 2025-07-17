@@ -36,6 +36,9 @@ class Settings
     {
         // Add AJAX handler for saving accordion state
         add_action('wp_ajax_orbitools_save_accordion_state', array(self::class, 'save_accordion_state'));
+        
+        // Add AJAX handler for clearing cache
+        add_action('wp_ajax_orbitools_clear_typography_cache', array(self::class, 'clear_typography_cache'));
     }
 
     /**
@@ -92,6 +95,14 @@ class Settings
                 'desc'    => __('Automatically output CSS for typography presets in the page head.', 'orbitools'),
                 'type'    => 'checkbox',
                 'std'     => true,
+                'section' => 'typography',
+            ),
+            array(
+                'id'      => 'typography_clear_cache',
+                'name'    => __('Clear CSS Cache', 'orbitools'),
+                'desc'    => __('Clear the cached CSS to force regeneration of typography preset styles.', 'orbitools'),
+                'type'    => 'html',
+                'std'     => '<button type="button" class="button button-secondary" id="orbitools-clear-typography-cache" data-nonce="' . wp_create_nonce('orbitools_clear_cache') . '">' . __('Clear Cache', 'orbitools') . '</button><div id="orbitools-clear-cache-result" style="margin-top: 10px;"></div>',
                 'section' => 'typography',
             ),
             array(
@@ -486,6 +497,36 @@ class Settings
             wp_send_json_success();
         } else {
             wp_send_json_error();
+        }
+    }
+
+    /**
+     * Clear typography cache via AJAX
+     *
+     * @since 1.0.0
+     */
+    public static function clear_typography_cache(): void
+    {
+        // Basic security check
+        if (!current_user_can('manage_options')) {
+            wp_die(__('You do not have sufficient permissions to access this page.'));
+        }
+
+        // Verify nonce
+        if (!wp_verify_nonce($_POST['nonce'] ?? '', 'orbitools_clear_cache')) {
+            wp_send_json_error(array('message' => __('Security check failed.', 'orbitools')));
+            return;
+        }
+
+        try {
+            // Get the CSS generator instance and clear cache
+            $preset_manager = new \Orbitools\Modules\Typography_Presets\Core\Preset_Manager();
+            $css_generator = new \Orbitools\Modules\Typography_Presets\Core\CSS_Generator($preset_manager);
+            $css_generator->clear_cache();
+
+            wp_send_json_success(array('message' => __('Cache cleared successfully!', 'orbitools')));
+        } catch (Exception $e) {
+            wp_send_json_error(array('message' => __('Failed to clear cache: ', 'orbitools') . $e->getMessage()));
         }
     }
 }

@@ -54,7 +54,7 @@ class CSS_Generator
     public function __construct(Preset_Manager $preset_manager)
     {
         $this->preset_manager = $preset_manager;
-        
+
         // Hook into WordPress to output CSS
         add_action('wp_head', array($this, 'output_preset_css'));
         add_action('admin_head', array($this, 'output_preset_css'));
@@ -73,7 +73,7 @@ class CSS_Generator
         }
 
         $presets = $this->preset_manager->get_presets();
-        
+
         if (empty($presets)) {
             $this->cached_css = '';
             return '';
@@ -143,10 +143,20 @@ class CSS_Generator
 
         foreach ($properties as $property => $value) {
             $css_property = $this->sanitize_css_property($property);
-            $css_value = $this->sanitize_css_value($value);
-            
-            if ($css_property && $css_value) {
+            $css_value = $this->process_css_value($property, $value);
+
+            // Debug: Log when letter-spacing is being processed
+            if (strpos($property, 'letter') !== false || strpos($property, 'Letter') !== false) {
+                error_log("CSS Debug - Property: '$property', Sanitized: '$css_property', Value: '$value', Processed: '$css_value'");
+            }
+
+            if ($css_property && $css_value !== null) {
                 $css_lines[] = sprintf('    %s: %s;', $css_property, $css_value);
+            } else {
+                // Debug: Log when properties are skipped
+                if (strpos($property, 'letter') !== false || strpos($property, 'Letter') !== false) {
+                    error_log("CSS Debug - SKIPPED - Property: '$property', Sanitized: '$css_property', Processed: '$css_value'");
+                }
             }
         }
 
@@ -164,7 +174,7 @@ class CSS_Generator
     {
         // Convert camelCase to kebab-case
         $property = strtolower(preg_replace('/([a-z])([A-Z])/', '$1-$2', $property));
-        
+
         // Basic validation - only allow letters, numbers, and hyphens
         if (preg_match('/^[a-z0-9-]+$/', $property)) {
             return $property;
@@ -187,11 +197,51 @@ class CSS_Generator
         }
 
         $value = (string) $value;
-        
+
         // Basic sanitization - remove dangerous characters
         $value = preg_replace('/[<>"\']/', '', $value);
+
+        return ($value !== '' && $value !== null) ? $value : null;
+    }
+
+    /**
+     * Process CSS value with property-specific handling
+     *
+     * @since 1.0.0
+     * @param string $property CSS property name.
+     * @param mixed $value CSS value.
+     * @return string|null Processed value or null if invalid.
+     */
+    private function process_css_value(string $property, $value): ?string
+    {
+        if (is_array($value)) {
+            return null; // Arrays not supported in this context
+        }
+
+        $value = (string) $value;
         
-        return !empty($value) ? $value : null;
+        // Handle empty, null, or 'undefined' values (but allow "0" as valid)
+        if ($value === '' || $value === 'undefined' || $value === 'null' || $value === null) {
+            return null;
+        }
+
+        // Convert line-height "auto" to "normal"
+        if ($property === 'line-height' && $value === 'auto') {
+            $value = 'normal';
+        }
+
+        // Handle letter-spacing percentage values
+        if ($property === 'letter-spacing' && preg_match('/^(\d+(?:\.\d+)?)%$/', $value, $matches)) {
+            $percentage = floatval($matches[1]);
+            $em_value = $percentage * 0.01;
+            $value = $em_value . 'em';
+        }
+
+        // Basic sanitization - remove dangerous characters
+        $value = preg_replace('/[<>"\']/', '', $value);
+
+        // Don't return empty values after sanitization (but allow "0" as valid)
+        return ($value !== '' && $value !== null) ? $value : null;
     }
 
     /**
@@ -207,7 +257,7 @@ class CSS_Generator
         }
 
         $css = $this->get_cached_css();
-        
+
         if (empty($css)) {
             return;
         }
@@ -234,10 +284,10 @@ class CSS_Generator
         }
 
         $css = $this->generate_css();
-        
+
         // Cache for 24 hours
         set_transient($cache_key, $css, DAY_IN_SECONDS);
-        
+
         return $css;
     }
 
@@ -268,7 +318,7 @@ class CSS_Generator
     public function get_preset_css(string $preset_id): string
     {
         $preset = $this->preset_manager->get_preset($preset_id);
-        
+
         if (!$preset) {
             return '';
         }
