@@ -43,7 +43,7 @@ class Settings
             'layout_guides_grid_columns' => 12,
             'layout_guides_grid_gutter' => 'var(--gutter)',
             'layout_guides_opacity' => '0.3',
-            'layout_guides_color' => '#ff0000',
+            'layout_guides_color' => '#32a3e2',
             'layout_guides_toggle_key' => 'ctrl+shift+g',
         );
     }
