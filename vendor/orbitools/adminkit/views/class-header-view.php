@@ -233,6 +233,7 @@ class Header_View
         ?>
         <div class="adminkit-toolbar">
             <?php $this->render_breadcrumbs(); ?>
+            <?php $this->render_nav_actions(); ?>
         </div>
         <?php
     }
@@ -336,6 +337,48 @@ class Header_View
                 <?php echo esc_html($text); ?>
             </span>
         </li>
+        <?php
+    }
+
+    /**
+     * Render navigation actions
+     *
+     * @since 1.0.0
+     */
+    private function render_nav_actions()
+    {
+        ?>
+        <div class="orbi-admin__nav-actions">
+            <?php
+            // Hook for navigation actions (save buttons, etc.)
+            do_action($this->admin_kit->get_func_slug() . '_render_nav_actions');
+
+            // Default save button (if no custom actions provided)
+            if (!has_action($this->admin_kit->get_func_slug() . '_render_nav_actions')) {
+                $this->render_default_nav_actions();
+            }
+            ?>
+        </div>
+        <?php
+    }
+
+    /**
+     * Render default navigation actions
+     *
+     * @since 1.0.0
+     */
+    private function render_default_nav_actions()
+    {
+        ?>
+        <button type="submit"
+            class="orbi-admin__save-btn button button-primary"
+            form="orbi-settings-form"
+            aria-describedby="orbi-save-btn-desc">
+            <span class="orbi-admin__save-btn-text"><?php esc_html_e('Save Settings', 'orbitools-adminkit'); ?></span>
+        </button>
+        <span id="orbi-save-btn-desc" class="screen-reader-text">
+            <?php esc_html_e('Save all settings changes', 'orbitools-adminkit'); ?>
+        </span>
         <?php
     }
 }
