@@ -109,39 +109,8 @@ class Assets
      */
     public function enqueue_admin_assets()
     {
-        // Only enqueue on admin pages if not frontend-only
-        $settings = Settings_Helper::get_js_config();
-        if ($settings['frontendOnly']) {
-            return;
-        }
-
-        if (!Settings_Helper::should_show_guides()) {
-            return;
-        }
-
-        // Enqueue CSS
-        wp_enqueue_style(
-            'orbitools-layout-guides-admin',
-            ORBITOOLS_URL . 'modules/Layout_Guides/css/layout-guides.css',
-            array(),
-            '1.0.0'
-        );
-
-        // Enqueue JavaScript
-        wp_enqueue_script(
-            'orbitools-layout-guides-admin',
-            ORBITOOLS_URL . 'modules/Layout_Guides/js/layout-guides.js',
-            array(),
-            '1.0.0',
-            true
-        );
-
-        // Localize script with settings
-        wp_localize_script(
-            'orbitools-layout-guides-admin',
-            'orbitoolsLayoutGuides',
-            Settings_Helper::get_js_config()
-        );
+        // Layout guides are frontend-only, never load in admin
+        return;
     }
 
     /**

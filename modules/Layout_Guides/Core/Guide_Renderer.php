@@ -39,12 +39,8 @@ class Guide_Renderer
         // Add body classes for layout guides
         add_filter('body_class', array($this, 'add_body_classes'));
 
-        // Add layout guides to page
+        // Add layout guides to page (frontend only)
         add_action('wp_footer', array($this, 'render_layout_guides'));
-        add_action('admin_footer', array($this, 'render_layout_guides'));
-
-        // Add admin bar toggle
-        add_action('admin_bar_menu', array($this, 'add_admin_bar_toggle'), 100);
     }
 
     /**
@@ -99,10 +95,6 @@ class Guide_Renderer
             $html .= $this->get_grid_html($settings);
         }
         
-        // Baseline grid
-        if ($settings['showBaseline']) {
-            $html .= $this->get_baseline_html($settings);
-        }
         
         // Rulers
         if ($settings['showRulers']) {
@@ -134,17 +126,6 @@ class Guide_Renderer
         return $html;
     }
 
-    /**
-     * Get baseline grid HTML
-     *
-     * @since 1.0.0
-     * @param array $settings Settings configuration.
-     * @return string Baseline HTML.
-     */
-    private function get_baseline_html($settings)
-    {
-        return '<div class="orbitools-layout-guides__baseline"></div>';
-    }
 
     /**
      * Get rulers HTML
@@ -163,30 +144,6 @@ class Guide_Renderer
         return $html;
     }
 
-    /**
-     * Add admin bar toggle
-     *
-     * @since 1.0.0
-     * @param \WP_Admin_Bar $wp_admin_bar Admin bar instance.
-     */
-    public function add_admin_bar_toggle($wp_admin_bar)
-    {
-        $settings = Settings_Helper::get_js_config();
-        
-        if (!$settings['adminBarToggle'] || !Settings_Helper::should_show_guides()) {
-            return;
-        }
-
-        $wp_admin_bar->add_node(array(
-            'id'    => 'orbitools-layout-guides-toggle',
-            'title' => '<span class="ab-icon dashicons-grid-view"></span>' . __('Layout Guides', 'orbitools'),
-            'href'  => '#',
-            'meta'  => array(
-                'class' => 'orbitools-layout-guides-toggle',
-                'title' => __('Toggle Layout Guides', 'orbitools'),
-            ),
-        ));
-    }
 
     /**
      * Get FAB (Floating Action Button) HTML
@@ -222,15 +179,6 @@ class Guide_Renderer
             $html .= '</div>';
         }
         
-        // Baseline toggle
-        if ($settings['showBaseline']) {
-            $html .= '<div class="orbitools-layout-guides__fab-control">';
-            $html .= '<button class="orbitools-layout-guides__fab-btn" data-action="toggle-baseline">';
-            $html .= '<span class="dashicons dashicons-editor-alignleft"></span>';
-            $html .= '<span class="orbitools-layout-guides__fab-label">Baseline</span>';
-            $html .= '</button>';
-            $html .= '</div>';
-        }
         
         // Rulers toggle
         if ($settings['showRulers']) {

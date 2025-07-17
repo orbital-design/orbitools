@@ -38,17 +38,13 @@ class Settings
         return array(
             'layout_guides_enabled' => false,
             'layout_guides_show_grid' => true,
-            'layout_guides_show_baseline' => true,
             'layout_guides_show_rulers' => true,
             'layout_guides_show_spacing' => true,
             'layout_guides_grid_columns' => 12,
             'layout_guides_grid_gutter' => 20,
-            'layout_guides_baseline_height' => 24,
             'layout_guides_opacity' => 0.3,
             'layout_guides_color' => '#ff0000',
             'layout_guides_toggle_key' => 'ctrl+shift+g',
-            'layout_guides_admin_bar_toggle' => true,
-            'layout_guides_show_on_frontend_only' => false,
         );
     }
 
@@ -73,14 +69,6 @@ class Settings
                 'id'      => 'layout_guides_show_grid',
                 'name'    => __('Show Grid', 'orbitools'),
                 'desc'    => __('Display grid overlay for layout alignment.', 'orbitools'),
-                'type'    => 'checkbox',
-                'std'     => true,
-                'section' => 'layout_guides',
-            ),
-            array(
-                'id'      => 'layout_guides_show_baseline',
-                'name'    => __('Show Baseline Grid', 'orbitools'),
-                'desc'    => __('Display horizontal baseline grid for typography alignment.', 'orbitools'),
                 'type'    => 'checkbox',
                 'std'     => true,
                 'section' => 'layout_guides',
@@ -122,16 +110,6 @@ class Settings
                 'section' => 'layout_guides',
             ),
             array(
-                'id'      => 'layout_guides_baseline_height',
-                'name'    => __('Baseline Height (px)', 'orbitools'),
-                'desc'    => __('Height of baseline grid lines in pixels.', 'orbitools'),
-                'type'    => 'number',
-                'std'     => 24,
-                'min'     => 8,
-                'max'     => 48,
-                'section' => 'layout_guides',
-            ),
-            array(
                 'id'      => 'layout_guides_opacity',
                 'name'    => __('Guide Opacity', 'orbitools'),
                 'desc'    => __('Opacity of layout guides (0.1 = very transparent, 1.0 = fully opaque).', 'orbitools'),
@@ -163,22 +141,6 @@ class Settings
                     'alt+shift+g'  => 'Alt+Shift+G',
                     'alt+shift+l'  => 'Alt+Shift+L',
                 ),
-                'section' => 'layout_guides',
-            ),
-            array(
-                'id'      => 'layout_guides_admin_bar_toggle',
-                'name'    => __('Admin Bar Toggle', 'orbitools'),
-                'desc'    => __('Show toggle button in WordPress admin bar.', 'orbitools'),
-                'type'    => 'checkbox',
-                'std'     => true,
-                'section' => 'layout_guides',
-            ),
-            array(
-                'id'      => 'layout_guides_show_on_frontend_only',
-                'name'    => __('Frontend Only', 'orbitools'),
-                'desc'    => __('Only show guides on frontend pages (not in admin).', 'orbitools'),
-                'type'    => 'checkbox',
-                'std'     => false,
                 'section' => 'layout_guides',
             ),
         );
@@ -217,7 +179,6 @@ class Settings
                     <div class="layout-guides-settings-preview__column"></div>
                     <div class="layout-guides-settings-preview__column"></div>
                 </div>
-                <div class="layout-guides-settings-preview__baseline"></div>
                 <div class="layout-guides-settings-preview__content">
                     <div class="layout-guides-settings-preview__box">Content Area</div>
                     <div class="layout-guides-settings-preview__box">Content Area</div>

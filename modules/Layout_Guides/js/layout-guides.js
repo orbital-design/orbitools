@@ -24,7 +24,6 @@
         // Elements
         elements: {
             container: null,
-            adminBarToggle: null,
             body: null,
             fab: null,
             fabToggle: null,
@@ -63,7 +62,6 @@
          */
         cacheElements: function() {
             this.elements.container = document.getElementById('orbitools-layout-guides');
-            this.elements.adminBarToggle = document.getElementById('wp-admin-bar-orbitools-layout-guides-toggle');
             this.elements.body = document.body;
             this.elements.fab = document.getElementById('orbitools-layout-guides-fab');
             this.elements.fabToggle = this.elements.fab ? this.elements.fab.querySelector('.orbitools-layout-guides__fab-toggle') : null;
@@ -74,11 +72,6 @@
          * Bind event handlers
          */
         bindEvents: function() {
-            // Admin bar toggle
-            if (this.elements.adminBarToggle) {
-                this.elements.adminBarToggle.addEventListener('click', this.toggleGuides.bind(this));
-            }
-
             // Window resize handler
             window.addEventListener('resize', this.debounce(this.handleResize.bind(this), 100));
 
@@ -164,19 +157,12 @@
         showGuides: function() {
             this.state.visible = true;
             
-            if (this.elements.adminBarToggle) {
-                this.elements.adminBarToggle.classList.add('active');
-            }
-            
             this.elements.body.classList.add('has-layout-guides--visible');
             this.elements.body.classList.add('has-layout-guides--enabled');
             
             // Add feature-specific classes
             if (this.config.showGrid) {
                 this.elements.body.classList.add('has-layout-guides--grid');
-            }
-            if (this.config.showBaseline) {
-                this.elements.body.classList.add('has-layout-guides--baseline');
             }
             if (this.config.showRulers) {
                 this.elements.body.classList.add('has-layout-guides--rulers');
@@ -201,14 +187,9 @@
         hideGuides: function() {
             this.state.visible = false;
             
-            if (this.elements.adminBarToggle) {
-                this.elements.adminBarToggle.classList.remove('active');
-            }
-            
             this.elements.body.classList.remove('has-layout-guides--visible');
             this.elements.body.classList.remove('has-layout-guides--enabled');
             this.elements.body.classList.remove('has-layout-guides--grid');
-            this.elements.body.classList.remove('has-layout-guides--baseline');
             this.elements.body.classList.remove('has-layout-guides--rulers');
             this.elements.body.classList.remove('has-layout-guides--spacing');
             
@@ -235,10 +216,6 @@
                 this.updateGrid();
             }
             
-            // Update baseline
-            if (this.config.showBaseline) {
-                this.updateBaseline();
-            }
             
             // Update rulers
             if (this.config.showRulers) {
@@ -254,7 +231,6 @@
             
             root.style.setProperty('--layout-guides-columns', this.config.gridColumns);
             root.style.setProperty('--layout-guides-gutter', this.config.gridGutter + 'px');
-            root.style.setProperty('--layout-guides-baseline', this.config.baselineHeight + 'px');
             root.style.setProperty('--layout-guides-opacity', this.config.opacity);
             root.style.setProperty('--layout-guides-color', this.config.color);
         },
@@ -287,13 +263,6 @@
             }
         },
 
-        /**
-         * Update baseline grid
-         */
-        updateBaseline: function() {
-            // Baseline is handled via CSS custom properties
-            // No additional JavaScript needed
-        },
 
         /**
          * Update rulers
@@ -407,9 +376,6 @@
                 case 'toggle-grid':
                     this.toggleFeature('grid', button);
                     break;
-                case 'toggle-baseline':
-                    this.toggleFeature('baseline', button);
-                    break;
                 case 'toggle-rulers':
                     this.toggleFeature('rulers', button);
                     break;
@@ -451,7 +417,7 @@
             }
 
             // Update feature button states
-            const features = ['grid', 'baseline', 'rulers', 'spacing'];
+            const features = ['grid', 'rulers', 'spacing'];
             features.forEach(feature => {
                 const btn = this.elements.fab.querySelector(`[data-action="toggle-${feature}"]`);
                 if (btn) {

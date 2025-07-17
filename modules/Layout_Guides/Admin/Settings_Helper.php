@@ -42,7 +42,6 @@ class Settings_Helper
         // Validate and normalize specific settings
         $normalized['layout_guides_grid_columns'] = max(1, min(24, intval($normalized['layout_guides_grid_columns'])));
         $normalized['layout_guides_grid_gutter'] = max(0, min(100, intval($normalized['layout_guides_grid_gutter'])));
-        $normalized['layout_guides_baseline_height'] = max(8, min(48, intval($normalized['layout_guides_baseline_height'])));
         $normalized['layout_guides_opacity'] = max(0.1, min(1.0, floatval($normalized['layout_guides_opacity'])));
         $normalized['layout_guides_color'] = sanitize_hex_color($normalized['layout_guides_color']) ?: $defaults['layout_guides_color'];
 
@@ -69,7 +68,6 @@ class Settings_Helper
         $css = ':root {';
         $css .= '--layout-guides-columns: ' . $settings['layout_guides_grid_columns'] . ';';
         $css .= '--layout-guides-gutter: ' . $settings['layout_guides_grid_gutter'] . 'px;';
-        $css .= '--layout-guides-baseline: ' . $settings['layout_guides_baseline_height'] . 'px;';
         $css .= '--layout-guides-opacity: ' . $settings['layout_guides_opacity'] . ';';
         $css .= '--layout-guides-color: ' . $settings['layout_guides_color'] . ';';
         $css .= '}';
@@ -91,17 +89,13 @@ class Settings_Helper
         return array(
             'enabled' => $settings['layout_guides_enabled'],
             'showGrid' => $settings['layout_guides_show_grid'],
-            'showBaseline' => $settings['layout_guides_show_baseline'],
             'showRulers' => $settings['layout_guides_show_rulers'],
             'showSpacing' => $settings['layout_guides_show_spacing'],
             'gridColumns' => $settings['layout_guides_grid_columns'],
             'gridGutter' => $settings['layout_guides_grid_gutter'],
-            'baselineHeight' => $settings['layout_guides_baseline_height'],
             'opacity' => $settings['layout_guides_opacity'],
             'color' => $settings['layout_guides_color'],
             'toggleKey' => $settings['layout_guides_toggle_key'],
-            'adminBarToggle' => $settings['layout_guides_admin_bar_toggle'],
-            'frontendOnly' => $settings['layout_guides_show_on_frontend_only'],
         );
     }
 
@@ -126,9 +120,9 @@ class Settings_Helper
             return false;
         }
 
-        // Check frontend only setting
-        if ($settings['layout_guides_show_on_frontend_only'] && is_admin()) {
-            error_log('Layout Guides Debug - Frontend only and in admin');
+        // Only show on frontend (never in admin)
+        if (is_admin()) {
+            error_log('Layout Guides Debug - In admin, not showing guides');
             return false;
         }
 
@@ -162,9 +156,6 @@ class Settings_Helper
                 $classes[] = 'has-layout-guides--grid';
             }
 
-            if ($settings['layout_guides_show_baseline']) {
-                $classes[] = 'has-layout-guides--baseline';
-            }
 
             if ($settings['layout_guides_show_rulers']) {
                 $classes[] = 'has-layout-guides--rulers';

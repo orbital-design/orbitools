@@ -12,7 +12,6 @@
 :root {
     --layout-guides-columns: 12;
     --layout-guides-gutter: 20px;
-    --layout-guides-baseline: 24px;
     --layout-guides-opacity: 0.3;
     --layout-guides-color: #ff0000;
     --layout-guides-z-index: 9999;
@@ -52,22 +51,6 @@
     min-height: 100vh;
 }
 
-/* Baseline grid */
-.orbitools-layout-guides__baseline {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-image: linear-gradient(
-        to bottom,
-        transparent calc(var(--layout-guides-baseline) - 1px),
-        var(--layout-guides-color) calc(var(--layout-guides-baseline) - 1px),
-        var(--layout-guides-color) var(--layout-guides-baseline)
-    );
-    background-size: 100% var(--layout-guides-baseline);
-    background-repeat: repeat;
-}
 
 /* Rulers */
 .orbitools-layout-guides__rulers {
@@ -334,9 +317,6 @@ body:not(.has-layout-guides--enabled) .orbitools-layout-guides {
     display: grid;
 }
 
-.has-layout-guides--enabled.has-layout-guides--baseline .orbitools-layout-guides__baseline {
-    display: block;
-}
 
 .has-layout-guides--enabled.has-layout-guides--rulers .orbitools-layout-guides__rulers {
     display: block;
@@ -344,7 +324,6 @@ body:not(.has-layout-guides--enabled) .orbitools-layout-guides {
 
 /* Hide sub-elements by default */
 .orbitools-layout-guides__grid,
-.orbitools-layout-guides__baseline,
 .orbitools-layout-guides__rulers {
     display: none;
 }
