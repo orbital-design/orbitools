@@ -127,7 +127,14 @@
 
             if (this.state.visible) {
                 this.showGuides();
+            } else {
+                // Even if guides aren't visible, we need to set initial body classes
+                // for the features that are enabled in settings
+                this.setInitialFeatureClasses();
             }
+            
+            // Always update FAB states on initialization
+            this.updateFABStates();
         },
 
         /**
@@ -397,6 +404,20 @@
                     }
                 }
             });
+        },
+
+        /**
+         * Set initial feature classes based on settings
+         */
+        setInitialFeatureClasses: function() {
+            // Add enabled feature classes even when guides aren't visible
+            // This ensures FAB buttons show correct state
+            if (this.config.showGrid) {
+                this.elements.body.classList.add('has-layout-guides--grid');
+            }
+            if (this.config.showRulers) {
+                this.elements.body.classList.add('has-layout-guides--rulers');
+            }
         },
 
         /**
