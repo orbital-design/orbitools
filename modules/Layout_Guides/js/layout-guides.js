@@ -135,6 +135,11 @@
             
             // Always update FAB states on initialization
             this.updateFABStates();
+            
+            // Initialize rulers if enabled
+            if (this.config.showRulers) {
+                this.updateRulers();
+            }
         },
 
         /**
@@ -197,10 +202,6 @@
          * Update guides based on current settings
          */
         updateGuides: function() {
-            if (!this.state.visible) {
-                return;
-            }
-
             // Update CSS custom properties
             this.updateCSSProperties();
             
@@ -208,7 +209,6 @@
             if (this.config.showGrid) {
                 this.updateGrid();
             }
-            
             
             // Update rulers
             if (this.config.showRulers) {
@@ -276,7 +276,8 @@
             
             // Add new mousemove listener
             this._rulersMouseHandler = (e) => {
-                if (!this.state.visible || !this.config.showRulers) {
+                // Check if rulers are enabled via body class (individual toggle)
+                if (!this.elements.body.classList.contains('has-layout-guides--rulers')) {
                     return;
                 }
                 
@@ -382,6 +383,11 @@
             } else {
                 this.elements.body.classList.add(className);
                 button.classList.add('orbitools-layout-guides__fab-btn--active');
+                
+                // Initialize feature-specific functionality when enabled
+                if (feature === 'rulers' && this.config.showRulers) {
+                    this.updateRulers();
+                }
             }
         },
 

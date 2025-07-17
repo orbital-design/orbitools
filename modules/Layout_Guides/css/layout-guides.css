@@ -65,7 +65,8 @@
 
 .orbitools-layout-guides__ruler {
     position: absolute;
-    background: var(--layout-guides-color);
+    background: #1d303a;
+    opacity: 1;
 }
 
 .orbitools-layout-guides__ruler--horizontal {
@@ -76,8 +77,8 @@
         to right,
         transparent,
         transparent 9px,
-        var(--layout-guides-color) 9px,
-        var(--layout-guides-color) 10px
+        #1d303a 9px,
+        #1d303a 10px
     );
 }
 
@@ -89,8 +90,8 @@
         to bottom,
         transparent,
         transparent 9px,
-        var(--layout-guides-color) 9px,
-        var(--layout-guides-color) 10px
+        #1d303a 9px,
+        #1d303a 10px
     );
 }
 
