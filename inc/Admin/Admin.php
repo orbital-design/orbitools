@@ -72,6 +72,9 @@ class Admin
             'header_image' => ORBITOOLS_URL . 'assets/images/orbitools-logo.svg',
             'header_bg_color' => '#32A3E2',
             'menu' => array(
+                'menu_type' => 'menu',
+                'menu_title' => 'OrbiTools',
+                'position' => 0,
                 'parent' => 'options-general.php',
                 'capability' => 'manage_options',
             ),

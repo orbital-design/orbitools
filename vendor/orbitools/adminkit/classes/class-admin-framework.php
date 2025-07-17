@@ -141,10 +141,13 @@ class Admin_Kit
 
         // Set default menu configuration
         $this->menu_config = array(
+            'menu_type'  => 'submenu',
             'parent'     => 'options-general.php',
             'page_title' => 'Settings',
             'menu_title' => 'Settings',
             'capability' => 'manage_options',
+            'icon_url'   => 'data:image/svg+xml;base64,' . base64_encode('<svg xmlns="http://www.w3.org/2000/svg" width="322" height="322" fill="none"><path fill="#fff" fill-rule="evenodd" d="M71.096 27.45A160.999 160.999 0 0 1 160.369.013 159.624 159.624 0 0 1 275.03 46.53a159.612 159.612 0 0 1 46.964 114.477 160.99 160.99 0 0 1-99.242 148.678A160.999 160.999 0 0 1 3.171 192.798 160.99 160.99 0 0 1 71.096 27.45Zm45.655 198.564a78.138 78.138 0 0 0 43.409 13.167 78.22 78.22 0 0 0 78.134-78.132 78.133 78.133 0 1 0-121.543 64.965Zm149.52-151.706c0 12.54-10.166 22.705-22.706 22.705-12.539 0-22.705-10.166-22.705-22.705 0-12.54 10.166-22.705 22.705-22.705 12.54 0 22.706 10.165 22.706 22.705Z" clip-rule="evenodd"/></svg>'),
+            'position'   => null,
         );
     }
 
@@ -262,6 +265,11 @@ class Admin_Kit
      */
     public function set_menu_config($config)
     {
+        // Validate menu_type if provided
+        if (isset($config['menu_type']) && !in_array($config['menu_type'], array('menu', 'submenu'))) {
+            $config['menu_type'] = 'submenu'; // Default to submenu if invalid
+        }
+        
         $this->menu_config = array_merge($this->menu_config, $config);
     }
 
@@ -473,16 +481,32 @@ class Admin_Kit
      */
     public function add_admin_page()
     {
-        $parent = isset($this->menu_config['parent']) ? $this->menu_config['parent'] : 'options-general.php';
-
-        add_submenu_page(
-            $parent,
-            $this->page_title,
-            $this->page_title,
-            $this->menu_config['capability'],
-            $this->slug,
-            array($this, 'render_admin_page')
-        );
+        $menu_type = isset($this->menu_config['menu_type']) ? $this->menu_config['menu_type'] : 'submenu';
+        
+        if ($menu_type === 'menu') {
+            // Add top-level menu page
+            add_menu_page(
+                $this->page_title,
+                $this->menu_config['menu_title'],
+                $this->menu_config['capability'],
+                $this->slug,
+                array($this, 'render_admin_page'),
+                $this->menu_config['icon_url'],
+                $this->menu_config['position']
+            );
+        } else {
+            // Add submenu page (default behavior)
+            $parent = isset($this->menu_config['parent']) ? $this->menu_config['parent'] : 'options-general.php';
+            
+            add_submenu_page(
+                $parent,
+                $this->page_title,
+                $this->menu_config['menu_title'],
+                $this->menu_config['capability'],
+                $this->slug,
+                array($this, 'render_admin_page')
+            );
+        }
     }
 
     /**
