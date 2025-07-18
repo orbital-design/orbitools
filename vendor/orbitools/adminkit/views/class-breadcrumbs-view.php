@@ -156,8 +156,8 @@ class Breadcrumbs_View
         // Allow custom actions via hook
         do_action($this->admin_kit->get_func_slug() . '_render_nav_actions');
 
-        // Default save button if no custom actions
-        if (!has_action($this->admin_kit->get_func_slug() . '_render_nav_actions')) {
+        // Only show default save button on main AdminKit pages, not child pages
+        if (!has_action($this->admin_kit->get_func_slug() . '_render_nav_actions') && !$this->is_child_page()) {
             ?>
             <button type="submit" 
                     class="adminkit-toolbar__save-btn button button-primary" 
@@ -170,5 +170,21 @@ class Breadcrumbs_View
             </span>
             <?php
         }
+    }
+
+    /**
+     * Check if current page is a child page
+     *
+     * @since 1.0.0
+     * @return bool
+     */
+    private function is_child_page()
+    {
+        if (class_exists('Orbitools\AdminKit\Instance_Registry')) {
+            $page_info = \Orbitools\AdminKit\Instance_Registry::get_page_info();
+            return $page_info['owner'] === $this->admin_kit->get_slug() && $page_info['is_child'];
+        }
+
+        return false;
     }
 }
