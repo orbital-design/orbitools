@@ -131,6 +131,12 @@ class Menu_Groups
         add_action('admin_init', array($this->group_manager, 'add_group_meta_box'));
         add_action('wp_update_nav_menu_item', array($this->group_manager, 'save_group_fields'), 10, 3);
         add_action('wp_ajax_add_menu_group', array($this->group_manager, 'ajax_add_group'));
+        
+        // Setup group menu items (for type label)
+        add_filter('wp_setup_nav_menu_item', array($this->group_manager, 'setup_group_menu_item'));
+        
+        // Add CSS classes to group items in admin
+        add_action('admin_footer-nav-menus.php', array($this->group_manager, 'add_group_classes_script'));
     }
 
     /**

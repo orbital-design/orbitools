@@ -90,86 +90,8 @@ jQuery(document).ready(function($) {
         }, function(response) {
             console.log('Add group response:', response);
             if (response.success) {
-                // Create menu item HTML and add it to the menu
-                var itemId = response.data.menu_item_id;
-                var title = response.data.title;
-
-                var menuItemHtml = '<li id="menu-item-' + itemId +
-                    '" class="menu-item menu-item-depth-0 menu-item-custom">' +
-                    '<div class="menu-item-bar">' +
-                    '<div class="menu-item-handle">' +
-                    '<span class="item-title"><span class="menu-item-title">' + title +
-                    '</span> <span class="is-submenu" style="display: none;">sub item</span></span>' +
-                    '<span class="item-controls">' +
-                    '<span class="item-type">Group</span>' +
-                    '<span class="item-order hide-if-js">' +
-                    '<a href="#" class="item-move-up"><abbr title="Move up">↑</abbr></a>' +
-                    ' | ' +
-                    '<a href="#" class="item-move-down"><abbr title="Move down">↓</abbr></a>' +
-                    '</span>' +
-                    '<a class="item-edit" id="edit-' + itemId + '" href="#">Edit</a>' +
-                    '</span>' +
-                    '</div>' +
-                    '</div>' +
-                    '<div class="menu-item-settings wp-clearfix" id="menu-item-settings-' +
-                    itemId + '">' +
-                    '<input class="menu-item-data-db-id" type="hidden" name="menu-item-db-id[' +
-                    itemId + ']" value="' + itemId + '" />' +
-                    '<input class="menu-item-data-object-id" type="hidden" name="menu-item-object-id[' +
-                    itemId + ']" value="' + itemId + '" />' +
-                    '<input class="menu-item-data-parent-id" type="hidden" name="menu-item-parent-id[' +
-                    itemId + ']" value="0" />' +
-                    '<input class="menu-item-data-position" type="hidden" name="menu-item-position[' +
-                    itemId + ']" value="1" />' +
-                    '<input class="menu-item-data-type" type="hidden" name="menu-item-type[' +
-                    itemId + ']" value="custom" />' +
-                    '<input class="menu-item-data-title" type="hidden" name="menu-item-title[' +
-                    itemId + ']" value="' + title + '" />' +
-                    '<input class="menu-item-data-url" type="hidden" name="menu-item-url[' +
-                    itemId + ']" value="#" />' +
-                    '<input type="hidden" name="menu-item-group[' + itemId + ']" value="1" />' +
-                    '<p class="field-move hide-if-no-js description description-wide">' +
-                    '<label><span>Move</span>' +
-                    '<a href="#" class="menus-move-up">Up one</a>' +
-                    '<a href="#" class="menus-move-down">Down one</a>' +
-                    '<a href="#" class="menus-move-left"></a>' +
-                    '<a href="#" class="menus-move-right"></a>' +
-                    '<a href="#" class="menus-move-top">To the top</a>' +
-                    '</label>' +
-                    '</p>' +
-                    '<p class="description description-wide">' +
-                    '<label for="edit-menu-item-title-' + itemId + '">Navigation Label<br />' +
-                    '<input type="text" id="edit-menu-item-title-' + itemId +
-                    '" class="widefat edit-menu-item-title" name="menu-item-title[' + itemId +
-                    ']" value="' + title + '" />' +
-                    '</label>' +
-                    '</p>' +
-                    '<p class="description description-wide">' +
-                    '<strong>Group</strong> - This item will appear as a non-clickable group in your menu.' +
-                    '</p>' +
-                    '<div class="menu-item-actions description-wide submitbox">' +
-                    '<a class="item-delete submitdelete deletion" id="delete-' + itemId +
-                    '" href="#">Remove</a>' +
-                    '<span class="meta-sep hide-if-no-js"> | </span>' +
-                    '<a class="item-cancel submitcancel hide-if-no-js" id="cancel-' + itemId +
-                    '" href="#">Cancel</a>' +
-                    '</div>' +
-                    '</div>' +
-                    '</li>';
-
-                // Add to the menu
-                $('#menu-to-edit').append(menuItemHtml);
-
-                // Initialize the new menu item
-                wpNavMenu.initOneMenu($('#menu-item-' + itemId));
-
-                // Show success message
-                $('.group-options').append(
-                    '<div class="notice notice-success is-dismissible" style="margin-top: 10px;"><p>Group added successfully!</p></div>'
-                );
-                setTimeout(function() {
-                    $('.notice-success').fadeOut();
-                }, 3000);
+                // Simple refresh approach - let WordPress handle the HTML and CSS handle the styling
+                window.location.reload();
             } else {
                 alert('Error adding group: ' + response.data);
             }
@@ -341,5 +263,116 @@ jQuery(document).ready(function($) {
         }
 
         return $processed_items;
+    }
+
+    /**
+     * Setup group menu item properties
+     *
+     * @since 1.0.0
+     * @param object $menu_item Menu item object.
+     * @return object Modified menu item object.
+     */
+    public function setup_group_menu_item($menu_item)
+    {
+        // Check if this is a group item
+        $is_group = get_post_meta($menu_item->ID, '_menu_item_group', true);
+        
+        if ($is_group) {
+            // Add group class to the classes array
+            $menu_item->classes[] = 'menu-item-group';
+            
+            // Set type display for admin
+            $menu_item->type_label = 'Group';
+        }
+        
+        return $menu_item;
+    }
+
+    /**
+     * Add JavaScript to add CSS classes to group items and clean up interface
+     *
+     * @since 1.0.0
+     */
+    public function add_group_classes_script()
+    {
+        ?>
+        <script>
+        jQuery(document).ready(function($) {
+            // Function to process group items
+            function processGroupItems() {
+                $('.item-type').each(function() {
+                    if ($(this).text() === 'Group') {
+                        var $menuItem = $(this).closest('.menu-item');
+                        $menuItem.addClass('menu-item-group');
+                        
+                        // Hide URL field for group items
+                        $menuItem.find('label:contains("URL")').parent().hide();
+                        
+                        // Change "Navigation Label" to "Group Name"
+                        $menuItem.find('label:contains("Navigation Label")').each(function() {
+                            if ($(this).text().includes('Navigation Label')) {
+                                $(this).html($(this).html().replace('Navigation Label', 'Group Name'));
+                            }
+                        });
+                    }
+                });
+            }
+            
+            // Run on page load
+            processGroupItems();
+            
+            // Watch for changes in the menu structure
+            if (window.MutationObserver) {
+                var observer = new MutationObserver(function(mutations) {
+                    var shouldReprocess = false;
+                    
+                    mutations.forEach(function(mutation) {
+                        if (mutation.type === 'childList' || mutation.type === 'attributes') {
+                            // Check if menu items were added or modified
+                            if (mutation.target.classList && (
+                                mutation.target.classList.contains('menu-item') ||
+                                mutation.target.classList.contains('menu-item-settings') ||
+                                $(mutation.target).find('.menu-item').length > 0
+                            )) {
+                                shouldReprocess = true;
+                            }
+                        }
+                    });
+                    
+                    if (shouldReprocess) {
+                        setTimeout(processGroupItems, 100);
+                    }
+                });
+                
+                observer.observe(document.body, {
+                    childList: true,
+                    subtree: true,
+                    attributes: true,
+                    attributeFilter: ['class', 'style']
+                });
+            }
+            
+            // Also reprocess when menu items are expanded/collapsed
+            $(document).on('click', '.item-edit', function() {
+                setTimeout(processGroupItems, 100);
+            });
+        });
+        </script>
+        
+        <style>
+        /* Hide URL field for group items */
+        .menu-item-group .field-url {
+            display: none !important;
+        }
+        
+        /* Hide additional fields that might appear */
+        .menu-item-group .field-link-target,
+        .menu-item-group .field-attr-title,
+        .menu-item-group .field-css-classes,
+        .menu-item-group .field-xfn {
+            display: none !important;
+        }
+        </style>
+        <?php
     }
 }

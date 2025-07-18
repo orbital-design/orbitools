@@ -108,3 +108,8 @@ position: absolute;
 	white-space: nowrap !important;
 	border: 0 !important;
 }
+
+.menu-item-group > .menu-item-settings > *:not(input):not(.description.description-wide):not(.menu-item-actions),
+.menu-item-group > .menu-item-settings >.field-move {
+    display: none !important;
+}
