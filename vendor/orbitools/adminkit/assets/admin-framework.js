@@ -508,7 +508,7 @@
         });
 
         // Direct form handler as backup
-        const form = document.getElementById('orbi-settings-form');
+        const form = document.getElementById('adminkit-settings-form');
         if (form) {
             form.addEventListener('submit', function(e) {
                 e.preventDefault();

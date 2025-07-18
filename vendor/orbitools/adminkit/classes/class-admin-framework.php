@@ -350,7 +350,7 @@ class Admin_Kit
         if (!$screen || strpos($screen->id, $this->slug) === false) {
             return;
         }
-        
+
         $this->get_page_builder()->build_breadcrumbs();
     }
 
@@ -689,7 +689,7 @@ class Admin_Kit
     public function ajax_save_settings()
     {
         // Verify nonce
-        if (! wp_verify_nonce($_POST['orbi_nonce'], 'orbitools_adminkit_' . $this->slug)) {
+        if (! wp_verify_nonce($_POST['adminkit_nonce'], 'orbitools_adminkit_' . $this->slug)) {
             wp_send_json_error('Invalid nonce');
         }
 

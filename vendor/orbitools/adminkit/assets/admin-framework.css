@@ -242,7 +242,7 @@
    TAB CONTENT SECTION (BEM)
    ============================================================================= */
 
-.orbi-admin__settings-form {
+.adminkit__form .adminkit__form--settings {
     margin: 0;
 }
 
@@ -803,7 +803,7 @@
    FORM ELEMENTS (BEM)
    ============================================================================= */
 
-.orbi-admin__settings-form .button-primary {
+.adminkit__form .adminkit__form--settings .button-primary {
     background: #2271b1;
     border: 1px solid #2271b1;
     border-radius: 4px;
@@ -816,14 +816,14 @@
     cursor: pointer;
 }
 
-.orbi-admin__settings-form .button-primary:hover,
-.orbi-admin__settings-form .button-primary:focus {
+.adminkit__form .adminkit__form--settings .button-primary:hover,
+.adminkit__form .adminkit__form--settings .button-primary:focus {
     background: #135e96;
     border-color: #135e96;
     color: #fff;
 }
 
-.orbi-admin__settings-form .button-primary:focus {
+.adminkit__form .adminkit__form--settings .button-primary:focus {
     box-shadow: 0 0 0 2px rgba(34, 113, 177, 0.3);
     outline: none;
 }

@@ -1,6 +1,6 @@
 /**
  * Orbitools Admin Styles
- * 
+ *
  * Additional styles for admin pages that complement the AdminKit framework.
  */
 
@@ -14,11 +14,11 @@
 }
 
 /* Loading state for module cards during reload */
-.orbi-admin--reloading .orbi-module-card {
+.orbi-admin--reloading .orbitools-mod-card {
     opacity: 0.6;
     pointer-events: none;
 }
 
-.orbi-admin--reloading .orbi-toggle {
+.orbi-admin--reloading .orbitools-mod-card__toggle {
     opacity: 0.5;
 }

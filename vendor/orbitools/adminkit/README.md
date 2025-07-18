@@ -862,7 +862,7 @@ The framework uses BEM (Block Element Modifier) methodology for CSS classes:
 
 #### Form Classes
 ```css
-.orbi-admin__settings-form      /* Main settings form */
+.adminkit__form .adminkit__form--settings      /* Main settings form */
 .orbi-admin__form-section       /* Form section */
 .orbi-admin__form-actions       /* Form action buttons */
 .orbi-admin__save-button        /* Save button */
@@ -1120,7 +1120,7 @@ orbitoolsAdminKit.slideDown(element);
 #### CSRF Protection
 ```php
 // Automatic nonce verification for all AJAX requests
-wp_verify_nonce($_POST['orbi_nonce'], 'orbitools_adminkit_' . $this->slug);
+wp_verify_nonce($_POST['adminkit_nonce'], 'orbitools_adminkit_' . $this->slug);
 ```
 
 #### Capability Checks

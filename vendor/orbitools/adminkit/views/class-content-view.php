@@ -54,8 +54,8 @@ class Content_View
         $settings = $this->admin_kit->get_content_fields();
 
 ?>
-        <form method="post" action="<?php echo esc_url(admin_url('admin-ajax.php')); ?>" class="orbi-admin__settings-form"
-            id="orbi-settings-form">
+        <form method="post" action="<?php echo esc_url(admin_url('admin-ajax.php')); ?>"
+            class="adminkit__form adminkit__form--settings" id="adminkit-settings-form">
             <?php $this->render_form_fields(); ?>
             <?php $this->render_tabs($tabs, $active_tab, $settings); ?>
             <?php submit_button('Save Settings'); ?>
@@ -70,7 +70,7 @@ class Content_View
      */
     private function render_form_fields()
     {
-        wp_nonce_field('orbitools_adminkit_' . $this->admin_kit->get_slug(), 'orbi_nonce');
+        wp_nonce_field('orbitools_adminkit_' . $this->admin_kit->get_slug(), 'adminkit_nonce');
     ?>
         <input type="hidden" name="action"
             value="orbitools_adminkit_save_settings_<?php echo esc_attr($this->admin_kit->get_slug()); ?>">

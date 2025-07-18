@@ -21,7 +21,7 @@
    Module Grid Layout
    ========================================================================== */
 
-.orbi-modules-grid {
+.orbitools-modules-grid {
 	display: grid;
 	grid-template-columns: repeat(4, 1fr);
 	gap: 20px;
@@ -32,7 +32,7 @@
    Module Card Base
    ========================================================================== */
 
-.orbi-module-card {
+.orbitools-mod-card {
 	background: #fff;
 	border: 1px solid #e0e0e0;
 	border-radius: 8px;
@@ -46,7 +46,7 @@
 	border-left: 4px solid #f0f0f0;
 }
 
-.orbi-module-card:hover {
+.orbitools-mod-card:hover {
 	border-color: #2271b1;
 	box-shadow: 0 2px 8px rgba(34, 113, 177, 0.15);
 	transform: translateY(-1px);
@@ -54,14 +54,14 @@
 }
 
 /* Enabled state styling */
-.orbi-module-card--enabled {
+.orbitools-mod-card--enabled {
 	background: #f8f9ff;
 	border-color: #2271b1;
 	box-shadow: 0 1px 3px rgba(34, 113, 177, 0.1);
 	border-left-color: #2271b1;
 }
 
-.orbi-module-card--enabled::before {
+.orbitools-mod-card--enabled::before {
 	content: '';
 	position: absolute;
 	top: 0;
@@ -75,14 +75,14 @@
    Module Card Header
    ========================================================================== */
 
-.orbi-module-card__header {
+.orbitools-mod-card__header {
 	display: flex;
 	align-items: flex-start;
 	gap: 12px;
 	margin-bottom: 16px;
 }
 
-.orbi-module-card__icon {
+.orbitools-mod-card__icon {
 	flex-shrink: 0;
 	width: 40px;
 	height: 40px;
@@ -96,26 +96,26 @@
     box-sizing: border-box;
 }
 
-.orbi-module-card--enabled .orbi-module-card__icon {
+.orbitools-mod-card--enabled .orbitools-mod-card__icon {
 	background: var(--orb-blue);
 	color: #fff;
 }
 
-.orbi-module-card__icon svg {
+.orbitools-mod-card__icon svg {
 	width: 100%;
 	height: auto;
 }
 
-.orbi-module-card--enabled .orbi-module-card__icon svg path {
+.orbitools-mod-card--enabled .orbitools-mod-card__icon svg path {
 	fill: #fff;
 }
 
-.orbi-module-card__title-area {
+.orbitools-mod-card__title-area {
 	flex: 1;
 	min-width: 0;
 }
 
-.orbi-module-card__title {
+.orbitools-mod-card__title {
 	margin: 0 0 4px 0;
 	font-size: 16px;
 	font-weight: 600;
@@ -123,14 +123,14 @@
 	line-height: 1.3;
 }
 
-.orbi-module-card__subtitle {
+.orbitools-mod-card__subtitle {
 	margin: 0;
 	font-size: 13px;
 	color: #646970;
 	line-height: 1.4;
 }
 
-.orbi-module-card__controls {
+.orbitools-mod-card__controls {
 	flex-shrink: 0;
 	display: flex;
 	align-items: center;
@@ -141,7 +141,7 @@
    Toggle Switch Component
    ========================================================================== */
 
-.orbi-toggle {
+.orbitools-mod-card__toggle {
 	position: relative;
 	display: inline-block;
 	width: 44px;
@@ -149,14 +149,14 @@
 	cursor: pointer;
 }
 
-.orbi-toggle__input {
+.orbitools-mod-card__toggle__input {
 	opacity: 0;
 	width: 0;
 	height: 0;
 	position: absolute;
 }
 
-.orbi-toggle__slider {
+.orbitools-mod-card__toggle__slider {
 	position: absolute;
 	top: 0;
 	left: 0;
@@ -168,7 +168,7 @@
 	box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
-.orbi-toggle__slider:before {
+.orbitools-mod-card__toggle__slider:before {
 	position: absolute;
 	content: "";
 	height: 18px;
@@ -181,15 +181,15 @@
 	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
 }
 
-.orbi-toggle__input:checked + .orbi-toggle__slider {
+.orbitools-mod-card__toggle__input:checked + .orbitools-mod-card__toggle__slider {
 	background-color: #0073aa;
 }
 
-.orbi-toggle__input:focus + .orbi-toggle__slider {
+.orbitools-mod-card__toggle__input:focus + .orbitools-mod-card__toggle__slider {
 	box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1), 0 0 0 2px rgba(0, 115, 170, 0.3);
 }
 
-.orbi-toggle__input:checked + .orbi-toggle__slider:before {
+.orbitools-mod-card__toggle__input:checked + .orbitools-mod-card__toggle__slider:before {
 	transform: translateX(20px);
 }
 
@@ -197,25 +197,25 @@
    Module Card Content
    ========================================================================== */
 
-.orbi-module-card__content {
+.orbitools-mod-card__content {
 	margin-bottom: 16px;
 }
 
-.orbi-module-card__description {
+.orbitools-mod-card__description {
 	margin: 0 0 12px 0;
 	font-size: 14px;
 	color: #50575e;
 	line-height: 1.5;
 }
 
-.orbi-module-card__meta {
+.orbitools-mod-card__meta {
 	display: flex;
 	gap: 12px;
 	flex-wrap: wrap;
 }
 
-.orbi-module-card__version,
-.orbi-module-card__category {
+.orbitools-mod-card__version,
+.orbitools-mod-card__category {
 	display: inline-flex;
 	align-items: center;
 	padding: 4px 8px;
@@ -228,8 +228,8 @@
 	color: #646970;
 }
 
-.orbi-module-card--enabled .orbi-module-card__version,
-.orbi-module-card--enabled .orbi-module-card__category {
+.orbitools-mod-card--enabled .orbitools-mod-card__version,
+.orbitools-mod-card--enabled .orbitools-mod-card__category {
 	background: rgba(0, 115, 170, 0.1);
 	color: #0073aa;
 }
@@ -238,12 +238,12 @@
    Module Card Actions
    ========================================================================== */
 
-.orbi-module-card__actions {
+.orbitools-mod-card__actions {
 	padding-top: 16px;
 	border-top: 1px solid #f1f1f1;
 }
 
-.orbi-button {
+.orbitools-mod-card__button {
 	display: inline-flex;
 	align-items: center;
 	gap: 6px;
@@ -257,23 +257,23 @@
 	transition: all 0.2s ease;
 }
 
-.orbi-button--secondary {
+.orbitools-mod-card__button--secondary {
 	background: #f1f1f1;
 	color: #646970;
 }
 
-.orbi-button--secondary:hover {
+.orbitools-mod-card__button--secondary:hover {
 	background: #e1e1e1;
 	color: #1d2327;
 }
 
-.orbi-button .dashicons {
+.orbitools-mod-card__button .dashicons {
 	font-size: 16px;
 	width: 16px;
 	height: 16px;
 }
 
-.orbi-button--icon {
+.orbitools-mod-card__button--icon {
 	background: #f1f1f1;
 	color: #646970;
 	padding: 0;
@@ -285,12 +285,12 @@
 	justify-content: center;
 }
 
-.orbi-button--icon:hover {
+.orbitools-mod-card__button--icon:hover {
 	background: #e1e1e1;
 	color: #1d2327;
 }
 
-.orbi-button--icon .dashicons {
+.orbitools-mod-card__button--icon .dashicons {
 	font-size: 16px;
 	width: 16px;
 	height: 16px;
@@ -301,27 +301,27 @@
    ========================================================================== */
 
 @media (max-width: 1200px) {
-	.orbi-modules-grid {
+	.orbitools-modules-grid {
 		grid-template-columns: repeat(3, 1fr);
 	}
 }
 
 @media (max-width: 900px) {
-	.orbi-modules-grid {
+	.orbitools-modules-grid {
 		grid-template-columns: repeat(2, 1fr);
 	}
 }
 
 @media (max-width: 768px) {
-	.orbi-modules-grid {
+	.orbitools-modules-grid {
 		grid-template-columns: 1fr;
 	}
 
-	.orbi-module-card__header {
+	.orbitools-mod-card__header {
 		flex-wrap: wrap;
 	}
 
-	.orbi-module-card__controls {
+	.orbitools-mod-card__controls {
 		order: -1;
 		margin-left: auto;
 	}
@@ -331,15 +331,15 @@
    Animation States
    ========================================================================== */
 
-.orbi-module-card {
+.orbitools-mod-card {
 	transform: translateY(0);
 }
 
-.orbi-module-card:hover {
+.orbitools-mod-card:hover {
 	transform: translateY(-1px);
 }
 
-.orbi-module-card--enabled:hover {
+.orbitools-mod-card--enabled:hover {
 	transform: translateY(-1px);
 	box-shadow: 0 2px 8px rgba(34, 113, 177, 0.2);
 }

@@ -78,15 +78,15 @@ class Breadcrumbs_View
         $page_title = $this->admin_kit->get_page_title();
         $current_tab = $this->admin_kit->get_current_tab();
         $current_section = $this->admin_kit->get_current_section();
-        
+
         // Get tab and section names
         $tabs = $this->admin_kit->get_tabs();
         $tab_name = isset($tabs[$current_tab]) ? $tabs[$current_tab] : '';
-        
+
         $sections = $this->get_sections($current_tab);
         $section_name = isset($sections[$current_section]) ? $sections[$current_section] : '';
-        
-        ?>
+
+?>
         <div class="adminkit adminkit-toolbar">
             <nav class="adminkit-toolbar__breadcrumbs">
                 <ol class="adminkit-toolbar__breadcrumb-list">
@@ -99,12 +99,12 @@ class Breadcrumbs_View
                     <?php endif; ?>
                 </ol>
             </nav>
-            
+
             <div class="adminkit-toolbar__nav-actions">
                 <?php $this->render_actions(); ?>
             </div>
         </div>
-        <?php
+    <?php
     }
 
     /**
@@ -130,7 +130,7 @@ class Breadcrumbs_View
      */
     private function render_breadcrumb($text, $with_separator = false, $is_current = false)
     {
-        ?>
+    ?>
         <li class="adminkit-toolbar__breadcrumb-item">
             <?php if ($with_separator): ?>
                 <span class="adminkit-toolbar__breadcrumb-separator">›</span>
@@ -154,17 +154,17 @@ class Breadcrumbs_View
 
         // Default save button if no custom actions
         if (!has_action($this->admin_kit->get_func_slug() . '_render_nav_actions')) {
-            ?>
-            <button type="submit" 
-                    class="adminkit-toolbar__save-btn button button-primary" 
-                    form="orbi-settings-form"
-                    aria-describedby="orbi-save-btn-desc">
+        ?>
+            <button type="submit"
+                class="adminkit-toolbar__save-btn button button-primary"
+                form="adminkit-settings-form"
+                aria-describedby="adminkit-save-btn-desc">
                 <span class="adminkit-toolbar__save-btn-text"><?php esc_html_e('Save Settings', 'orbitools-adminkit'); ?></span>
             </button>
-            <span id="orbi-save-btn-desc" class="screen-reader-text">
+            <span id="adminkit-save-btn-desc" class="screen-reader-text">
                 <?php esc_html_e('Save all settings changes', 'orbitools-adminkit'); ?>
             </span>
-            <?php
+<?php
         }
     }
 }
