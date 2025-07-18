@@ -79,6 +79,42 @@ class Breadcrumbs_View
      */
     private function render_toolbar_html()
     {
+        ?>
+        <div class="adminkit adminkit-toolbar">
+            <nav class="adminkit-toolbar__breadcrumbs">
+                <ol class="adminkit-toolbar__breadcrumb-list">
+                    <?php $this->render_breadcrumb_trail(); ?>
+                </ol>
+            </nav>
+            
+            <div class="adminkit-toolbar__nav-actions">
+                <?php $this->render_actions(); ?>
+            </div>
+        </div>
+        <?php
+    }
+
+    /**
+     * Render the appropriate breadcrumb trail
+     *
+     * @since 1.0.0
+     */
+    private function render_breadcrumb_trail()
+    {
+        if ($this->is_child_page()) {
+            $this->render_child_page_breadcrumbs();
+        } else {
+            $this->render_main_page_breadcrumbs();
+        }
+    }
+
+    /**
+     * Render breadcrumbs for main AdminKit pages
+     *
+     * @since 1.0.0
+     */
+    private function render_main_page_breadcrumbs()
+    {
         $page_title = $this->admin_kit->get_page_title();
         $current_tab = $this->admin_kit->get_current_tab();
         $current_section = $this->admin_kit->get_current_section();
@@ -90,25 +126,60 @@ class Breadcrumbs_View
         $sections = $this->get_sections($current_tab);
         $section_name = isset($sections[$current_section]) ? $sections[$current_section] : '';
         
-        ?>
-        <div class="adminkit adminkit-toolbar">
-            <nav class="adminkit-toolbar__breadcrumbs">
-                <ol class="adminkit-toolbar__breadcrumb-list">
-                    <?php $this->render_breadcrumb($page_title); ?>
-                    <?php if ($tab_name): ?>
-                        <?php $this->render_breadcrumb($tab_name, true, true); ?>
-                    <?php endif; ?>
-                    <?php if ($section_name): ?>
-                        <?php $this->render_breadcrumb($section_name, true, true); ?>
-                    <?php endif; ?>
-                </ol>
-            </nav>
-            
-            <div class="adminkit-toolbar__nav-actions">
-                <?php $this->render_actions(); ?>
-            </div>
-        </div>
-        <?php
+        // Render breadcrumb trail
+        $this->render_breadcrumb($page_title);
+        
+        if ($tab_name) {
+            $this->render_breadcrumb($tab_name, true, true);
+        }
+        
+        if ($section_name) {
+            $this->render_breadcrumb($section_name, true, true);
+        }
+    }
+
+    /**
+     * Render breadcrumbs for child pages
+     *
+     * @since 1.0.0
+     */
+    private function render_child_page_breadcrumbs()
+    {
+        $page_title = $this->admin_kit->get_page_title();
+        $child_page_title = $this->get_child_page_title();
+        
+        // Render: Parent Page > Child Page
+        $this->render_breadcrumb($page_title);
+        
+        if ($child_page_title) {
+            $this->render_breadcrumb($child_page_title, true, true);
+        }
+    }
+
+    /**
+     * Get the current child page title
+     *
+     * @since 1.0.0
+     * @return string
+     */
+    private function get_child_page_title()
+    {
+        global $submenu;
+        
+        $current_page = isset($_GET['page']) ? $_GET['page'] : '';
+        $parent_slug = $this->admin_kit->get_slug();
+        
+        if (!isset($submenu[$parent_slug]) || !$current_page) {
+            return '';
+        }
+        
+        foreach ($submenu[$parent_slug] as $submenu_item) {
+            if ($submenu_item[2] === $current_page) {
+                return $submenu_item[0];
+            }
+        }
+        
+        return '';
     }
 
     /**
