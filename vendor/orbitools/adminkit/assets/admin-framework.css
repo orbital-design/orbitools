@@ -210,25 +210,16 @@
 
 
 /* =============================================================================
-   TABS SECTION (BEM)
+   NAVIGATION SECTION (BEM)
    ============================================================================= */
 
-.orbi-admin__tabs {
-    background: #fff;
-    padding: 0 40px;
-}
-
-.orbi-admin__tabs-wrapper {
-    position: relative;
-}
-
-.orbi-admin__tabs-nav {
+.adminkit-nav {
     display: flex;
     margin: 0;
     padding: 0;
 }
 
-.orbi-admin__tab-link {
+.adminkit-nav__item {
     background: none;
     border: none;
     border-bottom: 3px solid transparent;
@@ -246,19 +237,33 @@
     border-radius: 8px;
 }
 
-.orbi-admin__tab-link:hover {
+.adminkit-nav__item:hover {
     color: #2271b1;
     background: rgba(34, 113, 177, 0.04);
 }
 
-.orbi-admin__tab-link--active {
+.adminkit-nav__item--active {
     background: var(--orb-navy);
 }
 
-.orbi-admin__tab-link:focus {
+.adminkit-nav__item:focus {
     box-shadow: none;
     outline: 2px solid #2271b1;
     outline-offset: -2px;
+}
+
+/* Tab vs Link item distinction */
+.adminkit-nav__item--tab {
+    /* JavaScript-enabled tabs - no additional styling needed */
+}
+
+.adminkit-nav__item--link {
+    /* Direct navigation links - could add subtle indicators */
+    opacity: 0.9;
+}
+
+.adminkit-nav__item--link:hover {
+    opacity: 1;
 }
 
 /* =============================================================================
@@ -948,11 +953,11 @@
         padding-right: 20px;
     }
 
-    .orbi-admin__tabs-nav {
+    .adminkit-nav {
         flex-wrap: wrap;
     }
 
-    .orbi-admin__tab-link {
+    .adminkit-nav__item {
         padding: 12px 16px 9px;
         font-size: 13px;
     }
@@ -971,11 +976,11 @@
         font-size: 16px;
     }
 
-    .orbi-admin__tabs-nav {
+    .adminkit-nav {
         border-bottom: none;
     }
 
-    .orbi-admin__tab-link {
+    .adminkit-nav__item {
         border: 1px solid #e5e5e5;
         border-bottom: none;
         display: block;
@@ -983,7 +988,7 @@
         width: 100%;
     }
 
-    .orbi-admin__tab-link--active {
+    .adminkit-nav__item--active {
         background: #f6f7f7;
         border-bottom: 1px solid #e5e5e5;
     }
@@ -994,17 +999,17 @@
    ============================================================================= */
 
 /* Styles for AdminKit pages that are children of other AdminKit pages */
-.orbi-admin--child-page .orbi-admin__tab-link {
+.orbi-admin--child-page .adminkit-nav__item {
     position: relative;
     transition: background-color 0.2s ease;
 }
 
-.orbi-admin--child-page .orbi-admin__tab-link:hover {
+.orbi-admin--child-page .adminkit-nav__item:hover {
     background-color: #f0f4f8;
 }
 
 /* Add a subtle indicator that tabs are clickable on child pages */
-.orbi-admin--child-page .orbi-admin__tab-link:after {
+.orbi-admin--child-page .adminkit-nav__item:after {
     content: "→";
     position: absolute;
     right: 12px;
@@ -1016,7 +1021,7 @@
     color: var(--orb-blue);
 }
 
-.orbi-admin--child-page .orbi-admin__tab-link:hover:after {
+.orbi-admin--child-page .adminkit-nav__item:hover:after {
     opacity: 1;
 }
 
@@ -1033,71 +1038,22 @@
 }
 
 /* =============================================================================
-   CHILD PAGE TAB STYLES
+   SIMPLIFIED NAVIGATION MODIFIERS
    ============================================================================= */
 
-/* Styles for child page tabs on the main AdminKit page */
-.orbi-admin__tab-link--child-page {
-    position: relative;
-    border-left: 2px solid #e0e9f3;
-    background: linear-gradient(135deg, #f8f9fa 0%, #f1f3f4 100%);
-}
-
-.orbi-admin__tab-link--child-page:hover {
-    background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
-    border-left-color: var(--orb-blue);
-}
-
-/* Add external link indicator */
-.orbi-admin__tab-link--child-page:after {
-    content: "↗";
+/* Optional: Add subtle visual indicators for different item types */
+.adminkit-nav__item--link:after {
+    content: "→";
     position: absolute;
     right: 8px;
     top: 50%;
     transform: translateY(-50%);
+    opacity: 0;
+    transition: opacity 0.2s ease;
     font-size: 11px;
-    color: #666;
-    transition: color 0.2s ease;
-}
-
-.orbi-admin__tab-link--child-page:hover:after {
     color: var(--orb-blue);
 }
 
-/* Distinguish child page tabs from regular tabs */
-.orbi-admin__tab-link--child-page {
-    font-style: italic;
-    font-weight: 400;
-}
-
-/* =============================================================================
-   RETURN TO MAIN TAB STYLES
-   ============================================================================= */
-
-/* Styles for tabs on child pages that link back to main AdminKit page */
-.orbi-admin__tab-link--return-to-main {
-    position: relative;
-    border-right: 2px solid #e0e9f3;
-    background: linear-gradient(225deg, #f8f9fa 0%, #f1f3f4 100%);
-}
-
-.orbi-admin__tab-link--return-to-main:hover {
-    background: linear-gradient(225deg, #e8f5e8 0%, #c8e6c9 100%);
-    border-right-color: #4caf50;
-}
-
-/* Add return indicator */
-.orbi-admin__tab-link--return-to-main:after {
-    content: "←";
-    position: absolute;
-    left: 8px;
-    top: 50%;
-    transform: translateY(-50%);
-    font-size: 12px;
-    color: #666;
-    transition: color 0.2s ease;
-}
-
-.orbi-admin__tab-link--return-to-main:hover:after {
-    color: #4caf50;
+.adminkit-nav__item--link:hover:after {
+    opacity: 0.6;
 }
