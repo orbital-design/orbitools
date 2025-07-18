@@ -104,23 +104,6 @@
    NAVIGATION SECTION (BEM)
    ============================================================================= */
 
-.orbi-admin__nav {
-    background: #f6f7f7;
-    border-bottom: 1px solid #e5e5e5;
-    padding: 0 40px;
-    min-height: 50px;
-    display: flex;
-    align-items: center;
-}
-
-.orbi-admin__nav-content {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    width: 100%;
-    gap: 20px;
-}
-
 /* Toolbar */
 .adminkit-toolbar {
     background: var(--orb-navy);
@@ -258,9 +241,6 @@
 /* =============================================================================
    TAB CONTENT SECTION (BEM)
    ============================================================================= */
-
-.orbi-admin__content {
-}
 
 .orbi-admin__settings-form {
     margin: 0;
@@ -856,11 +836,6 @@
    LOADING STATES (BEM)
    ============================================================================= */
 
-.orbi-admin--loading .orbi-admin__content {
-    opacity: 0.6;
-    pointer-events: none;
-}
-
 .orbi-admin--loading .button-primary {
     background: #8c8f94;
     border-color: #8c8f94;
@@ -932,9 +907,7 @@
 @media (max-width: 782px) {
     .adminkit-header,
     .adminkit-toolbar,
-    .orbi-admin__nav,
     .orbi-admin__notices,
-    .orbi-admin__content,
     .orbi-admin__footer {
         padding-left: 20px;
         padding-right: 20px;
@@ -980,4 +953,3 @@
         border-bottom: 1px solid #e5e5e5;
     }
 }
-

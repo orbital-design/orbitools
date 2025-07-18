@@ -111,7 +111,7 @@ class Page_Builder
         );
 
 ?>
-<div class="adminkit adminkit-content wrap" id="orbi-admin-<?php echo esc_attr($this->admin_kit->get_slug()); ?>">
+<div class="adminkit adminkit-content wrap" id="adminKit--<?php echo esc_attr($this->admin_kit->get_slug()); ?>">
     <h1 class="screen-reader-text">
         <?php echo esc_html($this->admin_kit->get_page_title()); ?>
     </h1>
@@ -161,14 +161,9 @@ class Page_Builder
     {
         switch ($component) {
             case 'content':
-        ?>
-<div class="orbi-admin__content">
-    <?php $this->content_view->render_tab_content(); ?>
-</div>
-<?php
+                $this->content_view->render_tab_content();
                 do_action($this->admin_kit->get_func_slug() . '_after_content');
                 break;
-
 
             case 'header':
                 $this->header_view->render_header();

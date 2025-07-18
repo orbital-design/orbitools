@@ -806,7 +806,6 @@ The framework uses BEM (Block Element Modifier) methodology for CSS classes:
 
 #### Navigation Classes
 ```css
-.orbi-admin__nav                /* Navigation container */
 .orbi-admin__breadcrumbs        /* Breadcrumb navigation */
 .orbi-admin__tabs               /* Tab navigation */
 .orbi-admin__tabs-nav           /* Tab navigation list */
@@ -819,7 +818,6 @@ The framework uses BEM (Block Element Modifier) methodology for CSS classes:
 
 #### Content Classes
 ```css
-.orbi-admin__content            /* Main content area */
 .orbi-admin__section-card       /* Section card (cards mode) */
 .orbi-admin__section-header     /* Section header */
 .orbi-admin__section-title      /* Section title */
@@ -916,15 +914,15 @@ The framework uses CSS custom properties for easy customization:
     --adminkit-error-color: #dc3232;
     --adminkit-warning-color: #ffb900;
     --adminkit-info-color: #00a0d2;
-    
+
     --adminkit-border-radius: 4px;
     --adminkit-box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     --adminkit-transition: all 0.3s ease;
-    
+
     --adminkit-font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     --adminkit-font-size-base: 14px;
     --adminkit-line-height-base: 1.5;
-    
+
     --adminkit-spacing-xs: 4px;
     --adminkit-spacing-sm: 8px;
     --adminkit-spacing-md: 16px;
@@ -1061,10 +1059,10 @@ document.addEventListener('adminkit:field:change', function(e) {
 function submitCustomForm() {
     if (orbitoolsAdminKit.validateForm()) {
         const formData = orbitoolsAdminKit.serializeFormData();
-        
+
         // Add custom data
         formData.custom_field = 'custom_value';
-        
+
         // Submit with custom callback
         orbitoolsAdminKit.submitForm(formData, function(response) {
             if (response.success) {
@@ -1159,13 +1157,13 @@ private function validate_template_path($template_path) {
         get_template_directory(),
         get_stylesheet_directory()
     );
-    
+
     foreach ($allowed_paths as $allowed_path) {
         if (strpos($template_path, $allowed_path) === 0) {
             return true;
         }
     }
-    
+
     return false;
 }
 ```
@@ -1225,14 +1223,14 @@ Create custom field types by extending the `Field_Base` class:
 ```php
 // Create custom field class
 class Custom_Color_Field extends \Orbitools\AdminKit\Fields\Field_Base {
-    
+
     public function render() {
         $value = esc_attr($this->value);
         $id = esc_attr($this->field['id']);
-        
+
         echo '<input type="color" id="' . $id . '" name="' . $id . '" value="' . $value . '">';
     }
-    
+
     public function get_assets() {
         return array(
             array(
@@ -1312,7 +1310,7 @@ class My_Field extends Field_Base {
 add_action('my_plugin_enqueue_assets', function($hook_suffix) {
     wp_enqueue_style('my-plugin-admin', PLUGIN_URL . 'assets/admin.css');
     wp_enqueue_script('my-plugin-admin', PLUGIN_URL . 'assets/admin.js', array('jquery'));
-    
+
     wp_localize_script('my-plugin-admin', 'MyPluginAdmin', array(
         'ajax_url' => admin_url('admin-ajax.php'),
         'nonce' => wp_create_nonce('my_plugin_nonce')
@@ -1360,7 +1358,7 @@ add_action('my_plugin_after_content', function() {
         <input type="file" id="import-file" accept=".json" style="display:none;">
         <button id="import-settings" class="button">Import Settings</button>
     </div>
-    
+
     <script>
     document.getElementById('export-settings').addEventListener('click', function() {
         const settings = orbitoolsAdminKit.getAllSettings();
@@ -1371,11 +1369,11 @@ add_action('my_plugin_after_content', function() {
         a.download = 'settings.json';
         a.click();
     });
-    
+
     document.getElementById('import-settings').addEventListener('click', function() {
         document.getElementById('import-file').click();
     });
-    
+
     document.getElementById('import-file').addEventListener('change', function(e) {
         const file = e.target.files[0];
         if (file) {
@@ -1607,17 +1605,17 @@ add_action('my_admin_plugin_post_save_settings', function($settings, $success) {
  * Custom Date Field Example
  */
 class Custom_Date_Field extends \Orbitools\AdminKit\Fields\Field_Base {
-    
+
     public function render() {
         $value = esc_attr($this->value);
         $id = esc_attr($this->field['id']);
         $name = esc_attr($this->field['id']);
-        
+
         // Format for display
         $display_value = $value ? date('Y-m-d', strtotime($value)) : '';
-        
+
         echo '<input type="date" id="' . $id . '" name="' . $name . '" value="' . $display_value . '"';
-        
+
         // Add attributes
         if (isset($this->field['min'])) {
             echo ' min="' . esc_attr($this->field['min']) . '"';
@@ -1628,10 +1626,10 @@ class Custom_Date_Field extends \Orbitools\AdminKit\Fields\Field_Base {
         if (isset($this->field['required']) && $this->field['required']) {
             echo ' required';
         }
-        
+
         echo '>';
     }
-    
+
     public function get_assets() {
         return array(
             array(
@@ -1647,18 +1645,18 @@ class Custom_Date_Field extends \Orbitools\AdminKit\Fields\Field_Base {
             )
         );
     }
-    
+
     public function sanitize($value) {
         // Validate date format
         if (empty($value)) {
             return '';
         }
-        
+
         $date = DateTime::createFromFormat('Y-m-d', $value);
         if ($date && $date->format('Y-m-d') === $value) {
             return $value;
         }
-        
+
         return '';
     }
 }
@@ -1684,7 +1682,7 @@ add_filter('my_plugin_adminkit_fields', function($fields) {
         'max' => date('Y-m-d', strtotime('+1 year')),
         'required' => true
     );
-    
+
     return $fields;
 });
 ```
@@ -1695,7 +1693,7 @@ add_filter('my_plugin_adminkit_fields', function($fields) {
 
 #### 1. Page Not Showing
 **Problem**: Admin page doesn't appear in menu
-**Solution**: 
+**Solution**:
 - Check if `init()` was called
 - Verify user has required capability
 - Ensure no PHP errors in initialization
@@ -1806,12 +1804,12 @@ wp_enqueue_script('my-script', 'script' . $suffix . '.js');
 add_filter('my_plugin_adminkit_fields', function($fields) {
     $cache_key = 'my_plugin_fields_' . md5(serialize($some_data));
     $cached_fields = wp_cache_get($cache_key);
-    
+
     if ($cached_fields === false) {
         $cached_fields = expensive_field_generation();
         wp_cache_set($cache_key, $cached_fields, '', 3600); // 1 hour
     }
-    
+
     return $cached_fields;
 });
 ```
