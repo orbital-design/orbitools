@@ -28,11 +28,6 @@
 	max-width: 100%;
 }
 
-/* Ensure cards don't exceed a reasonable width */
-.orbi-module-card {
-	max-width: 400px;
-}
-
 /* ==========================================================================
    Module Card Base
    ========================================================================== */
@@ -45,7 +40,7 @@
 	transition: all 0.2s ease;
 	position: relative;
 	overflow: hidden;
-	max-width: 400px;
+	box-sizing: border-box;
 	width: 100%;
 	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 	border-left: 4px solid #f0f0f0;
