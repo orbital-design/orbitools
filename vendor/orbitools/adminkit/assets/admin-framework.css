@@ -130,6 +130,8 @@
     align-items: center;
     justify-content: space-between;
     gap: 20px;
+        min-height: 70px;
+    box-sizing: border-box;
 }
 
 .adminkit-toolbar__actions {
@@ -271,8 +273,6 @@
    ============================================================================= */
 
 .orbi-admin__content {
-    background: #fff;
-    padding: 40px;
 }
 
 .orbi-admin__settings-form {
