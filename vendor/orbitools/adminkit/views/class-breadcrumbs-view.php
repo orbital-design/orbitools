@@ -64,10 +64,6 @@ class Breadcrumbs_View
      */
     private function should_render()
     {
-        if (class_exists('Orbitools\AdminKit\Instance_Registry')) {
-            return \Orbitools\AdminKit\Instance_Registry::is_instance_page($this->admin_kit->get_slug());
-        }
-        
         $screen = get_current_screen();
         return $screen && strpos($screen->id, $this->admin_kit->get_slug()) !== false;
     }
@@ -78,42 +74,6 @@ class Breadcrumbs_View
      * @since 1.0.0
      */
     private function render_toolbar_html()
-    {
-        ?>
-        <div class="adminkit adminkit-toolbar">
-            <nav class="adminkit-toolbar__breadcrumbs">
-                <ol class="adminkit-toolbar__breadcrumb-list">
-                    <?php $this->render_breadcrumb_trail(); ?>
-                </ol>
-            </nav>
-            
-            <div class="adminkit-toolbar__nav-actions">
-                <?php $this->render_actions(); ?>
-            </div>
-        </div>
-        <?php
-    }
-
-    /**
-     * Render the appropriate breadcrumb trail
-     *
-     * @since 1.0.0
-     */
-    private function render_breadcrumb_trail()
-    {
-        if ($this->is_child_page()) {
-            $this->render_child_page_breadcrumbs();
-        } else {
-            $this->render_main_page_breadcrumbs();
-        }
-    }
-
-    /**
-     * Render breadcrumbs for main AdminKit pages
-     *
-     * @since 1.0.0
-     */
-    private function render_main_page_breadcrumbs()
     {
         $page_title = $this->admin_kit->get_page_title();
         $current_tab = $this->admin_kit->get_current_tab();
@@ -126,60 +86,25 @@ class Breadcrumbs_View
         $sections = $this->get_sections($current_tab);
         $section_name = isset($sections[$current_section]) ? $sections[$current_section] : '';
         
-        // Render breadcrumb trail
-        $this->render_breadcrumb($page_title);
-        
-        if ($tab_name) {
-            $this->render_breadcrumb($tab_name, true, true);
-        }
-        
-        if ($section_name) {
-            $this->render_breadcrumb($section_name, true, true);
-        }
-    }
-
-    /**
-     * Render breadcrumbs for child pages
-     *
-     * @since 1.0.0
-     */
-    private function render_child_page_breadcrumbs()
-    {
-        $page_title = $this->admin_kit->get_page_title();
-        $child_page_title = $this->get_child_page_title();
-        
-        // Render: Parent Page > Child Page
-        $this->render_breadcrumb($page_title);
-        
-        if ($child_page_title) {
-            $this->render_breadcrumb($child_page_title, true, true);
-        }
-    }
-
-    /**
-     * Get the current child page title
-     *
-     * @since 1.0.0
-     * @return string
-     */
-    private function get_child_page_title()
-    {
-        global $submenu;
-        
-        $current_page = isset($_GET['page']) ? $_GET['page'] : '';
-        $parent_slug = $this->admin_kit->get_slug();
-        
-        if (!isset($submenu[$parent_slug]) || !$current_page) {
-            return '';
-        }
-        
-        foreach ($submenu[$parent_slug] as $submenu_item) {
-            if ($submenu_item[2] === $current_page) {
-                return $submenu_item[0];
-            }
-        }
-        
-        return '';
+        ?>
+        <div class="adminkit adminkit-toolbar">
+            <nav class="adminkit-toolbar__breadcrumbs">
+                <ol class="adminkit-toolbar__breadcrumb-list">
+                    <?php $this->render_breadcrumb($page_title); ?>
+                    <?php if ($tab_name): ?>
+                        <?php $this->render_breadcrumb($tab_name, true, true); ?>
+                    <?php endif; ?>
+                    <?php if ($section_name): ?>
+                        <?php $this->render_breadcrumb($section_name, true, true); ?>
+                    <?php endif; ?>
+                </ol>
+            </nav>
+            
+            <div class="adminkit-toolbar__nav-actions">
+                <?php $this->render_actions(); ?>
+            </div>
+        </div>
+        <?php
     }
 
     /**
@@ -227,8 +152,8 @@ class Breadcrumbs_View
         // Allow custom actions via hook
         do_action($this->admin_kit->get_func_slug() . '_render_nav_actions');
 
-        // Only show default save button on main AdminKit pages, not child pages
-        if (!has_action($this->admin_kit->get_func_slug() . '_render_nav_actions') && !$this->is_child_page()) {
+        // Default save button if no custom actions
+        if (!has_action($this->admin_kit->get_func_slug() . '_render_nav_actions')) {
             ?>
             <button type="submit" 
                     class="adminkit-toolbar__save-btn button button-primary" 
@@ -241,21 +166,5 @@ class Breadcrumbs_View
             </span>
             <?php
         }
-    }
-
-    /**
-     * Check if current page is a child page
-     *
-     * @since 1.0.0
-     * @return bool
-     */
-    private function is_child_page()
-    {
-        if (class_exists('Orbitools\AdminKit\Instance_Registry')) {
-            $page_info = \Orbitools\AdminKit\Instance_Registry::get_page_info();
-            return $page_info['owner'] === $this->admin_kit->get_slug() && $page_info['is_child'];
-        }
-
-        return false;
     }
 }

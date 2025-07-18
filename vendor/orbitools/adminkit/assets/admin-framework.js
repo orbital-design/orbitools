@@ -17,8 +17,10 @@
          * Initialize the framework
          */
         init: function() {
+            console.log('AdminKit initializing...');
             this.bindEvents();
             this.initTabs();
+            console.log('AdminKit initialized');
         },
 
 
@@ -95,6 +97,8 @@
             const subTabLinks = tabContent.querySelectorAll('.orbi-admin__subtab-link');
             const sectionContents = tabContent.querySelectorAll('.orbi-admin__section-content');
 
+            console.log('Initializing sub-tabs:', subTabLinks.length, 'links found');
+            
             if (subTabLinks.length === 0) return null; // No sub-tabs in this tab
 
             // Check if there's a section specified in URL for deep linking
@@ -144,6 +148,7 @@
             e.preventDefault();
 
             const sectionKey = link.getAttribute('data-section');
+            console.log('Sub-tab clicked:', sectionKey);
 
             // Find the current active tab to scope the sub-tab switching
             const currentTab = this.getActiveTab();
@@ -368,7 +373,7 @@
          */
         getTabData: function() {
             const tabData = {};
-            const tabLinks = document.querySelectorAll('.adminkit-nav__item--tab');
+            const tabLinks = document.querySelectorAll('.adminkit-nav__item');
 
             tabLinks.forEach(function(link) {
                 const tabKey = link.getAttribute('data-tab');
@@ -458,23 +463,28 @@
      * Initialize when DOM is ready
      */
     function initFramework() {
+        console.log('AdminKit script loaded');
+        
         // Only initialize on admin framework pages
-        if (document.querySelector('.orbi-admin')) {
+        if (document.querySelector('.adminkit')) {
+            console.log('Found .adminkit element, initializing...');
             OrbitoolsAdminKit.init();
+        } else {
+            console.log('No .adminkit element found');
         }
         
-        // Tab switching for adminkit-nav__item--tab elements only
+        // Simple tab switching for adminkit navigation
         document.addEventListener('click', function(e) {
-            if (e.target.matches('.adminkit-nav__item--tab') || e.target.closest('.adminkit-nav__item--tab')) {
-                const link = e.target.matches('.adminkit-nav__item--tab') ? e.target : e.target.closest('.adminkit-nav__item--tab');
+            if (e.target.matches('.adminkit-nav__item') || e.target.closest('.adminkit-nav__item')) {
+                const link = e.target.matches('.adminkit-nav__item') ? e.target : e.target.closest('.adminkit-nav__item');
                 const tabKey = link.getAttribute('data-tab');
                 
-                // Only proceed if we have a tab key (should always be true for --tab items)
+                // Only handle elements with data-tab attribute (AdminKit tabs)
                 if (tabKey) {
                     e.preventDefault();
                     
-                    // Update active states (only for --tab items)
-                    document.querySelectorAll('.adminkit-nav__item--tab').forEach(tabLink => {
+                    // Update active states
+                    document.querySelectorAll('.adminkit-nav__item').forEach(tabLink => {
                         tabLink.classList.remove('adminkit-nav__item--active');
                     });
                     link.classList.add('adminkit-nav__item--active');
@@ -487,8 +497,16 @@
                     const activeContent = document.querySelector('.orbi-admin__tab-content[data-tab="' + tabKey + '"]');
                     if (activeContent) {
                         activeContent.style.display = 'block';
+                        // Initialize sub-tabs for the newly active tab
+                        const activeSection = OrbitoolsAdminKit.initSubTabsForTab(activeContent);
+                        
+                        // Update breadcrumbs with the active section
+                        OrbitoolsAdminKit.updateBreadcrumbs(tabKey, activeSection);
+                    } else {
+                        // No sub-tabs, just update breadcrumbs with tab
+                        OrbitoolsAdminKit.updateBreadcrumbs(tabKey);
                     }
-
+                    
                     // Update URL
                     if (history.pushState) {
                         const url = new URL(window.location);
@@ -497,7 +515,6 @@
                     }
                 }
             }
-            // adminkit-nav__item--link elements will use normal href navigation
         });
         
         // Direct form handler as backup

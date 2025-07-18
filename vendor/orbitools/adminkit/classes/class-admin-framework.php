@@ -345,6 +345,12 @@ class Admin_Kit
      */
     public function render_breadcrumbs()
     {
+        // Only render breadcrumbs on our admin pages
+        $screen = get_current_screen();
+        if (!$screen || strpos($screen->id, $this->slug) === false) {
+            return;
+        }
+        
         $this->get_page_builder()->build_breadcrumbs();
     }
 
@@ -357,17 +363,10 @@ class Admin_Kit
      */
     public function admin_footer_text($text)
     {
-        // Only modify footer on our admin pages - use Instance Registry for accurate detection
-        if (class_exists('Orbitools\AdminKit\Instance_Registry')) {
-            if (!Instance_Registry::is_instance_page($this->slug)) {
-                return $text;
-            }
-        } else {
-            // Fallback to original method
-            $screen = get_current_screen();
-            if (!$screen || strpos($screen->id, $this->slug) === false) {
-                return $text;
-            }
+        // Only modify footer on our admin pages
+        $screen = get_current_screen();
+        if (!$screen || strpos($screen->id, $this->slug) === false) {
+            return $text;
         }
 
         return sprintf(
@@ -542,16 +541,9 @@ class Admin_Kit
      */
     public function enqueue_assets($hook_suffix)
     {
-        // Only enqueue on our admin page - use Instance Registry for accurate detection
-        if (class_exists('Orbitools\AdminKit\Instance_Registry')) {
-            if (!Instance_Registry::is_instance_page($this->slug)) {
-                return;
-            }
-        } else {
-            // Fallback to original method
-            if (strpos($hook_suffix, $this->slug) === false) {
-                return;
-            }
+        // Only enqueue on our admin page
+        if (strpos($hook_suffix, $this->slug) === false) {
+            return;
         }
 
         // Enqueue styles
@@ -571,17 +563,7 @@ class Admin_Kit
             true
         );
 
-        // Get page info from Instance Registry
-        $page_info = array(
-            'is_child' => false,
-            'owner' => null,
-        );
-
-        if (class_exists('Orbitools\AdminKit\Instance_Registry')) {
-            $page_info = Instance_Registry::get_page_info();
-        }
-
-        // Localize script with page info
+        // Localize script
         wp_localize_script('orbitools-adminkit', 'orbitoolsAdminKit', array(
             'slug' => $this->slug,
             'nonce' => wp_create_nonce('orbitools_adminkit_' . $this->slug),
@@ -592,9 +574,6 @@ class Admin_Kit
                 'error' => __('Error saving settings. Please try again.', 'orbitools-adminkit'),
             )
         ));
-
-        // Add page info for child page detection
-        wp_localize_script('orbitools-adminkit', 'adminkit_page_info', $page_info);
 
         // Hook for additional assets
         do_action($this->func_slug . '_enqueue_assets', $hook_suffix);

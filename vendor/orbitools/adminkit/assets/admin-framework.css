@@ -254,19 +254,6 @@
     outline-offset: -2px;
 }
 
-/* Tab vs Link item distinction */
-.adminkit-nav__item--tab {
-    /* JavaScript-enabled tabs - no additional styling needed */
-}
-
-.adminkit-nav__item--link {
-    /* Direct navigation links - could add subtle indicators */
-    opacity: 0.9;
-}
-
-.adminkit-nav__item--link:hover {
-    opacity: 1;
-}
 
 /* =============================================================================
    TAB CONTENT SECTION (BEM)
@@ -994,66 +981,3 @@
     }
 }
 
-/* =============================================================================
-   CHILD PAGE STYLES
-   ============================================================================= */
-
-/* Styles for AdminKit pages that are children of other AdminKit pages */
-.orbi-admin--child-page .adminkit-nav__item {
-    position: relative;
-    transition: background-color 0.2s ease;
-}
-
-.orbi-admin--child-page .adminkit-nav__item:hover {
-    background-color: #f0f4f8;
-}
-
-/* Add a subtle indicator that tabs are clickable on child pages */
-.orbi-admin--child-page .adminkit-nav__item:after {
-    content: "→";
-    position: absolute;
-    right: 12px;
-    top: 50%;
-    transform: translateY(-50%);
-    opacity: 0;
-    transition: opacity 0.2s ease;
-    font-size: 12px;
-    color: var(--orb-blue);
-}
-
-.orbi-admin--child-page .adminkit-nav__item:hover:after {
-    opacity: 1;
-}
-
-/* Subtle visual distinction for child pages */
-.orbi-admin--child-page .adminkit-toolbar {
-    border-bottom: 2px solid #e0e9f3;
-}
-
-.orbi-admin--child-page .adminkit-toolbar__breadcrumb-text:last-child:after {
-    content: " (External)";
-    font-size: 11px;
-    color: #666;
-    font-weight: normal;
-}
-
-/* =============================================================================
-   SIMPLIFIED NAVIGATION MODIFIERS
-   ============================================================================= */
-
-/* Optional: Add subtle visual indicators for different item types */
-.adminkit-nav__item--link:after {
-    content: "→";
-    position: absolute;
-    right: 8px;
-    top: 50%;
-    transform: translateY(-50%);
-    opacity: 0;
-    transition: opacity 0.2s ease;
-    font-size: 11px;
-    color: var(--orb-blue);
-}
-
-.adminkit-nav__item--link:hover:after {
-    opacity: 0.6;
-}
