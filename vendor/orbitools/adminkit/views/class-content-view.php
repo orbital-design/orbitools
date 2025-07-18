@@ -1,10 +1,10 @@
 <?php
 
 /**
- * Content View Class
+ * Content View Class (Simplified)
  *
- * Handles rendering of content components for AdminKit pages including
- * tabs, sections, fields, and form elements.
+ * Handles rendering of content components for AdminKit pages.
+ * Clean, focused implementation with minimal complexity.
  *
  * @package    Orbitools\AdminKit\Views
  * @since      1.0.0
@@ -49,39 +49,15 @@ class Content_View
      */
     public function render_tab_content()
     {
-        $content_data = $this->get_content_data();
+        $active_tab = $this->admin_kit->get_active_tab();
+        $tabs = $this->admin_kit->get_tabs();
+        $settings = $this->admin_kit->get_content_fields();
         
-        $this->render_form_wrapper($content_data);
-    }
-
-    /**
-     * Get content data for rendering
-     *
-     * @since 1.0.0
-     * @return array
-     */
-    private function get_content_data()
-    {
-        return array(
-            'active_tab' => $this->admin_kit->get_active_tab(),
-            'tabs' => $this->admin_kit->get_tabs(),
-            'settings' => $this->admin_kit->get_content_fields()
-        );
-    }
-
-    /**
-     * Render form wrapper with all tabs
-     *
-     * @since 1.0.0
-     * @param array $data Content data
-     */
-    private function render_form_wrapper($data)
-    {
         ?>
         <form method="post" action="<?php echo esc_url(admin_url('admin-ajax.php')); ?>" 
               class="orbi-admin__settings-form" id="orbi-settings-form">
             <?php $this->render_form_fields(); ?>
-            <?php $this->render_all_tabs($data); ?>
+            <?php $this->render_tabs($tabs, $active_tab, $settings); ?>
             <?php submit_button('Save Settings'); ?>
         </form>
         <?php
@@ -105,35 +81,25 @@ class Content_View
      * Render all tab content containers
      *
      * @since 1.0.0
-     * @param array $data Content data
+     * @param array $tabs All tabs
+     * @param string $active_tab Active tab key
+     * @param array $settings All settings
      */
-    private function render_all_tabs($data)
+    private function render_tabs($tabs, $active_tab, $settings)
     {
-        foreach ($data['tabs'] as $tab_key => $tab_title) {
-            $this->render_single_tab($tab_key, $data);
+        foreach ($tabs as $tab_key => $tab_title) {
+            $is_active = $active_tab === $tab_key;
+            ?>
+            <div class="orbi-admin__tab-content"
+                 data-tab="<?php echo esc_attr($tab_key); ?>"
+                 aria-labelledby="orbi-tab-<?php echo esc_attr($tab_key); ?>"
+                 style="<?php echo $is_active ? 'display: block;' : 'display: none;'; ?>">
+                
+                <?php $this->render_tab_content_sections($tab_key, $settings); ?>
+                <?php do_action($this->admin_kit->get_func_slug() . '_render_tab_content', $tab_key); ?>
+            </div>
+            <?php
         }
-    }
-
-    /**
-     * Render individual tab content
-     *
-     * @since 1.0.0
-     * @param string $tab_key Tab key
-     * @param array $data Content data
-     */
-    private function render_single_tab($tab_key, $data)
-    {
-        $is_active = $data['active_tab'] === $tab_key;
-        ?>
-        <div class="orbi-admin__tab-content"
-             data-tab="<?php echo esc_attr($tab_key); ?>"
-             aria-labelledby="orbi-tab-<?php echo esc_attr($tab_key); ?>"
-             style="<?php echo $is_active ? 'display: block;' : 'display: none;'; ?>">
-            
-            <?php $this->render_tab_sections($tab_key, $data); ?>
-            <?php do_action($this->admin_kit->get_func_slug() . '_render_tab_content', $tab_key); ?>
-        </div>
-        <?php
     }
 
     /**
@@ -141,38 +107,25 @@ class Content_View
      *
      * @since 1.0.0
      * @param string $tab_key Tab key
-     * @param array $data Content data
+     * @param array $settings All settings
      */
-    private function render_tab_sections($tab_key, $data)
+    private function render_tab_content_sections($tab_key, $settings)
     {
-        $tab_data = $this->get_tab_data($tab_key);
+        $sections = $this->admin_kit->get_sections($tab_key);
         
-        if (empty($tab_data['sections'])) {
-            $this->render_tab_without_sections($tab_key, $data['settings']);
+        if (empty($sections)) {
+            $this->render_tab_fields($tab_key, $settings);
             return;
         }
 
-        if ($tab_data['display_mode'] === 'tabs') {
-            $this->render_sections_as_tabs($tab_key, $tab_data, $data);
+        $display_mode = $this->admin_kit->get_section_display_mode($tab_key);
+        $active_section = $this->admin_kit->get_active_section($tab_key);
+        
+        if ($display_mode === 'tabs') {
+            $this->render_sections_with_navigation($tab_key, $sections, $active_section, $settings);
         } else {
-            $this->render_sections_as_cards($tab_key, $tab_data, $data);
+            $this->render_sections_as_cards($tab_key, $sections, $settings);
         }
-    }
-
-    /**
-     * Get tab-specific data
-     *
-     * @since 1.0.0
-     * @param string $tab_key Tab key
-     * @return array
-     */
-    private function get_tab_data($tab_key)
-    {
-        return array(
-            'sections' => $this->admin_kit->get_sections($tab_key),
-            'display_mode' => $this->admin_kit->get_section_display_mode($tab_key),
-            'active_section' => $this->admin_kit->get_active_section($tab_key)
-        );
     }
 
     /**
@@ -182,7 +135,7 @@ class Content_View
      * @param string $tab_key Tab key
      * @param array $settings All settings
      */
-    private function render_tab_without_sections($tab_key, $settings)
+    private function render_tab_fields($tab_key, $settings)
     {
         if (!isset($settings[$tab_key])) {
             return;
@@ -195,104 +148,46 @@ class Content_View
     }
 
     /**
-     * Render sections as tabs (with sub-navigation)
+     * Render sections with navigation (tabs mode)
      *
      * @since 1.0.0
      * @param string $tab_key Tab key
-     * @param array $tab_data Tab data
-     * @param array $data Content data
-     */
-    private function render_sections_as_tabs($tab_key, $tab_data, $data)
-    {
-        ?>
-        <div class="orbi-admin__subtabs-wrapper">
-            <?php $this->render_subtab_navigation($tab_key, $tab_data); ?>
-        </div>
-        <?php $this->render_subtab_content($tab_key, $tab_data, $data); ?>
-        <?php
-    }
-
-    /**
-     * Render subtab navigation
-     *
-     * @since 1.0.0
-     * @param string $tab_key Tab key
-     * @param array $tab_data Tab data
-     */
-    private function render_subtab_navigation($tab_key, $tab_data)
-    {
-        ?>
-        <nav class="orbi-admin__subtabs-nav">
-            <?php foreach ($tab_data['sections'] as $section_key => $section_title) : ?>
-                <?php $this->render_subtab_link($section_key, $section_title, $tab_key, $tab_data['active_section']); ?>
-            <?php endforeach; ?>
-        </nav>
-        <?php
-    }
-
-    /**
-     * Render individual subtab link
-     *
-     * @since 1.0.0
-     * @param string $section_key Section key
-     * @param string $section_title Section title
-     * @param string $tab_key Tab key
-     * @param string $active_section Active section
-     */
-    private function render_subtab_link($section_key, $section_title, $tab_key, $active_section)
-    {
-        $is_active = $active_section === $section_key;
-        $link_class = 'orbi-admin__subtab-link';
-        if ($is_active) {
-            $link_class .= ' orbi-admin__subtab-link--active';
-        }
-        ?>
-        <a href="#"
-           class="<?php echo esc_attr($link_class); ?>"
-           data-section="<?php echo esc_attr($section_key); ?>"
-           role="tab"
-           aria-selected="<?php echo $is_active ? 'true' : 'false'; ?>"
-           id="orbi-subtab-<?php echo esc_attr($section_key); ?>">
-            <?php echo esc_html($section_title); ?>
-        </a>
-        <?php
-    }
-
-    /**
-     * Render subtab content sections
-     *
-     * @since 1.0.0
-     * @param string $tab_key Tab key
-     * @param array $tab_data Tab data
-     * @param array $data Content data
-     */
-    private function render_subtab_content($tab_key, $tab_data, $data)
-    {
-        foreach ($tab_data['sections'] as $section_key => $section_title) {
-            $this->render_subtab_section($section_key, $section_title, $tab_key, $tab_data['active_section'], $data['settings']);
-        }
-    }
-
-    /**
-     * Render individual subtab section
-     *
-     * @since 1.0.0
-     * @param string $section_key Section key
-     * @param string $section_title Section title
-     * @param string $tab_key Tab key
+     * @param array $sections Sections
      * @param string $active_section Active section
      * @param array $settings All settings
      */
-    private function render_subtab_section($section_key, $section_title, $tab_key, $active_section, $settings)
+    private function render_sections_with_navigation($tab_key, $sections, $active_section, $settings)
     {
-        $is_active = $active_section === $section_key;
         ?>
-        <div class="orbi-admin__section-content"
-             data-section="<?php echo esc_attr($section_key); ?>"
-             aria-labelledby="orbi-subtab-<?php echo esc_attr($section_key); ?>"
-             style="<?php echo $is_active ? 'display: block;' : 'display: none;'; ?>">
-            <?php $this->render_section_fields($tab_key, $section_key, $section_title, $settings); ?>
+        <div class="orbi-admin__subtabs-wrapper">
+            <nav class="orbi-admin__subtabs-nav">
+                <?php foreach ($sections as $section_key => $section_title): ?>
+                    <?php
+                    $is_active = $active_section === $section_key;
+                    $classes = array('orbi-admin__subtab-link');
+                    if ($is_active) $classes[] = 'orbi-admin__subtab-link--active';
+                    ?>
+                    <a href="#"
+                       class="<?php echo esc_attr(implode(' ', $classes)); ?>"
+                       data-section="<?php echo esc_attr($section_key); ?>"
+                       role="tab"
+                       aria-selected="<?php echo $is_active ? 'true' : 'false'; ?>"
+                       id="orbi-subtab-<?php echo esc_attr($section_key); ?>">
+                        <?php echo esc_html($section_title); ?>
+                    </a>
+                <?php endforeach; ?>
+            </nav>
         </div>
+        
+        <?php foreach ($sections as $section_key => $section_title): ?>
+            <?php $is_active = $active_section === $section_key; ?>
+            <div class="orbi-admin__section-content"
+                 data-section="<?php echo esc_attr($section_key); ?>"
+                 aria-labelledby="orbi-subtab-<?php echo esc_attr($section_key); ?>"
+                 style="<?php echo $is_active ? 'display: block;' : 'display: none;'; ?>">
+                <?php $this->render_section_content($tab_key, $section_key, $section_title, $settings); ?>
+            </div>
+        <?php endforeach; ?>
         <?php
     }
 
@@ -301,18 +196,23 @@ class Content_View
      *
      * @since 1.0.0
      * @param string $tab_key Tab key
-     * @param array $tab_data Tab data
-     * @param array $data Content data
+     * @param array $sections Sections
+     * @param array $settings All settings
      */
-    private function render_sections_as_cards($tab_key, $tab_data, $data)
+    private function render_sections_as_cards($tab_key, $sections, $settings)
     {
-        foreach ($tab_data['sections'] as $section_key => $section_title) {
-            $this->render_section_card($tab_key, $section_key, $section_title, $data['settings']);
+        foreach ($sections as $section_key => $section_title) {
+            ?>
+            <div class="orbi-admin__section-card" data-section="<?php echo esc_attr($section_key); ?>">
+                <h3 class="orbi-admin__section-title"><?php echo esc_html($section_title); ?></h3>
+                <?php $this->render_section_content($tab_key, $section_key, $section_title, $settings); ?>
+            </div>
+            <?php
         }
     }
 
     /**
-     * Render individual section card
+     * Render content for a section
      *
      * @since 1.0.0
      * @param string $tab_key Tab key
@@ -320,33 +220,16 @@ class Content_View
      * @param string $section_title Section title
      * @param array $settings All settings
      */
-    private function render_section_card($tab_key, $section_key, $section_title, $settings)
-    {
-        ?>
-        <div class="orbi-admin__section-card" data-section="<?php echo esc_attr($section_key); ?>">
-            <h3 class="orbi-admin__section-title"><?php echo esc_html($section_title); ?></h3>
-            <?php $this->render_section_fields($tab_key, $section_key, $section_title, $settings); ?>
-        </div>
-        <?php
-    }
-
-    /**
-     * Render fields for a section
-     *
-     * @since 1.0.0
-     * @param string $tab_key Tab key
-     * @param string $section_key Section key
-     * @param string $section_title Section title
-     * @param array $settings All settings
-     */
-    private function render_section_fields($tab_key, $section_key, $section_title, $settings)
+    private function render_section_content($tab_key, $section_key, $section_title, $settings)
     {
         if (!isset($settings[$tab_key])) {
             $this->render_no_fields_message($section_title);
             return;
         }
 
-        $section_fields = $this->get_section_fields($settings[$tab_key], $section_key);
+        $section_fields = array_filter($settings[$tab_key], function($field) use ($section_key) {
+            return isset($field['section']) && $field['section'] === $section_key;
+        });
         
         if (empty($section_fields)) {
             $this->render_no_fields_message($section_title);
@@ -372,62 +255,6 @@ class Content_View
         }
     }
 
-    /**
-     * Render fields for a specific tab (legacy method - kept for compatibility)
-     *
-     * @since 1.0.0
-     * @param array  $fields Tab fields array
-     * @param string $tab_key Current tab key
-     */
-    public function render_tab_fields($fields, $tab_key)
-    {
-        $sections = $this->admin_kit->get_sections($tab_key);
-
-        foreach ($sections as $section_key => $section_title) {
-            $section_fields = $this->get_section_fields($fields, $section_key);
-
-            if (empty($section_fields)) {
-                continue;
-            }
-            ?>
-            <div class="orbital-section" data-section="<?php echo esc_attr($section_key); ?>">
-                <h3 class="orbital-section-title"><?php echo esc_html($section_title); ?></h3>
-                <div class="orbital-section-fields">
-                    <?php $this->render_fields($section_fields); ?>
-                </div>
-            </div>
-            <?php
-        }
-    }
-
-    /**
-     * Get section fields
-     *
-     * @since 1.0.0
-     * @param array  $fields All fields
-     * @param string $section_key Section key
-     * @return array Section fields
-     */
-    private function get_section_fields($fields, $section_key)
-    {
-        return array_filter($fields, function ($field) use ($section_key) {
-            return isset($field['section']) && $field['section'] === $section_key;
-        });
-    }
-
-    /**
-     * Get fields without sections (for tabs that don't use sub-tabs)
-     *
-     * @since 1.0.0
-     * @param array $fields All fields
-     * @return array Fields without sections
-     */
-    private function get_fields_without_sections($fields)
-    {
-        return array_filter($fields, function ($field) {
-            return !isset($field['section']) || empty($field['section']);
-        });
-    }
 
     /**
      * Render "no fields" message
@@ -444,15 +271,15 @@ class Content_View
             </div>
             <h4>No fields configured</h4>
             <p>
-                <?php if ($section_title) : ?>
+                <?php if ($section_title): ?>
                     No fields have been added to the "<?php echo esc_html($section_title); ?>" section yet.
-                <?php else : ?>
+                <?php else: ?>
                     No fields have been configured for this section yet.
                 <?php endif; ?>
             </p>
             <p class="orbi-admin__no-fields-help">
                 <strong>For developers:</strong> Add fields using the <code><?php echo esc_html($this->admin_kit->get_func_slug()); ?>_adminkit_fields</code> filter.
-                <?php if ($section_title) : ?>
+                <?php if ($section_title): ?>
                     Make sure to set <code>'section' => '<?php echo esc_attr(strtolower(str_replace(' ', '_', $section_title))); ?>'</code> on your field definitions.
                 <?php endif; ?>
             </p>
