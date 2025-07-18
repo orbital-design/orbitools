@@ -42,112 +42,40 @@ class Group_Manager
             'side',
             'default'
         );
+        
+        // Add AJAX handler
+        add_action('wp_ajax_add_menu_group', array($this, 'handle_add_group_ajax'));
     }
 
     /**
-     * Render the group headings meta box
+     * Handle AJAX request to add menu group
      *
      * @since 1.0.0
      */
-    public function render_group_meta_box()
+    public function handle_add_group_ajax()
     {
-?>
-<div class="group-options" style="">
-    <p><?php _e("Add a new menu item with just a name for grouping related items, even if they're not parent and child.", 'orbitools'); ?>
-    </p>
-    <label for="group-title">
-        <?php _e('Group Name:', 'orbitools'); ?>
-    </label>
-    <input type="text" id="group-title" class="widefat"
-        placeholder="<?php esc_attr_e('Enter group name', 'orbitools'); ?>" />
-
-    <button type="button" id="add-group-btn" class="button button-primary" style="width: 100%;">
-        <?php _e('Add Group', 'orbitools'); ?>
-    </button>
-</div>
-
-<script>
-jQuery(document).ready(function($) {
-    $('#add-group-btn').click(function() {
-        var title = $('#group-title').val() || '<?php _e('Group', 'orbitools'); ?>';
-
-        // Get current menu ID from the page
-        var menuId = $('#menu').val();
-        if (!menuId) {
-            alert('Please select a menu first');
-            return;
-        }
-
-        // Add the group to the menu
-        $.post(ajaxurl, {
-            action: 'add_menu_group',
-            'menu-item-title': title,
-            'menu-item-type': 'custom',
-            'menu-item-url': '#',
-            'menu-item-group': '1',
-            'menu': menuId,
-            'nonce': '<?php echo wp_create_nonce('add-menu-group'); ?>'
-        }, function(response) {
-            console.log('Add group response:', response);
-            if (response.success) {
-                // Simple refresh approach - let WordPress handle the HTML and CSS handle the styling
-                window.location.reload();
-            } else {
-                alert('Error adding group: ' + response.data);
-            }
-        }).fail(function(xhr, status, error) {
-            console.error('AJAX error:', status, error);
-            alert('Network error occurred');
-        });
-
-        // Clear the form
-        $('#group-title').val('');
-    });
-});
-</script>
-<?php
-    }
-
-    /**
-     * AJAX handler to add a menu group
-     *
-     * @since 1.0.0
-     */
-    public function ajax_add_group()
-    {
-        // Check nonce
-        if (!isset($_POST['nonce']) || !wp_verify_nonce($_POST['nonce'], 'add-menu-group')) {
-            wp_send_json_error('Security check failed');
-            return;
+        // Verify nonce
+        if (!wp_verify_nonce($_POST['nonce'], 'add-group-nonce')) {
+            wp_send_json_error(__('Security check failed', 'orbitools'));
         }
 
         // Check permissions
         if (!current_user_can('edit_theme_options')) {
-            wp_send_json_error('Insufficient permissions');
-            return;
+            wp_send_json_error(__('You do not have permission to do this', 'orbitools'));
         }
 
         // Get and sanitize input
-        $title = isset($_POST['menu-item-title']) ? sanitize_text_field($_POST['menu-item-title']) : '';
+        $title = isset($_POST['group_title']) ? sanitize_text_field($_POST['group_title']) : '';
         if (empty($title)) {
             $title = __('Group', 'orbitools');
         }
 
-        // Get the current menu being edited
-        $menu_id = isset($_POST['menu']) ? intval($_POST['menu']) : 0;
+        $menu_id = isset($_POST['menu_id']) ? intval($_POST['menu_id']) : 0;
         if (!$menu_id) {
-            wp_send_json_error('No menu specified. Please select a menu first.');
-            return;
+            wp_send_json_error(__('No menu selected', 'orbitools'));
         }
 
-        // Verify menu exists
-        $menu = wp_get_nav_menu_object($menu_id);
-        if (!$menu) {
-            wp_send_json_error('Invalid menu specified');
-            return;
-        }
-
-        // Create a new menu item
+        // Create menu item
         $menu_item_data = array(
             'menu-item-type' => 'custom',
             'menu-item-title' => $title,
@@ -157,25 +85,62 @@ jQuery(document).ready(function($) {
 
         $menu_item_id = wp_update_nav_menu_item($menu_id, 0, $menu_item_data);
 
-        if (is_wp_error($menu_item_id)) {
-            wp_send_json_error('Failed to create menu item: ' . $menu_item_id->get_error_message());
-            return;
+        if (!is_wp_error($menu_item_id) && $menu_item_id) {
+            // Mark as group
+            update_post_meta($menu_item_id, '_menu_item_group', '1');
+            wp_send_json_success(__('Group added successfully', 'orbitools'));
+        } else {
+            wp_send_json_error(__('Failed to create menu item', 'orbitools'));
         }
-
-        if (!$menu_item_id) {
-            wp_send_json_error('Failed to create menu item - no ID returned');
-            return;
-        }
-
-        // Mark this as a group
-        update_post_meta($menu_item_id, '_menu_item_group', '1');
-
-        wp_send_json_success(array(
-            'message' => 'Group added successfully',
-            'menu_item_id' => $menu_item_id,
-            'title' => $title
-        ));
     }
+
+    /**
+     * Render the group headings meta box
+     *
+     * @since 1.0.0
+     */
+    public function render_group_meta_box()
+    {
+        // Get current menu being edited - WordPress stores it in different ways
+        $nav_menu_selected_id = 0;
+        
+        if (isset($_REQUEST['menu']) && $_REQUEST['menu'] > 0) {
+            $nav_menu_selected_id = (int) $_REQUEST['menu'];
+        } elseif (isset($_GET['menu']) && $_GET['menu'] > 0) {
+            $nav_menu_selected_id = (int) $_GET['menu'];
+        } else {
+            // Try to get from the form if it exists
+            global $nav_menu_selected_id;
+            if (isset($nav_menu_selected_id) && $nav_menu_selected_id > 0) {
+                // Use the global
+            } else {
+                // Get the first available menu
+                $menus = wp_get_nav_menus();
+                if (!empty($menus)) {
+                    $nav_menu_selected_id = $menus[0]->term_id;
+                }
+            }
+        }
+?>
+<div class="group-options" style="">
+    <p><?php _e("Add a new menu item with just a name for grouping related items, even if they're not parent and child.", 'orbitools'); ?>
+    </p>
+    <label for="group-title">
+        <?php _e('Group Name:', 'orbitools'); ?>
+    </label>
+    <input type="text" id="group-title" name="group-title" class="widefat"
+        placeholder="<?php esc_attr_e('Enter group name', 'orbitools'); ?>" />
+
+    <button type="button" id="add-group-btn" class="button button-primary" style="width: 100%;"><?php esc_html_e('Add Group', 'orbitools'); ?></button>
+    <input type="hidden" id="group-nonce" value="<?php echo wp_create_nonce('add-group-nonce'); ?>" />
+    <input type="hidden" id="menu-id" value="<?php echo esc_attr($nav_menu_selected_id); ?>" />
+    <?php if ($nav_menu_selected_id == 0): ?>
+        <p style="color: #d63638; margin-top: 10px;"><?php _e('Please select a menu to add groups to.', 'orbitools'); ?></p>
+    <?php endif; ?>
+</div>
+<?php
+    }
+
 
     /**
      * Save group fields when menu item is updated
@@ -288,91 +253,4 @@ jQuery(document).ready(function($) {
         return $menu_item;
     }
 
-    /**
-     * Add JavaScript to add CSS classes to group items and clean up interface
-     *
-     * @since 1.0.0
-     */
-    public function add_group_classes_script()
-    {
-        ?>
-        <script>
-        jQuery(document).ready(function($) {
-            // Function to process group items
-            function processGroupItems() {
-                $('.item-type').each(function() {
-                    if ($(this).text() === 'Group') {
-                        var $menuItem = $(this).closest('.menu-item');
-                        $menuItem.addClass('menu-item-group');
-                        
-                        // Hide URL field for group items
-                        $menuItem.find('label:contains("URL")').parent().hide();
-                        
-                        // Change "Navigation Label" to "Group Name"
-                        $menuItem.find('label:contains("Navigation Label")').each(function() {
-                            if ($(this).text().includes('Navigation Label')) {
-                                $(this).html($(this).html().replace('Navigation Label', 'Group Name'));
-                            }
-                        });
-                    }
-                });
-            }
-            
-            // Run on page load
-            processGroupItems();
-            
-            // Watch for changes in the menu structure
-            if (window.MutationObserver) {
-                var observer = new MutationObserver(function(mutations) {
-                    var shouldReprocess = false;
-                    
-                    mutations.forEach(function(mutation) {
-                        if (mutation.type === 'childList' || mutation.type === 'attributes') {
-                            // Check if menu items were added or modified
-                            if (mutation.target.classList && (
-                                mutation.target.classList.contains('menu-item') ||
-                                mutation.target.classList.contains('menu-item-settings') ||
-                                $(mutation.target).find('.menu-item').length > 0
-                            )) {
-                                shouldReprocess = true;
-                            }
-                        }
-                    });
-                    
-                    if (shouldReprocess) {
-                        setTimeout(processGroupItems, 100);
-                    }
-                });
-                
-                observer.observe(document.body, {
-                    childList: true,
-                    subtree: true,
-                    attributes: true,
-                    attributeFilter: ['class', 'style']
-                });
-            }
-            
-            // Also reprocess when menu items are expanded/collapsed
-            $(document).on('click', '.item-edit', function() {
-                setTimeout(processGroupItems, 100);
-            });
-        });
-        </script>
-        
-        <style>
-        /* Hide URL field for group items */
-        .menu-item-group .field-url {
-            display: none !important;
-        }
-        
-        /* Hide additional fields that might appear */
-        .menu-item-group .field-link-target,
-        .menu-item-group .field-attr-title,
-        .menu-item-group .field-css-classes,
-        .menu-item-group .field-xfn {
-            display: none !important;
-        }
-        </style>
-        <?php
-    }
 }

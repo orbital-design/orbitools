@@ -7,80 +7,9 @@
  * @since      1.0.0
  */
 
-/* Menu item group fields */
-.field-menu-group {
-    border-top: 1px solid #ddd;
-    margin-top: 10px;
-    padding-top: 10px;
-}
-
-.field-menu-group label {
-    font-weight: 600;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.field-menu-group input[type="checkbox"] {
-    margin: 0;
-}
-
-.field-menu-group-title {
-    margin-top: 8px;
-}
-
-.field-menu-group-title label {
-    font-weight: 600;
-    display: block;
-}
-
-.field-menu-group-title input[type="text"] {
-    margin-top: 4px;
-}
-
-.field-menu-group-title .description {
-    margin-top: 4px;
-    font-style: italic;
-    color: #666;
-}
-
-/* OrbiTools settings page styles */
-.adminkit .field--select select[name*="menu_groups_heading_style"] + .description {
-    margin-top: 8px;
-}
-
-.adminkit .field--text input[name*="menu_groups_custom_classes"] {
-    font-family: 'Monaco', 'Courier New', monospace;
-    font-size: 13px;
-}
-
-/* Visual indicators in menu editor */
-.menu-item-settings .field-menu-group {
-    background: #f9f9f9;
-    border-radius: 4px;
-    padding: 12px;
-    margin: 10px 0;
-}
-
-.menu-item-settings .field-menu-group-title {
-    background: #fff;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    padding: 8px;
-    margin-top: 8px;
-}
-
-/* Responsive adjustments */
-@media screen and (max-width: 782px) {
-    .field-menu-group-title input[type="text"] {
-        width: 100%;
-    }
-}
-
 #add-group-content .inside {
 margin-top: 0;
 }
-
 
 #add-group-content .group-options {
     padding: 0;
@@ -97,7 +26,7 @@ margin-top: 0;
 }
 
 #add-group-content .group-options label {
-position: absolute;
+    position: absolute;
 	position: absolute !important;
 	width: 1px !important;
 	height: 1px !important;
@@ -110,6 +39,7 @@ position: absolute;
 }
 
 .menu-item-group > .menu-item-settings > *:not(input):not(.description.description-wide):not(.menu-item-actions),
-.menu-item-group > .menu-item-settings >.field-move {
+.menu-item-group > .menu-item-settings > .field-move,
+.menu-item-group > .menu-item-settings > .field-url {
     display: none !important;
 }

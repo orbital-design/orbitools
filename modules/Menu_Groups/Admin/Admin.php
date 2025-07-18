@@ -139,7 +139,7 @@ class Admin
     }
 
     /**
-     * Enqueue admin styles for menu editing
+     * Enqueue admin styles and scripts for menu editing
      *
      * @since 1.0.0
      * @param string $hook_suffix Current admin page.
@@ -157,5 +157,32 @@ class Admin
             array(),
             self::VERSION
         );
+
+        // Only enqueue script on nav-menus page
+        if ('nav-menus.php' === $hook_suffix) {
+            wp_enqueue_script(
+                'orbitools-menu-groups-admin',
+                plugin_dir_url(__FILE__) . '../js/admin-menu-groups.js',
+                array(),
+                self::VERSION,
+                true
+            );
+
+            wp_enqueue_script(
+                'orbitools-menu-groups-processor',
+                plugin_dir_url(__FILE__) . '../js/menu-item-processor.js',
+                array(),
+                self::VERSION,
+                true
+            );
+
+            wp_localize_script(
+                'orbitools-menu-groups-admin',
+                'menuGroupsAdmin',
+                array(
+                    'addGroupText' => __('Add Group', 'orbitools')
+                )
+            );
+        }
     }
 }
