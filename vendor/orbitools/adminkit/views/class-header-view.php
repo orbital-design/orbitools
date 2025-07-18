@@ -80,27 +80,29 @@ class Header_View
         $title = $this->admin_kit->get_page_title();
         $description = $this->admin_kit->get_page_description();
         $hide_text = $this->admin_kit->get_hide_title_description();
-        
-        ?>
-        <div class="adminkit adminkit-header" <?php if ($bg_color) echo 'style="background-color: ' . esc_attr($bg_color) . '"'; ?>>
-            <div class="adminkit-header__content">
-                <?php if ($image_url): ?>
-                    <div class="adminkit-header__image">
-                        <img src="<?php echo esc_url($image_url); ?>" alt="<?php echo esc_attr($title); ?>" class="adminkit-header__img" />
-                    </div>
-                <?php endif; ?>
-                
-                <div class="adminkit-header__text<?php if ($hide_text) echo ' screen-reader-text'; ?>">
-                    <h1 class="adminkit-header__title"><?php echo esc_html($title); ?></h1>
-                    <?php if ($description): ?>
-                        <p class="adminkit-header__description"><?php echo esc_html($description); ?></p>
-                    <?php endif; ?>
-                </div>
-                
-                <?php $this->render_navigation(); ?>
-            </div>
+
+?>
+<div class="adminkit adminkit-header"
+    <?php if ($bg_color) echo 'style="background-color: ' . esc_attr($bg_color) . '"'; ?>>
+    <div class="adminkit-header__content">
+        <?php if ($image_url): ?>
+        <div class="adminkit-header__image">
+            <img src="<?php echo esc_url($image_url); ?>" alt="<?php echo esc_attr($title); ?>"
+                class="adminkit-header__img" />
         </div>
-        <?php
+        <?php endif; ?>
+
+        <div class="adminkit-header__text<?php if ($hide_text) echo ' screen-reader-text'; ?>">
+            <h1 class="adminkit-header__title"><?php echo esc_html($title); ?></h1>
+            <?php if ($description): ?>
+            <p class="adminkit-header__description"><?php echo esc_html($description); ?></p>
+            <?php endif; ?>
+        </div>
+
+        <?php $this->render_navigation(); ?>
+    </div>
+</div>
+<?php
     }
 
     /**
@@ -111,20 +113,20 @@ class Header_View
     private function render_navigation()
     {
         $tabs = $this->admin_kit->get_tabs();
-        
+
         if (empty($tabs)) {
             return;
         }
 
         $active_tab = $this->admin_kit->get_active_tab();
 
-        ?>
-        <nav class="adminkit-nav">
-            <?php foreach ($tabs as $tab_key => $tab_label): ?>
-                <?php $this->render_nav_item($tab_key, $tab_label, $active_tab); ?>
-            <?php endforeach; ?>
-        </nav>
-        <?php
+    ?>
+<nav class="adminkit-nav">
+    <?php foreach ($tabs as $tab_key => $tab_label): ?>
+    <?php $this->render_nav_item($tab_key, $tab_label, $active_tab); ?>
+    <?php endforeach; ?>
+</nav>
+<?php
     }
 
 
@@ -140,17 +142,17 @@ class Header_View
     {
         $is_active = $active_tab === $tab_key;
         $classes = array('adminkit-nav__item');
-        
+
         if ($is_active) {
             $classes[] = 'adminkit-nav__item--active';
         }
-        
-        ?>
-        <a href="<?php echo esc_url($this->admin_kit->get_tab_url($tab_key)); ?>" 
-           class="<?php echo esc_attr(implode(' ', $classes)); ?>"
-           data-tab="<?php echo esc_attr($tab_key); ?>">
-            <?php echo esc_html($tab_label); ?>
-        </a>
-        <?php
+
+    ?>
+<a href="<?php echo esc_url($this->admin_kit->get_tab_url($tab_key)); ?>"
+    class="<?php echo esc_attr(implode(' ', $classes)); ?>" data-page="<?php echo esc_attr($tab_key); ?>"
+    id="<?php echo esc_attr('adminkit-nav-' . $tab_key); ?>">
+    <?php echo esc_html($tab_label); ?>
+</a>
+<?php
     }
 }

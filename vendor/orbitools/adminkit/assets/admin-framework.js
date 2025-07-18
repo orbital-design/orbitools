@@ -48,11 +48,11 @@
         initTabs: function() {
             // Show active tab content, hide others
             const activeTab = this.getActiveTab();
-            const tabContents = document.querySelectorAll('.orbi-admin__tab-content');
+            const tabContents = document.querySelectorAll('.adminkit-content__page');
             let activeSection = null;
 
             tabContents.forEach(function(content) {
-                const tabKey = content.getAttribute('data-tab');
+                const tabKey = content.getAttribute('data-page');
                 if (tabKey === activeTab) {
                     content.style.display = 'block';
                     // Initialize sub-tabs for the active tab and get the active section
@@ -94,7 +94,7 @@
         initSubTabsForTab: function(tabContent) {
             const subTabLinks = tabContent.querySelectorAll('.orbi-admin__subtab-link');
             const sectionContents = tabContent.querySelectorAll('.orbi-admin__section-content');
-            
+
             if (subTabLinks.length === 0) return null; // No sub-tabs in this tab
 
             // Check if there's a section specified in URL for deep linking
@@ -147,7 +147,7 @@
 
             // Find the current active tab to scope the sub-tab switching
             const currentTab = this.getActiveTab();
-            const activeTabContent = document.querySelector('.orbi-admin__tab-content[data-tab="' + currentTab + '"]');
+            const activeTabContent = document.querySelector('.adminkit-content__page[data-page="' + currentTab + '"]');
             if (!activeTabContent) return;
 
             // Update active states for sub-tabs within the active tab only
@@ -371,7 +371,7 @@
             const tabLinks = document.querySelectorAll('.adminkit-nav__item');
 
             tabLinks.forEach(function(link) {
-                const tabKey = link.getAttribute('data-tab');
+                const tabKey = link.getAttribute('data-page');
                 const tabLabel = link.textContent.trim();
                 if (tabKey && tabLabel) {
                     tabData[tabKey] = tabLabel;
@@ -391,7 +391,7 @@
             const sectionData = {};
 
             // Find the active tab content
-            const tabContent = document.querySelector('.orbi-admin__tab-content[data-tab="' + tabKey + '"]');
+            const tabContent = document.querySelector('.adminkit-content__page[data-page="' + tabKey + '"]');
             if (!tabContent) return sectionData;
 
             // Get section links within this tab
@@ -418,7 +418,7 @@
             if (urlTab) return urlTab;
 
             const activeLink = document.querySelector('.adminkit-nav__item--active');
-            return activeLink ? activeLink.getAttribute('data-tab') : '';
+            return activeLink ? activeLink.getAttribute('data-page') : '';
         },
 
         /**
@@ -462,17 +462,17 @@
         if (document.querySelector('.adminkit')) {
             OrbitoolsAdminKit.init();
         }
-        
+
         // Simple tab switching for adminkit navigation
         document.addEventListener('click', function(e) {
             if (e.target.matches('.adminkit-nav__item') || e.target.closest('.adminkit-nav__item')) {
                 const link = e.target.matches('.adminkit-nav__item') ? e.target : e.target.closest('.adminkit-nav__item');
-                const tabKey = link.getAttribute('data-tab');
-                
-                // Only handle elements with data-tab attribute (AdminKit tabs)
+                const tabKey = link.getAttribute('data-page');
+
+                // Only handle elements with data-page attribute (AdminKit tabs)
                 if (tabKey) {
                     e.preventDefault();
-                    
+
                     // Update active states
                     document.querySelectorAll('.adminkit-nav__item').forEach(tabLink => {
                         tabLink.classList.remove('adminkit-nav__item--active');
@@ -480,23 +480,23 @@
                     link.classList.add('adminkit-nav__item--active');
 
                     // Switch tab content
-                    document.querySelectorAll('.orbi-admin__tab-content').forEach(content => {
+                    document.querySelectorAll('.adminkit-content__page').forEach(content => {
                         content.style.display = 'none';
                     });
-                    
-                    const activeContent = document.querySelector('.orbi-admin__tab-content[data-tab="' + tabKey + '"]');
+
+                    const activeContent = document.querySelector('.adminkit-content__page[data-page="' + tabKey + '"]');
                     if (activeContent) {
                         activeContent.style.display = 'block';
                         // Initialize sub-tabs for the newly active tab
                         const activeSection = OrbitoolsAdminKit.initSubTabsForTab(activeContent);
-                        
+
                         // Update breadcrumbs with the active section
                         OrbitoolsAdminKit.updateBreadcrumbs(tabKey, activeSection);
                     } else {
                         // No sub-tabs, just update breadcrumbs with tab
                         OrbitoolsAdminKit.updateBreadcrumbs(tabKey);
                     }
-                    
+
                     // Update URL
                     if (history.pushState) {
                         const url = new URL(window.location);
@@ -506,23 +506,23 @@
                 }
             }
         });
-        
+
         // Direct form handler as backup
         const form = document.getElementById('orbi-settings-form');
         if (form) {
             form.addEventListener('submit', function(e) {
                 e.preventDefault();
-                
+
                 // Check if orbitoolsAdminKit exists
                 if (typeof orbitoolsAdminKit === 'undefined') {
                     alert('AdminKit not loaded properly');
                     return;
                 }
-                
+
                 // Create FormData from form
                 const formData = new FormData(form);
-                
-                
+
+
                 // Send AJAX request
                 fetch(orbitoolsAdminKit.ajaxurl, {
                     method: 'POST',
@@ -535,13 +535,13 @@
                         const notice = document.createElement('div');
                         notice.className = 'notice notice-success is-dismissible';
                         notice.innerHTML = '<p>' + (data.data.message || 'Settings saved successfully') + '</p>';
-                        
+
                         // Insert notice at top of content
                         const content = document.querySelector('.adminkit-content, .orbi-admin, #wpbody-content');
                         if (content) {
                             content.insertBefore(notice, content.firstChild);
                         }
-                        
+
                         // Auto-dismiss after 5 seconds
                         setTimeout(() => notice.remove(), 5000);
                     } else {
@@ -549,12 +549,12 @@
                         const notice = document.createElement('div');
                         notice.className = 'notice notice-error is-dismissible';
                         notice.innerHTML = '<p>Error: ' + (data.data || 'Unknown error') + '</p>';
-                        
+
                         const content = document.querySelector('.adminkit-content, .orbi-admin, #wpbody-content');
                         if (content) {
                             content.insertBefore(notice, content.firstChild);
                         }
-                        
+
                         setTimeout(() => notice.remove(), 8000);
                     }
                 })
@@ -563,12 +563,12 @@
                     const notice = document.createElement('div');
                     notice.className = 'notice notice-error is-dismissible';
                     notice.innerHTML = '<p>Network error: ' + error.message + '</p>';
-                    
+
                     const content = document.querySelector('.adminkit-content, .orbi-admin, #wpbody-content');
                     if (content) {
                         content.insertBefore(notice, content.firstChild);
                     }
-                    
+
                     setTimeout(() => notice.remove(), 8000);
                 });
             });
