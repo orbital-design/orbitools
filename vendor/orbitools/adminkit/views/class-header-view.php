@@ -64,7 +64,6 @@ class Header_View
         $header_data = $this->get_header_data();
 
         $this->render_header_section($header_data);
-        $this->render_toolbar_section();
     }
 
     /**
@@ -395,61 +394,6 @@ class Header_View
 <?php
     }
 
-    /**
-     * Render toolbar section
-     *
-     * @since 1.0.0
-     */
-    private function render_toolbar_section()
-    {
-    ?>
-<div class="adminkit adminkit-toolbar">
-    <?php $this->render_breadcrumbs(); ?>
-    <?php $this->render_nav_actions(); ?>
-</div>
-<?php
-    }
-
-    /**
-     * Render breadcrumb navigation
-     *
-     * @since 1.0.0
-     */
-    private function render_breadcrumbs()
-    {
-        $breadcrumb_data = $this->get_breadcrumb_data();
-
-        if (empty($breadcrumb_data['tabs'])) {
-            return;
-        }
-    ?>
-<nav class="adminkit-toolbar__breadcrumbs">
-    <ol class="adminkit-toolbar__breadcrumb-list">
-        <?php $this->render_breadcrumb_items($breadcrumb_data); ?>
-    </ol>
-</nav>
-<?php
-    }
-
-    /**
-     * Get breadcrumb data
-     *
-     * @since 1.0.0
-     * @return array
-     */
-    private function get_breadcrumb_data()
-    {
-        $current_tab = $this->admin_kit->get_current_tab();
-        $current_section = $this->admin_kit->get_current_section();
-
-        return array(
-            'page_title' => $this->admin_kit->get_page_title(),
-            'tabs' => $this->admin_kit->get_tabs(),
-            'current_tab' => $current_tab,
-            'current_section' => $current_section,
-            'sections' => $this->get_current_sections($current_tab)
-        );
-    }
 
     /**
      * Get sections for current tab
@@ -462,93 +406,5 @@ class Header_View
     {
         $structure = $this->admin_kit->get_content_structure();
         return isset($structure[$current_tab]['sections']) ? $structure[$current_tab]['sections'] : array();
-    }
-
-    /**
-     * Render breadcrumb items
-     *
-     * @since 1.0.0
-     * @param array $data Breadcrumb data
-     */
-    private function render_breadcrumb_items($data)
-    {
-        // Page title
-        $this->render_breadcrumb_item($data['page_title']);
-
-        // Current tab
-        if ($data['current_tab'] && isset($data['tabs'][$data['current_tab']])) {
-            $this->render_breadcrumb_item($data['tabs'][$data['current_tab']], true, true);
-        }
-
-        // Current section
-        if ($data['current_section'] && isset($data['sections'][$data['current_section']])) {
-            $this->render_breadcrumb_item($data['sections'][$data['current_section']], true, true);
-        }
-    }
-
-    /**
-     * Render individual breadcrumb item
-     *
-     * @since 1.0.0
-     * @param string $text Item text
-     * @param bool   $with_separator Whether to include separator
-     * @param bool   $is_current Whether this is the current item
-     */
-    private function render_breadcrumb_item($text, $with_separator = false, $is_current = false)
-    {
-        $text_class = 'adminkit-toolbar__breadcrumb-text';
-        if ($is_current) {
-            $text_class .= ' adminkit-toolbar__breadcrumb-text--current';
-        }
-    ?>
-<li class="adminkit-toolbar__breadcrumb-item">
-    <?php if ($with_separator) : ?>
-    <span class="adminkit-toolbar__breadcrumb-separator">›</span>
-    <?php endif; ?>
-    <span class="<?php echo esc_attr($text_class); ?>">
-        <?php echo esc_html($text); ?>
-    </span>
-</li>
-<?php
-    }
-
-    /**
-     * Render navigation actions
-     *
-     * @since 1.0.0
-     */
-    private function render_nav_actions()
-    {
-    ?>
-<div class="adminkit-toolbar__nav-actions">
-    <?php
-            // Hook for navigation actions (save buttons, etc.)
-            do_action($this->admin_kit->get_func_slug() . '_render_nav_actions');
-
-            // Default save button (if no custom actions provided)
-            if (!has_action($this->admin_kit->get_func_slug() . '_render_nav_actions')) {
-                $this->render_default_nav_actions();
-            }
-            ?>
-</div>
-<?php
-    }
-
-    /**
-     * Render default navigation actions
-     *
-     * @since 1.0.0
-     */
-    private function render_default_nav_actions()
-    {
-    ?>
-<button type="submit" class="adminkit-toolbar__save-btn button button-primary" form="orbi-settings-form"
-    aria-describedby="orbi-save-btn-desc">
-    <span class="adminkit-toolbar__save-btn-text"><?php esc_html_e('Save Settings', 'orbitools-adminkit'); ?></span>
-</button>
-<span id="orbi-save-btn-desc" class="screen-reader-text">
-    <?php esc_html_e('Save all settings changes', 'orbitools-adminkit'); ?>
-</span>
-<?php
     }
 }

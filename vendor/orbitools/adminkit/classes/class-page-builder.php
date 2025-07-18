@@ -14,6 +14,7 @@
 namespace Orbitools\AdminKit\Classes;
 
 use Orbitools\AdminKit\Views\Header_View;
+use Orbitools\AdminKit\Views\Breadcrumbs_View;
 use Orbitools\AdminKit\Views\Content_View;
 
 // Prevent direct access
@@ -49,6 +50,14 @@ class Page_Builder
     private $header_view;
 
     /**
+     * Breadcrumbs view instance
+     *
+     * @since 1.0.0
+     * @var Breadcrumbs_View
+     */
+    private $breadcrumbs_view;
+
+    /**
      * Content view instance
      *
      * @since 1.0.0
@@ -77,6 +86,7 @@ class Page_Builder
     private function init_view_components()
     {
         $this->header_view = new Header_View($this->admin_kit);
+        $this->breadcrumbs_view = new Breadcrumbs_View($this->admin_kit);
         $this->content_view = new Content_View($this->admin_kit);
     }
 
@@ -101,24 +111,24 @@ class Page_Builder
         );
 
 ?>
-        <div class="adminkit adminkit-content wrap" id="orbi-admin-<?php echo esc_attr($this->admin_kit->get_slug()); ?>">
-            <h1 class="screen-reader-text">
-                <?php echo esc_html($this->admin_kit->get_page_title()); ?>
-            </h1>
+<div class="adminkit adminkit-content wrap" id="orbi-admin-<?php echo esc_attr($this->admin_kit->get_slug()); ?>">
+    <h1 class="screen-reader-text">
+        <?php echo esc_html($this->admin_kit->get_page_title()); ?>
+    </h1>
 
-            <?php do_action($this->admin_kit->get_func_slug() . '_before_header'); ?>
+    <?php do_action($this->admin_kit->get_func_slug() . '_before_header'); ?>
 
-            <?php
+    <?php
             // Render each component in order
             foreach ($page_components as $component) {
                 $this->render_component($component);
             }
             ?>
 
-            <?php do_action($this->admin_kit->get_func_slug() . '_after_footer'); ?>
+    <?php do_action($this->admin_kit->get_func_slug() . '_after_footer'); ?>
 
-        </div>
-        <?php
+</div>
+<?php
     }
 
     /**
@@ -128,7 +138,17 @@ class Page_Builder
      */
     public function build_header()
     {
-        $this->render_component('global_header');
+        $this->render_component('header');
+    }
+
+    /**
+     * Build and render breadcrumbs
+     *
+     * @since 1.0.0
+     */
+    public function build_breadcrumbs()
+    {
+        $this->render_component('breadcrumbs');
     }
 
     /**
@@ -141,17 +161,21 @@ class Page_Builder
     {
         switch ($component) {
             case 'content':
-            ?>
-                <div class="orbi-admin__content">
-                    <?php $this->content_view->render_tab_content(); ?>
-                </div>
-            <?php
+        ?>
+<div class="orbi-admin__content">
+    <?php $this->content_view->render_tab_content(); ?>
+</div>
+<?php
                 do_action($this->admin_kit->get_func_slug() . '_after_content');
                 break;
 
 
-            case 'global_header':
+            case 'header':
                 $this->header_view->render_header();
+                break;
+
+            case 'breadcrumbs':
+                $this->breadcrumbs_view->render_breadcrumbs();
                 break;
 
             default:

@@ -121,6 +121,7 @@ class Admin_Kit
      */
     private $page_builder;
 
+
     /**
      * Initialize the framework
      *
@@ -165,6 +166,9 @@ class Admin_Kit
 
         // Always add global header after admin bar but before #wpbody
         add_action('in_admin_header', array($this, 'render_header'));
+
+        // Add breadcrumbs after header
+        add_action('in_admin_header', array($this, 'render_breadcrumbs'), 20);
 
         // Modify admin footer on our pages
         add_filter('admin_footer_text', array($this, 'admin_footer_text'));
@@ -335,6 +339,16 @@ class Admin_Kit
     }
 
     /**
+     * Render breadcrumbs using page builder
+     *
+     * @since 1.0.0
+     */
+    public function render_breadcrumbs()
+    {
+        $this->get_page_builder()->build_breadcrumbs();
+    }
+
+    /**
      * Modify admin footer text on our pages
      *
      * @since 1.0.0
@@ -377,6 +391,7 @@ class Admin_Kit
         }
         return $this->page_builder;
     }
+
 
     // Public getter methods for view components to access private properties
 
