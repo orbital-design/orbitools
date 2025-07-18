@@ -1,10 +1,10 @@
 <?php
 
 /**
- * Header View Class
+ * Header View Class (Simplified)
  *
- * Handles rendering of the admin page header including branding,
- * navigation tabs, and breadcrumb toolbar.
+ * Handles rendering of the admin page header with navigation.
+ * Clean, focused implementation with minimal complexity.
  *
  * @package    Orbitools\AdminKit\Views
  * @since      1.0.0
@@ -32,14 +32,6 @@ class Header_View
     private $admin_kit;
 
     /**
-     * Child page slugs mapping
-     *
-     * @since 1.0.0
-     * @var array
-     */
-    private $child_page_slugs = array();
-
-    /**
      * Constructor
      *
      * @since 1.0.0
@@ -51,218 +43,111 @@ class Header_View
     }
 
     /**
-     * Render the complete header section
+     * Render the complete header
      *
      * @since 1.0.0
      */
     public function render_header()
     {
-        if (!$this->should_render_header()) {
+        if (!$this->should_render()) {
             return;
         }
 
-        $header_data = $this->get_header_data();
-
-        $this->render_header_section($header_data);
+        $this->render_header_html();
     }
 
     /**
-     * Check if header should be rendered on current screen
-     *
-     * Uses Instance Registry to determine if this AdminKit instance
-     * owns the current page and should render its header.
+     * Check if header should be rendered
      *
      * @since 1.0.0
      * @return bool
      */
-    private function should_render_header()
+    private function should_render()
     {
-        // Use Instance Registry for more accurate detection
         if (class_exists('Orbitools\AdminKit\Instance_Registry')) {
             return \Orbitools\AdminKit\Instance_Registry::is_instance_page($this->admin_kit->get_slug());
         }
 
-        // Fallback to original method if registry not available
         $screen = get_current_screen();
         return $screen && strpos($screen->id, $this->admin_kit->get_slug()) !== false;
     }
 
     /**
-     * Get header data array
+     * Render header HTML
+     *
+     * @since 1.0.0
+     */
+    private function render_header_html()
+    {
+        $bg_color = $this->admin_kit->get_page_header_bg_color();
+        $image_url = $this->admin_kit->get_page_header_image();
+        $title = $this->admin_kit->get_page_title();
+        $description = $this->admin_kit->get_page_description();
+        $hide_text = $this->admin_kit->get_hide_title_description();
+        
+        ?>
+        <div class="adminkit adminkit-header" <?php if ($bg_color) echo 'style="background-color: ' . esc_attr($bg_color) . '"'; ?>>
+            <div class="adminkit-header__content">
+                <?php if ($image_url): ?>
+                    <div class="adminkit-header__image">
+                        <img src="<?php echo esc_url($image_url); ?>" alt="<?php echo esc_attr($title); ?>" class="adminkit-header__img" />
+                    </div>
+                <?php endif; ?>
+                
+                <div class="adminkit-header__text<?php if ($hide_text) echo ' screen-reader-text'; ?>">
+                    <h1 class="adminkit-header__title"><?php echo esc_html($title); ?></h1>
+                    <?php if ($description): ?>
+                        <p class="adminkit-header__description"><?php echo esc_html($description); ?></p>
+                    <?php endif; ?>
+                </div>
+                
+                <?php $this->render_navigation(); ?>
+            </div>
+        </div>
+        <?php
+    }
+
+    /**
+     * Render navigation
+     *
+     * @since 1.0.0
+     */
+    private function render_navigation()
+    {
+        $tabs = $this->get_all_tabs();
+        
+        if (empty($tabs)) {
+            return;
+        }
+
+        $active_tab = $this->admin_kit->get_active_tab();
+        $is_child_page = $this->is_child_page();
+
+        ?>
+        <nav class="adminkit-nav">
+            <?php foreach ($tabs as $tab_key => $tab_label): ?>
+                <?php $this->render_nav_item($tab_key, $tab_label, $active_tab, $is_child_page); ?>
+            <?php endforeach; ?>
+        </nav>
+        <?php
+    }
+
+    /**
+     * Get all tabs (regular + child pages)
      *
      * @since 1.0.0
      * @return array
      */
-    private function get_header_data()
-    {
-        return array(
-            'bg_color' => $this->admin_kit->get_page_header_bg_color(),
-            'image_url' => $this->admin_kit->get_page_header_image(),
-            'title' => $this->admin_kit->get_page_title(),
-            'description' => $this->admin_kit->get_page_description(),
-            'hide_text' => $this->admin_kit->get_hide_title_description()
-        );
-    }
-
-    /**
-     * Render the main header section
-     *
-     * @since 1.0.0
-     * @param array $data Header data
-     */
-    private function render_header_section($data)
-    {
-?>
-<div class="adminkit adminkit-header" <?php $this->render_header_style($data['bg_color']); ?>>
-    <div class="adminkit-header__content">
-        <?php $this->render_header_image($data['image_url'], $data['title']); ?>
-        <?php $this->render_header_text($data); ?>
-        <?php $this->render_tabs(); ?>
-    </div>
-</div>
-<?php
-    }
-
-    /**
-     * Render header background style
-     *
-     * @since 1.0.0
-     * @param string $bg_color Background color
-     */
-    private function render_header_style($bg_color)
-    {
-        if ($bg_color) {
-            echo 'style="background-color: ' . esc_attr($bg_color) . '"';
-        }
-    }
-
-    /**
-     * Render header image
-     *
-     * @since 1.0.0
-     * @param string $image_url Image URL
-     * @param string $title Page title for alt text
-     */
-    private function render_header_image($image_url, $title)
-    {
-        if (!$image_url) {
-            return;
-        }
-    ?>
-<div class="adminkit-header__image">
-    <img src="<?php echo esc_url($image_url); ?>" alt="<?php echo esc_attr($title); ?>" class="adminkit-header__img" />
-</div>
-<?php
-    }
-
-    /**
-     * Render header text content
-     *
-     * @since 1.0.0
-     * @param array $data Header data
-     */
-    private function render_header_text($data)
-    {
-        $text_class = 'adminkit-header__text';
-        if ($data['hide_text']) {
-            $text_class .= ' screen-reader-text';
-        }
-    ?>
-<div class="<?php echo esc_attr($text_class); ?>">
-    <h1 class="adminkit-header__title"><?php echo esc_html($data['title']); ?></h1>
-    <?php if ($data['description']) : ?>
-    <p class="adminkit-header__description"><?php echo esc_html($data['description']); ?></p>
-    <?php endif; ?>
-</div>
-<?php
-    }
-
-    /**
-     * Render navigation tabs
-     *
-     * @since 1.0.0
-     */
-    private function render_tabs()
-    {
-        $tabs_data = $this->get_tabs_data();
-
-        if (empty($tabs_data['tabs'])) {
-            return;
-        }
-
-        // Check if we're on a child page
-        $is_child_page = !$this->is_top_level_adminkit_page();
-
-    ?>
-<nav class="adminkit-nav">
-    <?php foreach ($tabs_data['tabs'] as $tab_key => $tab_label) : ?>
-    <?php $this->render_tab_item($tab_key, $tab_label, $tabs_data['active_tab'], $is_child_page); ?>
-    <?php endforeach; ?>
-</nav>
-<?php
-    }
-
-    /**
-     * Get tabs data for main AdminKit page
-     *
-     * @since 1.0.0
-     * @return array
-     */
-    private function get_tabs_data()
+    private function get_all_tabs()
     {
         $tabs = $this->admin_kit->get_tabs();
-
-        // Add child pages to main page tabs
-        if ($this->should_include_child_pages()) {
-            $child_pages = $this->get_child_pages();
-            $tabs = array_merge($tabs, $child_pages);
-        }
-
-        return array(
-            'tabs' => $tabs,
-            'active_tab' => $this->admin_kit->get_active_tab()
-        );
+        $child_pages = $this->get_child_pages();
+        
+        return array_merge($tabs, $child_pages);
     }
 
     /**
-     * Check if child pages should be included in the tab navigation
-     *
-     * @since 1.0.0
-     * @return bool
-     */
-    private function should_include_child_pages()
-    {
-        // Include child pages on both main pages and child pages
-        // (child pages need the full navigation to navigate back to main tabs and other child pages)
-        return true;
-    }
-
-    /**
-     * Check if current page is a top-level AdminKit page
-     *
-     * @since 1.0.0
-     * @return bool
-     */
-    private function is_top_level_adminkit_page()
-    {
-        // Use Instance Registry if available
-        if (class_exists('Orbitools\AdminKit\Instance_Registry')) {
-            $page_info = \Orbitools\AdminKit\Instance_Registry::get_page_info();
-
-            // If this AdminKit instance owns the page and it's not a child
-            return $page_info['owner'] === $this->admin_kit->get_slug() && !$page_info['is_child'];
-        }
-
-        // Fallback: check WordPress admin page parent
-        $parent = get_admin_page_parent();
-        $current_page = isset($_GET['page']) ? $_GET['page'] : '';
-
-        // If no parent or parent is the same as current page, it's top-level
-        return empty($parent) || $parent === $current_page;
-    }
-
-    /**
-     * Get child pages for the current AdminKit page
+     * Get child pages
      *
      * @since 1.0.0
      * @return array
@@ -270,141 +155,112 @@ class Header_View
     private function get_child_pages()
     {
         global $submenu;
-
-        $child_pages = array();
+        
         $parent_slug = $this->admin_kit->get_slug();
-
-        // Check if there are submenus for this parent
-        if (isset($submenu[$parent_slug])) {
-            foreach ($submenu[$parent_slug] as $priority => $submenu_item) {
-                // Skip the first item (usually points to the parent page itself)
-                if ($priority === 0) {
-                    continue;
-                }
-
-                // Extract submenu data
-                $title = $submenu_item[0];
-                $capability = $submenu_item[1];
-                $menu_slug = $submenu_item[2];
-
-                // Check if user has capability to see this page
-                if (!current_user_can($capability)) {
-                    continue;
-                }
-
-                // Create a tab key from the menu slug
-                $tab_key = 'child_' . sanitize_key($menu_slug);
-
-                // Store the mapping between tab key and actual menu slug
-                $this->child_page_slugs[$tab_key] = $menu_slug;
-
-                // Add to child pages array
-                $child_pages[$tab_key] = $title;
-            }
+        $child_pages = array();
+        
+        if (!isset($submenu[$parent_slug])) {
+            return $child_pages;
         }
-
+        
+        foreach ($submenu[$parent_slug] as $priority => $submenu_item) {
+            if ($priority === 0 || !current_user_can($submenu_item[1])) {
+                continue;
+            }
+            
+            $child_pages['child_' . sanitize_key($submenu_item[2])] = $submenu_item[0];
+        }
+        
         return $child_pages;
     }
 
     /**
-     * Get the actual menu slug for a child page tab key
+     * Check if current page is a child page
      *
      * @since 1.0.0
-     * @param string $tab_key The child page tab key
-     * @return string The actual menu slug
+     * @return bool
      */
-    private function get_child_page_slug($tab_key)
+    private function is_child_page()
     {
-        if (isset($this->child_page_slugs[$tab_key])) {
-            return $this->child_page_slugs[$tab_key];
+        if (class_exists('Orbitools\AdminKit\Instance_Registry')) {
+            $page_info = \Orbitools\AdminKit\Instance_Registry::get_page_info();
+            return $page_info['owner'] === $this->admin_kit->get_slug() && $page_info['is_child'];
         }
 
-        // Fallback: remove the 'child_' prefix
-        return str_replace('child_', '', $tab_key);
+        return false;
     }
 
     /**
-     * Render tab item using new BEM structure
+     * Render navigation item
      *
      * @since 1.0.0
      * @param string $tab_key Tab key
      * @param string $tab_label Tab label
-     * @param string $active_tab Currently active tab
+     * @param string $active_tab Active tab
      * @param bool $is_child_page Whether we're on a child page
      */
-    private function render_tab_item($tab_key, $tab_label, $active_tab, $is_child_page)
+    private function render_nav_item($tab_key, $tab_label, $active_tab, $is_child_page)
     {
-        // Check if this is a child page tab
         $is_child_tab = strpos($tab_key, 'child_') === 0;
-
-        if ($is_child_page) {
-            // On child pages, all items are links (no JavaScript)
-            $item_type = 'link';
-        } else {
-            // On main pages, child tabs are links, regular tabs use JavaScript
-            $item_type = $is_child_tab ? 'link' : 'tab';
-        }
-
-        // Build CSS classes
-        $item_class = 'adminkit-nav__item adminkit-nav__item--' . $item_type;
-
-        // Add active class logic
-        if ($is_child_page) {
-            // On child pages, check if this child tab matches the current page
-            if ($is_child_tab) {
-                $current_page = isset($_GET['page']) ? $_GET['page'] : '';
-                $child_slug = $this->get_child_page_slug($tab_key);
-                if ($current_page === $child_slug) {
-                    $item_class .= ' adminkit-nav__item--active';
-                }
-            }
-            // Regular tabs on child pages don't get active class (they're navigation links)
-        } else {
-            // On main pages, regular tabs get active class based on active_tab
-            if (!$is_child_tab && $active_tab === $tab_key) {
-                $item_class .= ' adminkit-nav__item--active';
-            }
-            // Child tabs on main pages don't get active class (they're navigation links)
-        }
-
-        // Determine URL and attributes
+        
+        // Determine item type and URL
         if ($is_child_tab) {
-            // Child page link
-            $menu_slug = $this->get_child_page_slug($tab_key);
-            $url = admin_url('admin.php?page=' . $menu_slug);
+            $item_type = 'link';
+            $url = admin_url('admin.php?page=' . str_replace('child_', '', $tab_key));
             $data_tab = null;
         } else {
-            // Regular tab
             if ($is_child_page) {
-                // On child pages, link back to main page with tab
+                $item_type = 'link';
                 $url = admin_url('admin.php?page=' . $this->admin_kit->get_slug() . '&tab=' . $tab_key);
                 $data_tab = null;
             } else {
-                // On main pages, use JavaScript switching
+                $item_type = 'tab';
                 $url = $this->admin_kit->get_tab_url($tab_key);
                 $data_tab = $tab_key;
             }
         }
-
-    ?>
-<a href="<?php echo esc_url($url); ?>" class="<?php echo esc_attr($item_class); ?>"
-    <?php if ($data_tab): ?>data-tab="<?php echo esc_attr($data_tab); ?>" <?php endif; ?>>
-    <?php echo esc_html($tab_label); ?>
-</a>
-<?php
+        
+        // Build classes
+        $classes = array('adminkit-nav__item', 'adminkit-nav__item--' . $item_type);
+        
+        // Add active class
+        if ($this->is_active_item($tab_key, $active_tab, $is_child_page)) {
+            $classes[] = 'adminkit-nav__item--active';
+        }
+        
+        ?>
+        <a href="<?php echo esc_url($url); ?>" 
+           class="<?php echo esc_attr(implode(' ', $classes)); ?>"
+           <?php if ($data_tab): ?>data-tab="<?php echo esc_attr($data_tab); ?>"<?php endif; ?>>
+            <?php echo esc_html($tab_label); ?>
+        </a>
+        <?php
     }
 
-
     /**
-     * Get sections for current tab
+     * Check if item is active
      *
      * @since 1.0.0
-     * @param string $current_tab Current tab key
-     * @return array
+     * @param string $tab_key Tab key
+     * @param string $active_tab Active tab
+     * @param bool $is_child_page Whether we're on a child page
+     * @return bool
      */
-    private function get_current_sections($current_tab)
+    private function is_active_item($tab_key, $active_tab, $is_child_page)
     {
-        $structure = $this->admin_kit->get_content_structure();
-        return isset($structure[$current_tab]['sections']) ? $structure[$current_tab]['sections'] : array();
+        $is_child_tab = strpos($tab_key, 'child_') === 0;
+        
+        if ($is_child_page && $is_child_tab) {
+            // On child pages, check if this child tab matches current page
+            $current_page = isset($_GET['page']) ? $_GET['page'] : '';
+            return $current_page === str_replace('child_', '', $tab_key);
+        }
+        
+        if (!$is_child_page && !$is_child_tab) {
+            // On main pages, check if this regular tab is active
+            return $active_tab === $tab_key;
+        }
+        
+        return false;
     }
 }
