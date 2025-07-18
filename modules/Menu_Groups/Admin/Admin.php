@@ -13,8 +13,6 @@
 
 namespace Orbitools\Modules\Menu_Groups\Admin;
 
-use Orbitools\Modules\Menu_Groups\Admin\Settings;
-use Orbitools\Modules\Menu_Groups\Admin\Settings_Helper;
 
 // Prevent direct access
 if (!defined('ABSPATH')) {
@@ -56,10 +54,6 @@ class Admin
         // Register module metadata
         add_filter('orbitools_available_modules', array($this, 'register_module_metadata'));
 
-        // Register with admin framework
-        add_filter('orbitools_adminkit_structure', array($this, 'register_new_framework_structure'));
-        add_filter('orbitools_adminkit_fields', array($this, 'register_new_framework_settings'));
-
         // Add admin styles for menu editing
         add_action('admin_enqueue_scripts', array($this, 'enqueue_admin_styles'));
     }
@@ -72,7 +66,8 @@ class Admin
      */
     public function is_module_enabled(): bool
     {
-        return Settings_Helper::is_module_enabled();
+        // Module is always enabled since we removed settings
+        return true;
     }
 
     /**
@@ -89,54 +84,12 @@ class Admin
             'subtitle'    => __('Organize menu items into groups', 'orbitools'),
             'description' => __('Add group headings to your WordPress menus to organize menu items visually. Create cleaner navigation with logical groupings.', 'orbitools'),
             'icon'        => '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="#32a3e2" d="M0 96C0 60.7 28.7 32 64 32l384 0c35.3 0 64 28.7 64 64l0 64c0 35.3-28.7 64-64 64l-288 0 0 96c0 17.7 14.3 32 32 32l32 0c0-35.3 28.7-64 64-64l160 0c35.3 0 64 28.7 64 64l0 64c0 35.3-28.7 64-64 64l-160 0c-35.3 0-64-28.7-64-64l-32 0c-53 0-96-43-96-96l0-96-32 0c-35.3 0-64-28.7-64-64L0 96zM448 352l-160 0 0 64 160 0 0-64z"/></svg>',
-            'configure_url' => admin_url('admin.php?page=orbitools&tab=modules&section=menu-groups'),
+            'configure_url' => '',
         );
 
         return $modules;
     }
 
-    /**
-     * Register admin structure for the new framework
-     *
-     * @since 1.0.0
-     * @param array $structure Existing structure array.
-     * @return array Modified structure array.
-     */
-    public function register_new_framework_structure(array $structure): array
-    {
-        if (!isset($structure['modules']['sections'])) {
-            $structure['modules']['sections'] = array();
-        }
-
-        // Get structure from Settings class
-        $settings_structure = Settings::get_admin_structure();
-        $structure['modules']['sections'] = array_merge(
-            $structure['modules']['sections'],
-            $settings_structure['sections']
-        );
-
-        return $structure;
-    }
-
-    /**
-     * Register settings for the new framework
-     *
-     * @since 1.0.0
-     * @param array $settings Existing settings array.
-     * @return array Modified settings array.
-     */
-    public function register_new_framework_settings(array $settings): array
-    {
-        if (!isset($settings['modules'])) {
-            $settings['modules'] = array();
-        }
-
-        // Get settings from Settings class
-        $module_settings = Settings::get_field_definitions();
-        $settings['modules'] = array_merge($settings['modules'], $module_settings);
-
-        return $settings;
-    }
 
     /**
      * Enqueue admin styles and scripts for menu editing

@@ -7,8 +7,9 @@
  * @since      1.0.0
  */
 
+/* Add Group meta box styles */
 #add-group-content .inside {
-margin-top: 0;
+    margin-top: 0;
 }
 
 #add-group-content .group-options {
@@ -20,24 +21,23 @@ margin-top: 0;
     gap: 10px;
 }
 
-
 #add-group-content .group-options p {
     margin: 0;
 }
 
 #add-group-content .group-options label {
-    position: absolute;
-	position: absolute !important;
-	width: 1px !important;
-	height: 1px !important;
-	padding: 0 !important;
-	margin: -1px !important;
-	overflow: hidden !important;
-	clip: rect(0,0,0,0) !important;
-	white-space: nowrap !important;
-	border: 0 !important;
+    position: absolute !important;
+    width: 1px !important;
+    height: 1px !important;
+    padding: 0 !important;
+    margin: -1px !important;
+    overflow: hidden !important;
+    clip: rect(0,0,0,0) !important;
+    white-space: nowrap !important;
+    border: 0 !important;
 }
 
+/* Hide unnecessary fields for group menu items */
 .menu-item-group > .menu-item-settings > *:not(input):not(.description.description-wide):not(.menu-item-actions),
 .menu-item-group > .menu-item-settings > .field-move,
 .menu-item-group > .menu-item-settings > .field-url {

@@ -13,7 +13,6 @@
 
 namespace Orbitools\Modules\Menu_Groups\Core;
 
-use Orbitools\Modules\Menu_Groups\Admin\Settings_Helper;
 
 // Prevent direct access
 if (!defined('ABSPATH')) {
@@ -142,26 +141,6 @@ class Group_Manager
     }
 
 
-    /**
-     * Save group fields when menu item is updated
-     *
-     * @since 1.0.0
-     * @param int $menu_id         Menu ID.
-     * @param int $menu_item_db_id Menu item ID.
-     * @param array $menu_item_args Menu item arguments.
-     */
-    public function save_group_fields($menu_id, $menu_item_db_id, $menu_item_args)
-    {
-        // Handle group metadata
-        if (isset($_POST['menu-item-group'][$menu_item_db_id])) {
-            update_post_meta($menu_item_db_id, '_menu_item_group', '1');
-        }
-
-        if (isset($_POST['menu-item-style'][$menu_item_db_id])) {
-            $style = sanitize_text_field($_POST['menu-item-style'][$menu_item_db_id]);
-            update_post_meta($menu_item_db_id, '_menu_item_group_style', $style);
-        }
-    }
 
     /**
      * Process menu objects to handle groups
@@ -173,33 +152,15 @@ class Group_Manager
      */
     public function process_menu_groups($items, $args)
     {
-        if (!Settings_Helper::is_module_enabled()) {
-            return $items;
-        }
-
         $processed_items = array();
-        $settings = Settings_Helper::get_all_settings();
 
         foreach ($items as $item) {
             $is_group = get_post_meta($item->ID, '_menu_item_group', true);
 
             if ($is_group) {
-                // This is a group
-                $group_style = get_post_meta($item->ID, '_menu_item_group_style', true);
-                if (empty($group_style)) {
-                    $group_style = $settings['heading_style'];
-                }
-
-                // Modify the item for group display
+                // This is a group - modify the item for group display
                 $item->url = '';
                 $item->classes[] = 'menu-group';
-                $item->classes[] = 'menu-group--' . $group_style;
-
-                // Add custom classes if defined
-                if (!empty($settings['custom_classes'])) {
-                    $custom_classes = explode(' ', $settings['custom_classes']);
-                    $item->classes = array_merge($item->classes, $custom_classes);
-                }
 
                 // Mark as group for CSS/JS targeting
                 $item->is_group = true;
@@ -207,20 +168,6 @@ class Group_Manager
                 $item->xfn = '';
 
                 $processed_items[] = $item;
-
-                // Add separator if enabled
-                if ($settings['show_separators'] && count($processed_items) > 1) {
-                    $separator = clone $item;
-                    $separator->title = '';
-                    $separator->url = '';
-                    $separator->classes = array('menu-group-separator');
-                    $separator->is_group_separator = true;
-                    $separator->target = '';
-                    $separator->xfn = '';
-
-                    // Insert separator before group
-                    array_splice($processed_items, -1, 0, array($separator));
-                }
             } else {
                 // Regular menu item
                 $processed_items[] = $item;

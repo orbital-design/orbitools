@@ -14,7 +14,6 @@
 namespace Orbitools\Modules\Menu_Groups;
 
 use Orbitools\Modules\Menu_Groups\Admin\Admin;
-use Orbitools\Modules\Menu_Groups\Admin\Settings;
 use Orbitools\Modules\Menu_Groups\Core\Group_Manager;
 
 // Prevent direct access
@@ -89,9 +88,6 @@ class Menu_Groups
 
         // Always initialize admin functionality for module registration
         $this->admin = new Admin();
-        
-        // Initialize Settings class for AJAX handlers
-        Settings::init();
 
         // Always initialize group manager for functionality
         $this->group_manager = new Group_Manager();
@@ -99,10 +95,8 @@ class Menu_Groups
         // Always setup admin menu hooks for configuration
         $this->setup_admin_hooks();
 
-        // Only initialize frontend functionality if module is enabled
-        if ($this->admin->is_module_enabled()) {
-            $this->init_frontend_functionality();
-        }
+        // Initialize frontend functionality (module is always enabled now)
+        $this->init_frontend_functionality();
 
         self::$initialized = true;
     }
@@ -129,7 +123,6 @@ class Menu_Groups
     {
         // Add custom meta box for group headings
         add_action('admin_init', array($this->group_manager, 'add_group_meta_box'));
-        add_action('wp_update_nav_menu_item', array($this->group_manager, 'save_group_fields'), 10, 3);
         
         // Setup group menu items (for type label)
         add_filter('wp_setup_nav_menu_item', array($this->group_manager, 'setup_group_menu_item'));
