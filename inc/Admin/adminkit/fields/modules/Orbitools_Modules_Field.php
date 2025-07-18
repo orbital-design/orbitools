@@ -104,11 +104,11 @@ class Orbitools_Modules_Field extends Orbitools\AdminKit\Field_Base
 
         // Add config URLs to each module (only if not already provided)
         foreach ($modules as $module_id => &$module) {
-            if (isset($module['configure_url'])) {
+            if (array_key_exists('configure_url', $module)) {
                 // Use the configure_url provided by the module (even if null or empty)
                 $module['config_url'] = $module['configure_url'];
             } elseif (empty($module['config_url'])) {
-                // Generate default config URL only if no configure_url is set
+                // Generate default config URL only if no configure_url key is set
                 $module['config_url'] = $this->get_module_config_url($module_id);
             }
         }
