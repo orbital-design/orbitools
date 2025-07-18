@@ -6,6 +6,7 @@ use Orbitools\Admin\Admin;
 use Orbitools\Updater\Updater;
 use Orbitools\Modules\Typography_Presets\Typography_Presets;
 use Orbitools\Modules\Layout_Guides\Layout_Guides;
+use Orbitools\Modules\Menu_Groups\Menu_Groups;
 
 /**
  * Class Loader
@@ -54,5 +55,6 @@ class Loader
         // Initialize modules.
         $this->modules[] = new Typography_Presets();
         $this->modules[] = new Layout_Guides();
+        $this->modules[] = new Menu_Groups();
     }
 }
