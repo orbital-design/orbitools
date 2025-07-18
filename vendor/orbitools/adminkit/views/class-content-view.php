@@ -54,13 +54,13 @@ class Content_View
         $settings = $this->admin_kit->get_content_fields();
 
 ?>
-<form method="post" action="<?php echo esc_url(admin_url('admin-ajax.php')); ?>" class="orbi-admin__settings-form"
-    id="orbi-settings-form">
-    <?php $this->render_form_fields(); ?>
-    <?php $this->render_tabs($tabs, $active_tab, $settings); ?>
-    <?php submit_button('Save Settings'); ?>
-</form>
-<?php
+        <form method="post" action="<?php echo esc_url(admin_url('admin-ajax.php')); ?>" class="orbi-admin__settings-form"
+            id="orbi-settings-form">
+            <?php $this->render_form_fields(); ?>
+            <?php $this->render_tabs($tabs, $active_tab, $settings); ?>
+            <?php submit_button('Save Settings'); ?>
+        </form>
+    <?php
     }
 
     /**
@@ -72,10 +72,10 @@ class Content_View
     {
         wp_nonce_field('orbitools_adminkit_' . $this->admin_kit->get_slug(), 'orbi_nonce');
     ?>
-<input type="hidden" name="action"
-    value="orbitools_adminkit_save_settings_<?php echo esc_attr($this->admin_kit->get_slug()); ?>">
-<input type="hidden" name="slug" value="<?php echo esc_attr($this->admin_kit->get_slug()); ?>">
-<?php
+        <input type="hidden" name="action"
+            value="orbitools_adminkit_save_settings_<?php echo esc_attr($this->admin_kit->get_slug()); ?>">
+        <input type="hidden" name="slug" value="<?php echo esc_attr($this->admin_kit->get_slug()); ?>">
+        <?php
     }
 
     /**
@@ -91,14 +91,14 @@ class Content_View
         foreach ($tabs as $tab_key => $tab_title) {
             $is_active = $active_tab === $tab_key;
         ?>
-<div class="adminkit-content__page" data-page="<?php echo esc_attr($tab_key); ?>"
-    aria-labelledby="<?php echo esc_attr('adminkit-nav-' . $tab_key); ?>"
-    style="<?php echo $is_active ? 'display: block;' : 'display: none;'; ?>">
+            <div class="adminkit-content__page" data-page="<?php echo esc_attr($tab_key); ?>"
+                aria-labelledby="<?php echo esc_attr('adminkit-nav-' . $tab_key); ?>"
+                style="<?php echo $is_active ? 'display: block;' : 'display: none;'; ?>">
 
-    <?php $this->render_tab_content_sections($tab_key, $settings); ?>
-    <?php do_action($this->admin_kit->get_func_slug() . '_render_tab_content', $tab_key); ?>
-</div>
-<?php
+                <?php $this->render_tab_content_sections($tab_key, $settings); ?>
+                <?php do_action($this->admin_kit->get_func_slug() . '_render_tab_content', $tab_key); ?>
+            </div>
+        <?php
         }
     }
 
@@ -141,10 +141,10 @@ class Content_View
             return;
         }
         ?>
-<div class="orbi-admin__section-fields">
-    <?php $this->render_fields($settings[$tab_key]); ?>
-</div>
-<?php
+        <div class="adminkit-content__fields">
+            <?php $this->render_fields($settings[$tab_key]); ?>
+        </div>
+    <?php
     }
 
     /**
@@ -159,33 +159,32 @@ class Content_View
     private function render_sections_with_navigation($tab_key, $sections, $active_section, $settings)
     {
     ?>
-<div class="orbi-admin__subtabs-wrapper">
-    <nav class="orbi-admin__subtabs-nav">
-        <?php foreach ($sections as $section_key => $section_title): ?>
-        <?php
-                    $is_active = $active_section === $section_key;
-                    $classes = array('orbi-admin__subtab-link');
-                    if ($is_active) $classes[] = 'orbi-admin__subtab-link--active';
-                    ?>
-        <a href="#" class="<?php echo esc_attr(implode(' ', $classes)); ?>"
-            data-section="<?php echo esc_attr($section_key); ?>" role="tab"
-            aria-selected="<?php echo $is_active ? 'true' : 'false'; ?>"
-            id="orbi-subtab-<?php echo esc_attr($section_key); ?>">
-            <?php echo esc_html($section_title); ?>
-        </a>
-        <?php endforeach; ?>
-    </nav>
-</div>
+        <nav class="adminkit-content__sub-tabs">
+            <?php foreach ($sections as $section_key => $section_title): ?>
+                <?php
+                $is_active = $active_section === $section_key;
+                $classes = array('adminkit-content__sub-link');
+                if ($is_active) $classes[] = 'adminkit-content__sub-link--active';
+                ?>
+                <a href="#" class="<?php echo esc_attr(implode(' ', $classes)); ?>"
+                    data-section="<?php echo esc_attr($section_key); ?>" role="tab"
+                    aria-selected="<?php echo $is_active ? 'true' : 'false'; ?>"
+                    id="adminkit-subtab-<?php echo esc_attr($section_key); ?>">
+                    <?php echo esc_html($section_title); ?>
+                </a>
+            <?php endforeach; ?>
+        </nav>
 
-<?php foreach ($sections as $section_key => $section_title): ?>
-<?php $is_active = $active_section === $section_key; ?>
-<div class="orbi-admin__section-content" data-section="<?php echo esc_attr($section_key); ?>"
-    aria-labelledby="orbi-subtab-<?php echo esc_attr($section_key); ?>"
-    style="<?php echo $is_active ? 'display: block;' : 'display: none;'; ?>">
-    <?php $this->render_section_content($tab_key, $section_key, $section_title, $settings); ?>
-</div>
-<?php endforeach; ?>
-<?php
+
+        <?php foreach ($sections as $section_key => $section_title): ?>
+            <?php $is_active = $active_section === $section_key; ?>
+            <div class="adminkit-content__sub-content" data-section="<?php echo esc_attr($section_key); ?>"
+                aria-labelledby="adminkit-subtab-<?php echo esc_attr($section_key); ?>"
+                style="<?php echo $is_active ? 'display: block;' : 'display: none;'; ?>">
+                <?php $this->render_section_content($tab_key, $section_key, $section_title, $settings); ?>
+            </div>
+        <?php endforeach; ?>
+        <?php
     }
 
     /**
@@ -200,11 +199,11 @@ class Content_View
     {
         foreach ($sections as $section_key => $section_title) {
         ?>
-<div class="orbi-admin__section-card" data-section="<?php echo esc_attr($section_key); ?>">
-    <h3 class="orbi-admin__section-title"><?php echo esc_html($section_title); ?></h3>
-    <?php $this->render_section_content($tab_key, $section_key, $section_title, $settings); ?>
-</div>
-<?php
+            <div class="adminkit-content__section" data-section="<?php echo esc_attr($section_key); ?>">
+                <h3 class="adminkit-content__section-title"><?php echo esc_html($section_title); ?></h3>
+                <?php $this->render_section_content($tab_key, $section_key, $section_title, $settings); ?>
+            </div>
+        <?php
         }
     }
 
@@ -233,10 +232,10 @@ class Content_View
             return;
         }
         ?>
-<div class="orbi-admin__section-fields">
-    <?php $this->render_fields($section_fields); ?>
-</div>
-<?php
+        <div class="adminkit-content__fields">
+            <?php $this->render_fields($section_fields); ?>
+        </div>
+    <?php
     }
 
     /**
@@ -262,28 +261,28 @@ class Content_View
     private function render_no_fields_message($section_title = '')
     {
     ?>
-<div class="orbi-admin__no-fields-message">
-    <div class="orbi-admin__no-fields-icon">
-        <span class="dashicons dashicons-admin-settings"></span>
-    </div>
-    <h4>No fields configured</h4>
-    <p>
-        <?php if ($section_title): ?>
-        No fields have been added to the "<?php echo esc_html($section_title); ?>" section yet.
-        <?php else: ?>
-        No fields have been configured for this section yet.
-        <?php endif; ?>
-    </p>
-    <p class="orbi-admin__no-fields-help">
-        <strong>For developers:</strong> Add fields using the
-        <code><?php echo esc_html($this->admin_kit->get_func_slug()); ?>_adminkit_fields</code> filter.
-        <?php if ($section_title): ?>
-        Make sure to set
-        <code>'section' => '<?php echo esc_attr(strtolower(str_replace(' ', '_', $section_title))); ?>'</code> on your
-        field definitions.
-        <?php endif; ?>
-    </p>
-</div>
+        <div class="orbi-admin__no-fields-message">
+            <div class="orbi-admin__no-fields-icon">
+                <span class="dashicons dashicons-admin-settings"></span>
+            </div>
+            <h4>No fields configured</h4>
+            <p>
+                <?php if ($section_title): ?>
+                    No fields have been added to the "<?php echo esc_html($section_title); ?>" section yet.
+                <?php else: ?>
+                    No fields have been configured for this section yet.
+                <?php endif; ?>
+            </p>
+            <p class="orbi-admin__no-fields-help">
+                <strong>For developers:</strong> Add fields using the
+                <code><?php echo esc_html($this->admin_kit->get_func_slug()); ?>_adminkit_fields</code> filter.
+                <?php if ($section_title): ?>
+                    Make sure to set
+                    <code>'section' => '<?php echo esc_attr(strtolower(str_replace(' ', '_', $section_title))); ?>'</code> on your
+                    field definitions.
+                <?php endif; ?>
+            </p>
+        </div>
 <?php
     }
 }

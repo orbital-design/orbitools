@@ -254,18 +254,14 @@
    SUB-TABS (SECTIONS) (BEM)
    ============================================================================= */
 
-.orbi-admin__subtabs-wrapper {
-    margin-bottom: 30px;
-    border-bottom: 1px solid #e5e5e5;
-}
 
-.orbi-admin__subtabs-nav {
+.adminkit-content__sub-tabs {
     display: flex;
     margin: 0;
     padding: 0;
 }
 
-.orbi-admin__subtab-link {
+.adminkit-content__sub-link {
     background: none;
     border: none;
     border-bottom: 2px solid transparent;
@@ -282,24 +278,24 @@
     position: relative;
 }
 
-.orbi-admin__subtab-link:hover {
+.adminkit-content__sub-link:hover {
     color: #2271b1;
     background: rgba(34, 113, 177, 0.04);
 }
 
-.orbi-admin__subtab-link--active {
+.adminkit-content__sub-link--active {
     color: #2271b1;
     border-bottom-color: #2271b1;
     background: none;
 }
 
-.orbi-admin__subtab-link:focus {
+.adminkit-content__sub-link:focus {
     box-shadow: none;
     outline: 1px solid #2271b1;
     outline-offset: -1px;
 }
 
-.orbi-admin__section-content {
+.adminkit-content__sub-content {
     padding: 20px 0;
 }
 
@@ -319,7 +315,7 @@
     padding-bottom: 0;
 }
 
-.orbi-admin__section-title {
+.adminkit-content__section-title {
     font-size: 18px;
     font-weight: var(--orb-fw-bold);
     color: #1d2327;
@@ -328,7 +324,7 @@
     border-bottom: 2px solid #f0f0f1;
 }
 
-.orbi-admin__section-fields {
+.adminkit-content__fields {
     display: grid;
     gap: 20px;
 }
@@ -337,7 +333,7 @@
    SECTION CARDS (for card display mode) (BEM)
    ============================================================================= */
 
-.orbi-admin__section-card {
+.adminkit-content__section {
     background: #fff;
     border: 1px solid #e5e5e5;
     border-radius: 6px;
@@ -346,11 +342,11 @@
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
 }
 
-.orbi-admin__section-card:last-child {
+.adminkit-content__section:last-child {
     margin-bottom: 0;
 }
 
-.orbi-admin__section-card .orbi-admin__section-title {
+.adminkit-content__section .adminkit-content__section-title {
     margin-top: 0;
     margin-bottom: 25px;
     padding-bottom: 15px;
@@ -360,7 +356,7 @@
     color: #1d2327;
 }
 
-.orbi-admin__section-card .orbi-admin__section-fields {
+.adminkit-content__section .adminkit-content__fields {
     display: grid;
     gap: 20px;
 }
@@ -922,7 +918,7 @@
         font-size: 13px;
     }
 
-    .orbi-admin__section-fields {
+    .adminkit-content__fields {
         gap: 16px;
     }
 }
@@ -932,7 +928,7 @@
         font-size: 20px;
     }
 
-    .orbi-admin__section-title {
+    .adminkit-content__section-title {
         font-size: 16px;
     }
 

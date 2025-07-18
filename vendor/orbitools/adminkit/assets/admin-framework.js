@@ -27,7 +27,7 @@
          */
         bindEvents: function() {
             // Sub-tab switching (main tab switching is handled in the global event listener)
-            this.addEventListener('.orbi-admin__subtab-link', 'click', this.handleSubTabSwitch.bind(this));
+            this.addEventListener('.adminkit-content__sub-link', 'click', this.handleSubTabSwitch.bind(this));
         },
 
         /**
@@ -92,8 +92,8 @@
          * @returns {string|null} The active section key, or null if no sections
          */
         initSubTabsForTab: function(tabContent) {
-            const subTabLinks = tabContent.querySelectorAll('.orbi-admin__subtab-link');
-            const sectionContents = tabContent.querySelectorAll('.orbi-admin__section-content');
+            const subTabLinks = tabContent.querySelectorAll('.adminkit-content__sub-link');
+            const sectionContents = tabContent.querySelectorAll('.adminkit-content__sub-content');
 
             if (subTabLinks.length === 0) return null; // No sub-tabs in this tab
 
@@ -107,7 +107,7 @@
 
             if (urlSection) {
                 // Try to find the sub-tab with the URL section (deep linking)
-                activeSubTab = tabContent.querySelector('.orbi-admin__subtab-link[data-section="' + urlSection + '"]');
+                activeSubTab = tabContent.querySelector('.adminkit-content__sub-link[data-section="' + urlSection + '"]');
                 if (activeSubTab) {
                     activeSectionKey = urlSection;
                 }
@@ -122,13 +122,13 @@
             if (!activeSubTab) return null;
 
             // Update sub-tab active states
-            subTabLinks.forEach(subTabLink => subTabLink.classList.remove('orbi-admin__subtab-link--active'));
-            activeSubTab.classList.add('orbi-admin__subtab-link--active');
+            subTabLinks.forEach(subTabLink => subTabLink.classList.remove('adminkit-content__sub-link--active'));
+            activeSubTab.classList.add('adminkit-content__sub-link--active');
 
             // Update section content visibility
             sectionContents.forEach(content => content.style.display = 'none');
 
-            const activeContent = tabContent.querySelector('.orbi-admin__section-content[data-section="' + activeSectionKey + '"]');
+            const activeContent = tabContent.querySelector('.adminkit-content__sub-content[data-section="' + activeSectionKey + '"]');
             if (activeContent) {
                 activeContent.style.display = 'block';
             }
@@ -151,15 +151,15 @@
             if (!activeTabContent) return;
 
             // Update active states for sub-tabs within the active tab only
-            const subTabLinks = activeTabContent.querySelectorAll('.orbi-admin__subtab-link');
-            subTabLinks.forEach(subTabLink => subTabLink.classList.remove('orbi-admin__subtab-link--active'));
-            link.classList.add('orbi-admin__subtab-link--active');
+            const subTabLinks = activeTabContent.querySelectorAll('.adminkit-content__sub-link');
+            subTabLinks.forEach(subTabLink => subTabLink.classList.remove('adminkit-content__sub-link--active'));
+            link.classList.add('adminkit-content__sub-link--active');
 
             // Switch section content within the active tab only
-            const sectionContents = activeTabContent.querySelectorAll('.orbi-admin__section-content');
+            const sectionContents = activeTabContent.querySelectorAll('.adminkit-content__sub-content');
             sectionContents.forEach(content => content.style.display = 'none');
 
-            const activeContent = activeTabContent.querySelector('.orbi-admin__section-content[data-section="' + sectionKey + '"]');
+            const activeContent = activeTabContent.querySelector('.adminkit-content__sub-content[data-section="' + sectionKey + '"]');
             if (activeContent) {
                 activeContent.style.display = 'block';
             }
@@ -395,7 +395,7 @@
             if (!tabContent) return sectionData;
 
             // Get section links within this tab
-            const sectionLinks = tabContent.querySelectorAll('.orbi-admin__subtab-link');
+            const sectionLinks = tabContent.querySelectorAll('.adminkit-content__sub-link');
 
             sectionLinks.forEach(function(link) {
                 const sectionKey = link.getAttribute('data-section');

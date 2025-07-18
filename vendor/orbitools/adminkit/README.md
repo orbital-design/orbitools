@@ -812,17 +812,17 @@ The framework uses BEM (Block Element Modifier) methodology for CSS classes:
 .orbi-admin__tab-link           /* Individual tab link */
 .orbi-admin__tab-link--active   /* Active tab */
 .orbi-admin__subtabs            /* Sub-tab navigation */
-.orbi-admin__subtab-link        /* Sub-tab link */
-.orbi-admin__subtab-link--active /* Active sub-tab */
+.adminkit-content__sub-link        /* Sub-tab link */
+.adminkit-content__sub-link--active /* Active sub-tab */
 ```
 
 #### Content Classes
 ```css
-.orbi-admin__section-card       /* Section card (cards mode) */
+.adminkit-content__section       /* Section card (cards mode) */
 .orbi-admin__section-header     /* Section header */
-.orbi-admin__section-title      /* Section title */
-.orbi-admin__section-fields     /* Fields container */
-.orbi-admin__section-content    /* Section content */
+.adminkit-content__section-title      /* Section title */
+.adminkit-content__fields     /* Fields container */
+.adminkit-content__sub-content    /* Section content */
 ```
 
 #### Field Classes
