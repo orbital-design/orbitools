@@ -139,7 +139,7 @@ class Header_View
     private function render_nav_item($tab_key, $tab_label, $active_tab)
     {
         $is_active = $active_tab === $tab_key;
-        $classes = array('adminkit-nav__item', 'adminkit-nav__item--tab');
+        $classes = array('adminkit-nav__item');
         
         if ($is_active) {
             $classes[] = 'adminkit-nav__item--active';

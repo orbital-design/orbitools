@@ -17,10 +17,8 @@
          * Initialize the framework
          */
         init: function() {
-            console.log('AdminKit initializing...');
             this.bindEvents();
             this.initTabs();
-            console.log('AdminKit initialized');
         },
 
 
@@ -96,8 +94,6 @@
         initSubTabsForTab: function(tabContent) {
             const subTabLinks = tabContent.querySelectorAll('.orbi-admin__subtab-link');
             const sectionContents = tabContent.querySelectorAll('.orbi-admin__section-content');
-
-            console.log('Initializing sub-tabs:', subTabLinks.length, 'links found');
             
             if (subTabLinks.length === 0) return null; // No sub-tabs in this tab
 
@@ -148,7 +144,6 @@
             e.preventDefault();
 
             const sectionKey = link.getAttribute('data-section');
-            console.log('Sub-tab clicked:', sectionKey);
 
             // Find the current active tab to scope the sub-tab switching
             const currentTab = this.getActiveTab();
@@ -463,14 +458,9 @@
      * Initialize when DOM is ready
      */
     function initFramework() {
-        console.log('AdminKit script loaded');
-        
         // Only initialize on admin framework pages
         if (document.querySelector('.adminkit')) {
-            console.log('Found .adminkit element, initializing...');
             OrbitoolsAdminKit.init();
-        } else {
-            console.log('No .adminkit element found');
         }
         
         // Simple tab switching for adminkit navigation
