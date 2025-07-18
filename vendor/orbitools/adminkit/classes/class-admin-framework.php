@@ -343,10 +343,17 @@ class Admin_Kit
      */
     public function admin_footer_text($text)
     {
-        // Only modify footer on our admin pages
-        $screen = get_current_screen();
-        if (!$screen || strpos($screen->id, $this->slug) === false) {
-            return $text;
+        // Only modify footer on our admin pages - use Instance Registry for accurate detection
+        if (class_exists('Orbitools\AdminKit\Instance_Registry')) {
+            if (!Instance_Registry::is_instance_page($this->slug)) {
+                return $text;
+            }
+        } else {
+            // Fallback to original method
+            $screen = get_current_screen();
+            if (!$screen || strpos($screen->id, $this->slug) === false) {
+                return $text;
+            }
         }
 
         return sprintf(
@@ -520,9 +527,16 @@ class Admin_Kit
      */
     public function enqueue_assets($hook_suffix)
     {
-        // Only enqueue on our admin page
-        if (strpos($hook_suffix, $this->slug) === false) {
-            return;
+        // Only enqueue on our admin page - use Instance Registry for accurate detection
+        if (class_exists('Orbitools\AdminKit\Instance_Registry')) {
+            if (!Instance_Registry::is_instance_page($this->slug)) {
+                return;
+            }
+        } else {
+            // Fallback to original method
+            if (strpos($hook_suffix, $this->slug) === false) {
+                return;
+            }
         }
 
         // Enqueue styles

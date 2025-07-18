@@ -134,6 +134,7 @@ class AdminKit_Loader
         $classMap = [
             'Field_Base' => 'fields/class-field-base.php',
             'Field_Registry' => 'classes/class-field-registry.php',
+            'Instance_Registry' => 'classes/class-instance-registry.php',
             'Views\\Header_View' => 'views/class-header-view.php',
             'Views\\Navigation_View' => 'views/class-navigation-view.php',
             'Views\\Content_View' => 'views/class-content-view.php',
@@ -153,6 +154,7 @@ class AdminKit_Loader
         $coreFiles = [
             'fields/class-field-base.php',
             'classes/class-field-registry.php',
+            'classes/class-instance-registry.php',
         ];
 
         foreach ($coreFiles as $file) {
@@ -188,9 +190,10 @@ function AdminKit_load()
 }
 
 /**
- * Create a new admin framework instance
+ * Get or create an admin framework instance
  *
- * Convenience function for creating framework instances.
+ * Convenience function for creating/retrieving framework instances.
+ * Uses registry to ensure single instance per slug.
  *
  * @since 1.0.0
  * @param string $slug Unique slug for the admin page.
@@ -207,6 +210,92 @@ function AdminKit($slug)
         return null;
     }
     
-    return new Orbitools\AdminKit\Admin_Kit($slug);
+    // Check if instance already exists in registry
+    $existing = Orbitools\AdminKit\Instance_Registry::get_instance($slug);
+    if ($existing) {
+        return $existing;
+    }
+    
+    // Create new instance and register it
+    $instance = new Orbitools\AdminKit\Admin_Kit($slug);
+    Orbitools\AdminKit\Instance_Registry::register_instance($slug, $instance);
+    
+    return $instance;
+}
+
+/**
+ * Check if current page is owned by a specific AdminKit instance
+ *
+ * @since 1.0.0
+ * @param string $slug The instance slug to check.
+ * @return bool True if the instance owns the current page.
+ */
+function AdminKit_is_instance_page($slug)
+{
+    if (!AdminKit_load()) {
+        return false;
+    }
+    
+    return Orbitools\AdminKit\Instance_Registry::is_instance_page($slug);
+}
+
+/**
+ * Check if current page is owned by any AdminKit instance
+ *
+ * @since 1.0.0
+ * @return bool True if any AdminKit instance owns the current page.
+ */
+function AdminKit_is_page()
+{
+    if (!AdminKit_load()) {
+        return false;
+    }
+    
+    return Orbitools\AdminKit\Instance_Registry::is_adminkit_page();
+}
+
+/**
+ * Get the active AdminKit instance for the current page
+ *
+ * @since 1.0.0
+ * @return Orbitools\AdminKit\Admin_Kit|null The active instance or null.
+ */
+function AdminKit_get_active()
+{
+    if (!AdminKit_load()) {
+        return null;
+    }
+    
+    return Orbitools\AdminKit\Instance_Registry::get_active_instance();
+}
+
+/**
+ * Get the slug of the AdminKit instance that owns the current page
+ *
+ * @since 1.0.0
+ * @return string|null The owning instance slug or null if none.
+ */
+function AdminKit_get_page_owner()
+{
+    if (!AdminKit_load()) {
+        return null;
+    }
+    
+    return Orbitools\AdminKit\Instance_Registry::get_page_owner();
+}
+
+/**
+ * Get all registered AdminKit instances
+ *
+ * @since 1.0.0
+ * @return array Array of slug => instance pairs.
+ */
+function AdminKit_get_all_instances()
+{
+    if (!AdminKit_load()) {
+        return array();
+    }
+    
+    return Orbitools\AdminKit\Instance_Registry::get_all_instances();
 }
 

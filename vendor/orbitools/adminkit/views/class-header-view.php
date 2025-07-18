@@ -62,11 +62,20 @@ class Header_View
     /**
      * Check if header should be rendered on current screen
      *
+     * Uses Instance Registry to determine if this AdminKit instance
+     * owns the current page and should render its header.
+     *
      * @since 1.0.0
      * @return bool
      */
     private function should_render_header()
     {
+        // Use Instance Registry for more accurate detection
+        if (class_exists('Orbitools\AdminKit\Instance_Registry')) {
+            return \Orbitools\AdminKit\Instance_Registry::is_instance_page($this->admin_kit->get_slug());
+        }
+        
+        // Fallback to original method if registry not available
         $screen = get_current_screen();
         return $screen && strpos($screen->id, $this->admin_kit->get_slug()) !== false;
     }
