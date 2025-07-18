@@ -272,7 +272,7 @@ class Admin_Kit
         if (isset($config['menu_type']) && !in_array($config['menu_type'], array('menu', 'submenu'))) {
             $config['menu_type'] = 'submenu'; // Default to submenu if invalid
         }
-        
+
         $this->menu_config = array_merge($this->menu_config, $config);
     }
 
@@ -492,7 +492,7 @@ class Admin_Kit
     public function add_admin_page()
     {
         $menu_type = isset($this->menu_config['menu_type']) ? $this->menu_config['menu_type'] : 'submenu';
-        
+
         if ($menu_type === 'menu') {
             // Add top-level menu page
             add_menu_page(
@@ -507,7 +507,7 @@ class Admin_Kit
         } else {
             // Add submenu page (default behavior)
             $parent = isset($this->menu_config['parent']) ? $this->menu_config['parent'] : 'options-general.php';
-            
+
             add_submenu_page(
                 $parent,
                 $this->page_title,
@@ -556,7 +556,17 @@ class Admin_Kit
             true
         );
 
-        // Localize script
+        // Get page info from Instance Registry
+        $page_info = array(
+            'is_child' => false,
+            'owner' => null,
+        );
+
+        if (class_exists('Orbitools\AdminKit\Instance_Registry')) {
+            $page_info = Instance_Registry::get_page_info();
+        }
+
+        // Localize script with page info
         wp_localize_script('orbitools-adminkit', 'orbitoolsAdminKit', array(
             'slug' => $this->slug,
             'nonce' => wp_create_nonce('orbitools_adminkit_' . $this->slug),
@@ -567,6 +577,9 @@ class Admin_Kit
                 'error' => __('Error saving settings. Please try again.', 'orbitools-adminkit'),
             )
         ));
+
+        // Add page info for child page detection
+        wp_localize_script('orbitools-adminkit', 'adminkit_page_info', $page_info);
 
         // Hook for additional assets
         do_action($this->func_slug . '_enqueue_assets', $hook_suffix);
@@ -980,16 +993,16 @@ class Admin_Kit
         }
 
 ?>
-        <div class="<?php echo esc_attr(implode(' ', array_filter($css_classes))); ?>"
-            data-field-id="<?php echo esc_attr($field['id']); ?>" data-field-type="<?php echo esc_attr($field['type']); ?>">
-            <?php
+<div class="<?php echo esc_attr(implode(' ', array_filter($css_classes))); ?>"
+    data-field-id="<?php echo esc_attr($field['id']); ?>" data-field-type="<?php echo esc_attr($field['type']); ?>">
+    <?php
             if ($field_instance) {
                 // Enqueue field-specific assets
                 Field_Registry::enqueue_field_assets($field_instance);
 
             ?>
-                <div class="field__wrapper">
-                    <?php
+    <div class="field__wrapper">
+        <?php
                     // For simple fields (text, etc.), render label then input
                     if (! isset($field['options']) || ! is_array($field['options'])) {
                         $field_instance->render_label();
@@ -1004,14 +1017,14 @@ class Admin_Kit
                     // Always render description at the end
                     $field_instance->render_description();
                     ?>
-                </div>
-            <?php
+    </div>
+    <?php
             } else {
                 // Fallback for unregistered field types
                 echo '<p class="field__error">Unknown field type: ' . esc_html($field['type']) . '</p>';
             }
             ?>
-        </div>
+</div>
 <?php
     }
 

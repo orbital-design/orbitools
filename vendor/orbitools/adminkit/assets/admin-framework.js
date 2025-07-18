@@ -21,14 +21,12 @@
             this.initTabs();
         },
 
+
         /**
          * Bind event handlers
          */
         bindEvents: function() {
-            // Tab switching
-            this.addEventListener('.orbi-admin__tab-link', 'click', this.handleTabSwitch.bind(this));
-
-            // Sub-tab switching
+            // Sub-tab switching (main tab switching is handled in the global event listener)
             this.addEventListener('.orbi-admin__subtab-link', 'click', this.handleSubTabSwitch.bind(this));
         },
 
@@ -73,51 +71,6 @@
 
 
 
-        /**
-         * Handle tab switching
-         */
-        handleTabSwitch: function(e, link) {
-            // Always prevent default for tab links
-            e.preventDefault();
-
-            const tabKey = link.getAttribute('data-tab');
-
-            // Update active states
-            const allTabLinks = document.querySelectorAll('.orbi-admin__tab-link');
-            allTabLinks.forEach(tabLink => tabLink.classList.remove('orbi-admin__tab-link--active'));
-            link.classList.add('orbi-admin__tab-link--active');
-
-            // Switch tab content
-            const allTabContent = document.querySelectorAll('.orbi-admin__tab-content');
-            allTabContent.forEach(content => content.style.display = 'none');
-
-            const activeContent = document.querySelector('.orbi-admin__tab-content[data-tab="' + tabKey + '"]');
-            if (activeContent) {
-                activeContent.style.display = 'block';
-
-                // Initialize sub-tabs for this tab first
-                const activeSection = this.initSubTabsForTab(activeContent);
-
-                // Update breadcrumbs with the active section (if any)
-                this.updateBreadcrumbs(tabKey, activeSection);
-            }
-
-            // Update URL without page reload for shareable links
-            // Creates URLs like: ?page=your-page&tab=tab-key
-            if (history.pushState) {
-                const url = new URL(window.location);
-                url.searchParams.set('tab', tabKey);
-                // Clear section when switching tabs (will default to first section)
-                url.searchParams.delete('section');
-                history.pushState(null, '', url.toString());
-            }
-
-            // Trigger custom event
-            const event = new CustomEvent('orbital:tabChanged', {
-                detail: { tabKey: tabKey }
-            });
-            document.dispatchEvent(event);
-        },
 
         /**
          * Initialize sub-tabs for a specific tab content
@@ -415,7 +368,7 @@
          */
         getTabData: function() {
             const tabData = {};
-            const tabLinks = document.querySelectorAll('.orbi-admin__tab-link');
+            const tabLinks = document.querySelectorAll('.adminkit-nav__item--tab');
 
             tabLinks.forEach(function(link) {
                 const tabKey = link.getAttribute('data-tab');
@@ -464,7 +417,7 @@
 
             if (urlTab) return urlTab;
 
-            const activeLink = document.querySelector('.orbi-admin__tab-link--active');
+            const activeLink = document.querySelector('.adminkit-nav__item--active');
             return activeLink ? activeLink.getAttribute('data-tab') : '';
         },
 
@@ -510,26 +463,41 @@
             OrbitoolsAdminKit.init();
         }
         
-        // Direct tab click handler
+        // Tab switching for adminkit-nav__item--tab elements only
         document.addEventListener('click', function(e) {
-            if (e.target.matches('.orbi-admin__tab-link') || e.target.closest('.orbi-admin__tab-link')) {
-                e.preventDefault();
-                const link = e.target.matches('.orbi-admin__tab-link') ? e.target : e.target.closest('.orbi-admin__tab-link');
+            if (e.target.matches('.adminkit-nav__item--tab') || e.target.closest('.adminkit-nav__item--tab')) {
+                const link = e.target.matches('.adminkit-nav__item--tab') ? e.target : e.target.closest('.adminkit-nav__item--tab');
+                const tabKey = link.getAttribute('data-tab');
                 
-                if (window.OrbitoolsAdminKit && window.OrbitoolsAdminKit.handleTabSwitch) {
-                    window.OrbitoolsAdminKit.handleTabSwitch(e, link);
+                // Only proceed if we have a tab key (should always be true for --tab items)
+                if (tabKey) {
+                    e.preventDefault();
+                    
+                    // Update active states (only for --tab items)
+                    document.querySelectorAll('.adminkit-nav__item--tab').forEach(tabLink => {
+                        tabLink.classList.remove('adminkit-nav__item--active');
+                    });
+                    link.classList.add('adminkit-nav__item--active');
+
+                    // Switch tab content
+                    document.querySelectorAll('.orbi-admin__tab-content').forEach(content => {
+                        content.style.display = 'none';
+                    });
+                    
+                    const activeContent = document.querySelector('.orbi-admin__tab-content[data-tab="' + tabKey + '"]');
+                    if (activeContent) {
+                        activeContent.style.display = 'block';
+                    }
+
+                    // Update URL
+                    if (history.pushState) {
+                        const url = new URL(window.location);
+                        url.searchParams.set('tab', tabKey);
+                        history.pushState(null, '', url.toString());
+                    }
                 }
             }
-            
-            // Direct sub-tab click handler
-            if (e.target.matches('.orbi-admin__subtab-link') || e.target.closest('.orbi-admin__subtab-link')) {
-                e.preventDefault();
-                const link = e.target.matches('.orbi-admin__subtab-link') ? e.target : e.target.closest('.orbi-admin__subtab-link');
-                
-                if (window.OrbitoolsAdminKit && window.OrbitoolsAdminKit.handleSubTabSwitch) {
-                    window.OrbitoolsAdminKit.handleSubTabSwitch(e, link);
-                }
-            }
+            // adminkit-nav__item--link elements will use normal href navigation
         });
         
         // Direct form handler as backup

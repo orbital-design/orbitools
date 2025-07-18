@@ -251,13 +251,15 @@ class Instance_Registry
     public static function is_child_page(?string $parent_slug = null): bool
     {
         $screen = get_current_screen();
-        if (!$screen || !$screen->parent_file) {
+        if (!$screen) {
             return false;
         }
 
-        // Check if parent file matches any registered AdminKit instance
+        // Check if the screen ID indicates a child page
+        // Child pages have format: {parent_slug}_page_{child_slug}
         foreach (array_keys(self::$instances) as $slug) {
-            if (strpos($screen->parent_file, $slug) !== false) {
+            // Check if this is a child page of this AdminKit instance
+            if (preg_match('/^' . preg_quote($slug, '/') . '_page_(.+)$/', $screen->id, $matches)) {
                 if ($parent_slug) {
                     return $slug === $parent_slug;
                 }
