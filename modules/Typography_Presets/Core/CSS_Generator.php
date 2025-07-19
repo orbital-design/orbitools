@@ -231,7 +231,7 @@ class CSS_Generator
         }
 
         // Handle letter-spacing percentage values
-        if ($property === 'letter-spacing' && preg_match('/^(\d+(?:\.\d+)?)%$/', $value, $matches)) {
+        if ($property === 'letter-spacing' && preg_match('/^(-?\d+(?:\.\d+)?)%$/', $value, $matches)) {
             $percentage = floatval($matches[1]);
             $em_value = $percentage * 0.01;
             $value = $em_value . 'em';
