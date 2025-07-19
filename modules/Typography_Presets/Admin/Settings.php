@@ -296,16 +296,6 @@ class Settings
         $description = $preset['description'] ?? '';
         $properties = $preset['properties'] ?? array();
 
-        // Build inline styles from properties for the sample text
-        $inline_styles = array();
-        foreach ($properties as $property => $value) {
-            $css_property = self::sanitize_css_property($property);
-            if ($css_property) {
-                $inline_styles[] = $css_property . ': ' . esc_attr($value);
-            }
-        }
-        $style_attr = !empty($inline_styles) ? ' style="' . implode('; ', $inline_styles) . '"' : '';
-
         $class_name = 'has-type-preset-' . $id;
         $html = '<div class="preset-card" data-copy-text="' . esc_attr($class_name) . '" title="Click to copy class name">';
         $html .= '<div class="preset-card__inner">';
@@ -319,7 +309,7 @@ class Settings
         $html .= '</div>';
 
         $html .= '<div class="preset-card__preview">';
-        $html .= '<div class="preset-card__sample"' . $style_attr . '>';
+        $html .= '<div class="preset-card__sample ' . esc_attr($class_name) . '">';
         $html .= __('The quick brown fox jumps over the lazy dog', 'orbitools');
         $html .= '</div>';
         $html .= '</div>';
@@ -529,4 +519,5 @@ class Settings
             wp_send_json_error(array('message' => __('Failed to clear cache: ', 'orbitools') . $e->getMessage()));
         }
     }
+
 }
