@@ -961,6 +961,13 @@ class Admin_Kit
         // Create field instance using registry
         $field_instance = Field_Registry::create_field($field, $value, $this);
 
+        if (!$field_instance) {
+            // Fallback for unregistered field types
+            echo '<p class="field__error">Unknown field type: ' . esc_html($field['type']) . '</p>';
+            return;
+        }
+
+
         // Build CSS classes using BEM methodology
         $css_classes = array(
             'field',
@@ -986,15 +993,35 @@ class Admin_Kit
             $css_classes[] = 'field--disabled';
         }
 
-?>
-<div class="<?php echo esc_attr(implode(' ', array_filter($css_classes))); ?>"
-    data-field-id="<?php echo esc_attr($field['id']); ?>" data-field-type="<?php echo esc_attr($field['type']); ?>">
-    <?php
-            if ($field_instance) {
-                // Enqueue field-specific assets
-                Field_Registry::enqueue_field_assets($field_instance);
+        // Add conditional class if field has conditions
+        if ($field_instance->has_conditions()) {
+            $css_classes[] = 'field--conditional';
+        }
 
-            ?>
+        // Build data attributes
+        $data_attributes = array(
+            'data-field-id' => esc_attr($field['id']),
+            'data-field-type' => esc_attr($field['type'])
+        );
+
+        // Add conditional data attributes
+        if ($field_instance->has_conditions()) {
+            $conditional_attrs = $field_instance->get_conditional_data_attributes();
+            $data_attributes = array_merge($data_attributes, $conditional_attrs);
+        }
+
+        // Build data attributes string
+        $data_attr_string = '';
+        foreach ($data_attributes as $attr => $value) {
+            $data_attr_string .= ' ' . esc_attr($attr) . '="' . esc_attr($value) . '"';
+        }
+
+?>
+<div class="<?php echo esc_attr(implode(' ', array_filter($css_classes))); ?>"<?php echo $data_attr_string; ?>>
+    <?php
+        // Enqueue field-specific assets
+        Field_Registry::enqueue_field_assets($field_instance);
+        ?>
     <div class="field__wrapper">
         <?php
                     // For simple fields (text, etc.), render label then input
@@ -1012,12 +1039,6 @@ class Admin_Kit
                     $field_instance->render_description();
                     ?>
     </div>
-    <?php
-            } else {
-                // Fallback for unregistered field types
-                echo '<p class="field__error">Unknown field type: ' . esc_html($field['type']) . '</p>';
-            }
-            ?>
 </div>
 <?php
     }

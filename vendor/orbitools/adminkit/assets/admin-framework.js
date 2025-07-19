@@ -19,6 +19,7 @@
         init: function() {
             this.bindEvents();
             this.initTabs();
+            this.initConditionalFields();
         },
 
 
@@ -451,6 +452,186 @@
             }
 
             return true;
+        },
+
+        /**
+         * Initialize conditional fields functionality
+         */
+        initConditionalFields: function() {
+            const conditionalFields = document.querySelectorAll('.field--conditional[data-show-if]');
+            
+            if (conditionalFields.length === 0) return;
+
+            // Set up event listeners for all form fields
+            document.addEventListener('change', this.handleFieldChange.bind(this));
+            document.addEventListener('input', this.handleFieldChange.bind(this));
+
+            // Initial evaluation of all conditional fields
+            this.evaluateAllConditionalFields();
+        },
+
+        /**
+         * Handle field change events for conditional logic
+         */
+        handleFieldChange: function(e) {
+            const field = e.target;
+            
+            // Only process fields with settings[] names
+            if (!field.name || !field.name.startsWith('settings[')) {
+                return;
+            }
+
+            // Re-evaluate all conditional fields when any field changes
+            this.evaluateAllConditionalFields();
+        },
+
+        /**
+         * Evaluate all conditional fields
+         */
+        evaluateAllConditionalFields: function() {
+            const conditionalFields = document.querySelectorAll('.field--conditional[data-show-if]');
+            
+            conditionalFields.forEach(field => {
+                this.evaluateConditionalField(field);
+            });
+        },
+
+        /**
+         * Evaluate a single conditional field
+         */
+        evaluateConditionalField: function(fieldElement) {
+            try {
+                const conditionsData = JSON.parse(fieldElement.getAttribute('data-show-if'));
+                const shouldShow = this.evaluateConditions(conditionsData);
+                
+                if (shouldShow) {
+                    this.showField(fieldElement);
+                } else {
+                    this.hideField(fieldElement);
+                }
+            } catch (error) {
+                console.warn('Invalid conditional field data:', error);
+                // Show field by default if conditions are invalid
+                this.showField(fieldElement);
+            }
+        },
+
+        /**
+         * Evaluate conditions object
+         */
+        evaluateConditions: function(conditions) {
+            // Handle single condition vs array of conditions
+            let conditionsArray;
+            let relation = 'AND';
+
+            if (Array.isArray(conditions)) {
+                conditionsArray = conditions;
+            } else if (conditions.field) {
+                // Single condition object
+                conditionsArray = [conditions];
+            } else if (conditions.relation) {
+                // Multiple conditions with relation
+                relation = conditions.relation;
+                conditionsArray = Object.keys(conditions)
+                    .filter(key => key !== 'relation')
+                    .map(key => conditions[key])
+                    .filter(condition => condition && condition.field);
+            } else {
+                return true; // Invalid format, show by default
+            }
+
+            const results = conditionsArray.map(condition => this.evaluateSingleCondition(condition));
+
+            // Apply relation logic
+            if (relation === 'OR') {
+                return results.includes(true);
+            }
+
+            // Default to AND
+            return !results.includes(false);
+        },
+
+        /**
+         * Evaluate a single condition
+         */
+        evaluateSingleCondition: function(condition) {
+            const fieldId = condition.field;
+            const operator = condition.operator || '===';
+            const compareValue = condition.value;
+
+            const currentValue = this.getSetting(fieldId);
+
+            switch (operator) {
+                case '===':
+                    return currentValue === compareValue;
+
+                case '==':
+                    return currentValue == compareValue;
+
+                case '!==':
+                    return currentValue !== compareValue;
+
+                case '!=':
+                    return currentValue != compareValue;
+
+                case '>':
+                    return parseFloat(currentValue) > parseFloat(compareValue);
+
+                case '<':
+                    return parseFloat(currentValue) < parseFloat(compareValue);
+
+                case '>=':
+                    return parseFloat(currentValue) >= parseFloat(compareValue);
+
+                case '<=':
+                    return parseFloat(currentValue) <= parseFloat(compareValue);
+
+                case 'contains':
+                    return typeof currentValue === 'string' && currentValue.indexOf(compareValue) !== -1;
+
+                case 'in':
+                    return Array.isArray(compareValue) && compareValue.includes(currentValue);
+
+                case 'not_in':
+                    return Array.isArray(compareValue) && !compareValue.includes(currentValue);
+
+                case 'empty':
+                    return !currentValue || currentValue === '' || currentValue === '0';
+
+                case 'not_empty':
+                    return !!currentValue && currentValue !== '' && currentValue !== '0';
+
+                default:
+                    return true;
+            }
+        },
+
+        /**
+         * Show conditional field
+         */
+        showField: function(fieldElement) {
+            fieldElement.style.display = '';
+            fieldElement.classList.remove('field--hidden');
+            
+            // Re-enable form elements
+            const inputs = fieldElement.querySelectorAll('input, select, textarea');
+            inputs.forEach(input => {
+                input.disabled = false;
+            });
+        },
+
+        /**
+         * Hide conditional field
+         */
+        hideField: function(fieldElement) {
+            fieldElement.style.display = 'none';
+            fieldElement.classList.add('field--hidden');
+            
+            // Disable form elements to prevent submission
+            const inputs = fieldElement.querySelectorAll('input, select, textarea');
+            inputs.forEach(input => {
+                input.disabled = true;
+            });
         }
     };
 

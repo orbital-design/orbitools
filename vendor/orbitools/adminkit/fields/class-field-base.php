@@ -309,4 +309,31 @@ abstract class Field_Base {
 
 		return $html;
 	}
+
+	/**
+	 * Check if field has conditional logic
+	 *
+	 * @since 1.0.0
+	 * @return bool True if field has conditions.
+	 */
+	public function has_conditions() {
+		return isset( $this->field['show_if'] ) && ! empty( $this->field['show_if'] );
+	}
+
+
+	/**
+	 * Get conditional data attributes for JavaScript
+	 *
+	 * @since 1.0.0
+	 * @return array Data attributes for conditional logic.
+	 */
+	public function get_conditional_data_attributes() {
+		if ( ! $this->has_conditions() ) {
+			return array();
+		}
+
+		return array(
+			'data-show-if' => wp_json_encode( $this->field['show_if'] ),
+		);
+	}
 }
