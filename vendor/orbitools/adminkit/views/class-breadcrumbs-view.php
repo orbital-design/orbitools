@@ -81,10 +81,12 @@ class Breadcrumbs_View
 
         // Get tab and section names
         $tabs = $this->admin_kit->get_tabs();
-        $tab_name = isset($tabs[$current_tab]) ? $tabs[$current_tab] : '';
+        $tab_data = isset($tabs[$current_tab]) ? $tabs[$current_tab] : '';
+        $tab_name = is_array($tab_data) ? $tab_data['title'] : $tab_data;
 
         $sections = $this->get_sections($current_tab);
-        $section_name = isset($sections[$current_section]) ? $sections[$current_section] : '';
+        $section_data = isset($sections[$current_section]) ? $sections[$current_section] : '';
+        $section_name = is_array($section_data) ? $section_data['title'] : $section_data;
 
 ?>
         <div class="adminkit adminkit-toolbar">

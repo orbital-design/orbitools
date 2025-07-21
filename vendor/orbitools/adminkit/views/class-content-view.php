@@ -188,11 +188,15 @@ class Content_View
 
 
         <?php foreach ($sections as $section_key => $section_title): ?>
-            <?php $is_active = $active_section === $section_key; ?>
+            <?php 
+            $is_active = $active_section === $section_key; 
+            // Handle section data (could be string or array with icon)
+            $section_label = is_array($section_title) ? $section_title['title'] : $section_title;
+            ?>
             <div class="adminkit-content__sub-content" data-section="<?php echo esc_attr($section_key); ?>"
                 aria-labelledby="adminkit-subtab-<?php echo esc_attr($section_key); ?>"
                 style="<?php echo $is_active ? 'display: block;' : 'display: none;'; ?>">
-                <?php $this->render_section_content($tab_key, $section_key, $section_title, $settings); ?>
+                <?php $this->render_section_content($tab_key, $section_key, $section_label, $settings); ?>
             </div>
         <?php endforeach; ?>
         <?php
@@ -224,7 +228,7 @@ class Content_View
                         <?php echo esc_html($section_label); ?>
                     </span>
                 </h3>
-                <?php $this->render_section_content($tab_key, $section_key, $section_title, $settings); ?>
+                <?php $this->render_section_content($tab_key, $section_key, $section_label, $settings); ?>
             </div>
         <?php
         }
