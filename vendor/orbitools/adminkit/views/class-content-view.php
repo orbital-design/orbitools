@@ -209,9 +209,21 @@ class Content_View
     private function render_sections_as_cards($tab_key, $sections, $settings)
     {
         foreach ($sections as $section_key => $section_title) {
+            // Handle section data (could be string or array with icon)
+            $section_label = is_array($section_title) ? $section_title['title'] : $section_title;
+            $section_icon = is_array($section_title) ? ($section_title['icon'] ?? null) : null;
         ?>
             <div class="adminkit-content__section" data-section="<?php echo esc_attr($section_key); ?>">
-                <h3 class="adminkit-content__section-title"><?php echo esc_html($section_title); ?></h3>
+                <h3 class="adminkit-content__section-title">
+                    <?php if ($section_icon): ?>
+                        <span class="adminkit-content__section-icon">
+                            <?php echo $this->render_icon($section_icon); ?>
+                        </span>
+                    <?php endif; ?>
+                    <span class="adminkit-content__section-text">
+                        <?php echo esc_html($section_label); ?>
+                    </span>
+                </h3>
                 <?php $this->render_section_content($tab_key, $section_key, $section_title, $settings); ?>
             </div>
         <?php

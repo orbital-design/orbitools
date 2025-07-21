@@ -408,6 +408,34 @@
     font-size: 18px;
     font-weight: var(--orb-fw-bold);
     color: #1d2327;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.adminkit-content__section-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+}
+
+.adminkit-content__section-icon .dashicons {
+    width: 18px;
+    height: 18px;
+    font-size: 18px;
+}
+
+.adminkit-content__section-icon svg {
+    width: 18px;
+    height: 18px;
+    fill: currentColor;
+}
+
+.adminkit-content__section-text {
+    display: block;
 }
 
 .adminkit-content__section .adminkit-content__fields {
