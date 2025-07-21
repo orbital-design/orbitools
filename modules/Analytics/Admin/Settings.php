@@ -36,6 +36,7 @@ class Settings
         // Any initialization logic for settings can go here
         // This method is called from the main Analytics module
     }
+
     /**
      * Get admin structure for the Analytics module
      *
@@ -46,7 +47,13 @@ class Settings
     {
         return array(
             'sections' => array(
-                'analytics' => __('Analytics', 'orbitools'),
+                'analytics' => array(
+                    'title' => __('Analytics', 'orbitools'),
+                    'icon' => array(
+                        'type' => 'svg',
+                        'value' => '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M500 89c13.8-11 16-31.2 5-45s-31.2-16-45-5L319.4 151.5 211.2 70.4c-11.7-8.8-27.8-8.5-39.2.6L12 199c-13.8 11-16 31.2-5 45s31.2 16 45 5l140.6-112.5 108.2 81.1c11.7 8.8 27.8 8.5 39.2-.6L500 89zM160 256v192c0 17.7 14.3 32 32 32s32-14.3 32-32V256c0-17.7-14.3-32-32-32s-32 14.3-32 32zM32 352v96c0 17.7 14.3 32 32 32s32-14.3 32-32v-96c0-17.7-14.3-32-32-32s-32 14.3-32 32zm288-64c-17.7 0-32 14.3-32 32v128c0 17.7 14.3 32 32 32s32-14.3 32-32V320c0-17.7-14.3-32-32-32zm96-32v192c0 17.7 14.3 32 32 32s32-14.3 32-32V256c0-17.7-14.3-32-32-32s-32 14.3-32 32z"/></svg>'
+                    )
+                ),
             ),
         );
     }
@@ -340,11 +347,11 @@ class Settings
     {
         $roles = array();
         $wp_roles = wp_roles();
-        
+
         foreach ($wp_roles->roles as $role_key => $role) {
             $roles[$role_key] = $role['name'];
         }
-        
+
         return $roles;
     }
 }

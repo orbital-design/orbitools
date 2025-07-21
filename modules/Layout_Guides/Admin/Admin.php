@@ -13,6 +13,10 @@
 
 namespace Orbitools\Modules\Layout_Guides\Admin;
 
+use Orbitools\Admin\Module_Admin_Base;
+use Orbitools\Modules\Layout_Guides\Admin\Settings;
+use Orbitools\Modules\Layout_Guides\Admin\Settings_Helper;
+
 // Prevent direct access
 if (!defined('ABSPATH')) {
     exit;
@@ -25,8 +29,27 @@ if (!defined('ABSPATH')) {
  *
  * @since 1.0.0
  */
-class Admin
+class Admin extends Module_Admin_Base
 {
+    /**
+     * Module slug identifier
+     *
+     * @since 1.0.0
+     * @var string
+     */
+    const MODULE_SLUG = 'layout-guides';
+
+    /**
+     * Constructor
+     *
+     * @since 1.0.0
+     */
+    public function __construct()
+    {
+        // Call parent constructor with module info
+        parent::__construct(self::MODULE_SLUG, Settings::class);
+    }
+
     /**
      * Initialize admin functionality
      *
@@ -37,12 +60,19 @@ class Admin
         // Register the module with the main plugin
         add_filter('orbitools_available_modules', array($this, 'register_module_metadata'));
 
-        // Add admin structure and fields
-        add_filter('orbitools_adminkit_structure', array($this, 'add_admin_structure'));
-        add_filter('orbitools_adminkit_fields', array($this, 'add_admin_fields'));
-
         // Add admin assets
         add_action('orbitools_enqueue_assets', array($this, 'enqueue_admin_assets'));
+    }
+
+    /**
+     * Check if the Layout Guides module is enabled
+     *
+     * @since 1.0.0
+     * @return bool True if module is enabled, false otherwise.
+     */
+    public function is_module_enabled(): bool
+    {
+        return Settings_Helper::is_module_enabled();
     }
 
     /**
@@ -65,49 +95,6 @@ class Admin
         return $modules;
     }
 
-    /**
-     * Add admin structure
-     *
-     * @since 1.0.0
-     * @param array $structure Existing admin structure.
-     * @return array Modified admin structure.
-     */
-    public function add_admin_structure($structure)
-    {
-        // Add to modules tab
-        if (!isset($structure['modules'])) {
-            $structure['modules'] = array(
-                'title'        => __('Modules', 'orbitools'),
-                'display_mode' => 'cards',
-                'sections'     => array(),
-            );
-        }
-
-        $structure['modules']['sections']['layout_guides'] = __('Layout Guides', 'orbitools');
-
-        return $structure;
-    }
-
-    /**
-     * Add admin fields
-     *
-     * @since 1.0.0
-     * @param array $fields Existing admin fields.
-     * @return array Modified admin fields.
-     */
-    public function add_admin_fields($fields)
-    {
-        if (!isset($fields['modules'])) {
-            $fields['modules'] = array();
-        }
-
-        $fields['modules'] = array_merge(
-            $fields['modules'],
-            Settings::get_field_definitions()
-        );
-
-        return $fields;
-    }
 
     /**
      * Enqueue admin assets

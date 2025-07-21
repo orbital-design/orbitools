@@ -36,7 +36,7 @@ class Settings
     {
         // Add AJAX handler for saving accordion state
         add_action('wp_ajax_orbitools_save_accordion_state', array(self::class, 'save_accordion_state'));
-        
+
         // Add AJAX handler for clearing cache
         add_action('wp_ajax_orbitools_clear_typography_cache', array(self::class, 'clear_typography_cache'));
     }
@@ -150,7 +150,13 @@ class Settings
     {
         return array(
             'sections' => array(
-                'typography' => __('Typography Presets', 'orbitools'),
+                'typography' => array(
+                    'title' => __('Typography Presets', 'orbitools'),
+                    'icon' => array(
+                        'type' => 'svg',
+                        'value' => '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512"><path fill="#32a3e2" d="M64 128V96h96v320h-32c-17.7 0-32 14.3-32 32s14.3 32 32 32h128c17.7 0 32-14.3 32-32s-14.3-32-32-32h-32V96h96v32c0 17.7 14.3 32 32 32s32-14.3 32-32V80c0-26.5-21.5-48-48-48H48C21.5 32 0 53.5 0 80v48c0 17.7 14.3 32 32 32s32-14.3 32-32zm320 176v-16h64v128h-16c-17.7 0-32 14.3-32 32s14.3 32 32 32h96c17.7 0 32-14.3 32-32s-14.3-32-32-32h-16V288h64v16c0 17.7 14.3 32 32 32s32-14.3 32-32v-32c0-26.5-21.5-48-48-48H368c-26.5 0-48 21.5-48 48v32c0 17.7 14.3 32 32 32s32-14.3 32-32z"/></svg>'
+                    )
+                ),
             ),
         );
     }
@@ -519,5 +525,4 @@ class Settings
             wp_send_json_error(array('message' => __('Failed to clear cache: ', 'orbitools') . $e->getMessage()));
         }
     }
-
 }

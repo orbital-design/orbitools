@@ -13,6 +13,7 @@
 
 namespace Orbitools\Modules\Analytics\Admin;
 
+use Orbitools\Admin\Module_Admin_Base;
 use Orbitools\Modules\Analytics\Admin\Settings;
 use Orbitools\Modules\Analytics\Admin\Settings_Helper;
 
@@ -28,7 +29,7 @@ if (!defined('ABSPATH')) {
  *
  * @since 1.0.0
  */
-class Admin
+class Admin extends Module_Admin_Base
 {
     /**
      * Module version
@@ -53,12 +54,11 @@ class Admin
      */
     public function __construct()
     {
+        // Call parent constructor with module info
+        parent::__construct(self::MODULE_SLUG, Settings::class);
+
         // Register module metadata
         add_filter('orbitools_available_modules', array($this, 'register_module_metadata'));
-
-        // Register with admin framework
-        add_filter('orbitools_adminkit_structure', array($this, 'register_new_framework_structure'));
-        add_filter('orbitools_adminkit_fields', array($this, 'register_new_framework_settings'));
     }
 
     /**
@@ -92,56 +92,4 @@ class Admin
         return $modules;
     }
 
-    /**
-     * Register admin structure for the new framework
-     *
-     * @since 1.0.0
-     * @param array $structure Existing structure array.
-     * @return array Modified structure array.
-     */
-    public function register_new_framework_structure(array $structure): array
-    {
-        // Only register structure if module is enabled
-        if (!$this->is_module_enabled()) {
-            return $structure;
-        }
-
-        if (!isset($structure['modules']['sections'])) {
-            $structure['modules']['sections'] = array();
-        }
-
-        // Get structure from Settings class
-        $settings_structure = Settings::get_admin_structure();
-        $structure['modules']['sections'] = array_merge(
-            $structure['modules']['sections'],
-            $settings_structure['sections']
-        );
-
-        return $structure;
-    }
-
-    /**
-     * Register settings fields for the new framework
-     *
-     * @since 1.0.0
-     * @param array $settings Existing settings array.
-     * @return array Modified settings array.
-     */
-    public function register_new_framework_settings(array $settings): array
-    {
-        // Only register settings if module is enabled
-        if (!$this->is_module_enabled()) {
-            return $settings;
-        }
-
-        if (!isset($settings['modules'])) {
-            $settings['modules'] = array();
-        }
-
-        // Get settings from Settings class
-        $module_settings = Settings::get_field_definitions();
-        $settings['modules'] = array_merge($settings['modules'], $module_settings);
-
-        return $settings;
-    }
 }

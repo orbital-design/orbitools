@@ -81,45 +81,6 @@ class Admin
         ));
     }
 
-    /**
-     * Configure settings tabs.
-     *
-     * @param array $tabs Existing tabs array.
-     * @return array Modified tabs array.
-     */
-    public function configure_settings_tabs(array $tabs): array
-    {
-        return array(
-            'dashboard' => __('Dashboard', 'orbitools'),
-            'modules'   => __('Modules', 'orbitools'),
-            'settings'  => __('Settings', 'orbitools'),
-            'updates'   => __('Updates', 'orbitools'),
-        );
-    }
-
-    /**
-     * Configure settings sections.
-     *
-     * @param array $sections Existing sections array.
-     * @return array Modified sections array.
-     */
-    public function configure_settings_sections(array $sections): array
-    {
-        return array(
-            'dashboard' => array(
-                'modules' => __('Module Management', 'orbitools'),
-            ),
-            'settings' => array(
-                'general'     => __('General Settings', 'orbitools'),
-                'performance' => __('Performance', 'orbitools'),
-                'cleanup'     => __('Data Cleanup', 'orbitools'),
-            ),
-            'updates' => array(
-                'version' => __('Version Information', 'orbitools'),
-                'auto'    => __('Update Management', 'orbitools'),
-            ),
-        );
-    }
 
     /**
      * Configure admin structure for orbi-admin-kit.
@@ -131,23 +92,41 @@ class Admin
     {
         return array(
             'dashboard' => array(
-                'title' => __('Dashboard', 'orbitools'),
+                'title' => array(
+                    'title' => __('Dashboard', 'orbitools'),
+                    'icon' => 'dashicons-dashboard'
+                ),
                 'display_mode' => 'cards',
                 'sections' => array(
-                    'modules' => __('Module Management', 'orbitools'),
+                    'modules' => array(
+                        'title' => __('Module Management', 'orbitools'),
+                        'icon' => 'dashicons-admin-plugins'
+                    ),
                 ),
             ),
             'modules' => array(
-                'title' => __('Modules', 'orbitools'),
+                'title' => array(
+                    'title' => __('Modules', 'orbitools'),
+                    'icon' => 'dashicons-admin-plugins'
+                ),
                 'display_mode' => 'tabs',
                 'sections' => array(),
             ),
             'tools' => array(
-                'title' => __('Tools/Info', 'orbitools'),
+                'title' => array(
+                    'title' => __('Tools/Info', 'orbitools'),
+                    'icon' => 'dashicons-admin-tools'
+                ),
                 'display_mode' => 'cards',
                 'sections' => array(
-                    'plugin' => __('Version Information', 'orbitools'),
-                    'utils'    => __('Utilities', 'orbitools'),
+                    'plugin' => array(
+                        'title' => __('Version Information', 'orbitools'),
+                        'icon' => 'dashicons-info'
+                    ),
+                    'utils' => array(
+                        'title' => __('Utilities', 'orbitools'),
+                        'icon' => 'dashicons-admin-generic'
+                    ),
                 ),
             ),
         );

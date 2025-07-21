@@ -165,12 +165,23 @@ class Content_View
                 $is_active = $active_section === $section_key;
                 $classes = array('adminkit-content__sub-link');
                 if ($is_active) $classes[] = 'adminkit-content__sub-link--active';
+                
+                // Handle section data (could be string or array with icon)
+                $section_label = is_array($section_title) ? $section_title['title'] : $section_title;
+                $section_icon = is_array($section_title) ? ($section_title['icon'] ?? null) : null;
                 ?>
                 <a href="#" class="<?php echo esc_attr(implode(' ', $classes)); ?>"
                     data-section="<?php echo esc_attr($section_key); ?>" role="tab"
                     aria-selected="<?php echo $is_active ? 'true' : 'false'; ?>"
                     id="adminkit-subtab-<?php echo esc_attr($section_key); ?>">
-                    <?php echo esc_html($section_title); ?>
+                    <?php if ($section_icon): ?>
+                        <span class="adminkit-content__sub-icon">
+                            <?php echo $this->render_icon($section_icon); ?>
+                        </span>
+                    <?php endif; ?>
+                    <span class="adminkit-content__sub-text">
+                        <?php echo esc_html($section_label); ?>
+                    </span>
                 </a>
             <?php endforeach; ?>
         </nav>
@@ -284,5 +295,45 @@ class Content_View
             </p>
         </div>
 <?php
+    }
+
+    /**
+     * Render icon based on type
+     *
+     * @since 1.0.0
+     * @param string|array $icon Icon data
+     * @return string Icon HTML
+     */
+    private function render_icon($icon)
+    {
+        if (is_string($icon)) {
+            // Handle different icon types
+            if (strpos($icon, '<svg') === 0) {
+                // SVG icon
+                return $icon;
+            } elseif (strpos($icon, 'dashicons-') === 0) {
+                // Dashicon
+                return '<span class="dashicons ' . esc_attr($icon) . '"></span>';
+            } else {
+                // Custom CSS class
+                return '<span class="' . esc_attr($icon) . '"></span>';
+            }
+        } elseif (is_array($icon)) {
+            // Array format: ['type' => 'dashicon|svg|class', 'value' => '...']
+            $type = $icon['type'] ?? 'class';
+            $value = $icon['value'] ?? '';
+            
+            switch ($type) {
+                case 'dashicon':
+                    return '<span class="dashicons dashicons-' . esc_attr($value) . '"></span>';
+                case 'svg':
+                    return $value; // Assuming value contains the full SVG
+                case 'class':
+                default:
+                    return '<span class="' . esc_attr($value) . '"></span>';
+            }
+        }
+        
+        return '';
     }
 }

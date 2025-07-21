@@ -210,7 +210,9 @@
     border-bottom: 3px solid transparent;
     color: var(--orb-white);
     cursor: pointer;
-    display: block;
+    display: flex;
+    align-items: center;
+    gap: 8px;
     font-size: 16px;
     font-weight: var(--orb-fw-bold);
     line-height: 1.4;
@@ -220,6 +222,31 @@
     transition: all 0.2s ease;
     position: relative;
     border-radius: 8px;
+}
+
+.adminkit-nav__icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+}
+
+.adminkit-nav__icon .dashicons {
+    width: 20px;
+    height: 20px;
+    font-size: 20px;
+}
+
+.adminkit-nav__icon svg {
+    width: 20px;
+    height: 20px;
+    fill: currentColor;
+}
+
+.adminkit-nav__text {
+    display: block;
 }
 
 .adminkit-nav__item:hover {
@@ -267,7 +294,9 @@
     border-bottom: 2px solid transparent;
     color: #646970;
     cursor: pointer;
-    display: block;
+    display: flex;
+    align-items: center;
+    gap: 6px;
     font-size: 13px;
     font-weight: var(--orb-fw-regular);
     line-height: 1.4;
@@ -276,6 +305,31 @@
     text-decoration: none;
     transition: all 0.2s ease;
     position: relative;
+}
+
+.adminkit-content__sub-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+}
+
+.adminkit-content__sub-icon .dashicons {
+    width: 16px;
+    height: 16px;
+    font-size: 16px;
+}
+
+.adminkit-content__sub-icon svg {
+    width: 16px;
+    height: 16px;
+    fill: currentColor;
+}
+
+.adminkit-content__sub-text {
+    display: block;
 }
 
 .adminkit-content__sub-link:hover {

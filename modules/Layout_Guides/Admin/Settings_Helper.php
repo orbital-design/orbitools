@@ -99,6 +99,18 @@ class Settings_Helper
     }
 
     /**
+     * Check if the Layout Guides module is enabled
+     *
+     * @since 1.0.0
+     * @return bool True if module is enabled, false otherwise.
+     */
+    public static function is_module_enabled(): bool
+    {
+        $settings = Settings::get_current_settings();
+        return !empty($settings['layout_guides_enabled']);
+    }
+
+    /**
      * Check if guides should be shown on current page
      *
      * @since 1.0.0
