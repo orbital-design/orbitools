@@ -43,6 +43,11 @@
                 return;
             }
 
+            // Check server-side authorization before initializing anything
+            if (!this.config.shouldShow) {
+                return;
+            }
+
             this.state.initialized = true;
             
             
@@ -119,6 +124,13 @@
          * Initialize state
          */
         initializeState: function() {
+            // First check server-side authorization before using localStorage
+            if (!this.config.shouldShow) {
+                // Clear any cached state if user shouldn't have access
+                localStorage.removeItem('orbitools-layout-guides-visible');
+                return;
+            }
+
             // Check if guides should be visible by default
             const storedState = localStorage.getItem('orbitools-layout-guides-visible');
             if (storedState !== null) {
@@ -153,6 +165,11 @@
          * Toggle guides visibility
          */
         toggleGuides: function() {
+            // Check authorization before toggling guides
+            if (!this.config.shouldShow) {
+                return;
+            }
+            
             if (this.state.visible) {
                 this.hideGuides();
             } else {
@@ -164,6 +181,11 @@
          * Show guides
          */
         showGuides: function() {
+            // Check authorization before showing guides
+            if (!this.config.shouldShow) {
+                return;
+            }
+            
             this.state.visible = true;
             
             this.elements.body.classList.add('has-layout-guides--visible');

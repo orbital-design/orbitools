@@ -89,6 +89,7 @@ class Settings_Helper
 
         return array(
             'enabled' => $settings['layout_guides_enabled'],
+            'shouldShow' => self::should_show_guides(), // Server-side authorization check
             'showGrids' => $settings['layout_guides_show_grids'],
             'showRulers' => $settings['layout_guides_show_rulers'],
             'gridGutter' => $settings['layout_guides_grid_gutter'],
@@ -124,6 +125,11 @@ class Settings_Helper
 
         // Module must be enabled
         if (!$settings['layout_guides_enabled']) {
+            return false;
+        }
+
+        // Only show for logged-in users
+        if (!is_user_logged_in()) {
             return false;
         }
 
