@@ -33,11 +33,11 @@
 
 /* Grid overlay */
 .orbitools-layout-guides__grid {
-    position: absolute;
+    /* position: absolute;
     top: 0;
     left: 0;
     right: 0;
-    bottom: 0;
+    bottom: 0; */
     display: grid;
     grid-template-columns: repeat(var(--layout-guides-columns), 1fr);
     gap: var(--gutter, var(--layout-guides-gutter));
@@ -107,28 +107,6 @@
 
 #wp-admin-bar-orbitools-layout-guides-toggle.active .ab-icon {
     color: var(--layout-guides-color);
-}
-
-/* Responsive adjustments */
-@media (max-width: 782px) {
-    .orbitools-layout-guides__grid {
-        padding: 0 10px;
-        gap: 10px;
-    }
-
-    :root {
-        --layout-guides-gutter: 10px;
-    }
-}
-
-@media (max-width: 600px) {
-    .orbitools-layout-guides__grid {
-        grid-template-columns: repeat(4, 1fr);
-    }
-
-    :root {
-        --layout-guides-columns: 4;
-    }
 }
 
 /* Admin settings preview styles */
