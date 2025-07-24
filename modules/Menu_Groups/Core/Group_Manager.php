@@ -190,8 +190,10 @@ class Group_Manager
         $is_group = get_post_meta($menu_item->ID, '_menu_item_group', true);
         
         if ($is_group) {
-            // Add group class to the classes array
-            $menu_item->classes[] = 'menu-item-group';
+            // Add group class to the classes array only if it doesn't already exist
+            if (!in_array('menu-item-group', $menu_item->classes)) {
+                $menu_item->classes[] = 'menu-item-group';
+            }
             
             // Set type display for admin
             $menu_item->type_label = 'Group';
