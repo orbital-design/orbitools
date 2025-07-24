@@ -12,8 +12,8 @@ document.addEventListener('DOMContentLoaded', function() {
         itemTypes.forEach(function(itemType) {
             if (itemType.textContent.trim() === 'Group') {
                 const menuItem = itemType.closest('.menu-item');
-                if (menuItem && !menuItem.classList.contains('menu-item-group')) {
-                    menuItem.classList.add('menu-item-group');
+                if (menuItem && !menuItem.classList.contains('menu__item--group')) {
+                    menuItem.classList.add('menu__item--group');
                     
                     // Change "Navigation Label" to "Group Name"
                     const labels = menuItem.querySelectorAll('label');

@@ -38,8 +38,8 @@
 }
 
 /* Hide unnecessary fields for group menu items */
-.menu-item-group > .menu-item-settings > *:not(input):not(.description.description-wide):not(.menu-item-actions),
-.menu-item-group > .menu-item-settings > .field-move,
-.menu-item-group > .menu-item-settings > .field-url {
+.menu__item--group > .menu-item-settings > *:not(input):not(.description.description-wide):not(.menu-item-actions),
+.menu__item--group > .menu-item-settings > .field-move,
+.menu__item--group > .menu-item-settings > .field-url {
     display: none !important;
 }
