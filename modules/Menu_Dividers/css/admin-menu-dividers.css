@@ -1,18 +1,15 @@
 /**
- * Menu Groups Admin Styles
+ * Admin Menu Dividers CSS
  *
- * Styles for the menu groups admin interface in WordPress menu editor.
- *
- * @package    Orbitools\Modules\Menu_Groups
- * @since      1.0.0
+ * Styles for the menu dividers admin interface
  */
 
 /* Add Group meta box styles */
-#add-group-content .inside {
+#add-divider-content .inside {
     margin-top: 0;
 }
 
-#add-group-content .group-options {
+#add-divider-content .divider-options {
     padding: 0;
     background: none;
     border: none;
@@ -21,46 +18,43 @@
     gap: 10px;
 }
 
-#add-group-content .group-options p {
+#add-divider-content .divider-options p {
     margin: 0;
 }
 
-#add-group-content .group-options label {
-    position: absolute !important;
-    width: 1px !important;
-    height: 1px !important;
-    padding: 0 !important;
-    margin: -1px !important;
-    overflow: hidden !important;
-    clip: rect(0,0,0,0) !important;
-    white-space: nowrap !important;
-    border: 0 !important;
+#add-divider-btn {
+    margin-top: 10px;
+}
+
+#add-divider-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
 }
 
 /* Hide unnecessary fields for group menu items */
-.menu__item--group > .menu-item-settings > *:not(input):not(.description.description-wide):not(.menu-item-actions):not(.description-group),
-.menu__item--group > .menu-item-settings > .field-move,
-.menu__item--group > .menu-item-settings > .description-group.field-move-combo,
-.menu__item--group > .menu-item-settings > .field-url {
+.menu__item--divider > .menu-item-settings > *:not(input):not(.description.description-wide):not(.menu-item-actions):not(.description-group),
+.menu__item--divider > .menu-item-settings > .field-move,
+.menu__item--divider > .menu-item-settings > .description-group.field-move-combo,
+.menu__item--divider > .menu-item-settings > .field-url {
     display: none !important;
 }
 
 
-/* Menu item styling for groups */
+/* Menu item styling for dividers */
 
-.menu__item--group .item-title {
+.menu__item--divider .item-title {
     font-weight: bold;
     color: #1D303A;
         white-space: nowrap;
 }
 
-.menu__item--group .menu-item-bar {
+.menu__item--divider .menu-item-bar {
     display: grid;
     grid-template-columns: auto 1fr;
     align-items: stretch;
 }
 
-.menu__item--group .menu-item-bar:before {
+.menu__item--divider .menu-item-bar:before {
     content: '';
     box-sizing: border-box;
     background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="322" height="322" fill="none"><path fill="%23fff" fill-rule="evenodd" d="M71.096 27.45A160.999 160.999 0 0 1 160.369.013 159.624 159.624 0 0 1 275.03 46.53a159.612 159.612 0 0 1 46.964 114.477 160.99 160.99 0 0 1-99.242 148.678A160.999 160.999 0 0 1 3.171 192.798 160.99 160.99 0 0 1 71.096 27.45Zm45.655 198.564a78.138 78.138 0 0 0 43.409 13.167 78.22 78.22 0 0 0 78.134-78.132 78.133 78.133 0 1 0-121.543 64.965Zm149.52-151.706c0 12.54-10.166 22.705-22.706 22.705-12.539 0-22.705-10.166-22.705-22.705 0-12.54 10.166-22.705 22.705-22.705 12.54 0 22.706 10.165 22.706 22.705Z" clip-rule="evenodd"/></svg>');
@@ -76,12 +70,12 @@
     justify-content: center;
 }
 
-.menu__item--group .menu-item-bar .menu-item-handle {
+.menu__item--divider .menu-item-bar .menu-item-handle {
     flex: 1;
     max-width: calc(382px - 42px);
 }
 
-.menu__item--group .menu-item-bar .item-type {
+.menu__item--divider .menu-item-bar .item-type {
     display: inline-flex; /* Ensures span behaves as a flex container inline */
     align-items: center;
     font-weight: bold;
@@ -90,7 +84,7 @@
     position: relative; /* Needed for absolute positioning of pseudo-element */
     z-index: 1;
 }
-.menu__item--group .menu-item-bar .item-type:before {
+.menu__item--divider .menu-item-bar .item-type:before {
     content: '';
     display: block; /* Changed from flex to block */
     background-color: #1D303A;
