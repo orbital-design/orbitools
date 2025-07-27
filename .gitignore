@@ -1,1 +1,10 @@
+node_modules/
 .DS_Store
+legacy/
+tests/
+# Ignore all Markdown files
+*.md
+# But do NOT ignore the main directory README.md (case-insensitive)
+!/[Rr][Ee][Aa][Dd][Mm][Ee].md
+.claude/
+.nova/
