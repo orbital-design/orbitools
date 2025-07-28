@@ -51,8 +51,11 @@ class CSS_Generator
      */
     public function __construct()
     {
-        // Hook into wp_head to output CSS
+        // Hook into wp_head to output CSS on frontend
         add_action('wp_head', array($this, 'output_flex_css'), 10);
+        
+        // Hook into admin_head to output CSS in editor
+        add_action('admin_head', array($this, 'output_flex_css'), 10);
     }
 
     /**

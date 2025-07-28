@@ -92,11 +92,11 @@ class Menu_Groups
         // Always initialize group manager for functionality
         $this->group_manager = new Group_Manager();
 
-        // Always setup admin menu hooks for configuration
-        $this->setup_admin_hooks();
-
-        // Initialize frontend functionality (module is always enabled now)
-        $this->init_frontend_functionality();
+        // Only setup hooks if module is enabled
+        if ($this->admin->is_module_enabled()) {
+            $this->setup_admin_hooks();
+            $this->init_frontend_functionality();
+        }
 
         self::$initialized = true;
     }

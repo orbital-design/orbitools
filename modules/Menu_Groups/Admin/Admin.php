@@ -66,8 +66,8 @@ class Admin
      */
     public function is_module_enabled(): bool
     {
-        // Module is always enabled since we removed settings
-        return true;
+        $settings = get_option('orbitools_settings', array());
+        return !empty($settings['menu_groups_enabled']) && $settings['menu_groups_enabled'] !== '0';
     }
 
     /**
@@ -101,6 +101,11 @@ class Admin
     {
         // Only load on nav-menus.php page and our settings page
         if ('nav-menus.php' !== $hook_suffix && strpos($hook_suffix, 'orbitools') === false) {
+            return;
+        }
+
+        // Don't load if module is disabled
+        if ('nav-menus.php' === $hook_suffix && !$this->is_module_enabled()) {
             return;
         }
 

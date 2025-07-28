@@ -80,6 +80,11 @@ class Block_Helper
      */
     public static function get_flex_classes(array $attributes, array $existing_classes = []): string
     {
+        // Don't process flex classes if module is disabled
+        if (!\Orbitools\Modules\Flex_Layout_Controls\Admin\Settings_Helper::is_module_enabled()) {
+            return implode(' ', $existing_classes);
+        }
+        
         // Get flex controls from attributes
         $flex_controls = $attributes['orbitoolsFlexControls'] ?? [];
         
@@ -156,7 +161,7 @@ class Block_Helper
     public static function get_flex_classes_array(array $attributes): array
     {
         $class_string = self::get_flex_classes($attributes);
-        return explode(' ', $class_string);
+        return array_filter(explode(' ', $class_string));
     }
 
     /**
@@ -168,6 +173,11 @@ class Block_Helper
      */
     public static function has_flex_controls(array $attributes): bool
     {
+        // Don't report flex controls if module is disabled
+        if (!\Orbitools\Modules\Flex_Layout_Controls\Admin\Settings_Helper::is_module_enabled()) {
+            return false;
+        }
+        
         return !empty($attributes['orbitoolsFlexControls']);
     }
 
@@ -181,6 +191,11 @@ class Block_Helper
      */
     public static function get_flex_control(array $attributes, string $control_name): ?string
     {
+        // Don't return flex control values if module is disabled
+        if (!\Orbitools\Modules\Flex_Layout_Controls\Admin\Settings_Helper::is_module_enabled()) {
+            return null;
+        }
+        
         $flex_controls = $attributes['orbitoolsFlexControls'] ?? [];
         return $flex_controls[$control_name] ?? self::$defaults[$control_name] ?? null;
     }
