@@ -80,6 +80,14 @@ class Settings
                 'std'     => true,
                 'section' => 'flex-layout',
             ),
+            array(
+                'id'      => 'flex_clear_cache',
+                'name'    => __('Cache Management', 'orbitools'),
+                'desc'    => __('Clear the flex layout CSS cache to force regeneration.', 'orbitools'),
+                'type'    => 'html',
+                'std'     => '<button type="button" id="orbitools-clear-flex-cache" class="button button-secondary" data-nonce="' . wp_create_nonce('orbitools_admin_nonce') . '">' . __('Clear Flex CSS Cache', 'orbitools') . '</button><div id="orbitools-clear-flex-cache-result" style="margin-top: 8px;"></div>',
+                'section' => 'flex-layout',
+            ),
         );
     }
 

@@ -13,7 +13,8 @@
         __experimentalToggleGroupControl: ToggleGroupControl,
         __experimentalToggleGroupControlOption: ToggleGroupControlOption,
         __experimentalToggleGroupControlOptionIcon: ToggleGroupControlOptionIcon,
-        PanelBody
+        PanelBody,
+        ToggleControl
     } = wp.components;
 
     // Helper function to get block supports
@@ -295,6 +296,29 @@
         return controlConfig.niceName || controlConfig.name;
     }
 
+    // Helper function to check if a control should be shown based on config conditions
+    function shouldShowControl(controlName, currentValues) {
+        const controlConfig = flexControlsConfig[controlName];
+        if (!controlConfig || !controlConfig.showWhen) {
+            return true; // Show by default if no conditions
+        }
+        
+        // Check all conditions in showWhen
+        for (const [dependentControl, allowedValues] of Object.entries(controlConfig.showWhen)) {
+            const currentValue = currentValues[dependentControl];
+            if (!Array.isArray(allowedValues)) {
+                continue;
+            }
+            
+            // If current value is not in allowed values, don't show control
+            if (!allowedValues.includes(currentValue)) {
+                return false;
+            }
+        }
+        
+        return true;
+    }
+
 
     // Create control elements using centralized config
     function createFlexControl(controlName, value, onChange, options, useNice, flexDirection = 'row') {
@@ -376,6 +400,7 @@
             const orbitoolsAlignItems = flexControls.alignItems || flexControlsConfig.alignItems.default;
             const orbitoolsJustifyContent = flexControls.justifyContent || flexControlsConfig.justifyContent.default;
             const orbitoolsAlignContent = flexControls.alignContent || flexControlsConfig.alignContent.default;
+            const orbitoolsStackOnMobile = flexControls.stackOnMobile || flexControlsConfig.stackOnMobile.default;
             
             // Helper function to update flex controls
             const updateFlexControl = (property, value) => {
@@ -397,7 +422,11 @@
                 const flexWrapOptions = getControlOptions(flexSupports, 'flexWrap', currentFlexDirection);
                 const alignItemsOptions = getControlOptions(flexSupports, 'alignItems', currentFlexDirection);
                 const justifyContentOptions = getControlOptions(flexSupports, 'justifyContent', currentFlexDirection);
-                const alignContentOptions = getControlOptions(flexSupports, 'alignContent', currentFlexDirection);
+                
+                // Get align-content options based on config conditions
+                const currentFlexWrap = orbitoolsFlexWrap || flexControlsConfig.flexWrap.default;
+                const alignContentOptions = shouldShowControl('alignContent', { flexWrap: currentFlexWrap }) ? 
+                    getControlOptions(flexSupports, 'alignContent', currentFlexDirection) : [];
                 
                 // Add controls based on what's enabled
                 if (flexDirectionOptions.length > 0) {
@@ -422,26 +451,58 @@
                     ));
                 }
                 
-                if (justifyContentOptions.length > 0) {
-                    controls.push(createFlexControl(
-                        'justifyContent',
-                        orbitoolsJustifyContent,
-                        (value) => updateFlexControl('justifyContent', value),
-                        justifyContentOptions,
-                        useNice,
-                        currentFlexDirection
-                    ));
-                }
+                // Swap order of justify-content and align-items based on direction
+                // In row: justify (main/horizontal) then align (cross/vertical)  
+                // In column: justify (main/vertical) then align (cross/horizontal)
+                // By swapping them, they stay in the same visual position relative to the layout
+                const isColumn = currentFlexDirection.startsWith('column');
                 
-                if (alignItemsOptions.length > 0) {
-                    controls.push(createFlexControl(
-                        'alignItems',
-                        orbitoolsAlignItems,
-                        (value) => updateFlexControl('alignItems', value),
-                        alignItemsOptions,
-                        useNice,
-                        currentFlexDirection
-                    ));
+                if (isColumn) {
+                    // Column direction: show align-items first (cross/horizontal), then justify-content (main/vertical)
+                    if (alignItemsOptions.length > 0) {
+                        controls.push(createFlexControl(
+                            'alignItems',
+                            orbitoolsAlignItems,
+                            (value) => updateFlexControl('alignItems', value),
+                            alignItemsOptions,
+                            useNice,
+                            currentFlexDirection
+                        ));
+                    }
+                    
+                    if (justifyContentOptions.length > 0) {
+                        controls.push(createFlexControl(
+                            'justifyContent',
+                            orbitoolsJustifyContent,
+                            (value) => updateFlexControl('justifyContent', value),
+                            justifyContentOptions,
+                            useNice,
+                            currentFlexDirection
+                        ));
+                    }
+                } else {
+                    // Row direction: show justify-content first (main/horizontal), then align-items (cross/vertical)
+                    if (justifyContentOptions.length > 0) {
+                        controls.push(createFlexControl(
+                            'justifyContent',
+                            orbitoolsJustifyContent,
+                            (value) => updateFlexControl('justifyContent', value),
+                            justifyContentOptions,
+                            useNice,
+                            currentFlexDirection
+                        ));
+                    }
+                    
+                    if (alignItemsOptions.length > 0) {
+                        controls.push(createFlexControl(
+                            'alignItems',
+                            orbitoolsAlignItems,
+                            (value) => updateFlexControl('alignItems', value),
+                            alignItemsOptions,
+                            useNice,
+                            currentFlexDirection
+                        ));
+                    }
                 }
                 
                 if (alignContentOptions.length > 0) {
@@ -453,6 +514,20 @@
                         useNice,
                         currentFlexDirection
                     ));
+                }
+                
+                // Add stack on mobile toggle if supported
+                if (flexSupports.stackOnMobile !== false) {
+                    controls.push(
+                        wp.element.createElement(ToggleControl, {
+                            key: 'stackOnMobile',
+                            label: 'Stack on Mobile',
+                            help: 'Stack columns vertically on mobile devices',
+                            checked: orbitoolsStackOnMobile,
+                            onChange: (value) => updateFlexControl('stackOnMobile', value),
+                            __nextHasNoMarginBottom: true
+                        })
+                    );
                 }
                 
                 return controls;
@@ -476,8 +551,8 @@
                     wp.element.createElement(
                         PanelBody,
                         {
-                            title: 'Flex Layout',
-                            initialOpen: false
+                            title: 'Layout',
+                            initialOpen: true
                         },
                         ...controls
                     )

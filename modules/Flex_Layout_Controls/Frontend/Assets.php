@@ -86,6 +86,7 @@ class Assets
         }
 
         $this->enqueue_admin_styles();
+        $this->enqueue_admin_scripts($hook);
     }
 
     /**
@@ -126,6 +127,25 @@ class Assets
                 $css_file,
                 array(),
                 self::VERSION
+            );
+        }
+    }
+
+    /**
+     * Enqueue admin scripts
+     *
+     * @since 1.0.0
+     * @param string $hook Current admin page hook.
+     */
+    private function enqueue_admin_scripts(string $hook): void
+    {
+        // Only load admin scripts on orbitools admin pages
+        if (strpos($hook, 'orbitools') !== false) {
+            $this->enqueue_script(
+                'orbitools-flex-layout-controls-admin',
+                'js/admin-flex-controls.js',
+                array(),
+                true
             );
         }
     }

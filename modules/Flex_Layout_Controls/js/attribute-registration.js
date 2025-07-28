@@ -35,6 +35,7 @@ wp.hooks.addFilter(
             defaultFlexControls.alignItems = flexControlsConfig.alignItems.default;
             defaultFlexControls.justifyContent = flexControlsConfig.justifyContent.default;
             defaultFlexControls.alignContent = flexControlsConfig.alignContent.default;
+            defaultFlexControls.stackOnMobile = flexControlsConfig.stackOnMobile.default;
         } else if (typeof flexSupports === 'object') {
             // Add specific controls based on configuration
             if (flexSupports.flexDirection !== false) {
@@ -51,6 +52,9 @@ wp.hooks.addFilter(
             }
             if (flexSupports.alignContent !== false) {
                 defaultFlexControls.alignContent = flexControlsConfig.alignContent.default;
+            }
+            if (flexSupports.stackOnMobile !== false) {
+                defaultFlexControls.stackOnMobile = flexControlsConfig.stackOnMobile.default;
             }
         }
         

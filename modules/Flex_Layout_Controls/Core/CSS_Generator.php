@@ -34,7 +34,7 @@ class CSS_Generator
      * @since 1.0.0
      * @var string
      */
-    const CACHE_PREFIX = 'orbitools_flex_css_';
+    const CACHE_PREFIX = 'orbitools_flex_css_v2_';
 
     /**
      * Cache expiration time in seconds (24 hours)
@@ -91,41 +91,37 @@ class CSS_Generator
 
         $css_rules = array();
 
-        // Base flex container class
-        $css_rules[] = '.has-flex-layout { display: flex; }';
+        // Base flex container class with all defaults
+        $css_rules[] = '.flex { display: flex; flex-direction: row; flex-wrap: nowrap; align-items: stretch; justify-content: flex-start; align-content: stretch; }';
 
-        // Flex direction classes
-        $css_rules[] = '.has-flex-direction-row { flex-direction: row; }';
-        $css_rules[] = '.has-flex-direction-column { flex-direction: column; }';
+        // Flex flow classes (only for non-defaults)
+        $css_rules[] = '.flex-flow-column { flex-flow: column; }';
+        $css_rules[] = '.flex-flow-wrap { flex-flow: wrap; }';
+        $css_rules[] = '.flex-flow-column-wrap { flex-flow: column wrap; }';
 
-        // Flex wrap classes
-        $css_rules[] = '.has-flex-wrap-nowrap { flex-wrap: nowrap; }';
-        $css_rules[] = '.has-flex-wrap-wrap { flex-wrap: wrap; }';
-        $css_rules[] = '.has-flex-wrap-wrap-reverse { flex-wrap: wrap-reverse; }';
+        // Align items classes (excluding default stretch)
+        $css_rules[] = '.flex-items-center { align-items: center; }';
+        $css_rules[] = '.flex-items-flex-start { align-items: flex-start; }';
+        $css_rules[] = '.flex-items-flex-end { align-items: flex-end; }';
+        $css_rules[] = '.flex-items-baseline { align-items: baseline; }';
 
-        // Align items classes
-        $css_rules[] = '.has-align-items-stretch { align-items: stretch; }';
-        $css_rules[] = '.has-align-items-center { align-items: center; }';
-        $css_rules[] = '.has-align-items-flex-start { align-items: flex-start; }';
-        $css_rules[] = '.has-align-items-flex-end { align-items: flex-end; }';
-        $css_rules[] = '.has-align-items-baseline { align-items: baseline; }';
+        // Justify content classes (excluding default flex-start)
+        $css_rules[] = '.flex-justify-center { justify-content: center; }';
+        $css_rules[] = '.flex-justify-flex-end { justify-content: flex-end; }';
+        $css_rules[] = '.flex-justify-space-between { justify-content: space-between; }';
+        $css_rules[] = '.flex-justify-space-around { justify-content: space-around; }';
+        $css_rules[] = '.flex-justify-space-evenly { justify-content: space-evenly; }';
 
-        // Justify content classes
-        $css_rules[] = '.has-justify-content-flex-start { justify-content: flex-start; }';
-        $css_rules[] = '.has-justify-content-center { justify-content: center; }';
-        $css_rules[] = '.has-justify-content-flex-end { justify-content: flex-end; }';
-        $css_rules[] = '.has-justify-content-space-between { justify-content: space-between; }';
-        $css_rules[] = '.has-justify-content-space-around { justify-content: space-around; }';
-        $css_rules[] = '.has-justify-content-space-evenly { justify-content: space-evenly; }';
-
-        // Align content classes
-        $css_rules[] = '.has-align-content-stretch { align-content: stretch; }';
-        $css_rules[] = '.has-align-content-center { align-content: center; }';
-        $css_rules[] = '.has-align-content-flex-start { align-content: flex-start; }';
-        $css_rules[] = '.has-align-content-flex-end { align-content: flex-end; }';
-        $css_rules[] = '.has-align-content-space-between { align-content: space-between; }';
-        $css_rules[] = '.has-align-content-space-around { align-content: space-around; }';
-        $css_rules[] = '.has-align-content-space-evenly { align-content: space-evenly; }';
+        // Align content classes (excluding default stretch)
+        $css_rules[] = '.flex-content-center { align-content: center; }';
+        $css_rules[] = '.flex-content-flex-start { align-content: flex-start; }';
+        $css_rules[] = '.flex-content-flex-end { align-content: flex-end; }';
+        $css_rules[] = '.flex-content-space-between { align-content: space-between; }';
+        $css_rules[] = '.flex-content-space-around { align-content: space-around; }';
+        $css_rules[] = '.flex-content-space-evenly { align-content: space-evenly; }';
+        
+        // Responsive stack on mobile
+        $css_rules[] = '@media (max-width: 768px) { .flex-stack-mobile { flex-direction: column !important; } }';
 
         $css = implode("\n", $css_rules);
 

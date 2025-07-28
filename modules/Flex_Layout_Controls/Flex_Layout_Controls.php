@@ -16,6 +16,7 @@ namespace Orbitools\Modules\Flex_Layout_Controls;
 use Orbitools\Modules\Flex_Layout_Controls\Admin\Admin;
 use Orbitools\Modules\Flex_Layout_Controls\Admin\Settings;
 use Orbitools\Modules\Flex_Layout_Controls\Core\CSS_Generator;
+use Orbitools\Modules\Flex_Layout_Controls\Core\Block_Helper;
 use Orbitools\Modules\Flex_Layout_Controls\Frontend\Block_Editor;
 use Orbitools\Modules\Flex_Layout_Controls\Frontend\Assets;
 

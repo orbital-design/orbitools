@@ -12,6 +12,11 @@ window.FlexControlsConfig = {
         control: "ToggleGroupControl",
         desc: "Direction of flow for content.",
         default: "row",
+        cssMapping: {
+            abbrev: "flow",
+            classPattern: "flex-flow-{value}",
+            skipDefault: false
+        },
         options: [
             {
                 slug: "row",
@@ -34,6 +39,11 @@ window.FlexControlsConfig = {
         control: "ToggleGroupControl",
         desc: "Controls whether items wrap to new lines.",
         default: "nowrap",
+        cssMapping: {
+            abbrev: "flow",
+            classPattern: "flex-flow-{value}",
+            skipDefault: true
+        },
         options: [
             {
                 slug: "nowrap",
@@ -59,6 +69,11 @@ window.FlexControlsConfig = {
         control: "ToggleGroupControl",
         desc: "How items align on the cross axis (perpendicular to flex direction).",
         default: "stretch",
+        cssMapping: {
+            abbrev: "items",
+            classPattern: "flex-items-{value}",
+            skipDefault: true
+        },
         options: [
             {
                 slug: "stretch",
@@ -107,6 +122,11 @@ window.FlexControlsConfig = {
         control: "ToggleGroupControl",
         desc: "How items align on the main axis (along flex direction).",
         default: "flex-start",
+        cssMapping: {
+            abbrev: "justify",
+            classPattern: "flex-justify-{value}",
+            skipDefault: true
+        },
         options: [
             {
                 slug: "flex-start",
@@ -162,6 +182,14 @@ window.FlexControlsConfig = {
         control: "ToggleGroupControl",
         desc: "Controls spacing between wrapped flex lines.",
         default: "stretch",
+        cssMapping: {
+            abbrev: "content",
+            classPattern: "flex-content-{value}",
+            skipDefault: true
+        },
+        showWhen: {
+            flexWrap: ["wrap", "wrap-reverse"]
+        },
         options: [
             {
                 slug: "stretch",
@@ -213,5 +241,19 @@ window.FlexControlsConfig = {
                 availableFor: ["row", "column"]
             }
         ]
+    },
+    stackOnMobile: {
+        name: "Stack on Mobile",
+        niceName: "Stack on Mobile",
+        prop: "flex-direction",
+        control: "ToggleControl",
+        desc: "Stack columns vertically on mobile devices",
+        default: true,
+        cssMapping: {
+            abbrev: "stack",
+            classPattern: "flex-stack-mobile",
+            skipDefault: false
+        },
+        responsive: true
     }
 };
