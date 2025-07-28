@@ -97,24 +97,18 @@ class Divider_Manager
      */
     public function render_divider_meta_box()
     {
-        // Get current menu being edited - WordPress stores it in different ways
+        // Get current menu being edited - be more careful about not interfering with WordPress
         $nav_menu_selected_id = 0;
-
-        if (isset($_REQUEST['menu']) && $_REQUEST['menu'] > 0) {
-            $nav_menu_selected_id = (int) $_REQUEST['menu'];
-        } elseif (isset($_GET['menu']) && $_GET['menu'] > 0) {
+        
+        // Only try to get menu ID if we're sure we're in a valid menu editing context
+        if (isset($_GET['menu']) && is_numeric($_GET['menu']) && $_GET['menu'] > 0) {
             $nav_menu_selected_id = (int) $_GET['menu'];
         } else {
-            // Try to get from the form if it exists
-            global $nav_menu_selected_id;
-            if (isset($nav_menu_selected_id) && $nav_menu_selected_id > 0) {
-                // Use the global
-            } else {
-                // Get the first available menu
-                $menus = wp_get_nav_menus();
-                if (!empty($menus)) {
-                    $nav_menu_selected_id = $menus[0]->term_id;
-                }
+            // Don't try to manipulate globals or make assumptions - just show a message
+            $menus = wp_get_nav_menus();
+            if (!empty($menus) && !isset($_GET['menu'])) {
+                // We're probably in menu creation mode, don't interfere
+                $nav_menu_selected_id = 0;
             }
         }
 ?>
