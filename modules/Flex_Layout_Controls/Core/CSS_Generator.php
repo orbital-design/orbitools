@@ -1,9 +1,9 @@
 <?php
 
 /**
- * Flex Layout Controls CSS Generator
+ * Flex Layout Controls CSS Enqueuer
  *
- * Generates CSS for flex layout controls applied to blocks.
+ * Enqueues static CSS file for flex layout controls.
  *
  * @package    Orbitools
  * @subpackage Modules/Flex_Layout_Controls/Core
@@ -20,139 +20,88 @@ if (!defined('ABSPATH')) {
 }
 
 /**
- * CSS Generator Class
+ * CSS Enqueuer Class
  *
- * Handles CSS generation for flex layout controls.
+ * Handles enqueuing static CSS for flex layout controls.
  *
  * @since 1.0.0
  */
 class CSS_Generator
 {
     /**
-     * Cache key prefix for generated CSS
-     *
-     * @since 1.0.0
-     * @var string
-     */
-    const CACHE_PREFIX = 'orbitools_flex_css_v2_';
-
-    /**
-     * Cache expiration time in seconds (24 hours)
-     *
-     * @since 1.0.0
-     * @var int
-     */
-    const CACHE_EXPIRATION = 24 * 60 * 60;
-
-    /**
-     * Initialize CSS generation
+     * Initialize CSS enqueuing
      *
      * @since 1.0.0
      */
     public function __construct()
     {
-        // Hook into wp_head to output CSS on frontend
-        add_action('wp_head', array($this, 'output_flex_css'), 10);
+        // Hook into wp_enqueue_scripts for frontend
+        add_action('wp_enqueue_scripts', array($this, 'enqueue_flex_css'));
         
-        // Hook into admin_head to output CSS in editor
-        add_action('admin_head', array($this, 'output_flex_css'), 10);
+        // Hook into admin_enqueue_scripts for editor
+        add_action('admin_enqueue_scripts', array($this, 'enqueue_flex_css'));
     }
 
     /**
-     * Output flex layout CSS in the page head
+     * Enqueue flex layout CSS inline from file with caching
      *
      * @since 1.0.0
      */
-    public function output_flex_css(): void
+    public function enqueue_flex_css(): void
     {
-        // Only output if module is enabled and CSS output is enabled
+        // Only enqueue if module is enabled and CSS output is enabled
         if (!Settings_Helper::is_module_enabled() || !Settings_Helper::output_flex_css()) {
             return;
         }
 
-        $css = $this->generate_flex_css();
-        
-        if (!empty($css)) {
-            echo "<style id='orbitools-flex-layout-css'>\n" . $css . "\n</style>\n";
+        // Path to the CSS file
+        $css_file_path = ORBITOOLS_DIR . 'modules/Flex_Layout_Controls/css/flex-utils.css';
+
+        // Check if the file exists
+        if (!file_exists($css_file_path)) {
+            return;
         }
+
+        // Cache key based on file modification time
+        $file_mtime = filemtime($css_file_path);
+        $cache_key = 'orbitools_flex_utils_css_' . $file_mtime;
+        
+        // Try to get cached CSS
+        $flex_css = get_transient($cache_key);
+        
+        if ($flex_css === false) {
+            // Cache miss - read file and cache it
+            $flex_css = file_get_contents($css_file_path);
+            
+            // Cache for 24 hours
+            set_transient($cache_key, $flex_css, 24 * HOUR_IN_SECONDS);
+            
+            // Clean up old cache entries
+            $this->cleanup_old_cache();
+        }
+
+        // Register and enqueue a dummy stylesheet
+        wp_register_style('orbitools-flex-utils', false);
+        wp_enqueue_style('orbitools-flex-utils');
+
+        // Add the CSS inline
+        wp_add_inline_style('orbitools-flex-utils', $flex_css);
     }
 
     /**
-     * Generate CSS for all flex layout classes
-     *
-     * @since 1.0.0
-     * @return string Generated CSS.
-     */
-    public function generate_flex_css(): string
-    {
-        $cache_key = self::CACHE_PREFIX . 'main';
-        $cached_css = get_transient($cache_key);
-
-        if ($cached_css !== false) {
-            return $cached_css;
-        }
-
-        $css_rules = array();
-
-        // Base flex container class with all defaults
-        $css_rules[] = '.flex { display: flex; flex-direction: row; flex-wrap: nowrap; align-items: stretch; justify-content: flex-start; align-content: stretch; }';
-
-        // Flex flow classes (only for non-defaults)
-        $css_rules[] = '.flex-flow-column { flex-flow: column; }';
-        $css_rules[] = '.flex-flow-wrap { flex-flow: wrap; }';
-        $css_rules[] = '.flex-flow-column-wrap { flex-flow: column wrap; }';
-
-        // Align items classes (excluding default stretch)
-        $css_rules[] = '.flex-items-center { align-items: center; }';
-        $css_rules[] = '.flex-items-flex-start { align-items: flex-start; }';
-        $css_rules[] = '.flex-items-flex-end { align-items: flex-end; }';
-        $css_rules[] = '.flex-items-baseline { align-items: baseline; }';
-
-        // Justify content classes (excluding default flex-start)
-        $css_rules[] = '.flex-justify-center { justify-content: center; }';
-        $css_rules[] = '.flex-justify-flex-end { justify-content: flex-end; }';
-        $css_rules[] = '.flex-justify-space-between { justify-content: space-between; }';
-        $css_rules[] = '.flex-justify-space-around { justify-content: space-around; }';
-        $css_rules[] = '.flex-justify-space-evenly { justify-content: space-evenly; }';
-
-        // Align content classes (excluding default stretch)
-        $css_rules[] = '.flex-content-center { align-content: center; }';
-        $css_rules[] = '.flex-content-flex-start { align-content: flex-start; }';
-        $css_rules[] = '.flex-content-flex-end { align-content: flex-end; }';
-        $css_rules[] = '.flex-content-space-between { align-content: space-between; }';
-        $css_rules[] = '.flex-content-space-around { align-content: space-around; }';
-        $css_rules[] = '.flex-content-space-evenly { align-content: space-evenly; }';
-        
-        // Responsive stack on mobile
-        $css_rules[] = '@media (max-width: 768px) { .flex-stack-mobile { flex-direction: column !important; } }';
-
-        $css = implode("\n", $css_rules);
-
-        // Cache the CSS
-        set_transient($cache_key, $css, self::CACHE_EXPIRATION);
-
-        return $css;
-    }
-
-    /**
-     * Clear all cached CSS
+     * Clean up old cached CSS entries
      *
      * @since 1.0.0
      */
-    public function clear_cache(): void
+    private function cleanup_old_cache(): void
     {
         global $wpdb;
         
-        // Clear all flex CSS transients
+        // Delete old flex utils cache entries (keep only current one)
         $wpdb->query(
-            $wpdb->prepare(
-                "DELETE FROM {$wpdb->options} WHERE option_name LIKE %s OR option_name LIKE %s",
-                '_transient_' . self::CACHE_PREFIX . '%',
-                '_transient_timeout_' . self::CACHE_PREFIX . '%'
-            )
+            "DELETE FROM {$wpdb->options} 
+             WHERE option_name LIKE '_transient_orbitools_flex_utils_css_%' 
+             OR option_name LIKE '_transient_timeout_orbitools_flex_utils_css_%'"
         );
-
-        // Clear object cache
-        wp_cache_delete('orbitools_flex_layout', 'theme_json');
     }
 }

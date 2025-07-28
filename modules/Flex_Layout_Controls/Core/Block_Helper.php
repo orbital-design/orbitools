@@ -33,11 +33,14 @@ class Block_Helper
      * @var array
      */
     private static $defaults = [
+        'columnCount' => 3,
         'flexDirection' => 'row',
         'flexWrap' => 'nowrap',
         'alignItems' => 'stretch',
         'justifyContent' => 'flex-start',
         'alignContent' => 'stretch',
+        'enableGap' => true,
+        'restrictContentWidth' => false,
         'stackOnMobile' => true
     ];
 
@@ -53,6 +56,8 @@ class Block_Helper
         'alignItems' => ['abbrev' => 'items', 'pattern' => 'flex-items-{value}', 'skipDefault' => true],
         'justifyContent' => ['abbrev' => 'justify', 'pattern' => 'flex-justify-{value}', 'skipDefault' => true],
         'alignContent' => ['abbrev' => 'content', 'pattern' => 'flex-content-{value}', 'skipDefault' => true],
+        'enableGap' => ['abbrev' => 'gap', 'pattern' => 'flex-gap', 'skipDefault' => false],
+        'restrictContentWidth' => ['abbrev' => 'restrict', 'pattern' => 'flex-restrict-content', 'skipDefault' => false],
         'stackOnMobile' => ['abbrev' => 'stack', 'pattern' => 'flex-stack-mobile', 'skipDefault' => false]
     ];
 
@@ -67,11 +72,16 @@ class Block_Helper
             'showWhen' => [
                 'flexWrap' => ['wrap', 'wrap-reverse']
             ]
+        ],
+        'restrictContentWidth' => [
+            'showWhen' => [
+                'align' => ['full']
+            ]
         ]
     ];
 
     /**
-     * Generate flex layout classes from block attributes using custom naming logic
+     * Generate flex layout classes from block attributes
      *
      * @since 1.0.0
      * @param array $attributes Block attributes containing orbitoolsFlexControls
@@ -104,48 +114,48 @@ class Block_Helper
         $align_items = $flex_controls['alignItems'] ?? self::$defaults['alignItems'];
         $justify_content = $flex_controls['justifyContent'] ?? self::$defaults['justifyContent'];
         $align_content = $flex_controls['alignContent'] ?? self::$defaults['alignContent'];
+        $enable_gap = $flex_controls['enableGap'] ?? self::$defaults['enableGap'];
+        $restrict_content_width = $flex_controls['restrictContentWidth'] ?? self::$defaults['restrictContentWidth'];
         $stack_on_mobile = $flex_controls['stackOnMobile'] ?? self::$defaults['stackOnMobile'];
         
-        // Process all flex controls using config-based approach
-        $all_controls = [
-            'flexDirection' => $direction,
-            'flexWrap' => $wrap,
-            'alignItems' => $align_items,
-            'justifyContent' => $justify_content,
-            'alignContent' => $align_content,
-            'stackOnMobile' => $stack_on_mobile
-        ];
+        // Add direction classes (skip defaults)
+        if ($direction !== 'row') {
+            $classes[] = "flex-flow-{$direction}";
+        }
         
-        foreach ($all_controls as $control_name => $value) {
-            // Skip if this control shouldn't be shown based on conditions
-            if (!self::should_show_control($control_name, $all_controls)) {
-                continue;
-            }
-            
-            // Get CSS mapping config for this control
-            $css_config = self::$css_mapping[$control_name] ?? null;
-            if (!$css_config) {
-                continue;
-            }
-            
-            $default_value = self::$defaults[$control_name];
-            
-            // Skip if value is default and skipDefault is true
-            if ($css_config['skipDefault'] && $value === $default_value) {
-                continue;
-            }
-            
-            // Generate class name from pattern
-            if ($control_name === 'stackOnMobile') {
-                // Special case: stackOnMobile only adds class when true
-                if ($value) {
-                    $classes[] = $css_config['pattern'];
-                }
-            } else {
-                // Standard pattern replacement
-                $class_name = str_replace('{value}', $value, $css_config['pattern']);
-                $classes[] = $class_name;
-            }
+        // Add wrap classes (skip defaults)
+        if ($wrap !== 'nowrap') {
+            $classes[] = "flex-flow-{$wrap}";
+        }
+        
+        // Add align items classes (skip defaults)
+        if ($align_items !== 'stretch') {
+            $classes[] = "flex-items-{$align_items}";
+        }
+        
+        // Add justify content classes (skip defaults)
+        if ($justify_content !== 'flex-start') {
+            $classes[] = "flex-justify-{$justify_content}";
+        }
+        
+        // Add align content classes (only if wrapping and not default)
+        if ($wrap !== 'nowrap' && $align_content !== 'stretch') {
+            $classes[] = "flex-content-{$align_content}";
+        }
+        
+        // Add gap class (when enabled)
+        if ($enable_gap) {
+            $classes[] = 'flex-gap';
+        }
+        
+        // Add restrict content width class (when enabled and block is full width)
+        if ($restrict_content_width && ($attributes['align'] ?? '') === 'full') {
+            $classes[] = 'flex-restrict-content';
+        }
+        
+        // Add stack on mobile class (when enabled)
+        if ($stack_on_mobile) {
+            $classes[] = 'flex-stack-mobile';
         }
         
         return implode(' ', array_filter($classes));
@@ -234,5 +244,74 @@ class Block_Helper
         }
 
         return true;
+    }
+
+    /**
+     * Generate flex classes for JavaScript (to avoid duplication)
+     *
+     * @since 1.0.0
+     * @param array $flex_controls Flex control values
+     * @return string CSS classes string
+     */
+    public static function generate_flex_classes_for_js(array $flex_controls): string
+    {
+        // Don't process flex classes if module is disabled
+        if (!\Orbitools\Modules\Flex_Layout_Controls\Admin\Settings_Helper::is_module_enabled()) {
+            return '';
+        }
+
+        $classes = ['flex'];
+        
+        // Get values with defaults
+        $all_controls = [
+            'columnCount' => $flex_controls['columnCount'] ?? self::$defaults['columnCount'],
+            'flexDirection' => $flex_controls['flexDirection'] ?? self::$defaults['flexDirection'],
+            'flexWrap' => $flex_controls['flexWrap'] ?? self::$defaults['flexWrap'],
+            'alignItems' => $flex_controls['alignItems'] ?? self::$defaults['alignItems'],
+            'justifyContent' => $flex_controls['justifyContent'] ?? self::$defaults['justifyContent'],
+            'alignContent' => $flex_controls['alignContent'] ?? self::$defaults['alignContent'],
+            'enableGap' => $flex_controls['enableGap'] ?? self::$defaults['enableGap'],
+            'restrictContentWidth' => $flex_controls['restrictContentWidth'] ?? self::$defaults['restrictContentWidth'],
+            'stackOnMobile' => $flex_controls['stackOnMobile'] ?? self::$defaults['stackOnMobile']
+        ];
+        
+        foreach ($all_controls as $control_name => $value) {
+            // Skip columnCount as it doesn't generate CSS classes
+            if ($control_name === 'columnCount') {
+                continue;
+            }
+            
+            // Skip if this control shouldn't be shown based on conditions
+            if (!self::should_show_control($control_name, $all_controls)) {
+                continue;
+            }
+            
+            // Get CSS mapping config for this control
+            $css_config = self::$css_mapping[$control_name] ?? null;
+            if (!$css_config) {
+                continue;
+            }
+            
+            $default_value = self::$defaults[$control_name];
+            
+            // Skip if value is default and skipDefault is true
+            if ($css_config['skipDefault'] && $value === $default_value) {
+                continue;
+            }
+            
+            // Generate class name from pattern
+            if (in_array($control_name, ['enableGap', 'restrictContentWidth', 'stackOnMobile'])) {
+                // Boolean controls: only add class when true
+                if ($value) {
+                    $classes[] = $css_config['pattern'];
+                }
+            } else {
+                // Standard pattern replacement for non-boolean controls
+                $class_name = str_replace('{value}', $value, $css_config['pattern']);
+                $classes[] = $class_name;
+            }
+        }
+        
+        return implode(' ', array_filter($classes));
     }
 }

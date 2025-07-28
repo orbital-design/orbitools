@@ -14,7 +14,8 @@
         __experimentalToggleGroupControlOption: ToggleGroupControlOption,
         __experimentalToggleGroupControlOptionIcon: ToggleGroupControlOptionIcon,
         PanelBody,
-        ToggleControl
+        ToggleControl,
+        RangeControl
     } = wp.components;
 
     // Helper function to get block supports
@@ -234,6 +235,15 @@
         const controlConfig = flexControlsConfig[controlName];
         if (!controlConfig) return [];
 
+        // Handle non-toggle group controls (like RangeControl, ToggleControl)
+        if (!Array.isArray(controlConfig.options)) {
+            // For non-array options (like RangeControl), return array with control name if supported
+            if (supports === true || (typeof supports === 'object' && supports[controlName] !== false)) {
+                return [controlName];
+            }
+            return [];
+        }
+
         let availableOptions = [];
         
         if (supports === true) {
@@ -251,6 +261,11 @@
         
         // Filter options based on flex direction availability
         return availableOptions.filter(optionSlug => {
+            // Skip filtering for non-array options
+            if (!Array.isArray(controlConfig.options)) {
+                return true;
+            }
+            
             const option = controlConfig.options.find(opt => opt.slug === optionSlug);
             if (!option || !option.availableFor) {
                 return true; // Include if no availability restriction
@@ -271,6 +286,11 @@
     function getOptionDisplayName(controlName, optionSlug, useNice) {
         const controlConfig = flexControlsConfig[controlName];
         if (!controlConfig) return optionSlug;
+        
+        // Handle non-array options
+        if (!Array.isArray(controlConfig.options)) {
+            return useNice ? controlConfig.niceName : controlConfig.name;
+        }
         
         const option = controlConfig.options.find(opt => opt.slug === optionSlug);
         if (!option) return optionSlug;
@@ -351,6 +371,16 @@
             }, 
                 options.map(option => {
                     const label = getOptionDisplayName(controlName, option, useNice);
+                    
+                    // Handle non-array options (skip icon lookup)
+                    if (!Array.isArray(controlConfig.options)) {
+                        return wp.element.createElement(ToggleGroupControlOption, {
+                            key: option,
+                            value: option,
+                            label: label
+                        });
+                    }
+                    
                     const optionConfig = controlConfig.options.find(opt => opt.slug === option);
                     const iconKey = optionConfig?.icon;
                     const icon = iconKey ? flexControlsIcons[iconKey] : null;
@@ -395,11 +425,14 @@
             
             // Get flex controls from the object attribute, with fallbacks
             const flexControls = attributes.orbitoolsFlexControls || {};
+            const orbitoolsColumnCount = flexControls.columnCount || flexControlsConfig.columnCount.default;
             const orbitoolsFlexDirection = flexControls.flexDirection || flexControlsConfig.flexDirection.default;
             const orbitoolsFlexWrap = flexControls.flexWrap || flexControlsConfig.flexWrap.default;
             const orbitoolsAlignItems = flexControls.alignItems || flexControlsConfig.alignItems.default;
             const orbitoolsJustifyContent = flexControls.justifyContent || flexControlsConfig.justifyContent.default;
             const orbitoolsAlignContent = flexControls.alignContent || flexControlsConfig.alignContent.default;
+            const orbitoolsEnableGap = flexControls.enableGap !== undefined ? flexControls.enableGap : flexControlsConfig.enableGap.default;
+            const orbitoolsRestrictContentWidth = flexControls.restrictContentWidth !== undefined ? flexControls.restrictContentWidth : flexControlsConfig.restrictContentWidth.default;
             const orbitoolsStackOnMobile = flexControls.stackOnMobile !== undefined ? flexControls.stackOnMobile : flexControlsConfig.stackOnMobile.default;
             
             // Helper function to update flex controls
@@ -429,6 +462,27 @@
                     getControlOptions(flexSupports, 'alignContent', currentFlexDirection) : [];
                 
                 // Add controls based on what's enabled
+                
+                // Add column count control first (RangeControl)
+                if (getControlOptions(flexSupports, 'columnCount', currentFlexDirection).length > 0) {
+                    const controlConfig = flexControlsConfig.columnCount;
+                    const controlTitle = getControlTitle('columnCount', useNice, currentFlexDirection);
+                    
+                    controls.push(
+                        wp.element.createElement(RangeControl, {
+                            key: 'columnCount',
+                            label: controlTitle,
+                            value: orbitoolsColumnCount,
+                            onChange: (value) => updateFlexControl('columnCount', value),
+                            min: controlConfig.options.min,
+                            max: controlConfig.options.max,
+                            step: controlConfig.options.step,
+                            __next40pxDefaultSize: true,
+                            __nextHasNoMarginBottom: true
+                        })
+                    );
+                }
+                
                 if (flexDirectionOptions.length > 0) {
                     controls.push(createFlexControl(
                         'flexDirection',
@@ -514,6 +568,40 @@
                         useNice,
                         currentFlexDirection
                     ));
+                }
+                
+                // Add gap control if supported
+                if (flexSupports.enableGap !== false) {
+                    const controlTitle = getControlTitle('enableGap', useNice, currentFlexDirection);
+                    controls.push(
+                        wp.element.createElement(ToggleControl, {
+                            key: 'enableGap',
+                            label: controlTitle,
+                            help: 'Add space between items in the layout',
+                            checked: orbitoolsEnableGap,
+                            onChange: (value) => updateFlexControl('enableGap', value),
+                            __nextHasNoMarginBottom: true
+                        })
+                    );
+                }
+                
+                // Add restrict content width control if supported and block is full width
+                if (flexSupports.restrictContentWidth !== false) {
+                    // Only show if block has full alignment
+                    const blockAlign = attributes.align;
+                    if (blockAlign === 'full') {
+                        const controlTitle = getControlTitle('restrictContentWidth', useNice, currentFlexDirection);
+                        controls.push(
+                            wp.element.createElement(ToggleControl, {
+                                key: 'restrictContentWidth',
+                                label: controlTitle,
+                                help: 'Limit content to the site\'s standard width',
+                                checked: orbitoolsRestrictContentWidth,
+                                onChange: (value) => updateFlexControl('restrictContentWidth', value),
+                                __nextHasNoMarginBottom: true
+                            })
+                        );
+                    }
                 }
                 
                 // Add stack on mobile toggle if supported

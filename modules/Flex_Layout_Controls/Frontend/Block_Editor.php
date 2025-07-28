@@ -115,12 +115,6 @@ class Block_Editor
             array_merge($deps, array('orbitools-flex-config', 'orbitools-flex-icons', 'orbitools-flex-attribute-registration'))
         );
 
-        $this->enqueue_script(
-            'orbitools-flex-class-application',
-            $module_url . 'js/class-application.js',
-            array_merge($deps, array('orbitools-flex-config', 'orbitools-flex-attribute-registration'))
-        );
-
         // Localize data for JavaScript
         wp_localize_script(
             'orbitools-flex-editor-controls',
@@ -249,4 +243,5 @@ class Block_Editor
             );
         }
     }
+
 }

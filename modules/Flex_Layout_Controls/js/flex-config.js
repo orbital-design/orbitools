@@ -5,6 +5,19 @@
  */
 
 window.FlexControlsConfig = {
+    columnCount: {
+        name: "Columns",
+        niceName: "Columns",
+        prop: "grid-template-columns",
+        control: "RangeControl",
+        desc: "Set the number of columns for the layout.",
+        default: 3,
+        options: {
+            min: 1,
+            max: 10,
+            step: 1
+        }
+    },
     flexDirection: {
         name: "Flex Direction",
         niceName: "Orientation",
@@ -241,6 +254,35 @@ window.FlexControlsConfig = {
                 availableFor: ["row", "column"]
             }
         ]
+    },
+    enableGap: {
+        name: "Add Spacing",
+        niceName: "Item Spacing",
+        prop: "gap",
+        control: "ToggleControl",
+        desc: "Add space between items in the layout.",
+        default: true,
+        cssMapping: {
+            abbrev: "gap",
+            classPattern: "flex-gap",
+            skipDefault: false
+        }
+    },
+    restrictContentWidth: {
+        name: "Constrain Content",
+        niceName: "Constrain Content",
+        prop: "max-width",
+        control: "ToggleControl",
+        desc: "Limit content to the site's standard width.",
+        default: false,
+        cssMapping: {
+            abbrev: "restrict",
+            classPattern: "flex-restrict-content",
+            skipDefault: false
+        },
+        showWhen: {
+            align: ["full"]
+        }
     },
     stackOnMobile: {
         name: "Stack on Mobile",
