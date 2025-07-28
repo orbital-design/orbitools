@@ -10,7 +10,8 @@ const flexControlsConfig = window.FlexControlsConfig || {
     flexWrap: { default: 'nowrap' },
     alignItems: { default: 'stretch' },
     justifyContent: { default: 'flex-start' },
-    alignContent: { default: 'stretch' }
+    alignContent: { default: 'stretch' },
+    stackOnMobile: { default: true }
 };
 
 // Register attributes immediately when script loads

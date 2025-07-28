@@ -47,7 +47,7 @@
             // Always apply flex layout to supported blocks
             {
                 const existingClasses = props.className || '';
-                let flexClasses = 'has-flex-layout';
+                let flexClasses = 'flex';
                 
                 // Use defaults if values are not set
                 const flexDirection = flexControls.flexDirection || flexControlsConfig.flexDirection.default;
@@ -55,34 +55,34 @@
                 const alignItems = flexControls.alignItems || flexControlsConfig.alignItems.default;
                 const justifyContent = flexControls.justifyContent || flexControlsConfig.justifyContent.default;
                 const alignContent = flexControls.alignContent || flexControlsConfig.alignContent.default;
-                const stackOnMobile = flexControls.stackOnMobile || flexControlsConfig.stackOnMobile.default;
+                const stackOnMobile = flexControls.stackOnMobile !== undefined ? flexControls.stackOnMobile : flexControlsConfig.stackOnMobile.default;
                 
-                // Add flex direction class
+                // Add flex direction class (skipDefault: true - only if not default)
                 if (flexDirection !== 'row') {
-                    flexClasses += ` has-flex-direction-${flexDirection}`;
+                    flexClasses += ` flex-flow-${flexDirection}`;
                 }
                 
-                // Add flex wrap class
+                // Add flex wrap class (skipDefault: true - only if not default)
                 if (flexWrap !== 'nowrap') {
-                    flexClasses += ` has-flex-wrap-${flexWrap.replace('-', '-')}`;
+                    flexClasses += ` flex-flow-${flexWrap}`;
                 }
                 
-                // Add align items class
+                // Add align items class (skipDefault: true - only if not default)
                 if (alignItems !== 'stretch') {
-                    flexClasses += ` has-align-items-${alignItems.replace('-', '-')}`;
+                    flexClasses += ` flex-items-${alignItems}`;
                 }
                 
-                // Add justify content class
+                // Add justify content class (skipDefault: true - only if not default)
                 if (justifyContent !== 'flex-start') {
-                    flexClasses += ` has-justify-content-${justifyContent.replace('-', '-')}`;
+                    flexClasses += ` flex-justify-${justifyContent}`;
                 }
                 
-                // Add align content class
-                if (alignContent !== 'stretch') {
-                    flexClasses += ` has-align-content-${alignContent.replace('-', '-')}`;
+                // Add align content class (skipDefault: true - only if not default AND wrapping)
+                if (alignContent !== 'stretch' && flexWrap !== 'nowrap') {
+                    flexClasses += ` flex-content-${alignContent}`;
                 }
                 
-                // Add stack on mobile class
+                // Add stack on mobile class (skipDefault: false - add when true)
                 if (stackOnMobile) {
                     flexClasses += ' flex-stack-mobile';
                 }
@@ -118,7 +118,7 @@
 
         // Always apply flex layout to supported blocks
         const existingClasses = props.className || '';
-        let flexClasses = 'has-flex-layout';
+        let flexClasses = 'flex';
         
         // Use defaults if values are not set
         const flexDirection = flexControls.flexDirection || flexControlsConfig.flexDirection.default;
@@ -126,23 +126,34 @@
         const alignItems = flexControls.alignItems || flexControlsConfig.alignItems.default;
         const justifyContent = flexControls.justifyContent || flexControlsConfig.justifyContent.default;
         const alignContent = flexControls.alignContent || flexControlsConfig.alignContent.default;
+        const stackOnMobile = flexControls.stackOnMobile !== undefined ? flexControls.stackOnMobile : flexControlsConfig.stackOnMobile.default;
         
-        // Add flex direction class (always add, even for row)
-        flexClasses += ` has-flex-direction-${flexDirection}`;
+        // Add flex direction class (skipDefault: true - only if not default)
+        if (flexDirection !== 'row') {
+            flexClasses += ` flex-flow-${flexDirection}`;
+        }
         
-        // Add flex wrap class (always add, even for nowrap)
-        flexClasses += ` has-flex-wrap-${flexWrap}`;
+        // Add flex wrap class (skipDefault: true - only if not default)
+        if (flexWrap !== 'nowrap') {
+            flexClasses += ` flex-flow-${flexWrap}`;
+        }
         
-        // Add align items class (always add, even for stretch)
-        flexClasses += ` has-align-items-${alignItems}`;
+        // Add align items class (skipDefault: true - only if not default)
+        if (alignItems !== 'stretch') {
+            flexClasses += ` flex-items-${alignItems}`;
+        }
         
-        // Add justify content class (always add, even for flex-start)
-        flexClasses += ` has-justify-content-${justifyContent}`;
+        // Add justify content class (skipDefault: true - only if not default)
+        if (justifyContent !== 'flex-start') {
+            flexClasses += ` flex-justify-${justifyContent}`;
+        }
         
-        // Add align content class (always add, even for stretch)
-        flexClasses += ` has-align-content-${alignContent}`;
+        // Add align content class (skipDefault: true - only if not default AND wrapping)
+        if (alignContent !== 'stretch' && flexWrap !== 'nowrap') {
+            flexClasses += ` flex-content-${alignContent}`;
+        }
         
-        // Add stack on mobile class
+        // Add stack on mobile class (skipDefault: false - add when true)
         if (stackOnMobile) {
             flexClasses += ' flex-stack-mobile';
         }

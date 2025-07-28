@@ -48,7 +48,7 @@ class Block_Helper
      * @var array
      */
     private static $css_mapping = [
-        'flexDirection' => ['abbrev' => 'flow', 'pattern' => 'flex-flow-{value}', 'skipDefault' => false],
+        'flexDirection' => ['abbrev' => 'flow', 'pattern' => 'flex-flow-{value}', 'skipDefault' => true],
         'flexWrap' => ['abbrev' => 'flow', 'pattern' => 'flex-flow-{value}', 'skipDefault' => true],
         'alignItems' => ['abbrev' => 'items', 'pattern' => 'flex-items-{value}', 'skipDefault' => true],
         'justifyContent' => ['abbrev' => 'justify', 'pattern' => 'flex-justify-{value}', 'skipDefault' => true],

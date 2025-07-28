@@ -37,13 +37,13 @@
                     slug: "row",
                     name: "Row", 
                     niceName: "Horizontal",
-                    icon: flexDirectionIcons.row
+                    icon: "flexDirectionRow"
                 },
                 {
                     slug: "column",
                     name: "Column",
                     niceName: "Vertical", 
-                    icon: flexDirectionIcons.column
+                    icon: "flexDirectionColumn"
                 },
                 {
                     slug: "row-reverse",
@@ -400,7 +400,7 @@
             const orbitoolsAlignItems = flexControls.alignItems || flexControlsConfig.alignItems.default;
             const orbitoolsJustifyContent = flexControls.justifyContent || flexControlsConfig.justifyContent.default;
             const orbitoolsAlignContent = flexControls.alignContent || flexControlsConfig.alignContent.default;
-            const orbitoolsStackOnMobile = flexControls.stackOnMobile || flexControlsConfig.stackOnMobile.default;
+            const orbitoolsStackOnMobile = flexControls.stackOnMobile !== undefined ? flexControls.stackOnMobile : flexControlsConfig.stackOnMobile.default;
             
             // Helper function to update flex controls
             const updateFlexControl = (property, value) => {
