@@ -1,0 +1,159 @@
+<?php
+
+/**
+ * Flex Layout Controls CSS Generator
+ *
+ * Generates CSS for flex layout controls applied to blocks.
+ *
+ * @package    Orbitools
+ * @subpackage Modules/Flex_Layout_Controls/Core
+ * @since      1.0.0
+ */
+
+namespace Orbitools\Modules\Flex_Layout_Controls\Core;
+
+use Orbitools\Modules\Flex_Layout_Controls\Admin\Settings_Helper;
+
+// Prevent direct access
+if (!defined('ABSPATH')) {
+    exit;
+}
+
+/**
+ * CSS Generator Class
+ *
+ * Handles CSS generation for flex layout controls.
+ *
+ * @since 1.0.0
+ */
+class CSS_Generator
+{
+    /**
+     * Cache key prefix for generated CSS
+     *
+     * @since 1.0.0
+     * @var string
+     */
+    const CACHE_PREFIX = 'orbitools_flex_css_';
+
+    /**
+     * Cache expiration time in seconds (24 hours)
+     *
+     * @since 1.0.0
+     * @var int
+     */
+    const CACHE_EXPIRATION = 24 * 60 * 60;
+
+    /**
+     * Initialize CSS generation
+     *
+     * @since 1.0.0
+     */
+    public function __construct()
+    {
+        // Hook into wp_head to output CSS
+        add_action('wp_head', array($this, 'output_flex_css'), 10);
+    }
+
+    /**
+     * Output flex layout CSS in the page head
+     *
+     * @since 1.0.0
+     */
+    public function output_flex_css(): void
+    {
+        // Only output if module is enabled and CSS output is enabled
+        if (!Settings_Helper::is_module_enabled() || !Settings_Helper::output_flex_css()) {
+            return;
+        }
+
+        $css = $this->generate_flex_css();
+        
+        if (!empty($css)) {
+            echo "<style id='orbitools-flex-layout-css'>\n" . $css . "\n</style>\n";
+        }
+    }
+
+    /**
+     * Generate CSS for all flex layout classes
+     *
+     * @since 1.0.0
+     * @return string Generated CSS.
+     */
+    public function generate_flex_css(): string
+    {
+        $cache_key = self::CACHE_PREFIX . 'main';
+        $cached_css = get_transient($cache_key);
+
+        if ($cached_css !== false) {
+            return $cached_css;
+        }
+
+        $css_rules = array();
+
+        // Base flex container class
+        $css_rules[] = '.has-flex-layout { display: flex; }';
+
+        // Flex direction classes
+        $css_rules[] = '.has-flex-direction-row { flex-direction: row; }';
+        $css_rules[] = '.has-flex-direction-column { flex-direction: column; }';
+
+        // Flex wrap classes
+        $css_rules[] = '.has-flex-wrap-nowrap { flex-wrap: nowrap; }';
+        $css_rules[] = '.has-flex-wrap-wrap { flex-wrap: wrap; }';
+        $css_rules[] = '.has-flex-wrap-wrap-reverse { flex-wrap: wrap-reverse; }';
+
+        // Align items classes
+        $css_rules[] = '.has-align-items-stretch { align-items: stretch; }';
+        $css_rules[] = '.has-align-items-center { align-items: center; }';
+        $css_rules[] = '.has-align-items-flex-start { align-items: flex-start; }';
+        $css_rules[] = '.has-align-items-flex-end { align-items: flex-end; }';
+        $css_rules[] = '.has-align-items-baseline { align-items: baseline; }';
+
+        // Justify content classes
+        $css_rules[] = '.has-justify-content-flex-start { justify-content: flex-start; }';
+        $css_rules[] = '.has-justify-content-center { justify-content: center; }';
+        $css_rules[] = '.has-justify-content-flex-end { justify-content: flex-end; }';
+        $css_rules[] = '.has-justify-content-space-between { justify-content: space-between; }';
+        $css_rules[] = '.has-justify-content-space-around { justify-content: space-around; }';
+        $css_rules[] = '.has-justify-content-space-evenly { justify-content: space-evenly; }';
+
+        // Align content classes
+        $css_rules[] = '.has-align-content-stretch { align-content: stretch; }';
+        $css_rules[] = '.has-align-content-center { align-content: center; }';
+        $css_rules[] = '.has-align-content-flex-start { align-content: flex-start; }';
+        $css_rules[] = '.has-align-content-flex-end { align-content: flex-end; }';
+        $css_rules[] = '.has-align-content-space-between { align-content: space-between; }';
+        $css_rules[] = '.has-align-content-space-around { align-content: space-around; }';
+        $css_rules[] = '.has-align-content-space-evenly { align-content: space-evenly; }';
+
+        $css = implode("\n", $css_rules);
+
+        // Cache the CSS
+        set_transient($cache_key, $css, self::CACHE_EXPIRATION);
+
+        return $css;
+    }
+
+    /**
+     * Clear all cached CSS
+     *
+     * @since 1.0.0
+     */
+    public function clear_cache(): void
+    {
+        global $wpdb;
+        
+        // Clear all flex CSS transients
+        $wpdb->query(
+            $wpdb->prepare(
+                "DELETE FROM {$wpdb->options} WHERE option_name LIKE %s OR option_name LIKE %s",
+                '_transient_' . self::CACHE_PREFIX . '%',
+                '_transient_timeout_' . self::CACHE_PREFIX . '%'
+            )
+        );
+
+        // Clear object cache
+        wp_cache_delete('orbitools_flex_layout', 'theme_json');
+    }
+}

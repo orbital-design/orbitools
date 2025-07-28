@@ -9,6 +9,7 @@ use Orbitools\Modules\Layout_Guides\Layout_Guides;
 use Orbitools\Modules\Menu_Groups\Menu_Groups;
 use Orbitools\Modules\Menu_Dividers\Menu_Dividers;
 use Orbitools\Modules\Analytics\Analytics;
+use Orbitools\Modules\Flex_Layout_Controls\Flex_Layout_Controls;
 
 /**
  * Class Loader
@@ -60,5 +61,6 @@ class Loader
         $this->modules[] = new Menu_Groups();
         $this->modules[] = new Menu_Dividers();
         $this->modules[] = new Analytics();
+        $this->modules[] = new Flex_Layout_Controls();
     }
 }
