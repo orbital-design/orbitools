@@ -33,7 +33,7 @@ class Block_Helper
      * @var array
      */
     private static $defaults = [
-        'columnCount' => 3,
+        'columnCount' => 2,
         'flexDirection' => 'row',
         'flexWrap' => 'nowrap',
         'alignItems' => 'stretch',

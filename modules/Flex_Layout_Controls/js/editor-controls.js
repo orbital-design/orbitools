@@ -21,7 +21,7 @@
 
     // Simple defaults - matches PHP Block_Helper
     const DEFAULTS = {
-        columnCount: 3,
+        columnCount: 2,
         flexDirection: 'row',
         alignItems: 'stretch',
         justifyContent: 'flex-start',

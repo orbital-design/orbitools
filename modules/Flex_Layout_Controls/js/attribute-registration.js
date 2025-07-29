@@ -4,17 +4,18 @@
  * Handles registering flex layout attributes on blocks based on their supports.flexControls configuration
  */
 
-// Use external configuration object - source of truth for defaults
-const flexControlsConfig = window.FlexControlsConfig || {
-    columnCount: { default: 1 },
-    flexDirection: { default: 'row' },
-    flexWrap: { default: 'nowrap' },
-    alignItems: { default: 'stretch' },
-    justifyContent: { default: 'flex-start' },
-    alignContent: { default: 'stretch' },
-    enableGap: { default: true },
-    restrictContentWidth: { default: false },
-    stackOnMobile: { default: true }
+// Simple defaults - matches editor-controls.js and PHP Block_Helper
+const DEFAULTS = {
+    columnCount: 2,
+    flexDirection: 'row',
+    alignItems: 'stretch',
+    justifyContent: 'flex-start',
+    alignContent: 'stretch',
+    enableGap: true,
+    restrictContentWidth: false,
+    stackOnMobile: true,
+    columnLayout: 'fit',
+    gridSystem: '5'
 };
 
 // Register attributes immediately when script loads
@@ -34,43 +35,47 @@ wp.hooks.addFilter(
         
         if (flexSupports === true) {
             // Add all flex controls when flexControls: true
-            defaultFlexControls.columnCount = flexControlsConfig.columnCount.default;
-            defaultFlexControls.flexDirection = flexControlsConfig.flexDirection.default;
-            defaultFlexControls.flexWrap = flexControlsConfig.flexWrap.default;
-            defaultFlexControls.alignItems = flexControlsConfig.alignItems.default;
-            defaultFlexControls.justifyContent = flexControlsConfig.justifyContent.default;
-            defaultFlexControls.alignContent = flexControlsConfig.alignContent.default;
-            defaultFlexControls.enableGap = flexControlsConfig.enableGap.default;
-            defaultFlexControls.restrictContentWidth = flexControlsConfig.restrictContentWidth.default;
-            defaultFlexControls.stackOnMobile = flexControlsConfig.stackOnMobile.default;
+            defaultFlexControls.columnCount = DEFAULTS.columnCount;
+            defaultFlexControls.flexDirection = DEFAULTS.flexDirection;
+            defaultFlexControls.alignItems = DEFAULTS.alignItems;
+            defaultFlexControls.justifyContent = DEFAULTS.justifyContent;
+            defaultFlexControls.alignContent = DEFAULTS.alignContent;
+            defaultFlexControls.enableGap = DEFAULTS.enableGap;
+            defaultFlexControls.restrictContentWidth = DEFAULTS.restrictContentWidth;
+            defaultFlexControls.stackOnMobile = DEFAULTS.stackOnMobile;
+            defaultFlexControls.columnLayout = DEFAULTS.columnLayout;
+            defaultFlexControls.gridSystem = DEFAULTS.gridSystem;
         } else if (typeof flexSupports === 'object') {
             // Add specific controls based on configuration
             if (flexSupports.columnCount !== false) {
-                defaultFlexControls.columnCount = flexControlsConfig.columnCount.default;
+                defaultFlexControls.columnCount = DEFAULTS.columnCount;
             }
             if (flexSupports.flexDirection !== false) {
-                defaultFlexControls.flexDirection = flexControlsConfig.flexDirection.default;
-            }
-            if (flexSupports.flexWrap !== false) {
-                defaultFlexControls.flexWrap = flexControlsConfig.flexWrap.default;
+                defaultFlexControls.flexDirection = DEFAULTS.flexDirection;
             }
             if (flexSupports.alignItems !== false) {
-                defaultFlexControls.alignItems = flexControlsConfig.alignItems.default;
+                defaultFlexControls.alignItems = DEFAULTS.alignItems;
             }
             if (flexSupports.justifyContent !== false) {
-                defaultFlexControls.justifyContent = flexControlsConfig.justifyContent.default;
+                defaultFlexControls.justifyContent = DEFAULTS.justifyContent;
             }
             if (flexSupports.alignContent !== false) {
-                defaultFlexControls.alignContent = flexControlsConfig.alignContent.default;
+                defaultFlexControls.alignContent = DEFAULTS.alignContent;
             }
             if (flexSupports.enableGap !== false) {
-                defaultFlexControls.enableGap = flexControlsConfig.enableGap.default;
+                defaultFlexControls.enableGap = DEFAULTS.enableGap;
             }
             if (flexSupports.restrictContentWidth !== false) {
-                defaultFlexControls.restrictContentWidth = flexControlsConfig.restrictContentWidth.default;
+                defaultFlexControls.restrictContentWidth = DEFAULTS.restrictContentWidth;
             }
             if (flexSupports.stackOnMobile !== false) {
-                defaultFlexControls.stackOnMobile = flexControlsConfig.stackOnMobile.default;
+                defaultFlexControls.stackOnMobile = DEFAULTS.stackOnMobile;
+            }
+            if (flexSupports.columnLayout !== false) {
+                defaultFlexControls.columnLayout = DEFAULTS.columnLayout;
+            }
+            if (flexSupports.gridSystem !== false) {
+                defaultFlexControls.gridSystem = DEFAULTS.gridSystem;
             }
         }
         
