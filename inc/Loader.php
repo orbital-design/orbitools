@@ -11,6 +11,7 @@ use Orbitools\Modules\Menu_Groups\Menu_Groups;
 use Orbitools\Modules\Menu_Dividers\Menu_Dividers;
 use Orbitools\Modules\Analytics\Analytics;
 use Orbitools\Modules\Flex_Layout_Controls\Flex_Layout_Controls;
+use Orbitools\Modules\Column_Widths_Controls\Column_Widths_Controls;
 
 /**
  * Class Loader
@@ -66,5 +67,6 @@ class Loader
         $this->modules[] = new Menu_Dividers();
         $this->modules[] = new Analytics();
         $this->modules[] = new Flex_Layout_Controls();
+        $this->modules[] = new Column_Widths_Controls();
     }
 }
