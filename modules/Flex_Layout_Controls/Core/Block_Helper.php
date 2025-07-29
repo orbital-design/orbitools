@@ -41,44 +41,11 @@ class Block_Helper
         'alignContent' => 'stretch',
         'enableGap' => true,
         'restrictContentWidth' => false,
-        'stackOnMobile' => true
+        'stackOnMobile' => true,
+        'columnLayout' => 'fit',
+        'gridSystem' => '5'
     ];
 
-    /**
-     * CSS mapping configuration (synced with JS config)
-     *
-     * @since 1.0.0
-     * @var array
-     */
-    private static $css_mapping = [
-        'flexDirection' => ['abbrev' => 'flow', 'pattern' => 'flex-flow-{value}', 'skipDefault' => true],
-        'flexWrap' => ['abbrev' => 'flow', 'pattern' => 'flex-flow-{value}', 'skipDefault' => true],
-        'alignItems' => ['abbrev' => 'items', 'pattern' => 'flex-items-{value}', 'skipDefault' => true],
-        'justifyContent' => ['abbrev' => 'justify', 'pattern' => 'flex-justify-{value}', 'skipDefault' => true],
-        'alignContent' => ['abbrev' => 'content', 'pattern' => 'flex-content-{value}', 'skipDefault' => true],
-        'enableGap' => ['abbrev' => 'gap', 'pattern' => 'flex-gap', 'skipDefault' => false],
-        'restrictContentWidth' => ['abbrev' => 'restrict', 'pattern' => 'flex-restrict-content', 'skipDefault' => false],
-        'stackOnMobile' => ['abbrev' => 'stack', 'pattern' => 'flex-stack-mobile', 'skipDefault' => false]
-    ];
-
-    /**
-     * Control visibility conditions (synced with JS config)
-     *
-     * @since 1.0.0
-     * @var array
-     */
-    private static $control_conditions = [
-        'alignContent' => [
-            'showWhen' => [
-                'flexWrap' => ['wrap', 'wrap-reverse']
-            ]
-        ],
-        'restrictContentWidth' => [
-            'showWhen' => [
-                'align' => ['full']
-            ]
-        ]
-    ];
 
     /**
      * Generate flex layout classes from block attributes
@@ -117,6 +84,8 @@ class Block_Helper
         $enable_gap = $flex_controls['enableGap'] ?? self::$defaults['enableGap'];
         $restrict_content_width = $flex_controls['restrictContentWidth'] ?? self::$defaults['restrictContentWidth'];
         $stack_on_mobile = $flex_controls['stackOnMobile'] ?? self::$defaults['stackOnMobile'];
+        $column_layout = $flex_controls['columnLayout'] ?? self::$defaults['columnLayout'];
+        $grid_system = $flex_controls['gridSystem'] ?? self::$defaults['gridSystem'];
         
         // Add direction classes (skip defaults)
         if ($direction !== 'row') {
@@ -156,6 +125,16 @@ class Block_Helper
         // Add stack on mobile class (when enabled)
         if ($stack_on_mobile) {
             $classes[] = 'flex-stack-mobile';
+        }
+        
+        // Add column layout classes (skip defaults)
+        if ($column_layout !== 'fit') {
+            $classes[] = "flex-layout-{$column_layout}";
+        }
+        
+        // Add grid system classes (only if column layout is custom)
+        if ($column_layout === 'custom') {
+            $classes[] = "flex-grid-{$grid_system}col";
         }
         
         return implode(' ', array_filter($classes));
@@ -210,108 +189,4 @@ class Block_Helper
         return $flex_controls[$control_name] ?? self::$defaults[$control_name] ?? null;
     }
 
-    /**
-     * Check if a control should be shown based on config conditions
-     *
-     * @since 1.0.0
-     * @param string $control_name The control name to check
-     * @param array $current_values Current flex control values
-     * @return bool True if control should be shown
-     */
-    private static function should_show_control(string $control_name, array $current_values): bool
-    {
-        if (!isset(self::$control_conditions[$control_name])) {
-            return true; // Show by default if no conditions
-        }
-
-        $conditions = self::$control_conditions[$control_name];
-        if (!isset($conditions['showWhen'])) {
-            return true;
-        }
-
-        // Check all conditions in showWhen
-        foreach ($conditions['showWhen'] as $dependent_control => $allowed_values) {
-            $current_value = $current_values[$dependent_control] ?? null;
-            
-            if (!is_array($allowed_values)) {
-                continue;
-            }
-            
-            // If current value is not in allowed values, don't show control
-            if (!in_array($current_value, $allowed_values, true)) {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    /**
-     * Generate flex classes for JavaScript (to avoid duplication)
-     *
-     * @since 1.0.0
-     * @param array $flex_controls Flex control values
-     * @return string CSS classes string
-     */
-    public static function generate_flex_classes_for_js(array $flex_controls): string
-    {
-        // Don't process flex classes if module is disabled
-        if (!\Orbitools\Modules\Flex_Layout_Controls\Admin\Settings_Helper::is_module_enabled()) {
-            return '';
-        }
-
-        $classes = ['flex'];
-        
-        // Get values with defaults
-        $all_controls = [
-            'columnCount' => $flex_controls['columnCount'] ?? self::$defaults['columnCount'],
-            'flexDirection' => $flex_controls['flexDirection'] ?? self::$defaults['flexDirection'],
-            'flexWrap' => $flex_controls['flexWrap'] ?? self::$defaults['flexWrap'],
-            'alignItems' => $flex_controls['alignItems'] ?? self::$defaults['alignItems'],
-            'justifyContent' => $flex_controls['justifyContent'] ?? self::$defaults['justifyContent'],
-            'alignContent' => $flex_controls['alignContent'] ?? self::$defaults['alignContent'],
-            'enableGap' => $flex_controls['enableGap'] ?? self::$defaults['enableGap'],
-            'restrictContentWidth' => $flex_controls['restrictContentWidth'] ?? self::$defaults['restrictContentWidth'],
-            'stackOnMobile' => $flex_controls['stackOnMobile'] ?? self::$defaults['stackOnMobile']
-        ];
-        
-        foreach ($all_controls as $control_name => $value) {
-            // Skip columnCount as it doesn't generate CSS classes
-            if ($control_name === 'columnCount') {
-                continue;
-            }
-            
-            // Skip if this control shouldn't be shown based on conditions
-            if (!self::should_show_control($control_name, $all_controls)) {
-                continue;
-            }
-            
-            // Get CSS mapping config for this control
-            $css_config = self::$css_mapping[$control_name] ?? null;
-            if (!$css_config) {
-                continue;
-            }
-            
-            $default_value = self::$defaults[$control_name];
-            
-            // Skip if value is default and skipDefault is true
-            if ($css_config['skipDefault'] && $value === $default_value) {
-                continue;
-            }
-            
-            // Generate class name from pattern
-            if (in_array($control_name, ['enableGap', 'restrictContentWidth', 'stackOnMobile'])) {
-                // Boolean controls: only add class when true
-                if ($value) {
-                    $classes[] = $css_config['pattern'];
-                }
-            } else {
-                // Standard pattern replacement for non-boolean controls
-                $class_name = str_replace('{value}', $value, $css_config['pattern']);
-                $classes[] = $class_name;
-            }
-        }
-        
-        return implode(' ', array_filter($classes));
-    }
 }
