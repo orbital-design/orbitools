@@ -1,7 +1,7 @@
 /**
- * Flex Layout Controls - Editor Controls
+ * Flex Layout Controls - Clean Rewrite
  * 
- * Adds flex layout controls to the block editor inspector using ToggleGroupControl
+ * Simple, direct approach to flex layout controls using ToolsPanel
  */
 
 (function() {
@@ -10,621 +10,324 @@
     const { Fragment } = wp.element;
     const { InspectorControls } = wp.blockEditor;
     const { 
+        __experimentalToolsPanel: ToolsPanel,
+        __experimentalToolsPanelItem: ToolsPanelItem,
         __experimentalToggleGroupControl: ToggleGroupControl,
         __experimentalToggleGroupControlOption: ToggleGroupControlOption,
         __experimentalToggleGroupControlOptionIcon: ToggleGroupControlOptionIcon,
-        PanelBody,
         ToggleControl,
         RangeControl
     } = wp.components;
 
-    // Helper function to get block supports
+    // Simple defaults - matches PHP Block_Helper
+    const DEFAULTS = {
+        columnCount: 3,
+        flexDirection: 'row',
+        alignItems: 'stretch',
+        justifyContent: 'flex-start',
+        alignContent: 'stretch',
+        enableGap: true,
+        restrictContentWidth: false,
+        stackOnMobile: true,
+        columnLayout: 'fit',
+        gridSystem: '5'
+    };
+
+    // Simple option definitions
+    const DIRECTION_OPTIONS = [
+        { value: 'row', label: 'Horizontal' },
+        { value: 'column', label: 'Vertical' }
+    ];
+
+    const JUSTIFY_OPTIONS = [
+        { value: 'flex-start', label: 'Start' },
+        { value: 'center', label: 'Center' },
+        { value: 'flex-end', label: 'End' },
+        { value: 'space-between', label: 'Space Between' },
+        { value: 'space-around', label: 'Space Around' },
+        { value: 'space-evenly', label: 'Space Evenly' }
+    ];
+
+    const ALIGN_OPTIONS = [
+        { value: 'stretch', label: 'Stretch' },
+        { value: 'center', label: 'Center' },
+        { value: 'flex-start', label: 'Start' },
+        { value: 'flex-end', label: 'End' },
+        { value: 'baseline', label: 'Baseline' }
+    ];
+
+    const COLUMN_LAYOUT_OPTIONS = [
+        { value: 'fit', label: 'Fit Content' },
+        { value: 'grow', label: 'Equal' },
+        { value: 'custom', label: 'Custom (Grid)' }
+    ];
+
+    const GRID_SYSTEM_OPTIONS = [
+        { value: '5', label: '5 Column Grid' },
+        { value: '12', label: '12 Column Grid' }
+    ];
+
+    // Helper to get block supports
     function getBlockSupports(blockName) {
         const blockType = wp.blocks.getBlockType(blockName);
         return blockType?.supports?.flexControls;
     }
 
-    // Use external configuration and icons
-    const flexControlsConfig = window.FlexControlsConfig || {
-        flexDirection: {
-            name: "Flex Direction",
-            niceName: "Orientation",
-            prop: "flex-direction",
-            control: "ToggleGroupControl",
-            desc: "Direction of flow for content.",
-            default: "row",
-            options: [
-                {
-                    slug: "row",
-                    name: "Row", 
-                    niceName: "Horizontal",
-                    icon: "flexDirectionRow"
-                },
-                {
-                    slug: "column",
-                    name: "Column",
-                    niceName: "Vertical", 
-                    icon: "flexDirectionColumn"
-                },
-                {
-                    slug: "row-reverse",
-                    name: "Row Reverse",
-                    niceName: "Horizontal Reverse",
-                    icon: null
-                },
-                {
-                    slug: "column-reverse", 
-                    name: "Column Reverse",
-                    niceName: "Vertical Reverse",
-                    icon: null
-                }
-            ]
-        },
-        flexWrap: {
-            name: "Flex Wrap",
-            niceName: "Wrapping",
-            prop: "flex-wrap",
-            control: "ToggleGroupControl",
-            desc: "Controls whether items wrap to new lines.",
-            default: "nowrap",
-            options: [
-                {
-                    slug: "nowrap",
-                    name: "No Wrap",
-                    niceName: "No Wrap",
-                    icon: null
-                },
-                {
-                    slug: "wrap",
-                    name: "Wrap", 
-                    niceName: "Wrap",
-                    icon: null
-                },
-                {
-                    slug: "wrap-reverse",
-                    name: "Wrap Reverse",
-                    niceName: "Wrap Reverse",
-                    icon: null
-                }
-            ]
-        },
-        alignItems: {
-            name: "Align Items",
-            niceName: "Cross-Axis Alignment", 
-            prop: "align-items",
-            control: "ToggleGroupControl",
-            desc: "How items align on the cross axis (perpendicular to flex direction).",
-            default: "stretch",
-            options: [
-                {
-                    slug: "stretch",
-                    name: "Stretch",
-                    niceName: "Stretch",
-                    icon: null
-                },
-                {
-                    slug: "center",
-                    name: "Center",
-                    niceName: "Center", 
-                    icon: null
-                },
-                {
-                    slug: "flex-start",
-                    name: "Flex Start",
-                    niceName: "Start",
-                    icon: null
-                },
-                {
-                    slug: "flex-end",
-                    name: "Flex End", 
-                    niceName: "End",
-                    icon: null
-                },
-                {
-                    slug: "baseline",
-                    name: "Baseline",
-                    niceName: "Baseline",
-                    icon: null
-                }
-            ]
-        },
-        justifyContent: {
-            name: "Justify Content",
-            niceName: "Main-Axis Alignment",
-            prop: "justify-content", 
-            control: "ToggleGroupControl",
-            desc: "How items align on the main axis (along flex direction).",
-            default: "flex-start",
-            options: [
-                {
-                    slug: "flex-start",
-                    name: "Flex Start",
-                    niceName: "Start",
-                    icon: null
-                },
-                {
-                    slug: "center", 
-                    name: "Center",
-                    niceName: "Center",
-                    icon: null
-                },
-                {
-                    slug: "flex-end",
-                    name: "Flex End",
-                    niceName: "End",
-                    icon: null
-                },
-                {
-                    slug: "space-between",
-                    name: "Space Between",
-                    niceName: "Space Between", 
-                    icon: null
-                },
-                {
-                    slug: "space-around",
-                    name: "Space Around",
-                    niceName: "Space Around",
-                    icon: null
-                },
-                {
-                    slug: "space-evenly",
-                    name: "Space Evenly",
-                    niceName: "Space Evenly",
-                    icon: null
-                }
-            ]
-        },
-        alignContent: {
-            name: "Align Content",
-            niceName: "Multi-line Alignment",
-            prop: "align-content",
-            control: "ToggleGroupControl", 
-            desc: "Controls spacing between wrapped flex lines.",
-            default: "stretch",
-            options: [
-                {
-                    slug: "stretch",
-                    name: "Stretch",
-                    niceName: "Stretch",
-                    icon: null
-                },
-                {
-                    slug: "center",
-                    name: "Center", 
-                    niceName: "Center",
-                    icon: null
-                },
-                {
-                    slug: "flex-start",
-                    name: "Flex Start",
-                    niceName: "Start",
-                    icon: null
-                },
-                {
-                    slug: "flex-end",
-                    name: "Flex End",
-                    niceName: "End",
-                    icon: null
-                },
-                {
-                    slug: "space-between",
-                    name: "Space Between",
-                    niceName: "Space Between",
-                    icon: null
-                },
-                {
-                    slug: "space-around",
-                    name: "Space Around", 
-                    niceName: "Space Around",
-                    icon: null
-                },
-                {
-                    slug: "space-evenly",
-                    name: "Space Evenly",
-                    niceName: "Space Evenly",
-                    icon: null
-                }
-            ]
-        }
-    };
-    
-    const flexControlsIcons = window.FlexControlsIcons || {};
-
-    // Helper function to get available options for a control based on supports config and flex direction
-    function getControlOptions(supports, controlName, flexDirection = 'row') {
-        const controlConfig = flexControlsConfig[controlName];
-        if (!controlConfig) return [];
-
-        // Handle non-toggle group controls (like RangeControl, ToggleControl)
-        if (!Array.isArray(controlConfig.options)) {
-            // For non-array options (like RangeControl), return array with control name if supported
-            if (supports === true || (typeof supports === 'object' && supports[controlName] !== false)) {
-                return [controlName];
-            }
-            return [];
-        }
-
-        let availableOptions = [];
-        
-        if (supports === true) {
-            // Return all options when flexControls: true
-            availableOptions = controlConfig.options.map(opt => opt.slug);
-        } else if (typeof supports === 'object' && supports[controlName]) {
-            if (Array.isArray(supports[controlName])) {
-                // Return custom array of options
-                availableOptions = supports[controlName];
-            } else if (supports[controlName] === true) {
-                // Return all options for this control
-                availableOptions = controlConfig.options.map(opt => opt.slug);
-            }
-        }
-        
-        // Filter options based on flex direction availability
-        return availableOptions.filter(optionSlug => {
-            // Skip filtering for non-array options
-            if (!Array.isArray(controlConfig.options)) {
-                return true;
-            }
-            
-            const option = controlConfig.options.find(opt => opt.slug === optionSlug);
-            if (!option || !option.availableFor) {
-                return true; // Include if no availability restriction
-            }
-            return option.availableFor.includes(flexDirection);
-        });
+    // Helper to check if control should be available
+    function isControlSupported(supports, controlName) {
+        if (supports === true) return true;
+        if (typeof supports === 'object' && supports[controlName] !== false) return true;
+        return false;
     }
 
-    // Helper function to check if nice names should be used
-    function useNiceNames(supports) {
-        if (typeof supports === 'object' && supports.niceNames === false) {
-            return false;
-        }
-        return true; // default to true
+    // Helper to create ToolsPanelItem
+    function createToolsPanelItem(controlName, hasValue, onDeselect, label, children, isShownByDefault = false) {
+        return wp.element.createElement(ToolsPanelItem, {
+            hasValue,
+            onDeselect,
+            label,
+            isShownByDefault,
+            panelId: 'flex-layout-panel'
+        }, children);
     }
 
-    // Helper function to get display name for an option
-    function getOptionDisplayName(controlName, optionSlug, useNice) {
-        const controlConfig = flexControlsConfig[controlName];
-        if (!controlConfig) return optionSlug;
-        
-        // Handle non-array options
-        if (!Array.isArray(controlConfig.options)) {
-            return useNice ? controlConfig.niceName : controlConfig.name;
-        }
-        
-        const option = controlConfig.options.find(opt => opt.slug === optionSlug);
-        if (!option) return optionSlug;
-        
-        return useNice ? option.niceName : option.name;
-    }
-
-    // Helper function to get control title based on flex direction
-    function getControlTitle(controlName, useNice, flexDirection = 'row') {
-        const controlConfig = flexControlsConfig[controlName];
-        if (!controlConfig) return controlName;
-        
-        if (!useNice) {
-            return controlConfig.name;
-        }
-        
-        // Handle dynamic nice names based on flex direction
-        if (typeof controlConfig.niceName === 'object') {
-            const baseDirection = flexDirection.replace('-reverse', '');
-            return controlConfig.niceName[baseDirection] || controlConfig.niceName.row || controlConfig.name;
-        }
-        
-        return controlConfig.niceName || controlConfig.name;
-    }
-
-    // Helper function to check if a control should be shown based on config conditions
-    function shouldShowControl(controlName, currentValues) {
-        const controlConfig = flexControlsConfig[controlName];
-        if (!controlConfig || !controlConfig.showWhen) {
-            return true; // Show by default if no conditions
-        }
-        
-        // Check all conditions in showWhen
-        for (const [dependentControl, allowedValues] of Object.entries(controlConfig.showWhen)) {
-            const currentValue = currentValues[dependentControl];
-            if (!Array.isArray(allowedValues)) {
-                continue;
-            }
-            
-            // If current value is not in allowed values, don't show control
-            if (!allowedValues.includes(currentValue)) {
-                return false;
-            }
-        }
-        
-        return true;
-    }
-
-
-    // Create control elements using centralized config
-    function createFlexControl(controlName, value, onChange, options, useNice, flexDirection = 'row') {
-        if (options.length === 0) return null;
-        
-        const controlConfig = flexControlsConfig[controlName];
-        if (!controlConfig) return null;
-        
-        const controlTitle = getControlTitle(controlName, useNice, flexDirection);
-        
-        return wp.element.createElement(
-            'div',
-            { style: { marginBottom: '16px' } },
-            wp.element.createElement('label', {
-                style: { 
-                    display: 'block', 
-                    marginBottom: '8px',
-                    fontSize: '11px',
-                    fontWeight: '500',
-                    textTransform: 'uppercase',
-                    color: '#1e1e1e'
-                }
-            }, controlTitle),
-            wp.element.createElement(ToggleGroupControl, {
-                value: value,
-                onChange: onChange,
-                isBlock: true,
-                __next40pxDefaultSize: true,
-                __nextHasNoMarginBottom: true
-            }, 
-                options.map(option => {
-                    const label = getOptionDisplayName(controlName, option, useNice);
-                    
-                    // Handle non-array options (skip icon lookup)
-                    if (!Array.isArray(controlConfig.options)) {
-                        return wp.element.createElement(ToggleGroupControlOption, {
-                            key: option,
-                            value: option,
-                            label: label
-                        });
-                    }
-                    
-                    const optionConfig = controlConfig.options.find(opt => opt.slug === option);
-                    const iconKey = optionConfig?.icon;
-                    const icon = iconKey ? flexControlsIcons[iconKey] : null;
-                    
-                    if (icon) {
-                        return wp.element.createElement(ToggleGroupControlOptionIcon, {
-                            key: option,
-                            value: option,
-                            icon: icon,
-                            label: label
-                        });
-                    } else {
-                        return wp.element.createElement(ToggleGroupControlOption, {
-                            key: option,
-                            value: option,
-                            label: label
-                        });
-                    }
-                })
-            )
+    // Helper to create ToggleGroupControl
+    function createToggleGroup(value, onChange, options) {
+        return wp.element.createElement(ToggleGroupControl, {
+            value,
+            onChange,
+            isBlock: true,
+            __next40pxDefaultSize: true,
+            __nextHasNoMarginBottom: true
+        }, 
+            options.map(option => wp.element.createElement(ToggleGroupControlOption, {
+                key: option.value,
+                value: option.value,
+                label: option.label
+            }))
         );
     }
 
-    // Add inspector control
+    // Main component
     const withFlexLayoutControl = createHigherOrderComponent(function(BlockEdit) {
         return function(props) {
-            // Get data from localized script
+            // Get module data
             const flexData = window.orbitoolsFlexLayout || {};
-            
             if (!flexData.isEnabled) {
                 return wp.element.createElement(BlockEdit, props);
             }
             
-            // Check if this block supports flex controls
+            // Check block supports
             const flexSupports = getBlockSupports(props.name);
-            
             if (!flexSupports) {
                 return wp.element.createElement(BlockEdit, props);
             }
 
             const { attributes, setAttributes } = props;
-            
-            // Get flex controls from the object attribute, with fallbacks
             const flexControls = attributes.orbitoolsFlexControls || {};
-            const orbitoolsColumnCount = flexControls.columnCount || flexControlsConfig.columnCount.default;
-            const orbitoolsFlexDirection = flexControls.flexDirection || flexControlsConfig.flexDirection.default;
-            const orbitoolsFlexWrap = flexControls.flexWrap || flexControlsConfig.flexWrap.default;
-            const orbitoolsAlignItems = flexControls.alignItems || flexControlsConfig.alignItems.default;
-            const orbitoolsJustifyContent = flexControls.justifyContent || flexControlsConfig.justifyContent.default;
-            const orbitoolsAlignContent = flexControls.alignContent || flexControlsConfig.alignContent.default;
-            const orbitoolsEnableGap = flexControls.enableGap !== undefined ? flexControls.enableGap : flexControlsConfig.enableGap.default;
-            const orbitoolsRestrictContentWidth = flexControls.restrictContentWidth !== undefined ? flexControls.restrictContentWidth : flexControlsConfig.restrictContentWidth.default;
-            const orbitoolsStackOnMobile = flexControls.stackOnMobile !== undefined ? flexControls.stackOnMobile : flexControlsConfig.stackOnMobile.default;
             
-            // Helper function to update flex controls
-            const updateFlexControl = (property, value) => {
-                const newFlexControls = {
-                    ...flexControls,
-                    [property]: value
-                };
-                setAttributes({ orbitoolsFlexControls: newFlexControls });
-            };
-
-            const useNice = useNiceNames(flexSupports);
-            
-            // Function to regenerate controls when direction changes
-            const generateControls = (currentFlexDirection) => {
-                const controls = [];
-                
-                // Get available options for each control based on current flex direction
-                const flexDirectionOptions = getControlOptions(flexSupports, 'flexDirection', currentFlexDirection);
-                const flexWrapOptions = getControlOptions(flexSupports, 'flexWrap', currentFlexDirection);
-                const alignItemsOptions = getControlOptions(flexSupports, 'alignItems', currentFlexDirection);
-                const justifyContentOptions = getControlOptions(flexSupports, 'justifyContent', currentFlexDirection);
-                
-                // Get align-content options based on config conditions
-                const currentFlexWrap = orbitoolsFlexWrap || flexControlsConfig.flexWrap.default;
-                const alignContentOptions = shouldShowControl('alignContent', { flexWrap: currentFlexWrap }) ? 
-                    getControlOptions(flexSupports, 'alignContent', currentFlexDirection) : [];
-                
-                // Add controls based on what's enabled
-                
-                // Add column count control first (RangeControl)
-                if (getControlOptions(flexSupports, 'columnCount', currentFlexDirection).length > 0) {
-                    const controlConfig = flexControlsConfig.columnCount;
-                    const controlTitle = getControlTitle('columnCount', useNice, currentFlexDirection);
-                    
-                    controls.push(
-                        wp.element.createElement(RangeControl, {
-                            key: 'columnCount',
-                            label: controlTitle,
-                            value: orbitoolsColumnCount,
-                            onChange: (value) => updateFlexControl('columnCount', value),
-                            min: controlConfig.options.min,
-                            max: controlConfig.options.max,
-                            step: controlConfig.options.step,
-                            __next40pxDefaultSize: true,
-                            __nextHasNoMarginBottom: true
-                        })
-                    );
-                }
-                
-                if (flexDirectionOptions.length > 0) {
-                    controls.push(createFlexControl(
-                        'flexDirection',
-                        currentFlexDirection,
-                        (value) => updateFlexControl('flexDirection', value),
-                        flexDirectionOptions,
-                        useNice,
-                        currentFlexDirection
-                    ));
-                }
-                
-                if (flexWrapOptions.length > 0) {
-                    controls.push(createFlexControl(
-                        'flexWrap',
-                        orbitoolsFlexWrap,
-                        (value) => updateFlexControl('flexWrap', value),
-                        flexWrapOptions,
-                        useNice,
-                        currentFlexDirection
-                    ));
-                }
-                
-                // Swap order of justify-content and align-items based on direction
-                // In row: justify (main/horizontal) then align (cross/vertical)  
-                // In column: justify (main/vertical) then align (cross/horizontal)
-                // By swapping them, they stay in the same visual position relative to the layout
-                const isColumn = currentFlexDirection.startsWith('column');
-                
-                if (isColumn) {
-                    // Column direction: show align-items first (cross/horizontal), then justify-content (main/vertical)
-                    if (alignItemsOptions.length > 0) {
-                        controls.push(createFlexControl(
-                            'alignItems',
-                            orbitoolsAlignItems,
-                            (value) => updateFlexControl('alignItems', value),
-                            alignItemsOptions,
-                            useNice,
-                            currentFlexDirection
-                        ));
-                    }
-                    
-                    if (justifyContentOptions.length > 0) {
-                        controls.push(createFlexControl(
-                            'justifyContent',
-                            orbitoolsJustifyContent,
-                            (value) => updateFlexControl('justifyContent', value),
-                            justifyContentOptions,
-                            useNice,
-                            currentFlexDirection
-                        ));
-                    }
+            // Helper to update controls
+            const updateControl = (controlName, value) => {
+                const newControls = { ...flexControls };
+                if (value === undefined || value === DEFAULTS[controlName]) {
+                    delete newControls[controlName];
                 } else {
-                    // Row direction: show justify-content first (main/horizontal), then align-items (cross/vertical)
-                    if (justifyContentOptions.length > 0) {
-                        controls.push(createFlexControl(
-                            'justifyContent',
-                            orbitoolsJustifyContent,
-                            (value) => updateFlexControl('justifyContent', value),
-                            justifyContentOptions,
-                            useNice,
-                            currentFlexDirection
-                        ));
-                    }
-                    
-                    if (alignItemsOptions.length > 0) {
-                        controls.push(createFlexControl(
-                            'alignItems',
-                            orbitoolsAlignItems,
-                            (value) => updateFlexControl('alignItems', value),
-                            alignItemsOptions,
-                            useNice,
-                            currentFlexDirection
-                        ));
-                    }
+                    newControls[controlName] = value;
                 }
-                
-                if (alignContentOptions.length > 0) {
-                    controls.push(createFlexControl(
-                        'alignContent',
-                        orbitoolsAlignContent,
-                        (value) => updateFlexControl('alignContent', value),
-                        alignContentOptions,
-                        useNice,
-                        currentFlexDirection
-                    ));
-                }
-                
-                // Add gap control if supported
-                if (flexSupports.enableGap !== false) {
-                    const controlTitle = getControlTitle('enableGap', useNice, currentFlexDirection);
-                    controls.push(
-                        wp.element.createElement(ToggleControl, {
-                            key: 'enableGap',
-                            label: controlTitle,
-                            help: 'Add space between items in the layout',
-                            checked: orbitoolsEnableGap,
-                            onChange: (value) => updateFlexControl('enableGap', value),
-                            __nextHasNoMarginBottom: true
-                        })
-                    );
-                }
-                
-                // Add restrict content width control if supported and block is full width
-                if (flexSupports.restrictContentWidth !== false) {
-                    // Only show if block has full alignment
-                    const blockAlign = attributes.align;
-                    if (blockAlign === 'full') {
-                        const controlTitle = getControlTitle('restrictContentWidth', useNice, currentFlexDirection);
-                        controls.push(
-                            wp.element.createElement(ToggleControl, {
-                                key: 'restrictContentWidth',
-                                label: controlTitle,
-                                help: 'Limit content to the site\'s standard width',
-                                checked: orbitoolsRestrictContentWidth,
-                                onChange: (value) => updateFlexControl('restrictContentWidth', value),
-                                __nextHasNoMarginBottom: true
-                            })
-                        );
-                    }
-                }
-                
-                // Add stack on mobile toggle if supported
-                if (flexSupports.stackOnMobile !== false) {
-                    controls.push(
-                        wp.element.createElement(ToggleControl, {
-                            key: 'stackOnMobile',
-                            label: 'Stack on Mobile',
-                            help: 'Stack columns vertically on mobile devices',
-                            checked: orbitoolsStackOnMobile,
-                            onChange: (value) => updateFlexControl('stackOnMobile', value),
-                            __nextHasNoMarginBottom: true
-                        })
-                    );
-                }
-                
-                return controls;
+                setAttributes({ orbitoolsFlexControls: newControls });
             };
-            
-            const controls = generateControls(orbitoolsFlexDirection);
-            
 
-            // Only show panel if there are controls to display
+            // Helper to get current value with fallback
+            const getValue = (controlName) => flexControls[controlName] ?? DEFAULTS[controlName];
+            
+            // Helper to check if value is set (not default)
+            const hasValue = (controlName) => {
+                const stored = flexControls[controlName];
+                return stored !== undefined && stored !== DEFAULTS[controlName];
+            };
+
+            const controls = [];
+
+            // Column Count Control
+            if (isControlSupported(flexSupports, 'columnCount')) {
+                controls.push(createToolsPanelItem(
+                    'columnCount',
+                    () => hasValue('columnCount'),
+                    () => updateControl('columnCount', undefined),
+                    'Columns',
+                    wp.element.createElement(RangeControl, {
+                        label: 'Columns',
+                        value: getValue('columnCount'),
+                        onChange: (value) => updateControl('columnCount', value),
+                        min: 1,
+                        max: 10,
+                        step: 1,
+                        __next40pxDefaultSize: true,
+                        __nextHasNoMarginBottom: true
+                    }),
+                    true
+                ));
+            }
+
+            // Flex Direction Control  
+            if (isControlSupported(flexSupports, 'flexDirection')) {
+                controls.push(createToolsPanelItem(
+                    'flexDirection',
+                    () => hasValue('flexDirection'),
+                    () => updateControl('flexDirection', undefined),
+                    'Orientation',
+                    createToggleGroup(
+                        getValue('flexDirection'),
+                        (value) => updateControl('flexDirection', value),
+                        DIRECTION_OPTIONS
+                    ),
+                    true
+                ));
+            }
+
+            // Combined Alignment Control
+            const currentDirection = getValue('flexDirection');
+            const isColumn = currentDirection.startsWith('column');
+            
+            if (isControlSupported(flexSupports, 'justifyContent') || isControlSupported(flexSupports, 'alignItems')) {
+                const hasAlignmentValue = hasValue('justifyContent') || hasValue('alignItems');
+                
+                const alignmentContent = wp.element.createElement('div', { 
+                    style: { display: 'flex', flexDirection: 'column', gap: '16px' } 
+                },
+                    // Main axis (justify-content)
+                    isControlSupported(flexSupports, 'justifyContent') && wp.element.createElement('div', {},
+                        wp.element.createElement('label', {
+                            style: { 
+                                display: 'block', 
+                                marginBottom: '8px',
+                                fontSize: '11px',
+                                fontWeight: '500',
+                                textTransform: 'uppercase',
+                                color: '#1e1e1e'
+                            }
+                        }, isColumn ? 'Vertical Alignment' : 'Horizontal Alignment'),
+                        createToggleGroup(
+                            getValue('justifyContent'),
+                            (value) => updateControl('justifyContent', value),
+                            JUSTIFY_OPTIONS
+                        )
+                    ),
+                    
+                    // Cross axis (align-items)
+                    isControlSupported(flexSupports, 'alignItems') && wp.element.createElement('div', {},
+                        wp.element.createElement('label', {
+                            style: { 
+                                display: 'block', 
+                                marginBottom: '8px',
+                                fontSize: '11px',
+                                fontWeight: '500',
+                                textTransform: 'uppercase',
+                                color: '#1e1e1e'
+                            }
+                        }, isColumn ? 'Horizontal Alignment' : 'Vertical Alignment'),
+                        createToggleGroup(
+                            getValue('alignItems'),
+                            (value) => updateControl('alignItems', value),
+                            ALIGN_OPTIONS
+                        )
+                    )
+                );
+
+                controls.push(createToolsPanelItem(
+                    'alignment',
+                    () => hasAlignmentValue,
+                    () => {
+                        updateControl('justifyContent', undefined);
+                        updateControl('alignItems', undefined);
+                    },
+                    'Alignment',
+                    alignmentContent
+                ));
+            }
+
+            // Column Layout Control
+            if (isControlSupported(flexSupports, 'columnLayout')) {
+                controls.push(createToolsPanelItem(
+                    'columnLayout',
+                    () => hasValue('columnLayout'),
+                    () => updateControl('columnLayout', undefined),
+                    'Column Layout',
+                    createToggleGroup(
+                        getValue('columnLayout'),
+                        (value) => updateControl('columnLayout', value),
+                        COLUMN_LAYOUT_OPTIONS
+                    )
+                ));
+            }
+
+            // Grid System Control (only if columnLayout is custom)
+            if (isControlSupported(flexSupports, 'gridSystem') && getValue('columnLayout') === 'custom') {
+                controls.push(createToolsPanelItem(
+                    'gridSystem',
+                    () => hasValue('gridSystem'),
+                    () => updateControl('gridSystem', undefined),
+                    'Grid System',
+                    createToggleGroup(
+                        getValue('gridSystem'),
+                        (value) => updateControl('gridSystem', value),
+                        GRID_SYSTEM_OPTIONS
+                    )
+                ));
+            }
+
+            // Gap Control
+            if (isControlSupported(flexSupports, 'enableGap')) {
+                controls.push(createToolsPanelItem(
+                    'enableGap',
+                    () => hasValue('enableGap'),
+                    () => updateControl('enableGap', undefined),
+                    'Item Spacing',
+                    wp.element.createElement(ToggleControl, {
+                        label: 'Item Spacing',
+                        help: 'Add space between items in the layout',
+                        checked: getValue('enableGap'),
+                        onChange: (value) => updateControl('enableGap', value),
+                        __nextHasNoMarginBottom: true
+                    })
+                ));
+            }
+
+            // Stack on Mobile Control
+            if (isControlSupported(flexSupports, 'stackOnMobile')) {
+                controls.push(createToolsPanelItem(
+                    'stackOnMobile',
+                    () => hasValue('stackOnMobile'),
+                    () => updateControl('stackOnMobile', undefined),
+                    'Stack on Mobile',
+                    wp.element.createElement(ToggleControl, {
+                        label: 'Stack on Mobile',
+                        help: 'Stack columns vertically on mobile devices',
+                        checked: getValue('stackOnMobile'),
+                        onChange: (value) => updateControl('stackOnMobile', value),
+                        __nextHasNoMarginBottom: true
+                    })
+                ));
+            }
+
+            // Restrict Content Width Control (only for full-width blocks)
+            if (isControlSupported(flexSupports, 'restrictContentWidth') && attributes.align === 'full') {
+                controls.push(createToolsPanelItem(
+                    'restrictContentWidth',
+                    () => hasValue('restrictContentWidth'),
+                    () => updateControl('restrictContentWidth', undefined),
+                    'Constrain Content',
+                    wp.element.createElement(ToggleControl, {
+                        label: 'Constrain Content',
+                        help: 'Limit content to the site\'s standard width',
+                        checked: getValue('restrictContentWidth'),
+                        onChange: (value) => updateControl('restrictContentWidth', value),
+                        __nextHasNoMarginBottom: true
+                    })
+                ));
+            }
+
+            // Don't show panel if no controls
             if (controls.length === 0) {
                 return wp.element.createElement(BlockEdit, props);
             }
@@ -637,10 +340,11 @@
                     InspectorControls,
                     { group: 'settings' },
                     wp.element.createElement(
-                        PanelBody,
+                        ToolsPanel,
                         {
-                            title: 'Layout',
-                            initialOpen: true
+                            label: 'Layout',
+                            resetAll: () => setAttributes({ orbitoolsFlexControls: {} }),
+                            panelId: 'flex-layout-panel'
                         },
                         ...controls
                     )
