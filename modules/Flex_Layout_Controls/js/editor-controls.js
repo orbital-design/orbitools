@@ -81,19 +81,19 @@
     }
 
     // Helper to create ToolsPanelItem
-    function createToolsPanelItem(controlName, hasValue, onDeselect, label, children, isShownByDefault = false) {
+    function createToolsPanelItem(controlName, hasValue, _onDeselect, label, children, isShownByDefault = false) {
         return wp.element.createElement(ToolsPanelItem, {
             hasValue,
-            onDeselect,
+            onDeselect: () => {}, // No-op to prevent attribute reset when hidden
             label,
             isShownByDefault,
             panelId: 'flex-layout-panel'
         }, children);
     }
 
-    // Helper to create ToggleGroupControl
-    function createToggleGroup(value, onChange, options) {
-        return wp.element.createElement(ToggleGroupControl, {
+    // Helper to create ToggleGroupControl with optional label
+    function createToggleGroup(value, onChange, options, label = null) {
+        const control = wp.element.createElement(ToggleGroupControl, {
             value,
             onChange,
             isBlock: true,
@@ -106,6 +106,24 @@
                 label: option.label
             }))
         );
+
+        if (label) {
+            return wp.element.createElement('div', {},
+                wp.element.createElement('label', {
+                    style: { 
+                        display: 'block', 
+                        marginBottom: '8px',
+                        fontSize: '11px',
+                        fontWeight: '500',
+                        textTransform: 'uppercase',
+                        color: '#1e1e1e'
+                    }
+                }, label),
+                control
+            );
+        }
+
+        return control;
     }
 
     // Main component
@@ -150,19 +168,68 @@
 
             // Column Count Control
             if (isControlSupported(flexSupports, 'columnCount')) {
+                const currentColumnCount = getValue('columnCount');
+                
                 controls.push(createToolsPanelItem(
                     'columnCount',
                     () => hasValue('columnCount'),
                     () => updateControl('columnCount', undefined),
                     'Columns',
-                    wp.element.createElement(RangeControl, {
-                        label: 'Columns',
-                        value: getValue('columnCount'),
-                        onChange: (value) => updateControl('columnCount', value),
-                        min: 1,
-                        max: 10,
-                        step: 1,
-                        __next40pxDefaultSize: true,
+                    wp.element.createElement('div', {},
+                        wp.element.createElement('div', {
+                            style: {
+                                display: 'flex',
+                                justifyContent: 'space-between',
+                                alignItems: 'center',
+                                marginBottom: '8px'
+                            }
+                        },
+                            wp.element.createElement('label', {
+                                style: {
+                                    fontSize: '11px',
+                                    fontWeight: '500',
+                                    textTransform: 'uppercase',
+                                    color: '#1e1e1e',
+                                    margin: 0
+                                }
+                            }, 'Columns'),
+                            wp.element.createElement('span', {
+                                style: {
+                                    fontSize: '13px',
+                                    fontWeight: '500',
+                                    color: '#757575'
+                                }
+                            }, `${currentColumnCount} column${currentColumnCount !== 1 ? 's' : ''}`)
+                        ),
+                        wp.element.createElement(RangeControl, {
+                            value: currentColumnCount,
+                            onChange: (value) => updateControl('columnCount', value),
+                            min: 1,
+                            max: 10,
+                            step: 1,
+                            marks: true,
+                            withInputField: false,
+                            renderTooltipContent: (value) => `${value} column${value !== 1 ? 's' : ''}`,
+                            __next40pxDefaultSize: true,
+                            __nextHasNoMarginBottom: true
+                        })
+                    ),
+                    true
+                ));
+            }
+
+            // Gap Control (next to column count)
+            if (isControlSupported(flexSupports, 'enableGap')) {
+                controls.push(createToolsPanelItem(
+                    'enableGap',
+                    () => hasValue('enableGap'),
+                    () => updateControl('enableGap', undefined),
+                    'Item Spacing',
+                    wp.element.createElement(ToggleControl, {
+                        label: 'Item Spacing',
+                        help: 'Add space between items in the layout',
+                        checked: getValue('enableGap'),
+                        onChange: (value) => updateControl('enableGap', value),
                         __nextHasNoMarginBottom: true
                     }),
                     true
@@ -179,7 +246,8 @@
                     createToggleGroup(
                         getValue('flexDirection'),
                         (value) => updateControl('flexDirection', value),
-                        DIRECTION_OPTIONS
+                        DIRECTION_OPTIONS,
+                        'Orientation'
                     ),
                     true
                 ));
@@ -256,7 +324,8 @@
                     createToggleGroup(
                         getValue('columnLayout'),
                         (value) => updateControl('columnLayout', value),
-                        COLUMN_LAYOUT_OPTIONS
+                        COLUMN_LAYOUT_OPTIONS,
+                        'Column Layout'
                     )
                 ));
             }
@@ -271,27 +340,12 @@
                     createToggleGroup(
                         getValue('gridSystem'),
                         (value) => updateControl('gridSystem', value),
-                        GRID_SYSTEM_OPTIONS
+                        GRID_SYSTEM_OPTIONS,
+                        'Grid System'
                     )
                 ));
             }
 
-            // Gap Control
-            if (isControlSupported(flexSupports, 'enableGap')) {
-                controls.push(createToolsPanelItem(
-                    'enableGap',
-                    () => hasValue('enableGap'),
-                    () => updateControl('enableGap', undefined),
-                    'Item Spacing',
-                    wp.element.createElement(ToggleControl, {
-                        label: 'Item Spacing',
-                        help: 'Add space between items in the layout',
-                        checked: getValue('enableGap'),
-                        onChange: (value) => updateControl('enableGap', value),
-                        __nextHasNoMarginBottom: true
-                    })
-                ));
-            }
 
             // Stack on Mobile Control
             if (isControlSupported(flexSupports, 'stackOnMobile')) {

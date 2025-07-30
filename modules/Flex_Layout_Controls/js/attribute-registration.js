@@ -22,7 +22,7 @@ const DEFAULTS = {
 wp.hooks.addFilter(
     'blocks.registerBlockType',
     'orbitools/add-flex-attributes',
-    function(settings, name) {
+    function(settings) {
         // Check if this block supports flex controls
         const flexSupports = settings.supports?.flexControls;
         
