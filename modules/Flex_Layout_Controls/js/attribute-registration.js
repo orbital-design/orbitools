@@ -11,12 +11,20 @@ const DEFAULTS = {
     alignItems: 'stretch',
     justifyContent: 'flex-start',
     alignContent: 'stretch',
-    enableGap: true,
+    gapSize: undefined,
     restrictContentWidth: false,
     stackOnMobile: true,
     columnLayout: 'fit',
     gridSystem: '5'
 };
+
+// Helper to get default gap value from supports
+function getDefaultGapValue(flexSupports) {
+    if (typeof flexSupports === 'object' && flexSupports.defaultGapValue) {
+        return flexSupports.defaultGapValue;
+    }
+    return DEFAULTS.gapSize;
+}
 
 // Register attributes immediately when script loads
 wp.hooks.addFilter(
@@ -40,7 +48,7 @@ wp.hooks.addFilter(
             defaultFlexControls.alignItems = DEFAULTS.alignItems;
             defaultFlexControls.justifyContent = DEFAULTS.justifyContent;
             defaultFlexControls.alignContent = DEFAULTS.alignContent;
-            defaultFlexControls.enableGap = DEFAULTS.enableGap;
+            defaultFlexControls.gapSize = getDefaultGapValue(flexSupports);
             defaultFlexControls.restrictContentWidth = DEFAULTS.restrictContentWidth;
             defaultFlexControls.stackOnMobile = DEFAULTS.stackOnMobile;
             defaultFlexControls.columnLayout = DEFAULTS.columnLayout;
@@ -62,8 +70,8 @@ wp.hooks.addFilter(
             if (flexSupports.alignContent !== false) {
                 defaultFlexControls.alignContent = DEFAULTS.alignContent;
             }
-            if (flexSupports.enableGap !== false) {
-                defaultFlexControls.enableGap = DEFAULTS.enableGap;
+            if (flexSupports.gapSize !== false) {
+                defaultFlexControls.gapSize = getDefaultGapValue(flexSupports);
             }
             if (flexSupports.restrictContentWidth !== false) {
                 defaultFlexControls.restrictContentWidth = DEFAULTS.restrictContentWidth;

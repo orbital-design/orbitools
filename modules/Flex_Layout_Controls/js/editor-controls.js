@@ -8,13 +8,14 @@
     const { addFilter } = wp.hooks;
     const { createHigherOrderComponent } = wp.compose;
     const { Fragment } = wp.element;
-    const { InspectorControls } = wp.blockEditor;
+    const { InspectorControls, useSetting } = wp.blockEditor;
     const { 
         __experimentalToolsPanel: ToolsPanel,
         __experimentalToolsPanelItem: ToolsPanelItem,
         __experimentalToggleGroupControl: ToggleGroupControl,
         __experimentalToggleGroupControlOption: ToggleGroupControlOption,
         __experimentalToggleGroupControlOptionIcon: ToggleGroupControlOptionIcon,
+        __experimentalSpacer: Spacer,
         ToggleControl,
         RangeControl
     } = wp.components;
@@ -26,12 +27,20 @@
         alignItems: 'stretch',
         justifyContent: 'flex-start',
         alignContent: 'stretch',
-        enableGap: true,
+        gapSize: undefined,
         restrictContentWidth: false,
         stackOnMobile: true,
         columnLayout: 'fit',
         gridSystem: '5'
     };
+
+    // Helper to get default gap value from supports
+    function getDefaultGapValue(flexSupports) {
+        if (typeof flexSupports === 'object' && flexSupports.defaultGapValue) {
+            return flexSupports.defaultGapValue;
+        }
+        return DEFAULTS.gapSize;
+    }
 
     // Simple option definitions
     const DIRECTION_OPTIONS = [
@@ -66,6 +75,38 @@
         { value: '5', label: '5 Column Grid' },
         { value: '12', label: '12 Column Grid' }
     ];
+
+    // Helper to get spacing marks from theme.json
+    function getSpacingMarks(spacingSizes) {
+        const marks = [];
+        
+        if (spacingSizes && Array.isArray(spacingSizes)) {
+            spacingSizes.forEach((size, index) => {
+                marks.push({
+                    value: index,
+                    label: size.name
+                });
+            });
+        }
+        
+        return marks;
+    }
+
+    // Helper to get spacing value by index
+    function getSpacingValueByIndex(spacingSizes, index) {
+        if (spacingSizes && Array.isArray(spacingSizes) && spacingSizes[index]) {
+            return spacingSizes[index].size;
+        }
+        return '';
+    }
+
+    // Helper to get spacing index by value
+    function getSpacingIndexByValue(spacingSizes, value) {
+        if (!spacingSizes || !Array.isArray(spacingSizes)) return -1;
+        
+        const index = spacingSizes.findIndex(size => size.size === value);
+        return index >= 0 ? index : -1;
+    }
 
     // Helper to get block supports
     function getBlockSupports(blockName) {
@@ -144,6 +185,9 @@
             const { attributes, setAttributes } = props;
             const flexControls = attributes.orbitoolsFlexControls || {};
             
+            // Get spacing sizes from theme.json
+            const spacingSizes = useSetting('spacing.spacingSizes');
+            
             // Helper to update controls
             const updateControl = (controlName, value) => {
                 const newControls = { ...flexControls };
@@ -156,11 +200,20 @@
             };
 
             // Helper to get current value with fallback
-            const getValue = (controlName) => flexControls[controlName] ?? DEFAULTS[controlName];
+            const getValue = (controlName) => {
+                if (controlName === 'gapSize') {
+                    return flexControls[controlName] ?? getDefaultGapValue(flexSupports);
+                }
+                return flexControls[controlName] ?? DEFAULTS[controlName];
+            };
             
             // Helper to check if value is set (not default)
             const hasValue = (controlName) => {
                 const stored = flexControls[controlName];
+                if (controlName === 'gapSize') {
+                    const defaultValue = getDefaultGapValue(flexSupports);
+                    return stored !== undefined && stored !== defaultValue;
+                }
                 return stored !== undefined && stored !== DEFAULTS[controlName];
             };
 
@@ -219,19 +272,67 @@
             }
 
             // Gap Control (next to column count)
-            if (isControlSupported(flexSupports, 'enableGap')) {
+            if (isControlSupported(flexSupports, 'gapSize')) {
+                const currentGapSize = getValue('gapSize');
+                const currentIndex = getSpacingIndexByValue(spacingSizes, currentGapSize);
+                const spacingMarks = getSpacingMarks(spacingSizes);
+                const maxIndex = spacingSizes ? spacingSizes.length - 1 : 0;
+                
+                // Get current spacing name for display
+                const currentSpacingName = spacingSizes && currentIndex >= 0 
+                    ? spacingSizes[currentIndex].name 
+                    : (currentGapSize ? currentGapSize : 'None');
+                
                 controls.push(createToolsPanelItem(
-                    'enableGap',
-                    () => hasValue('enableGap'),
-                    () => updateControl('enableGap', undefined),
+                    'gapSize',
+                    () => hasValue('gapSize'),
+                    () => updateControl('gapSize', undefined),
                     'Item Spacing',
-                    wp.element.createElement(ToggleControl, {
-                        label: 'Item Spacing',
-                        help: 'Add space between items in the layout',
-                        checked: getValue('enableGap'),
-                        onChange: (value) => updateControl('enableGap', value),
-                        __nextHasNoMarginBottom: true
-                    }),
+                    wp.element.createElement('div', {},
+                        wp.element.createElement('div', {
+                            style: {
+                                display: 'flex',
+                                justifyContent: 'space-between',
+                                alignItems: 'center',
+                                marginBottom: '8px'
+                            }
+                        },
+                            wp.element.createElement('label', {
+                                style: {
+                                    fontSize: '11px',
+                                    fontWeight: '500',
+                                    textTransform: 'uppercase',
+                                    color: '#1e1e1e',
+                                    margin: 0
+                                }
+                            }, 'Item Spacing'),
+                            wp.element.createElement('span', {
+                                style: {
+                                    fontSize: '13px',
+                                    fontWeight: '500',
+                                    color: '#757575'
+                                }
+                            }, currentSpacingName)
+                        ),
+                        wp.element.createElement(RangeControl, {
+                            value: Math.max(0, currentIndex),
+                            onChange: (index) => {
+                                const newValue = getSpacingValueByIndex(spacingSizes, index);
+                                updateControl('gapSize', newValue || undefined);
+                            },
+                            min: 0,
+                            max: maxIndex,
+                            step: 1,
+                            marks: true,
+                            withInputField: false,
+                            renderTooltipContent: (index) => {
+                                const spacing = spacingSizes && spacingSizes[index];
+                                return spacing ? spacing.name : 'None';
+                            },
+                            __next40pxDefaultSize: true,
+                            __nextHasNoMarginBottom: true
+                        })
+                    ),
                     true
                 ));
             }
@@ -260,46 +361,88 @@
             if (isControlSupported(flexSupports, 'justifyContent') || isControlSupported(flexSupports, 'alignItems')) {
                 const hasAlignmentValue = hasValue('justifyContent') || hasValue('alignItems');
                 
+                // Create alignment controls in the right order (horizontal first, then vertical)
+                const horizontalControl = isColumn 
+                    ? // When column: align-items controls horizontal
+                      isControlSupported(flexSupports, 'alignItems') && wp.element.createElement('div', {},
+                          wp.element.createElement('label', {
+                              style: { 
+                                  display: 'block', 
+                                  marginBottom: '8px',
+                                  fontSize: '11px',
+                                  fontWeight: '500',
+                                  textTransform: 'uppercase',
+                                  color: '#1e1e1e'
+                              }
+                          }, 'Horizontal Alignment'),
+                          createToggleGroup(
+                              getValue('alignItems'),
+                              (value) => updateControl('alignItems', value),
+                              ALIGN_OPTIONS
+                          )
+                      )
+                    : // When row: justify-content controls horizontal
+                      isControlSupported(flexSupports, 'justifyContent') && wp.element.createElement('div', {},
+                          wp.element.createElement('label', {
+                              style: { 
+                                  display: 'block', 
+                                  marginBottom: '8px',
+                                  fontSize: '11px',
+                                  fontWeight: '500',
+                                  textTransform: 'uppercase',
+                                  color: '#1e1e1e'
+                              }
+                          }, 'Horizontal Alignment'),
+                          createToggleGroup(
+                              getValue('justifyContent'),
+                              (value) => updateControl('justifyContent', value),
+                              JUSTIFY_OPTIONS
+                          )
+                      );
+
+                const verticalControl = isColumn 
+                    ? // When column: justify-content controls vertical
+                      isControlSupported(flexSupports, 'justifyContent') && wp.element.createElement('div', {},
+                          wp.element.createElement('label', {
+                              style: { 
+                                  display: 'block', 
+                                  marginBottom: '8px',
+                                  fontSize: '11px',
+                                  fontWeight: '500',
+                                  textTransform: 'uppercase',
+                                  color: '#1e1e1e'
+                              }
+                          }, 'Vertical Alignment'),
+                          createToggleGroup(
+                              getValue('justifyContent'),
+                              (value) => updateControl('justifyContent', value),
+                              JUSTIFY_OPTIONS
+                          )
+                      )
+                    : // When row: align-items controls vertical
+                      isControlSupported(flexSupports, 'alignItems') && wp.element.createElement('div', {},
+                          wp.element.createElement('label', {
+                              style: { 
+                                  display: 'block', 
+                                  marginBottom: '8px',
+                                  fontSize: '11px',
+                                  fontWeight: '500',
+                                  textTransform: 'uppercase',
+                                  color: '#1e1e1e'
+                              }
+                          }, 'Vertical Alignment'),
+                          createToggleGroup(
+                              getValue('alignItems'),
+                              (value) => updateControl('alignItems', value),
+                              ALIGN_OPTIONS
+                          )
+                      );
+
                 const alignmentContent = wp.element.createElement('div', { 
                     style: { display: 'flex', flexDirection: 'column', gap: '16px' } 
                 },
-                    // Main axis (justify-content)
-                    isControlSupported(flexSupports, 'justifyContent') && wp.element.createElement('div', {},
-                        wp.element.createElement('label', {
-                            style: { 
-                                display: 'block', 
-                                marginBottom: '8px',
-                                fontSize: '11px',
-                                fontWeight: '500',
-                                textTransform: 'uppercase',
-                                color: '#1e1e1e'
-                            }
-                        }, isColumn ? 'Vertical Alignment' : 'Horizontal Alignment'),
-                        createToggleGroup(
-                            getValue('justifyContent'),
-                            (value) => updateControl('justifyContent', value),
-                            JUSTIFY_OPTIONS
-                        )
-                    ),
-                    
-                    // Cross axis (align-items)
-                    isControlSupported(flexSupports, 'alignItems') && wp.element.createElement('div', {},
-                        wp.element.createElement('label', {
-                            style: { 
-                                display: 'block', 
-                                marginBottom: '8px',
-                                fontSize: '11px',
-                                fontWeight: '500',
-                                textTransform: 'uppercase',
-                                color: '#1e1e1e'
-                            }
-                        }, isColumn ? 'Horizontal Alignment' : 'Vertical Alignment'),
-                        createToggleGroup(
-                            getValue('alignItems'),
-                            (value) => updateControl('alignItems', value),
-                            ALIGN_OPTIONS
-                        )
-                    )
+                    horizontalControl,
+                    verticalControl
                 );
 
                 controls.push(createToolsPanelItem(

@@ -39,7 +39,7 @@ class Block_Helper
         'alignItems' => 'stretch',
         'justifyContent' => 'flex-start',
         'alignContent' => 'stretch',
-        'enableGap' => true,
+        'gapSize' => null,
         'restrictContentWidth' => false,
         'stackOnMobile' => true,
         'columnLayout' => 'fit',
@@ -48,14 +48,37 @@ class Block_Helper
 
 
     /**
+     * Get default gap value from block supports
+     *
+     * @since 1.0.0
+     * @param string $block_name Block name to check supports for
+     * @return string|null Default gap value or null
+     */
+    private static function get_default_gap_value(string $block_name): ?string
+    {
+        $block_type = \WP_Block_Type_Registry::get_instance()->get_registered($block_name);
+        if (!$block_type) {
+            return self::$defaults['gapSize'];
+        }
+        
+        $flex_supports = $block_type->supports['flexControls'] ?? null;
+        if (is_array($flex_supports) && isset($flex_supports['defaultGapValue'])) {
+            return $flex_supports['defaultGapValue'];
+        }
+        
+        return self::$defaults['gapSize'];
+    }
+
+    /**
      * Generate flex layout classes from block attributes
      *
      * @since 1.0.0
      * @param array $attributes Block attributes containing orbitoolsFlexControls
      * @param array $existing_classes Optional. Existing CSS classes to preserve
+     * @param string $block_name Optional. Block name for getting default gap value
      * @return string CSS classes string
      */
-    public static function get_flex_classes(array $attributes, array $existing_classes = []): string
+    public static function get_flex_classes(array $attributes, array $existing_classes = [], string $block_name = ''): string
     {
         // Don't process flex classes if module is disabled
         if (!\Orbitools\Modules\Flex_Layout_Controls\Admin\Settings_Helper::is_module_enabled()) {
@@ -81,7 +104,8 @@ class Block_Helper
         $align_items = $flex_controls['alignItems'] ?? self::$defaults['alignItems'];
         $justify_content = $flex_controls['justifyContent'] ?? self::$defaults['justifyContent'];
         $align_content = $flex_controls['alignContent'] ?? self::$defaults['alignContent'];
-        $enable_gap = $flex_controls['enableGap'] ?? self::$defaults['enableGap'];
+        $default_gap_size = !empty($block_name) ? self::get_default_gap_value($block_name) : self::$defaults['gapSize'];
+        $gap_size = $flex_controls['gapSize'] ?? $default_gap_size;
         $restrict_content_width = $flex_controls['restrictContentWidth'] ?? self::$defaults['restrictContentWidth'];
         $stack_on_mobile = $flex_controls['stackOnMobile'] ?? self::$defaults['stackOnMobile'];
         $column_layout = $flex_controls['columnLayout'] ?? self::$defaults['columnLayout'];
@@ -112,9 +136,11 @@ class Block_Helper
             $classes[] = "flex-content-{$align_content}";
         }
         
-        // Add gap class (when enabled)
-        if ($enable_gap) {
+        // Add gap class (when gap size is set)
+        if (!empty($gap_size)) {
             $classes[] = 'flex-gap';
+            // Add specific gap size as CSS custom property or class
+            $classes[] = 'flex-gap-' . \sanitize_html_class(str_replace(['rem', 'px', 'em', '%'], '', $gap_size));
         }
         
         // Add restrict content width class (when enabled and block is full width)
