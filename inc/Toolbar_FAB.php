@@ -76,20 +76,20 @@ class Toolbar_FAB
     public function hide_admin_bar()
     {
 ?>
-        <style>
-            #wpadminbar {
-                display: none !important;
-            }
+<style>
+#wpadminbar {
+    display: none !important;
+}
 
-            html {
-                margin-top: 0 !important;
-            }
+html {
+    margin-top: 0 !important;
+}
 
-            * html body {
-                margin-top: 0 !important;
-            }
-        </style>
-    <?php
+* html body {
+    margin-top: 0 !important;
+}
+</style>
+<?php
     }
 
     public function enqueue_assets()
@@ -186,7 +186,6 @@ class Toolbar_FAB
             width: 320px;
             height: 100vh;
             background: #23282d;
-            box-shadow: 2px 0 10px rgba(0,0,0,0.3);
             overflow-y: auto;
             transition: left 0.3s ease;
             z-index: 99998;
@@ -412,17 +411,17 @@ class Toolbar_FAB
         $menu_html = $this->build_menu_structure();
 
     ?>
-        <div id="wp-toolbar-fab">
-            <button class="fab-button" aria-label="Admin Menu">
-                <span class="dashicons dashicons-wordpress" style="font-size: 24px;"></span>
-            </button>
-            <div class="fab-menu">
-                <div class="fab-drawer-header">
-                    <h3 class="fab-drawer-title">Admin Menu</h3>
-                </div>
-                <?php echo $menu_html; ?>
-            </div>
+<div id="wp-toolbar-fab">
+    <button class="fab-button" aria-label="Admin Menu">
+        <span class="dashicons dashicons-wordpress" style="font-size: 24px;"></span>
+    </button>
+    <div class="fab-menu">
+        <div class="fab-drawer-header">
+            <h3 class="fab-drawer-title">Admin Menu</h3>
         </div>
+        <?php echo $menu_html; ?>
+    </div>
+</div>
 <?php
     }
 
