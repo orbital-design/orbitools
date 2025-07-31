@@ -46,28 +46,6 @@
         return DEFAULTS.gapSize;
     }
 
-    // Simple option definitions
-    const DIRECTION_OPTIONS = [
-        { value: 'row', label: 'Horizontal' },
-        { value: 'column', label: 'Vertical' }
-    ];
-
-    const JUSTIFY_OPTIONS = [
-        { value: 'flex-start', label: 'Start' },
-        { value: 'center', label: 'Center' },
-        { value: 'flex-end', label: 'End' },
-        { value: 'space-between', label: 'Space Between' },
-        { value: 'space-around', label: 'Space Around' },
-        { value: 'space-evenly', label: 'Space Evenly' }
-    ];
-
-    const ALIGN_OPTIONS = [
-        { value: 'stretch', label: 'Stretch' },
-        { value: 'center', label: 'Center' },
-        { value: 'flex-start', label: 'Start' },
-        { value: 'flex-end', label: 'End' },
-        { value: 'baseline', label: 'Baseline' }
-    ];
 
     const COLUMN_LAYOUT_OPTIONS = [
         { value: 'fit', label: 'Fit Content' },
@@ -138,7 +116,7 @@
     }
 
     // Helper to create ToolsPanelItem
-    function createToolsPanelItem(controlName, hasValue, _onDeselect, label, children, isShownByDefault = false) {
+    function createToolsPanelItem(controlName, hasValue, onDeselect, label, children, isShownByDefault = false) {
         return wp.element.createElement(ToolsPanelItem, {
             hasValue,
             onDeselect: () => {}, // No-op to prevent attribute reset when hidden
@@ -291,7 +269,6 @@
             if (isControlSupported(flexSupports, 'gapSize')) {
                 const currentGapSize = getValue('gapSize');
                 const currentIndex = getSpacingIndexByValue(spacingSizes, currentGapSize);
-                const spacingMarks = getSpacingMarks(spacingSizes);
                 const maxIndex = spacingSizes ? spacingSizes.length - 1 : 0;
                 
                 // Get current spacing name for display
@@ -388,7 +365,7 @@
             }
 
 
-            // Stack on Mobile Control
+            // Stack on Mobile Control (shown by default)
             if (isControlSupported(flexSupports, 'stackOnMobile')) {
                 controls.push(createToolsPanelItem(
                     'stackOnMobile',
@@ -401,7 +378,8 @@
                         checked: getValue('stackOnMobile'),
                         onChange: (value) => updateControl('stackOnMobile', value),
                         __nextHasNoMarginBottom: true
-                    })
+                    }),
+                    true // Show by default to ensure attribute gets saved
                 ));
             }
 
@@ -463,8 +441,63 @@
                 );
             }
             
-            // Row orientation controls
-            if (!isColumn) {
+            // Horizontal alignment control (always first)
+            if (isColumn) {
+                // For column: align-items controls horizontal alignment
+                if (isControlSupported(flexSupports, 'alignItems')) {
+                    const currentValue = getValue('alignItems');
+                    const controls = [
+                        {
+                            icon: wp.element.createElement('div', {
+                                className: 'orbitools-alignment-icon',
+                                dangerouslySetInnerHTML: { __html: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 2L4 22M11 8H13C13.5523 8 14 7.55228 14 7V5C14 4.44772 13.5523 4 13 4H11C10.4477 4 10 4.44772 10 5V7C10 7.55228 10.4477 8 11 8ZM11 15H13C13.5523 15 14 14.5523 14 14V12C14 11.4477 13.5523 11 13 11H11C10.4477 11 10 11.4477 10 12V14C10 14.5523 10.4477 15 11 15Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>' }
+                            }),
+                            title: 'Start',
+                            onClick: () => updateControl('alignItems', 'flex-start'),
+                            isActive: currentValue === 'flex-start'
+                        },
+                        {
+                            icon: wp.element.createElement('div', {
+                                className: 'orbitools-alignment-icon',
+                                dangerouslySetInnerHTML: { __html: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 2L12 22M10 8H14C14.5523 8 15 7.55228 15 7V5C15 4.44772 14.5523 4 14 4H10C9.44772 4 9 4.44772 9 5V7C9 7.55228 9.44772 8 10 8ZM10 15H14C14.5523 15 15 14.5523 15 14V12C15 11.4477 14.5523 11 14 11H10C9.44772 11 9 11.4477 9 12V14C10 14.5523 10.5523 15 10 15Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>' }
+                            }),
+                            title: 'Center',
+                            onClick: () => updateControl('alignItems', 'center'),
+                            isActive: currentValue === 'center'
+                        },
+                        {
+                            icon: wp.element.createElement('div', {
+                                className: 'orbitools-alignment-icon',
+                                dangerouslySetInnerHTML: { __html: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M20 2L20 22M13 8H17C17.5523 8 18 7.55228 18 7V5C18 4.44772 17.5523 4 17 4H13C12.4477 4 12 4.44772 12 5V7C12 7.55228 12.4477 8 13 8ZM13 15H17C17.5523 15 18 14.5523 18 14V12C18 11.4477 17.5523 11 17 11H13C12.4477 11 12 11.4477 12 12V14C12 14.5523 12.4477 15 13 15Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>' }
+                            }),
+                            title: 'End',
+                            onClick: () => updateControl('alignItems', 'flex-end'),
+                            isActive: currentValue === 'flex-end'
+                        },
+                        {
+                            icon: wp.element.createElement('div', {
+                                className: 'orbitools-alignment-icon',
+                                dangerouslySetInnerHTML: { __html: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2 2L2 22M22 2L22 22M8 8H16C16.5523 8 17 7.55228 17 7V5C17 4.44772 16.5523 4 16 4H8C7.44772 4 7 4.44772 7 5V7C7 7.55228 7.44772 8 8 8ZM8 15H16C16.5523 15 17 14.5523 17 14V12C17 11.4477 16.5523 11 16 11H8C7.44772 11 7 11.4477 7 12V14C7 14.5523 7.44772 15 8 15Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>' }
+                            }),
+                            title: 'Stretch',
+                            onClick: () => updateControl('alignItems', 'stretch'),
+                            isActive: currentValue === 'stretch'
+                        }
+                    ];
+                    
+                    const currentIcon = controls.find(c => c.title.toLowerCase().replace(' ', '-') === currentValue?.replace('flex-', ''))?.icon || controls[3].icon; // default to stretch
+                    
+                    alignmentControls.push(
+                        wp.element.createElement(ToolbarDropdownMenu, {
+                            controls: controls,
+                            icon: currentIcon,
+                            label: 'Horizontal Alignment',
+                            className: 'orbitools-alignment-dropdown'
+                        })
+                    );
+                }
+            } else {
+                // For row: justify-content controls horizontal alignment
                 // Justify Content (horizontal alignment for row)
                 if (isControlSupported(flexSupports, 'justifyContent')) {
                     const currentValue = getValue('justifyContent');
@@ -536,65 +569,11 @@
                         })
                     );
                 }
-                
-                // Align Items (vertical alignment for row)
-                if (isControlSupported(flexSupports, 'alignItems')) {
-                    const currentValue = getValue('alignItems');
-                    const controls = [
-                        {
-                            icon: wp.element.createElement('div', {
-                                className: 'orbitools-alignment-icon',
-                                dangerouslySetInnerHTML: { __html: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2 4L22 4M6 11H18C18.5523 11 19 10.5523 19 10V8C19 7.44772 18.5523 7 18 7H6C5.44772 7 5 7.44772 5 8V10C5 10.5523 5.44772 11 6 11ZM6 18H18C18.5523 18 19 17.5523 19 17V15C19 14.4477 18.5523 14 18 14H6C5.44772 14 5 14.4477 5 15V17C5 17.5523 5.44772 18 6 18Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>' }
-                            }),
-                            title: 'Start',
-                            onClick: () => updateControl('alignItems', 'flex-start'),
-                            isActive: currentValue === 'flex-start'
-                        },
-                        {
-                            icon: wp.element.createElement('div', {
-                                className: 'orbitools-alignment-icon',
-                                dangerouslySetInnerHTML: { __html: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2 12L22 12M6 16H18C18.5523 16 19 15.5523 19 15V13C19 12.4477 18.5523 12 18 12H6C5.44772 12 5 12.4477 5 13V15C5 15.5523 5.44772 16 6 16ZM6 9H18C18.5523 9 19 8.55228 19 8V6C19 5.44772 18.5523 5 18 5H6C5.44772 5 5 5.44772 5 6V8C5 8.55228 5.44772 9 6 9Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>' }
-                            }),
-                            title: 'Center',
-                            onClick: () => updateControl('alignItems', 'center'),
-                            isActive: currentValue === 'center'
-                        },
-                        {
-                            icon: wp.element.createElement('div', {
-                                className: 'orbitools-alignment-icon',
-                                dangerouslySetInnerHTML: { __html: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2 20L22 20M6 14H18C18.5523 14 19 13.5523 19 13V11C19 10.4477 18.5523 10 18 10H6C5.44772 10 5 10.4477 5 11V13C5 13.5523 5.44772 14 6 14ZM6 7H18C18.5523 7 19 6.55228 19 6V4C19 3.44772 18.5523 3 18 3H6C5.44772 3 5 3.44772 5 4V6C5 6.55228 5.44772 7 6 7Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>' }
-                            }),
-                            title: 'End',
-                            onClick: () => updateControl('alignItems', 'flex-end'),
-                            isActive: currentValue === 'flex-end'
-                        },
-                        {
-                            icon: wp.element.createElement('div', {
-                                className: 'orbitools-alignment-icon',
-                                dangerouslySetInnerHTML: { __html: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2 2L22 2M2 22L22 22M6 16H18C18.5523 16 19 15.5523 19 15V9C19 8.44772 18.5523 8 18 8H6C5.44772 8 5 8.44772 5 9V15C5 15.5523 5.44772 16 6 16Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>' }
-                            }),
-                            title: 'Stretch',
-                            onClick: () => updateControl('alignItems', 'stretch'),
-                            isActive: currentValue === 'stretch'
-                        }
-                    ];
-                    
-                    const currentIcon = controls.find(c => c.title.toLowerCase().replace(' ', '-') === currentValue?.replace('flex-', ''))?.icon || controls[3].icon; // default to stretch
-                    
-                    alignmentControls.push(
-                        wp.element.createElement(ToolbarDropdownMenu, {
-                            controls: controls,
-                            icon: currentIcon,
-                            label: 'Vertical Alignment',
-                            className: 'orbitools-alignment-dropdown'
-                        })
-                    );
-                }
             }
             
-            // Column orientation controls  
+            // Vertical alignment control (always second)  
             if (isColumn) {
-                // Justify Content (vertical alignment for column)
+                // For column: justify-content controls vertical alignment
                 if (isControlSupported(flexSupports, 'justifyContent')) {
                     const currentValue = getValue('justifyContent');
                     const controls = [
@@ -653,15 +632,15 @@
                         })
                     );
                 }
-                
-                // Align Items (horizontal alignment for column)
+            } else {
+                // For row: align-items controls vertical alignment
                 if (isControlSupported(flexSupports, 'alignItems')) {
                     const currentValue = getValue('alignItems');
                     const controls = [
                         {
                             icon: wp.element.createElement('div', {
                                 className: 'orbitools-alignment-icon',
-                                dangerouslySetInnerHTML: { __html: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 2L4 22M11 8H13C13.5523 8 14 7.55228 14 7V5C14 4.44772 13.5523 4 13 4H11C10.4477 4 10 4.44772 10 5V7C10 7.55228 10.4477 8 11 8ZM11 15H13C13.5523 15 14 14.5523 14 14V12C14 11.4477 13.5523 11 13 11H11C10.4477 11 10 11.4477 10 12V14C10 14.5523 10.4477 15 11 15Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>' }
+                                dangerouslySetInnerHTML: { __html: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2 4L22 4M6 11H18C18.5523 11 19 10.5523 19 10V8C19 7.44772 18.5523 7 18 7H6C5.44772 7 5 7.44772 5 8V10C5 10.5523 5.44772 11 6 11ZM6 18H18C18.5523 18 19 17.5523 19 17V15C19 14.4477 18.5523 14 18 14H6C5.44772 14 5 14.4477 5 15V17C5 17.5523 5.44772 18 6 18Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>' }
                             }),
                             title: 'Start',
                             onClick: () => updateControl('alignItems', 'flex-start'),
@@ -670,7 +649,7 @@
                         {
                             icon: wp.element.createElement('div', {
                                 className: 'orbitools-alignment-icon',
-                                dangerouslySetInnerHTML: { __html: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 2L12 22M10 8H14C14.5523 8 15 7.55228 15 7V5C15 4.44772 14.5523 4 14 4H10C9.44772 4 9 4.44772 9 5V7C9 7.55228 9.44772 8 10 8ZM10 15H14C14.5523 15 15 14.5523 15 14V12C15 11.4477 14.5523 11 14 11H10C9.44772 11 9 11.4477 9 12V14C10 14.5523 10.5523 15 10 15Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>' }
+                                dangerouslySetInnerHTML: { __html: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2 12L22 12M6 16H18C18.5523 16 19 15.5523 19 15V13C19 12.4477 18.5523 12 18 12H6C5.44772 12 5 12.4477 5 13V15C5 15.5523 5.44772 16 6 16ZM6 9H18C18.5523 9 19 8.55228 19 8V6C19 5.44772 18.5523 5 18 5H6C5.44772 5 5 5.44772 5 6V8C5 8.55228 5.44772 9 6 9Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>' }
                             }),
                             title: 'Center',
                             onClick: () => updateControl('alignItems', 'center'),
@@ -679,7 +658,7 @@
                         {
                             icon: wp.element.createElement('div', {
                                 className: 'orbitools-alignment-icon',
-                                dangerouslySetInnerHTML: { __html: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M20 2L20 22M13 8H17C17.5523 8 18 7.55228 18 7V5C18 4.44772 17.5523 4 17 4H13C12.4477 4 12 4.44772 12 5V7C12 7.55228 12.4477 8 13 8ZM13 15H17C17.5523 15 18 14.5523 18 14V12C18 11.4477 17.5523 11 17 11H13C12.4477 11 12 11.4477 12 12V14C12 14.5523 12.4477 15 13 15Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>' }
+                                dangerouslySetInnerHTML: { __html: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2 20L22 20M6 14H18C18.5523 14 19 13.5523 19 13V11C19 10.4477 18.5523 10 18 10H6C5.44772 10 5 10.4477 5 11V13C5 13.5523 5.44772 14 6 14ZM6 7H18C18.5523 7 19 6.55228 19 6V4C19 3.44772 18.5523 3 18 3H6C5.44772 3 5 3.44772 5 4V6C5 6.55228 5.44772 7 6 7Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>' }
                             }),
                             title: 'End',
                             onClick: () => updateControl('alignItems', 'flex-end'),
@@ -688,7 +667,7 @@
                         {
                             icon: wp.element.createElement('div', {
                                 className: 'orbitools-alignment-icon',
-                                dangerouslySetInnerHTML: { __html: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2 2L2 22M22 2L22 22M8 8H16C16.5523 8 17 7.55228 17 7V5C17 4.44772 16.5523 4 16 4H8C7.44772 4 7 4.44772 7 5V7C7 7.55228 7.44772 8 8 8ZM8 15H16C16.5523 15 17 14.5523 17 14V12C17 11.4477 16.5523 11 16 11H8C7.44772 11 7 11.4477 7 12V14C7 14.5523 7.44772 15 8 15Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>' }
+                                dangerouslySetInnerHTML: { __html: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2 2L22 2M2 22L22 22M6 16H18C18.5523 16 19 15.5523 19 15V9C19 8.44772 18.5523 8 18 8H6C5.44772 8 5 8.44772 5 9V15C5 15.5523 5.44772 16 6 16Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>' }
                             }),
                             title: 'Stretch',
                             onClick: () => updateControl('alignItems', 'stretch'),
@@ -702,7 +681,7 @@
                         wp.element.createElement(ToolbarDropdownMenu, {
                             controls: controls,
                             icon: currentIcon,
-                            label: 'Horizontal Alignment',
+                            label: 'Vertical Alignment',
                             className: 'orbitools-alignment-dropdown'
                         })
                     );
