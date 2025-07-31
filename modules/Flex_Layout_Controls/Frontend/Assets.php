@@ -139,12 +139,20 @@ class Assets
      */
     private function enqueue_admin_scripts(string $hook): void
     {
+        // Enqueue alignment icons first (needed by editor controls)
+        $this->enqueue_script(
+            'orbitools-flex-alignment-icons',
+            'js/alignment-icons.js',
+            array(),
+            true
+        );
+
         // Only load admin scripts on orbitools admin pages
         if (strpos($hook, 'orbitools') !== false) {
             $this->enqueue_script(
                 'orbitools-flex-layout-controls-admin',
                 'js/admin-flex-controls.js',
-                array(),
+                array('orbitools-flex-alignment-icons'),
                 true
             );
         }

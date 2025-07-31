@@ -92,6 +92,12 @@ class Block_Editor
 
         // Enqueue JavaScript files - simplified after clean rewrite
         $this->enqueue_script(
+            'orbitools-flex-alignment-icons',
+            $module_url . 'js/alignment-icons.js',
+            array()
+        );
+
+        $this->enqueue_script(
             'orbitools-flex-attribute-registration',
             $module_url . 'js/attribute-registration.js',
             $deps
@@ -100,7 +106,7 @@ class Block_Editor
         $this->enqueue_script(
             'orbitools-flex-editor-controls',
             $module_url . 'js/editor-controls.js',
-            array_merge($deps, array('orbitools-flex-attribute-registration'))
+            array_merge($deps, array('orbitools-flex-attribute-registration', 'orbitools-flex-alignment-icons'))
         );
 
         // Localize minimal data for JavaScript
