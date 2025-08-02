@@ -123,17 +123,47 @@ class Block_Helper
         
         // Add align items classes (skip defaults)
         if ($align_items !== 'stretch') {
-            $classes[] = "flex-items-{$align_items}";
+            // Map align items values to simplified class names
+            $align_items_map = [
+                'flex-start' => 'start',
+                'flex-end' => 'end',
+                'center' => 'center'
+            ];
+            
+            $class_suffix = $align_items_map[$align_items] ?? $align_items;
+            $classes[] = "flex-items-{$class_suffix}";
         }
         
         // Add justify content classes (skip defaults)
         if ($justify_content !== 'flex-start') {
-            $classes[] = "flex-justify-{$justify_content}";
+            // Map justify content values to simplified class names
+            $justify_content_map = [
+                'flex-start' => 'start',
+                'flex-end' => 'end',
+                'center' => 'center',
+                'space-between' => 'between',
+                'space-around' => 'around',
+                'space-evenly' => 'evenly'
+            ];
+            
+            $class_suffix = $justify_content_map[$justify_content] ?? $justify_content;
+            $classes[] = "flex-justify-{$class_suffix}";
         }
         
         // Add align content classes (only if wrapping and not default)
         if ($wrap !== 'nowrap' && $align_content !== 'stretch') {
-            $classes[] = "flex-content-{$align_content}";
+            // Map align content values to simplified class names
+            $align_content_map = [
+                'flex-start' => 'start',
+                'flex-end' => 'end',
+                'center' => 'center',
+                'space-between' => 'between',
+                'space-around' => 'around',
+                'space-evenly' => 'evenly'
+            ];
+            
+            $class_suffix = $align_content_map[$align_content] ?? $align_content;
+            $classes[] = "flex-content-{$class_suffix}";
         }
         
         // Add gap class (when gap size is set)
@@ -143,9 +173,9 @@ class Block_Helper
             $classes[] = 'flex-gap-' . \sanitize_html_class(str_replace(['rem', 'px', 'em', '%'], '', $gap_size));
         }
         
-        // Add restrict content width class (when enabled and block is full width)
+        // Add constrain content width class (when enabled and block is full width)
         if ($restrict_content_width && ($attributes['align'] ?? '') === 'full') {
-            $classes[] = 'flex-restrict-content';
+            $classes[] = 'flex-constrain';
         }
         
         // Add stack on mobile class (when enabled)
@@ -155,12 +185,26 @@ class Block_Helper
         
         // Add column layout classes (skip defaults)
         if ($column_layout !== 'fit') {
-            $classes[] = "flex-layout-{$column_layout}";
-        }
-        
-        // Add grid system classes (only if column layout is custom)
-        if ($column_layout === 'custom') {
-            $classes[] = "flex-grid-{$grid_system}col";
+            if ($column_layout === 'custom') {
+                // For custom layout, add the specific grid system class (no need for generic flex-lyt-custom)
+                $grid_class_map = [
+                    '5' => 'flex-lyt-penta',
+                    '12' => 'flex-lyt-dodeca'
+                ];
+                
+                if (isset($grid_class_map[$grid_system])) {
+                    $classes[] = $grid_class_map[$grid_system];
+                }
+            } else {
+                // For other layouts, use the standard mapping
+                $layout_class_map = [
+                    'grow' => 'flex-lyt-equal',
+                ];
+                
+                if (isset($layout_class_map[$column_layout])) {
+                    $classes[] = $layout_class_map[$column_layout];
+                }
+            }
         }
         
         return implode(' ', array_filter($classes));

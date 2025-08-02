@@ -1,0 +1,15 @@
+/**
+ * Abstracts Index - One Import to Rule Them All!
+ *
+ * Just use: @use 'abstracts' as *;
+ * And you get EVERYTHING!
+ */
+
+// 1. All variables (theme + custom)
+@forward 'variables';
+
+// 2. Utility functions
+@forward 'functions';
+
+// 3. Mixins
+@forward 'mixins';

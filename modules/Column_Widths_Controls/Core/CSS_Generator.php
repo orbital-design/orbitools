@@ -29,25 +29,41 @@ if (!defined('ABSPATH')) {
 class CSS_Generator
 {
     /**
-     * Column width percentages for 12-column grid
+     * Get column width percentages based on grid system
      *
      * @since 1.0.0
-     * @var array
+     * @param string $grid_system The grid system ('5' or '12')
+     * @return array Column width mappings
      */
-    private $column_widths = [
-        '1_col'  => '8.333333%',
-        '2_cols' => '16.666667%',
-        '3_cols' => '25%',
-        '4_cols' => '33.333333%',
-        '5_cols' => '41.666667%',
-        '6_cols' => '50%',
-        '7_cols' => '58.333333%',
-        '8_cols' => '66.666667%',
-        '9_cols' => '75%',
-        '10_cols' => '83.333333%',
-        '11_cols' => '91.666667%',
-        '12_cols' => '100%',
-    ];
+    private function get_column_widths($grid_system = '12'): array
+    {
+        if ($grid_system === '5') {
+            // 5-column grid system
+            return [
+                '1' => '20%',
+                '2' => '40%',
+                '3' => '60%',
+                '4' => '80%',
+                '5' => '100%',
+            ];
+        }
+        
+        // Default 12-column grid system
+        return [
+            '1'  => '8.333333%',
+            '2'  => '16.666667%',
+            '3'  => '25%',
+            '4'  => '33.333333%',
+            '5'  => '41.666667%',
+            '6'  => '50%',
+            '7'  => '58.333333%',
+            '8'  => '66.666667%',
+            '9'  => '75%',
+            '10' => '83.333333%',
+            '11' => '91.666667%',
+            '12' => '100%',
+        ];
+    }
 
     /**
      * Breakpoint configurations
@@ -83,34 +99,9 @@ class CSS_Generator
      */
     public function enqueue_column_widths_css(): void
     {
-        // Only enqueue if module is enabled and CSS output is enabled
-        if (!Settings_Helper::is_module_enabled() || !Settings_Helper::output_column_widths_css()) {
-            return;
-        }
-
-        // Generate cache key based on current configuration
-        $cache_key = 'orbitools_column_widths_css_' . md5(serialize($this->column_widths) . serialize($this->breakpoints));
-        
-        // Try to get cached CSS
-        $column_widths_css = get_transient($cache_key);
-        
-        if ($column_widths_css === false) {
-            // Cache miss - generate CSS and cache it
-            $column_widths_css = $this->generate_column_widths_css();
-            
-            // Cache for 24 hours
-            set_transient($cache_key, $column_widths_css, 24 * HOUR_IN_SECONDS);
-            
-            // Clean up old cache entries
-            $this->cleanup_old_cache();
-        }
-
-        // Register and enqueue a dummy stylesheet
-        wp_register_style('orbitools-column-widths', false);
-        wp_enqueue_style('orbitools-column-widths');
-
-        // Add the CSS inline
-        wp_add_inline_style('orbitools-column-widths', $column_widths_css);
+        // Column width CSS is now handled by the Flex Layout Controls static CSS file
+        // This method is kept for backwards compatibility but no longer generates CSS
+        return;
     }
 
     /**
@@ -123,30 +114,39 @@ class CSS_Generator
     {
         $css = "/* Orbitools Column Widths Controls */\n";
         
-        // Base (mobile-first) column width classes
-        foreach ($this->column_widths as $class => $width) {
-            $css .= ".has-orbitools-column-width-{$class} { width: {$width} !important; }\n";
-        }
+        // Generate CSS for both grid systems
+        $grid_systems = ['5', '12'];
         
-        // Responsive breakpoint classes
-        foreach ($this->breakpoints as $breakpoint => $min_width) {
-            $css .= "\n@media (min-width: {$min_width}) {\n";
+        foreach ($grid_systems as $grid_system) {
+            $column_widths = $this->get_column_widths($grid_system);
             
-            foreach ($this->column_widths as $class => $width) {
-                $css .= "  .has-orbitools-column-width-{$breakpoint}-{$class} { width: {$width} !important; }\n";
+            $css .= "\n/* {$grid_system}-column grid system */\n";
+            
+            // Base (mobile-first) column width classes
+            foreach ($column_widths as $class => $width) {
+                $css .= ".flex-cols-{$class} { width: {$width} !important; }\n";
             }
             
-            $css .= "}\n";
+            // Responsive breakpoint classes
+            foreach ($this->breakpoints as $breakpoint => $min_width) {
+                $css .= "\n@media (min-width: {$min_width}) {\n";
+                
+                foreach ($column_widths as $class => $width) {
+                    $css .= "  .flex-cols-{$breakpoint}-{$class} { width: {$width} !important; }\n";
+                }
+                
+                $css .= "}\n";
+            }
         }
         
         // Additional utility classes
         $css .= "\n/* Column width utilities */\n";
-        $css .= ".has-orbitools-column-width-auto { width: auto !important; }\n";
-        $css .= ".has-orbitools-column-width-full { width: 100% !important; }\n";
+        $css .= ".flex-cols-auto { width: auto !important; }\n";
+        $css .= ".flex-cols-full { width: 100% !important; }\n";
         
         // Box sizing for column width elements
         $css .= "\n/* Ensure proper box-sizing for column widths */\n";
-        $css .= "[class*='has-orbitools-column-width-'] { box-sizing: border-box; }\n";
+        $css .= "[class*='flex-cols-'] { box-sizing: border-box; }\n";
         
         return $css;
     }
@@ -162,19 +162,52 @@ class CSS_Generator
     {
         $classes = [];
         
+        // Always add base flex-cols class
+        $classes[] = 'flex-cols';
+        
         foreach ($column_widths as $breakpoint => $width) {
             if (empty($width) || $width === 'auto') {
                 continue;
             }
             
+            // Convert from old format (1_col, 2_cols) to new format (1, 2)
+            $columnNumber = $this->extractColumnNumber($width);
+            
             if ($breakpoint === 'base') {
-                $classes[] = "has-orbitools-column-width-{$width}";
+                $classes[] = "flex-cols--{$columnNumber}";
             } else {
-                $classes[] = "has-orbitools-column-width-{$breakpoint}-{$width}";
+                $classes[] = "flex-cols--{$breakpoint}-{$columnNumber}";
             }
         }
         
         return $classes;
+    }
+    
+    /**
+     * Extract column number from width key
+     * 
+     * @param string $width The width key (e.g., '1', '2', '3' or legacy '1_col', '2_cols')
+     * @return string The column number (e.g., '1', '2', '3')
+     */
+    private function extractColumnNumber(string $width): string
+    {
+        // Handle new simple integer format
+        if (is_numeric($width)) {
+            return $width;
+        }
+        
+        // Handle legacy formats for backwards compatibility
+        if ($width === '1_col') {
+            return '1';
+        }
+        
+        // Match pattern like '2_cols', '3_cols', etc.
+        if (preg_match('/^(\d+)_cols$/', $width, $matches)) {
+            return $matches[1];
+        }
+        
+        // Fallback - return as is
+        return $width;
     }
 
     /**

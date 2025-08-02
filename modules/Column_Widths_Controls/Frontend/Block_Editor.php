@@ -110,7 +110,7 @@ class Block_Editor
                     'lg' => array('label' => __('Large (992px+)', 'orbitools'), 'min_width' => '992px'),
                     'xl' => array('label' => __('Extra Large (1200px+)', 'orbitools'), 'min_width' => '1200px'),
                 ),
-                'columnOptions' => $this->get_column_options(),
+                // Column options are now generated dynamically in JavaScript based on parent grid system
             )
         );
 
@@ -118,30 +118,6 @@ class Block_Editor
         $this->enqueue_editor_styles($module_url);
     }
 
-    /**
-     * Get column width options for JavaScript
-     *
-     * @since 1.0.0
-     * @return array Column options configuration
-     */
-    private function get_column_options(): array
-    {
-        return array(
-            array('label' => __('Auto', 'orbitools'), 'value' => 'auto'),
-            array('label' => __('1 of 12 (8.33%)', 'orbitools'), 'value' => '1_col'),
-            array('label' => __('2 of 12 (16.67%)', 'orbitools'), 'value' => '2_cols'),
-            array('label' => __('3 of 12 (25%)', 'orbitools'), 'value' => '3_cols'),
-            array('label' => __('4 of 12 (33.33%)', 'orbitools'), 'value' => '4_cols'),
-            array('label' => __('5 of 12 (41.67%)', 'orbitools'), 'value' => '5_cols'),
-            array('label' => __('6 of 12 (50%)', 'orbitools'), 'value' => '6_cols'),
-            array('label' => __('7 of 12 (58.33%)', 'orbitools'), 'value' => '7_cols'),
-            array('label' => __('8 of 12 (66.67%)', 'orbitools'), 'value' => '8_cols'),
-            array('label' => __('9 of 12 (75%)', 'orbitools'), 'value' => '9_cols'),
-            array('label' => __('10 of 12 (83.33%)', 'orbitools'), 'value' => '10_cols'),
-            array('label' => __('11 of 12 (91.67%)', 'orbitools'), 'value' => '11_cols'),
-            array('label' => __('12 of 12 (100%)', 'orbitools'), 'value' => '12_cols'),
-        );
-    }
 
     /**
      * Add column width CSS classes to blocks during rendering
@@ -153,8 +129,14 @@ class Block_Editor
      */
     public function add_column_width_classes(string $block_content, array $block): string
     {
+        // Debug logging
+        if (isset($block['attrs']['orbitoolsColumnWidths'])) {
+            error_log('COLUMN_WIDTHS_DEBUG: Block has column widths: ' . print_r($block['attrs']['orbitoolsColumnWidths'], true));
+        }
+        
         // Only process if module is enabled
         if (!Settings_Helper::is_module_enabled()) {
+            error_log('COLUMN_WIDTHS_DEBUG: Module not enabled');
             return $block_content;
         }
 
@@ -168,7 +150,10 @@ class Block_Editor
         // Generate CSS classes
         $css_classes = $this->css_generator->generate_css_classes($column_widths);
         
+        error_log('COLUMN_WIDTHS_DEBUG: Generated classes: ' . print_r($css_classes, true));
+        
         if (empty($css_classes)) {
+            error_log('COLUMN_WIDTHS_DEBUG: No CSS classes generated');
             return $block_content;
         }
 

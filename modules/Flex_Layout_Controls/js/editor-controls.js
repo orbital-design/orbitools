@@ -332,35 +332,41 @@
 
 
 
-            // Column Layout Control
+            // Row Layout Control (combines Column Layout and Grid System)
             if (isControlSupported(flexSupports, 'columnLayout')) {
-                controls.push(createToolsPanelItem(
-                    'columnLayout',
-                    () => hasValue('columnLayout'),
-                    () => updateControl('columnLayout', undefined),
-                    'Column Layout',
+                const currentColumnLayout = getValue('columnLayout');
+                
+                // Create the combined control content
+                const rowLayoutContent = wp.element.createElement('div', {},
+                    // Column Layout Toggle Group
                     createToggleGroup(
-                        getValue('columnLayout'),
+                        currentColumnLayout,
                         (value) => updateControl('columnLayout', value),
                         COLUMN_LAYOUT_OPTIONS,
                         'Column Layout'
+                    ),
+                    
+                    // Grid System Control (only if columnLayout is custom)
+                    currentColumnLayout === 'custom' && isControlSupported(flexSupports, 'gridSystem') && 
+                    wp.element.createElement('div', { style: { marginTop: '16px' } },
+                        createToggleGroup(
+                            getValue('gridSystem'),
+                            (value) => updateControl('gridSystem', value),
+                            GRID_SYSTEM_OPTIONS,
+                            'Grid System'
+                        )
                     )
-                ));
-            }
-
-            // Grid System Control (only if columnLayout is custom)
-            if (isControlSupported(flexSupports, 'gridSystem') && getValue('columnLayout') === 'custom') {
+                );
+                
                 controls.push(createToolsPanelItem(
-                    'gridSystem',
-                    () => hasValue('gridSystem'),
-                    () => updateControl('gridSystem', undefined),
-                    'Grid System',
-                    createToggleGroup(
-                        getValue('gridSystem'),
-                        (value) => updateControl('gridSystem', value),
-                        GRID_SYSTEM_OPTIONS,
-                        'Grid System'
-                    )
+                    'rowLayout', // Using combined identifier
+                    () => hasValue('columnLayout') || hasValue('gridSystem'),
+                    () => {
+                        updateControl('columnLayout', undefined);
+                        updateControl('gridSystem', undefined);
+                    },
+                    'Row Layout',
+                    rowLayoutContent
                 ));
             }
 
@@ -714,7 +720,7 @@
                     wp.element.createElement(
                         ToolsPanel,
                         {
-                            label: 'Layout',
+                            label: 'Row Layout',
                             resetAll: () => setAttributes({ orbitoolsFlexControls: {} }),
                             panelId: 'flex-layout-panel'
                         },

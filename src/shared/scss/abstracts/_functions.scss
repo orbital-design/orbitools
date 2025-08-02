@@ -1,0 +1,20 @@
+/**
+ * SCSS Functions
+ *
+ * Pure functions for calculations, data access, and utility generation.
+ * Modern SCSS using @use patterns and proper error handling.
+ */
+
+// SCSS Modules
+@use 'sass:map';
+
+// Orbitools Modules
+@use 'variables' as *;
+
+@function breakpoint($key) {
+    @return map.get($orbi-breakpoints, $key);
+}
+
+@function preset($key) {
+    @return map.get($wp-presets, $key);
+}

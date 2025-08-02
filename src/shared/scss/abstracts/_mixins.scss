@@ -1,0 +1,132 @@
+/**
+ * SCSS Mixins
+ *
+ * Reusable mixins for common patterns and utility generation.
+ * Uses simple variable names for easy access.
+ */
+
+// SCSS Modules
+@use 'sass:map';
+@use 'sass:math';
+@use 'sass:list';
+@use 'sass:meta';
+
+// Orbitools Modules
+@use 'variables' as *;
+@use 'functions' as *;
+
+/**
+ * Media Query Mixin
+ * @param {string} $breakpoint - Breakpoint name from $breakpoint map
+ * @param {string} $direction - 'min' (default) for min-width or 'max' for max-width
+ * @example @include mq(md) { ... }                 // min-width (default)
+ * @example @include mq(md, min) { ... }            // min-width (explicit)
+ * @example @include mq(md, max) { ... }            // max-width (subtracts 0.0625rem)
+ */
+@mixin mq($breakpoint, $direction: min) {
+
+    $value: map.get($orbi-breakpoints, $breakpoint);
+
+    @if $value {
+        @if $direction == max {
+            @media (max-width: #{$value - 0.0625rem}) {
+                @content;
+            }
+        } @else {
+            @media (min-width: #{$value}) {
+                @content;
+            }
+        }
+    } @else {
+        @warn "Breakpoint `#{$breakpoint}` not found in $orbi-breakpoints map.";
+    }
+}
+
+/**
+ * Generate utility classes from a map
+ * @param {Map} $utilities - Map of categories and variants/properties
+ * @param {String} $operator - CSS operator to use ('', '&', '>', '+', '~', etc.)
+ * @param {String} $prefix - Optional prefix for class names (e.g., 'md:')
+ */
+@mixin generate-utilities($utilities, $operator: '', $prefix: '') {
+    @each $category, $variants in $utilities {
+        // Get the first value to check if it's a nested map or direct property
+        $first-key: list.nth(map.keys($variants), 1);
+        $first-value: map.get($variants, $first-key);
+
+        // Check if this is a direct property map (first value is not a map)
+        @if meta.type-of($first-value) != 'map' {
+            // Direct property map - create class with category name only
+            #{$operator}.#{$prefix}#{$category} {
+                @each $property, $value in $variants {
+                    #{$property}: #{$value};
+                }
+            }
+        } @else {
+            // Nested variants - create class with category-variant pattern
+            @each $variant, $properties in $variants {
+                #{$operator}.#{$prefix}#{$category}-#{$variant} {
+                    @each $property, $value in $properties {
+                        #{$property}: #{$value};
+                    }
+                }
+            }
+        }
+    }
+}
+
+/**
+ * Generate complete utility set (base + responsive)
+ * @param {Map} $utilities - Map of categories and variants
+ * @param {String} $operator - CSS operator to use ('', '&', '>', '+', '~', etc.)
+ * @param {Boolean} $responsive - Whether to generate responsive variants (default: true)
+ */
+@mixin generate-utility-set($utilities, $operator: '', $responsive: true) {
+    // Generate base utility classes (mobile-first)
+    @include generate-utilities($utilities, $operator);
+
+    // Generate responsive utility classes if enabled
+    @if $responsive {
+        @each $bp-name, $breakpoint in $orbi-breakpoints {
+            @include mq($bp-name) {
+                @include generate-utilities($utilities, $operator, '#{$bp-name}\\:');
+            }
+        }
+    }
+}
+
+/**
+ * Generate column width utilities from the entire grid width map
+ * @param {String} $parent-class - Base class name of parent (default: 'flex-lyt-')
+ * @param {String} $child-class - Base class name of child (default: 'flex-cols--')
+ * @param {String} $operator - CSS operator to use (default: '')
+ * @param {Boolean} $responsive - Whether to generate responsive variants (default: true)
+ */
+@mixin generate-col-utility-set($map: '', $parent-class: 'flex-lyt-', $child-class: 'flex-cols--', $operator: '', $responsive: true) {
+    // Generate base utility classes for all grid systems (mobile-first)
+    @each $grid-name, $grid-system in $map {
+        @for $i from 1 through list.length($grid-system) {
+            $value: list.nth($grid-system, $i);
+            #{$operator}.#{$parent-class}#{$grid-name} .#{$child-class}#{$i} {
+                max-width: #{$value} !important;
+            }
+        }
+    }
+
+    // Generate responsive utility classes if enabled
+    @if $responsive {
+        @each $bp-name, $breakpoint in $orbi-breakpoints {
+            @include mq($bp-name) {
+                // Generate responsive classes for ALL grid systems within this breakpoint
+                @each $grid-name, $grid-system in $map {
+                    @for $i from 1 through list.length($grid-system) {
+                        $value: list.nth($grid-system, $i);
+                        #{$operator}.#{$bp-name}\:#{$parent-class}#{$grid-name} .#{$child-class}#{$i} {
+                            max-width: #{$value} !important;
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

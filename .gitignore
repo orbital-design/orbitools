@@ -8,3 +8,5 @@ tests/
 !/[Rr][Ee][Aa][Dd][Mm][Ee].md
 .claude/
 .nova/
+*.log
+build/

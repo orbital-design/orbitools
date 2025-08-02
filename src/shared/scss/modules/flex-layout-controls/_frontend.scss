@@ -1,0 +1,45 @@
+@use '../../abstracts/' as *;
+
+/**
+ * Flex Layout Controls - Utility Classes
+ * Static CSS classes for flex layout controls
+ */
+.flex {
+    // Base flex container - higher specificity with attribute selector
+    &[class*="flex"] {
+        display: flex;
+        flex-direction: row;
+        flex-wrap: nowrap;
+        align-items: stretch;
+        justify-content: flex-start;
+        align-content: stretch;
+    }
+
+    // Generate utility classes (base + responsive)
+    @include generate-utility-set( $flex-layout-utils, '&');
+
+    /* Stack on Mobile */
+    @include mq(sm, 'max') {
+        .flex.flex-stack-mobile {
+            flex-direction: column !important;
+            flex-wrap: nowrap !important;
+        }
+    }
+
+    /**
+    * Column Width - Utility Classes
+    *
+    * @module Flex_Layout_Controls
+    * Static CSS classes for grids & column widths
+    */
+    &.flex-lyt-penta,
+    &.flex-lyt-dodeca{
+        .flex-cols {
+            flex: 1 1 0;
+            width: 100%;
+            box-sizing: border-box;
+        }
+    }
+
+    @include generate-col-utility-set($flex-grid-width-utils, 'flex-lyt-', 'flex-cols--', '&');
+}
