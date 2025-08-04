@@ -124,16 +124,16 @@ const Edit: React.FC<BlockEditProps<LayoutAttributes>> = ({
     // Check if we need content constraint wrapper in editor
     const needsWrapper = align === 'full' && restrictContentWidth;
     
-    // Generate data attributes for layout consistency with save component
-    
-    const flexAttributes = generateFlexAttributes(attributes);
-    
     // Build semantic class names using utility functions
     const collectionClasses = buildCollectionClasses(layoutType, itemWidth, columnSystem);
     
     // Add CSS variable for custom gap spacing
     const { gapSize } = attributes;
     const gapStyle = gapSize ? { '--orb-gap-size': gapSize } : {};
+    
+    // Generate data attributes for layout consistency with save component  
+    const tempBlockProps = useBlockProps();
+    const flexAttributes = generateFlexAttributes(attributes, tempBlockProps);
     
     const blockProps = useBlockProps({
         className: needsWrapper ? undefined : collectionClasses,
