@@ -10,8 +10,6 @@ use Orbitools\Modules\Layout_Guides\Layout_Guides;
 use Orbitools\Modules\Menu_Groups\Menu_Groups;
 use Orbitools\Modules\Menu_Dividers\Menu_Dividers;
 use Orbitools\Modules\Analytics\Analytics;
-use Orbitools\Modules\Flex_Layout_Controls\Flex_Layout_Controls;
-use Orbitools\Modules\Column_Widths_Controls\Column_Widths_Controls;
 
 /**
  * Class Loader
@@ -56,7 +54,7 @@ class Loader
         // Initialize core classes.
         $this->admin = new Admin();
         $this->updater = new Updater();
-        
+
         // Initialize Toolbar FAB
         new Toolbar_FAB();
 
@@ -66,7 +64,5 @@ class Loader
         $this->modules[] = new Menu_Groups();
         $this->modules[] = new Menu_Dividers();
         $this->modules[] = new Analytics();
-        $this->modules[] = new Flex_Layout_Controls();
-        $this->modules[] = new Column_Widths_Controls();
     }
 }
