@@ -68,7 +68,7 @@ class Guide_Renderer
         }
 
         echo $this->get_guides_html();
-        
+
         // Render FAB separately (not inside the guides container)
         // Only show FAB if at least one feature is enabled
         $config = Settings_Helper::get_js_config();
@@ -86,22 +86,22 @@ class Guide_Renderer
     private function get_guides_html()
     {
         $settings = Settings_Helper::get_js_config();
-        
+
         $html = '<div id="orbitools-layout-guides" class="orbitools-layout-guides">';
-        
+
         // Grid overlay
         if ($settings['showGrids']) {
             $html .= $this->get_grid_html($settings);
         }
-        
-        
+
+
         // Rulers
         if ($settings['showRulers']) {
             $html .= $this->get_rulers_html($settings);
         }
-        
+
         $html .= '</div>';
-        
+
         return $html;
     }
 
@@ -115,14 +115,14 @@ class Guide_Renderer
     private function get_grid_html($settings)
     {
         $html = '<div class="orbitools-layout-guides__grid">';
-        
+
         // Default to 12 columns - JavaScript will handle switching between 5 and 12
         for ($i = 0; $i < 12; $i++) {
             $html .= '<div class="orbitools-layout-guides__grid-column"></div>';
         }
-        
+
         $html .= '</div>';
-        
+
         return $html;
     }
 
@@ -140,7 +140,7 @@ class Guide_Renderer
         $html .= '<div class="orbitools-layout-guides__ruler orbitools-layout-guides__ruler--horizontal"></div>';
         $html .= '<div class="orbitools-layout-guides__ruler orbitools-layout-guides__ruler--vertical"></div>';
         $html .= '</div>';
-        
+
         return $html;
     }
 
@@ -156,11 +156,11 @@ class Guide_Renderer
     {
         $html = '<div class="orbitools-layout-guides__fab" id="orbitools-layout-guides-fab">';
         $html .= '<button class="orbitools-layout-guides__fab-toggle" title="Layout Guides Controls">';
-        $html .= '<img src="' . ORBITOOLS_URL . 'assets/images/orbitools-logo.svg" alt="Orbitools" class="orbitools-layout-guides__fab-logo" />';
+        $html .= '<img src="' . ORBITOOLS_URL . 'build/media/orbitools-logo.svg" alt="Orbitools" class="orbitools-layout-guides__fab-logo" />';
         $html .= '</button>';
-        
+
         $html .= '<div class="orbitools-layout-guides__fab-panel">';
-        
+
         // Grid toggles - show both when grids are enabled
         if ($settings['showGrids']) {
             // 12 Column Grid toggle
@@ -170,7 +170,7 @@ class Guide_Renderer
             $html .= '<span class="orbitools-layout-guides__fab-label">12 Grid</span>';
             $html .= '</button>';
             $html .= '</div>';
-            
+
             // 5 Column Grid toggle
             $html .= '<div class="orbitools-layout-guides__fab-control">';
             $html .= '<button class="orbitools-layout-guides__fab-btn" data-action="toggle-5-grid">';
@@ -179,8 +179,8 @@ class Guide_Renderer
             $html .= '</button>';
             $html .= '</div>';
         }
-        
-        
+
+
         // Rulers toggle
         if ($settings['showRulers']) {
             $html .= '<div class="orbitools-layout-guides__fab-control">';
@@ -190,11 +190,11 @@ class Guide_Renderer
             $html .= '</button>';
             $html .= '</div>';
         }
-        
-        
+
+
         $html .= '</div>'; // Close panel
         $html .= '</div>'; // Close FAB
-        
+
         return $html;
     }
 }

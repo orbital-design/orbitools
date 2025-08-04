@@ -1,5 +1,6 @@
 const path = require('path');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+const CopyWebpackPlugin = require('copy-webpack-plugin');
 
 module.exports = {
     mode: 'production',
@@ -65,11 +66,27 @@ module.exports = {
                     }
                 }
             },
+            {
+                test: /\.(png|jpe?g|gif|svg|webp|ico)$/i,
+                type: 'asset/resource',
+                generator: {
+                    filename: 'media/[name][ext]'
+                }
+            },
         ],
     },
     plugins: [
         new MiniCssExtractPlugin({
             filename: '[name].css',
+        }),
+        new CopyWebpackPlugin({
+            patterns: [
+                {
+                    from: path.resolve(process.cwd(), 'src', 'shared', 'images'),
+                    to: path.resolve(process.cwd(), 'build', 'media'),
+                    noErrorOnMissing: true, // Don't fail if the images directory doesn't exist
+                },
+            ],
         }),
         // Remove empty JS files generated from SCSS-only entries
         {
