@@ -63,7 +63,7 @@ class Block_Editor
     {
         $this->preset_manager = $preset_manager;
         $this->load_settings();
-        
+
         // Hook into block editor
         add_action('enqueue_block_editor_assets', array($this, 'enqueue_editor_assets'));
     }
@@ -130,7 +130,7 @@ class Block_Editor
         // Enqueue attribute registration first
         wp_enqueue_script(
             'orbitools-typography-attribute-registration',
-            ORBITOOLS_URL . 'modules/Typography_Presets/js/attribute-registration.js',
+            ORBITOOLS_URL . 'build/admin/js/modules/typography-presets/editor-presets-attribute-registration.js',
             array('wp-hooks'),
             self::VERSION,
             true
@@ -146,7 +146,7 @@ class Block_Editor
         // Enqueue core controls removal
         wp_enqueue_script(
             'orbitools-typography-core-removal',
-            ORBITOOLS_URL . 'modules/Typography_Presets/js/core-controls-removal.js',
+            ORBITOOLS_URL . 'build/admin/js/modules/typography-presets/editor-disable-core-typography-controls.js',
             array('wp-hooks', 'wp-blocks'),
             self::VERSION,
             true
@@ -155,7 +155,7 @@ class Block_Editor
         // Enqueue editor controls
         wp_enqueue_script(
             'orbitools-typography-editor-controls',
-            ORBITOOLS_URL . 'modules/Typography_Presets/js/editor-controls.js',
+            ORBITOOLS_URL . 'build/admin/js/modules/typography-presets/editor-presets-register-controls.js',
             array(
                 'wp-hooks',
                 'wp-blocks',
@@ -171,7 +171,7 @@ class Block_Editor
         // Enqueue class application
         wp_enqueue_script(
             'orbitools-typography-class-application',
-            ORBITOOLS_URL . 'modules/Typography_Presets/js/class-application.js',
+            ORBITOOLS_URL . 'build/admin/js/modules/typography-presets/editor-presets-classname-application.js',
             array(
                 'wp-hooks',
                 'wp-element',
@@ -193,7 +193,7 @@ class Block_Editor
         // Enqueue core controls removal even when no presets
         wp_enqueue_script(
             'orbitools-typography-core-removal',
-            ORBITOOLS_URL . 'modules/Typography_Presets/js/core-controls-removal.js',
+            ORBITOOLS_URL . 'build/admin/js/modules/typography-presets/editor-disable-core-typography-controls.js',
             array('wp-hooks', 'wp-blocks'),
             self::VERSION,
             true
@@ -202,7 +202,7 @@ class Block_Editor
         // Enqueue empty state controls
         wp_enqueue_script(
             'orbitools-typography-editor-controls',
-            ORBITOOLS_URL . 'modules/Typography_Presets/js/editor-controls.js',
+            ORBITOOLS_URL . 'build/admin/js/modules/typography-presets/editor-presets-register-controls.js',
             array(
                 'wp-hooks',
                 'wp-blocks',
@@ -242,7 +242,7 @@ class Block_Editor
     {
         // Normalize settings for JavaScript
         $normalized_settings = $this->normalize_settings_for_js($this->settings);
-        
+
         return array(
             'presets'  => $this->preset_manager->get_presets(),
             'groups'   => $this->get_preset_groups(),
@@ -266,7 +266,7 @@ class Block_Editor
     private function normalize_settings_for_js(array $settings): array
     {
         $normalized = array();
-        
+
         foreach ($settings as $key => $value) {
             // Handle arrays differently based on the setting type
             if ($key === 'typography_allowed_blocks' && is_array($value)) {
@@ -286,7 +286,7 @@ class Block_Editor
                 $normalized[$key] = $value;
             }
         }
-        
+
         return $normalized;
     }
 
@@ -300,13 +300,13 @@ class Block_Editor
     {
         $groups = array();
         $presets = $this->preset_manager->get_presets();
-        
+
         foreach ($presets as $preset) {
             if (isset($preset['group'])) {
                 $groups[$preset['group']] = $preset['group'];
             }
         }
-        
+
         return $groups;
     }
 }

@@ -107,18 +107,18 @@ class Admin
             return;
         }
 
-        wp_enqueue_style(
-            'orbitools-menu-dividers-admin',
-            ORBITOOLS_URL . 'build/admin/css/modules/menu-dividers.css',
-            array(),
-            self::VERSION
-        );
-
         // Only enqueue script on nav-menus page
         if ('nav-menus.php' === $hook_suffix) {
+            wp_enqueue_style(
+                'orbitools-menu-dividers-admin',
+                ORBITOOLS_URL . 'build/admin/css/modules/menu-dividers/admin.css',
+                array(),
+                self::VERSION
+            );
+
             wp_enqueue_script(
                 'orbitools-menu-dividers-admin',
-                plugin_dir_url(__FILE__) . '../js/admin-menu-dividers.js',
+                ORBITOOLS_URL . 'build/admin/js/modules/menu-dividers/admin.js',
                 array(),
                 self::VERSION,
                 true
@@ -126,7 +126,7 @@ class Admin
 
             wp_enqueue_script(
                 'orbitools-menu-dividers-processor',
-                plugin_dir_url(__FILE__) . '../js/menu-item-processor.js',
+                ORBITOOLS_URL . 'build/admin/js/modules/menu-dividers/processor.js',
                 array(),
                 self::VERSION,
                 true

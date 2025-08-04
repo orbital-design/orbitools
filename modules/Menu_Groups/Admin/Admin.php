@@ -111,7 +111,7 @@ class Admin
 
         wp_enqueue_style(
             'orbitools-menu-groups-admin',
-            ORBITOOLS_URL . 'build/admin/css/modules/menu-groups.css',
+            ORBITOOLS_URL . 'build/admin/css/modules/menu-groups/admin.css',
             array(),
             self::VERSION
         );
@@ -120,7 +120,7 @@ class Admin
         if ('nav-menus.php' === $hook_suffix) {
             wp_enqueue_script(
                 'orbitools-menu-groups-admin',
-                plugin_dir_url(__FILE__) . '../js/admin-menu-groups.js',
+                ORBITOOLS_URL . 'build/admin/js/modules/menu-groups/admin.js',
                 array(),
                 self::VERSION,
                 true
@@ -128,7 +128,7 @@ class Admin
 
             wp_enqueue_script(
                 'orbitools-menu-groups-processor',
-                plugin_dir_url(__FILE__) . '../js/menu-item-processor.js',
+                ORBITOOLS_URL . 'build/admin/js/modules/menu-groups/processor.js',
                 array(),
                 self::VERSION,
                 true

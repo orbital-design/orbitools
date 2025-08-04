@@ -4,14 +4,40 @@ const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 module.exports = {
     mode: 'production',
     entry: {
+        // SCSS entries for CSS compilation
+        // - SCSS ~ Frontend ~ Loaded on the frontend
         'frontend/css/base': path.resolve(process.cwd(), 'src', 'frontend', 'scss', 'base.scss'),
-        'frontend/css/modules/layout-guides': path.resolve(process.cwd(), 'src', 'frontend', 'scss','modules','layout-guides.scss'),
+        // - SCSS ~ Editor ~ Loaded in the block editor
         'admin/css/editor': path.resolve(process.cwd(), 'src', 'admin', 'scss', 'editor.scss'),
+        // - SCSS ~ Admin ~ Loaded in the admin area
         'admin/css/admin': path.resolve(process.cwd(), 'src', 'admin', 'scss', 'admin.scss'),
-        'admin/css/modules/typography-presets': path.resolve(process.cwd(), 'src', 'admin', 'scss','modules','typography-presets.scss'),
-        'admin/css/modules/menu-groups': path.resolve(process.cwd(), 'src', 'admin', 'scss','modules','menu-groups.scss'),
-        'admin/css/modules/menu-dividers': path.resolve(process.cwd(), 'src', 'admin', 'scss','modules','menu-dividers.scss'),
-        'admin/css/modules/layout-guides': path.resolve(process.cwd(), 'src', 'admin', 'scss','modules','layout-guides.scss'),
+        // - SCSS ~ Module ~ Layout Guides
+        'frontend/css/modules/layout-guides/base': path.resolve(process.cwd(), 'src', 'modules', 'layout-guides','frontend', 'scss','base.scss'),
+        'admin/css/modules/layout-guides/admin': path.resolve(process.cwd(), 'src', 'modules', 'layout-guides','admin', 'scss','admin.scss'),
+        // - SCSS ~ Module ~ Menu Dividers
+        'admin/css/modules/menu-dividers/admin': path.resolve(process.cwd(), 'src', 'modules', 'menu-dividers','admin', 'scss','admin.scss'),
+        // - SCSS ~ Module ~ Menu Groups
+        'admin/css/modules/menu-groups/admin': path.resolve(process.cwd(), 'src', 'modules', 'menu-groups','admin', 'scss','admin.scss'),
+        // - SCSS ~ Module ~ Typography Presets
+        'admin/css/modules/typography-presets/admin': path.resolve(process.cwd(), 'src', 'modules', 'typography-presets','admin', 'scss','admin.scss'),
+
+        // JS entries for JavaScript compilation
+        // - JS ~ Admin ~ Loaded in the admin area
+        'admin/js/admin': path.resolve(process.cwd(), 'src', 'admin', 'js', 'admin.js'),
+        // - JS ~ Module ~ Layout Guides
+        'frontend/js/modules/layout-guides/base': path.resolve(process.cwd(), 'src', 'modules', 'layout-guides','frontend', 'js','base.js'),
+        // - JS ~ Module ~ Menu Dividers
+        'admin/js/modules/menu-dividers/admin': path.resolve(process.cwd(), 'src', 'modules', 'menu-dividers','admin', 'js','admin.js'),
+        'admin/js/modules/menu-dividers/processor': path.resolve(process.cwd(), 'src', 'modules', 'menu-dividers','admin', 'js','processor.js'),
+        // - JS ~ Module ~ Menu Groups
+        'admin/js/modules/menu-groups/admin': path.resolve(process.cwd(), 'src', 'modules', 'menu-groups','admin', 'js','admin.js'),
+        'admin/js/modules/menu-groups/processor': path.resolve(process.cwd(), 'src', 'modules', 'menu-groups','admin', 'js','processor.js'),
+        // - JS ~ Module ~ Typography Presets
+        'admin/js/modules/typography-presets/admin-handle-module-dashboard': path.resolve(process.cwd(), 'src', 'modules', 'typography-presets','admin', 'js','admin-handle-module-dashboard.js'),
+        'admin/js/modules/typography-presets/editor-disable-core-typography-controls': path.resolve(process.cwd(), 'src', 'modules', 'typography-presets','admin', 'js','editor-disable-core-typography-controls.js'),
+        'admin/js/modules/typography-presets/editor-presets-attribute-registration': path.resolve(process.cwd(), 'src', 'modules', 'typography-presets','admin', 'js','editor-presets-attribute-registration'),
+        'admin/js/modules/typography-presets/editor-presets-classname-application': path.resolve(process.cwd(), 'src', 'modules', 'typography-presets','admin', 'js','editor-presets-classname-application'),
+        'admin/js/modules/typography-presets/editor-presets-register-controls': path.resolve(process.cwd(), 'src', 'modules', 'typography-presets','admin', 'js','editor-presets-register-controls'),
 
     },
     output: {
@@ -29,18 +55,33 @@ module.exports = {
                     'sass-loader',
                 ],
             },
+            {
+                test: /\.js$/,
+                exclude: /node_modules/,
+                use: {
+                    loader: 'babel-loader',
+                    options: {
+                        presets: ['@babel/preset-env']
+                    }
+                }
+            },
         ],
     },
     plugins: [
         new MiniCssExtractPlugin({
             filename: '[name].css',
         }),
-        // Remove empty JS files
+        // Remove empty JS files generated from SCSS-only entries
         {
             apply(compiler) {
                 compiler.hooks.emit.tap('RemoveEmptyJSPlugin', (compilation) => {
                     Object.keys(compilation.assets).forEach(filename => {
-                        if (filename.endsWith('.js') && compilation.assets[filename].size() === 0) {
+                        // Only remove JS files from CSS entries (those ending with .css in the entry name)
+                        const isFromCssEntry = Object.keys(compilation.options.entry).some(entryName =>
+                            entryName.includes('/css/') && filename.includes(entryName.replace(/.*\/css\//, ''))
+                        );
+
+                        if (filename.endsWith('.js') && compilation.assets[filename].size() === 0 && isFromCssEntry) {
                             delete compilation.assets[filename];
                         }
                     });

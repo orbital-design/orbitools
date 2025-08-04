@@ -347,7 +347,7 @@ class Settings
     {
         wp_enqueue_style(
             'orbitools-typography-presets-admin',
-            ORBITOOLS_URL . 'build/admin/css/modules/typography-presets.css',
+            ORBITOOLS_URL . 'build/admin/css/modules/typography-presets/admin.css',
             array('dashicons'),
             '1.0.0'
         );
@@ -357,7 +357,7 @@ class Settings
 
         wp_enqueue_script(
             'orbitools-typography-presets-admin',
-            ORBITOOLS_URL . 'modules/Typography_Presets/js/admin-presets.js',
+            ORBITOOLS_URL . 'build/admin/js/modules/typography-presets/admin-handle-module-dashboard.js',
             array(),
             '1.0.0',
             true

@@ -68,7 +68,7 @@ class Assets
         // Enqueue CSS
         wp_enqueue_style(
             'orbitools-layout-guides',
-            ORBITOOLS_URL . 'build/frontend/css/modules/layout-guides.css',
+            ORBITOOLS_URL . 'build/frontend/css/modules/layout-guides/base.css',
             array(),
             '1.0.0'
         );
@@ -76,7 +76,7 @@ class Assets
         // Enqueue JavaScript
         wp_enqueue_script(
             'orbitools-layout-guides',
-            ORBITOOLS_URL . 'modules/Layout_Guides/js/layout-guides.js',
+            ORBITOOLS_URL . 'build/frontend/js/modules/layout-guides/base.js',
             array(),
             '1.0.0',
             true

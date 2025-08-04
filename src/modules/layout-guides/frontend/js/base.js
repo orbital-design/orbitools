@@ -15,10 +15,10 @@
 
     // Layout Guides Controller
     const LayoutGuides = {
-        
+
         // Configuration
         config: window.orbitoolsLayoutGuides || {},
-        
+
         // Elements
         elements: {
             container: null,
@@ -27,7 +27,7 @@
             fabToggle: null,
             fabPanel: null
         },
-        
+
         // State
         state: {
             visible: false,
@@ -49,8 +49,8 @@
             }
 
             this.state.initialized = true;
-            
-            
+
+
             this.cacheElements();
             this.bindEvents();
             this.setupKeyboardShortcuts();
@@ -86,9 +86,9 @@
         setupKeyboardShortcuts: function() {
             // Use fallback if config not ready yet
             const toggleKey = this.config.toggleKey || 'ctrl+shift+g';
-            
+
             const shortcut = this.parseShortcut(toggleKey);
-            
+
             document.addEventListener('keydown', (e) => {
                 if (this.matchesShortcut(e, shortcut)) {
                     e.preventDefault();
@@ -144,19 +144,19 @@
                 // for the features that are enabled in settings
                 this.setInitialFeatureClasses();
             }
-            
+
             // Initialize rulers if enabled
             if (this.config.showRulers) {
                 this.updateRulers();
             }
-            
+
             // Initialize grid if enabled
             if (this.config.showGrids) {
                 this.updateGrid();
                 // Ensure CSS properties match the cached grid state
                 this.updateCSSProperties();
             }
-            
+
             // Update FAB states AFTER cached states are applied
             this.updateFABStates();
         },
@@ -169,7 +169,7 @@
             if (!this.config.shouldShow) {
                 return;
             }
-            
+
             if (this.state.visible) {
                 this.hideGuides();
             } else {
@@ -185,18 +185,18 @@
             if (!this.config.shouldShow) {
                 return;
             }
-            
+
             this.state.visible = true;
-            
+
             this.elements.body.classList.add('has-layout-guides--visible');
             this.elements.body.classList.add('has-layout-guides--enabled');
-            
+
             // Add feature-specific classes based on cached preferences
             if (this.config.showGrids) {
                 // First remove any existing grid classes that might have been set by PHP
                 this.elements.body.classList.remove('has-layout-guides--12-grid');
                 this.elements.body.classList.remove('has-layout-guides--5-grid');
-                
+
                 const cachedGridType = localStorage.getItem('orbitools-layout-guides-grid-type');
                 if (cachedGridType === '5-grid') {
                     this.elements.body.classList.add('has-layout-guides--5-grid');
@@ -206,24 +206,24 @@
                     this.elements.body.classList.add('has-layout-guides--12-grid'); // Default to 12-grid
                 }
             }
-            
+
             if (this.config.showRulers) {
                 // First remove any existing rulers class that might have been set by PHP
                 this.elements.body.classList.remove('has-layout-guides--rulers');
-                
+
                 const cachedRulersState = localStorage.getItem('orbitools-layout-guides-rulers');
                 if (cachedRulersState === 'true') {
                     this.elements.body.classList.add('has-layout-guides--rulers');
                 }
                 // If cachedRulersState is 'false' or null, rulers stay off
             }
-            
+
             // Store state
             localStorage.setItem('orbitools-layout-guides-visible', 'true');
-            
+
             // Update guides
             this.updateGuides();
-            
+
             // Update FAB states
             this.updateFABStates();
         },
@@ -233,16 +233,16 @@
          */
         hideGuides: function() {
             this.state.visible = false;
-            
+
             this.elements.body.classList.remove('has-layout-guides--visible');
             this.elements.body.classList.remove('has-layout-guides--enabled');
             this.elements.body.classList.remove('has-layout-guides--12-grid');
             this.elements.body.classList.remove('has-layout-guides--5-grid');
             this.elements.body.classList.remove('has-layout-guides--rulers');
-            
+
             // Store state
             localStorage.setItem('orbitools-layout-guides-visible', 'false');
-            
+
             // Update FAB states
             this.updateFABStates();
         },
@@ -253,12 +253,12 @@
         updateGuides: function() {
             // Update CSS custom properties
             this.updateCSSProperties();
-            
+
             // Update grid
             if (this.config.showGrids) {
                 this.updateGrid();
             }
-            
+
             // Update rulers
             if (this.config.showRulers) {
                 this.updateRulers();
@@ -270,7 +270,7 @@
          */
         updateCSSProperties: function() {
             const root = document.documentElement;
-            
+
             // Set grid columns based on which grid is active
             let gridColumns = 12; // default
             if (this.elements.body.classList.contains('has-layout-guides--5-grid')) {
@@ -278,7 +278,7 @@
             } else if (this.elements.body.classList.contains('has-layout-guides--12-grid')) {
                 gridColumns = 12;
             }
-            
+
             root.style.setProperty('--layout-guides-columns', gridColumns);
             root.style.setProperty('--layout-guides-gutter', this.config.gridGutter);
             root.style.setProperty('--layout-guides-opacity', this.config.opacity);
@@ -290,22 +290,22 @@
          */
         updateGrid: function() {
             if (!this.elements.container) return;
-            
+
             const grid = this.elements.container.querySelector('.orbitools-layout-guides__grid');
             if (!grid) return;
-            
+
             const columns = grid.querySelectorAll('.orbitools-layout-guides__grid-column');
-            
+
             // Check if any grid is actually active
             const has5Grid = this.elements.body.classList.contains('has-layout-guides--5-grid');
             const has12Grid = this.elements.body.classList.contains('has-layout-guides--12-grid');
-            
+
             if (!has5Grid && !has12Grid) {
                 // No grid active - remove all columns
                 columns.forEach(column => column.remove());
                 return;
             }
-            
+
             // Update column count if needed
             const currentColumns = columns.length;
             let targetColumns = 12; // default
@@ -314,11 +314,11 @@
             } else if (has12Grid) {
                 targetColumns = 12;
             }
-            
+
             if (currentColumns !== targetColumns) {
                 // Remove existing columns
                 columns.forEach(column => column.remove());
-                
+
                 // Add new columns
                 for (let i = 0; i < targetColumns; i++) {
                     const column = document.createElement('div');
@@ -334,29 +334,29 @@
          */
         updateRulers: function() {
             if (!this.elements.container) return;
-            
+
             const rulers = this.elements.container.querySelector('.orbitools-layout-guides__rulers');
             if (!rulers) return;
-            
+
             const horizontalRuler = rulers.querySelector('.orbitools-layout-guides__ruler--horizontal');
             const verticalRuler = rulers.querySelector('.orbitools-layout-guides__ruler--vertical');
-            
+
             if (!horizontalRuler || !verticalRuler) return;
-            
+
             // Remove existing mousemove listener
             document.removeEventListener('mousemove', this._rulersMouseHandler);
-            
+
             // Add new mousemove listener
             this._rulersMouseHandler = (e) => {
                 // Check if rulers are enabled via body class (individual toggle)
                 if (!this.elements.body.classList.contains('has-layout-guides--rulers')) {
                     return;
                 }
-                
+
                 horizontalRuler.style.top = e.clientY + 'px';
                 verticalRuler.style.left = e.clientX + 'px';
             };
-            
+
             document.addEventListener('mousemove', this._rulersMouseHandler);
         },
 
@@ -451,15 +451,15 @@
         toggleGridFeature: function(gridType, button) {
             const className = `has-layout-guides--${gridType}`;
             const isActive = this.elements.body.classList.contains(className);
-            
+
             if (isActive) {
                 // Disable this grid
                 this.elements.body.classList.remove(className);
                 button.classList.remove('orbitools-layout-guides__fab-btn--active');
-                
+
                 // Cache the disabled state (no grid active)
                 localStorage.setItem('orbitools-layout-guides-grid-type', 'none');
-                
+
                 // Update grid display when disabling
                 this.updateGrid();
                 this.updateCSSProperties();
@@ -468,19 +468,19 @@
                 this.elements.body.classList.remove('has-layout-guides--12-grid');
                 this.elements.body.classList.remove('has-layout-guides--5-grid');
                 this.elements.body.classList.add(className);
-                
+
                 // Cache the selected grid type
                 localStorage.setItem('orbitools-layout-guides-grid-type', gridType);
-                
+
                 // Update button states - disable other grid buttons
                 const allGridButtons = this.elements.fab.querySelectorAll('[data-action^="toggle-"][data-action$="-grid"]');
                 allGridButtons.forEach(btn => {
                     btn.classList.remove('orbitools-layout-guides__fab-btn--active');
                 });
-                
+
                 // Activate current button
                 button.classList.add('orbitools-layout-guides__fab-btn--active');
-                
+
                 // Update grid display
                 this.updateGrid();
                 this.updateCSSProperties();
@@ -493,11 +493,11 @@
         toggleFeature: function(feature, button) {
             const className = `has-layout-guides--${feature}`;
             const isActive = this.elements.body.classList.contains(className);
-            
+
             if (isActive) {
                 this.elements.body.classList.remove(className);
                 button.classList.remove('orbitools-layout-guides__fab-btn--active');
-                
+
                 // Cache the disabled state
                 if (feature === 'rulers') {
                     localStorage.setItem('orbitools-layout-guides-rulers', 'false');
@@ -505,12 +505,12 @@
             } else {
                 this.elements.body.classList.add(className);
                 button.classList.add('orbitools-layout-guides__fab-btn--active');
-                
+
                 // Cache the enabled state
                 if (feature === 'rulers') {
                     localStorage.setItem('orbitools-layout-guides-rulers', 'true');
                 }
-                
+
                 // Initialize feature-specific functionality when enabled
                 if (feature === 'rulers' && this.config.showRulers) {
                     this.updateRulers();
@@ -545,12 +545,12 @@
         setInitialFeatureClasses: function() {
             // Add enabled feature classes even when guides aren't visible
             // This ensures FAB buttons show correct state
-            
+
             if (this.config.showGrids) {
                 // First remove any existing grid classes that might have been set by PHP
                 this.elements.body.classList.remove('has-layout-guides--12-grid');
                 this.elements.body.classList.remove('has-layout-guides--5-grid');
-                
+
                 // Check for cached grid type preference
                 const cachedGridType = localStorage.getItem('orbitools-layout-guides-grid-type');
                 if (cachedGridType === '5-grid') {
@@ -561,11 +561,11 @@
                     this.elements.body.classList.add('has-layout-guides--12-grid'); // Default to 12-grid
                 }
             }
-            
+
             if (this.config.showRulers) {
                 // First remove any existing rulers class that might have been set by PHP
                 this.elements.body.classList.remove('has-layout-guides--rulers');
-                
+
                 // Check for cached rulers state
                 const cachedRulersState = localStorage.getItem('orbitools-layout-guides-rulers');
                 if (cachedRulersState === 'true') {

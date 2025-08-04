@@ -50,7 +50,7 @@ class Assets
      */
     public function __construct()
     {
-        $this->asset_url = ORBITOOLS_URL . 'build/admin/css/modules/';
+        $this->asset_url = ORBITOOLS_URL . 'build/admin/css/modules/typography-presets/';
 
         // Hook into WordPress asset loading
         add_action('admin_enqueue_scripts', array($this, 'enqueue_admin_assets'));
@@ -82,7 +82,7 @@ class Assets
     {
         // Check if admin CSS file exists
         $css_file = $this->asset_url . 'typography-presets.css';
-        $css_path = ORBITOOLS_DIR . 'build/admin/css/modules/typography-presets.css';
+        $css_path = ORBITOOLS_URL . 'build/admin/css/modules/typography-presets/admin.css',
 
         if (file_exists($css_path)) {
             wp_enqueue_style(
