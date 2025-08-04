@@ -50,26 +50,10 @@ class Assets
      */
     public function __construct()
     {
-        $this->asset_url = ORBITOOLS_URL . 'modules/Typography_Presets/';
-        
+        $this->asset_url = ORBITOOLS_URL . 'build/admin/css/modules/';
+
         // Hook into WordPress asset loading
-        add_action('wp_enqueue_scripts', array($this, 'enqueue_frontend_assets'));
         add_action('admin_enqueue_scripts', array($this, 'enqueue_admin_assets'));
-    }
-
-    /**
-     * Enqueue frontend assets
-     *
-     * @since 1.0.0
-     */
-    public function enqueue_frontend_assets(): void
-    {
-        // Only load frontend assets if needed
-        if (!$this->should_load_frontend_assets()) {
-            return;
-        }
-
-        $this->enqueue_frontend_styles();
     }
 
     /**
@@ -88,26 +72,6 @@ class Assets
         $this->enqueue_admin_styles();
     }
 
-    /**
-     * Enqueue frontend styles
-     *
-     * @since 1.0.0
-     */
-    private function enqueue_frontend_styles(): void
-    {
-        // Check if frontend CSS file exists
-        $css_file = $this->asset_url . 'css/frontend.css';
-        $css_path = ORBITOOLS_DIR . 'modules/Typography_Presets/css/frontend.css';
-
-        if (file_exists($css_path)) {
-            wp_enqueue_style(
-                'orbitools-typography-presets-frontend',
-                $css_file,
-                array(),
-                self::VERSION
-            );
-        }
-    }
 
     /**
      * Enqueue admin styles
@@ -117,8 +81,8 @@ class Assets
     private function enqueue_admin_styles(): void
     {
         // Check if admin CSS file exists
-        $css_file = $this->asset_url . 'css/admin.css';
-        $css_path = ORBITOOLS_DIR . 'modules/Typography_Presets/css/admin.css';
+        $css_file = $this->asset_url . 'typography-presets.css';
+        $css_path = ORBITOOLS_DIR . 'build/admin/css/modules/typography-presets.css';
 
         if (file_exists($css_path)) {
             wp_enqueue_style(
@@ -128,25 +92,6 @@ class Assets
                 self::VERSION
             );
         }
-    }
-
-    /**
-     * Check if frontend assets should be loaded
-     *
-     * @since 1.0.0
-     * @return bool True if should load, false otherwise.
-     */
-    private function should_load_frontend_assets(): bool
-    {
-        // Don't load on admin pages
-        if (is_admin()) {
-            return false;
-        }
-
-        // Add additional logic here as needed
-        // For example, check if any blocks on the page use typography presets
-        
-        return true;
     }
 
     /**
@@ -202,7 +147,7 @@ class Assets
      */
     public function get_asset_path(string $file): string
     {
-        return ORBITOOLS_DIR . 'modules/Typography_Presets/' . ltrim($file, '/');
+        return ORBITOOLS_DIR . 'build/admin/css/modules/' . ltrim($file, '/');
     }
 
     /**
@@ -228,9 +173,9 @@ class Assets
     {
         $path = $this->get_asset_path($file);
         $url = $this->get_asset_url($file);
-        
+
         $version = self::VERSION;
-        
+
         // Use file modification time as version if file exists
         if (file_exists($path)) {
             $version = filemtime($path);
@@ -258,7 +203,7 @@ class Assets
         }
 
         $asset = $this->get_versioned_asset($file);
-        
+
         wp_enqueue_script(
             $handle,
             $asset['url'],
@@ -284,7 +229,7 @@ class Assets
         }
 
         $asset = $this->get_versioned_asset($file);
-        
+
         wp_enqueue_style(
             $handle,
             $asset['url'],

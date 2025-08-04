@@ -109,7 +109,7 @@ class Admin
 
         wp_enqueue_style(
             'orbitools-menu-dividers-admin',
-            plugin_dir_url(__FILE__) . '../css/admin-menu-dividers.css',
+            ORBITOOLS_URL . 'build/admin/css/modules/menu-dividers.css',
             array(),
             self::VERSION
         );

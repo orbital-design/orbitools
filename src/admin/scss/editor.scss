@@ -1,5 +1,7 @@
-// Editor styles for Layout Blocks plugin
-.block-editor .layout-blocks-editor {
-    border: 1px solid #ddd;
-    border-radius: 4px;
+@use '../../shared/scss/abstracts/' as *;
+
+// Or without a prefix
+:root {
+    @include generate-css-vars($orbi-breakpoints, 'orbi-bp');
+    @include generate-css-vars($wp-presets);
 }

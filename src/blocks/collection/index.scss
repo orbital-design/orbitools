@@ -70,7 +70,7 @@ $elem_base: 'orb-collection';
         // Stacked Mobile Classes - Controls whether children automatically stack on smaller screens
         // Only output when NOT 'false', default value is always true 'fit'
         &[data-stacked="true"]  {
-            @media (max-width: var(--orb-mobile-breakpoint, 768px)) {
+            @media (max-width: var(--orbi-bp-sm)) {
                 .flex.flex-stack-mobile {
                     flex-direction: column !important;
                 }

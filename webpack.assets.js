@@ -5,8 +5,14 @@ module.exports = {
     mode: 'production',
     entry: {
         'frontend/css/base': path.resolve(process.cwd(), 'src', 'frontend', 'scss', 'base.scss'),
+        'frontend/css/modules/layout-guides': path.resolve(process.cwd(), 'src', 'frontend', 'scss','modules','layout-guides.scss'),
         'admin/css/editor': path.resolve(process.cwd(), 'src', 'admin', 'scss', 'editor.scss'),
         'admin/css/admin': path.resolve(process.cwd(), 'src', 'admin', 'scss', 'admin.scss'),
+        'admin/css/modules/typography-presets': path.resolve(process.cwd(), 'src', 'admin', 'scss','modules','typography-presets.scss'),
+        'admin/css/modules/menu-groups': path.resolve(process.cwd(), 'src', 'admin', 'scss','modules','menu-groups.scss'),
+        'admin/css/modules/menu-dividers': path.resolve(process.cwd(), 'src', 'admin', 'scss','modules','menu-dividers.scss'),
+        'admin/css/modules/layout-guides': path.resolve(process.cwd(), 'src', 'admin', 'scss','modules','layout-guides.scss'),
+
     },
     output: {
         path: path.resolve(process.cwd(), 'build'),
@@ -19,7 +25,7 @@ module.exports = {
                 use: [
                     MiniCssExtractPlugin.loader,
                     'css-loader',
-                    'postcss-loader', 
+                    'postcss-loader',
                     'sass-loader',
                 ],
             },

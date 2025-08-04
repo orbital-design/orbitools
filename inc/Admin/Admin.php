@@ -264,7 +264,7 @@ class Admin
 
         wp_enqueue_style(
             'orbitools-admin',
-            ORBITOOLS_URL . 'assets/css/admin.css',
+            ORBITOOLS_URL . 'build/admin/css/admin.css',
             array(),
             ORBITOOLS_VERSION
         );

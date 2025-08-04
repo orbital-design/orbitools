@@ -111,7 +111,7 @@ class Admin extends Module_Admin_Base
 
         wp_enqueue_style(
             'orbitools-layout-guides-admin',
-            ORBITOOLS_URL . 'modules/Layout_Guides/css/admin-layout-guides.css',
+            ORBITOOLS_URL . 'build/admin/css/modules/layout-guides.css',
             array(),
             '1.0.0'
         );

@@ -111,7 +111,7 @@ class Admin
 
         wp_enqueue_style(
             'orbitools-menu-groups-admin',
-            plugin_dir_url(__FILE__) . '../css/admin-menu-groups.css',
+            ORBITOOLS_URL . 'build/admin/css/modules/menu-groups.css',
             array(),
             self::VERSION
         );

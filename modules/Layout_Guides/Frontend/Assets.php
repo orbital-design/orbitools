@@ -38,7 +38,6 @@ class Assets
     {
         // Hook into WordPress asset loading immediately
         add_action('wp_enqueue_scripts', array($this, 'enqueue_frontend_assets'));
-        add_action('admin_enqueue_scripts', array($this, 'enqueue_admin_assets'));
 
         // Add inline CSS for custom properties
         add_action('wp_head', array($this, 'add_inline_css'));
@@ -69,7 +68,7 @@ class Assets
         // Enqueue CSS
         wp_enqueue_style(
             'orbitools-layout-guides',
-            ORBITOOLS_URL . 'modules/Layout_Guides/css/layout-guides.css',
+            ORBITOOLS_URL . 'build/frontend/css/modules/layout-guides.css',
             array(),
             '1.0.0'
         );
@@ -89,17 +88,6 @@ class Assets
             'orbitoolsLayoutGuides',
             Settings_Helper::get_js_config()
         );
-    }
-
-    /**
-     * Enqueue admin assets
-     *
-     * @since 1.0.0
-     */
-    public function enqueue_admin_assets()
-    {
-        // Layout guides are frontend-only, never load in admin
-        return;
     }
 
     /**
