@@ -82,7 +82,7 @@ class Assets
     {
         // Check if admin CSS file exists
         $css_file = $this->asset_url . 'typography-presets.css';
-        $css_path = ORBITOOLS_URL . 'build/admin/css/modules/typography-presets/admin.css',
+        $css_path = ORBITOOLS_URL . 'build/admin/css/modules/typography-presets/admin.css';
 
         if (file_exists($css_path)) {
             wp_enqueue_style(

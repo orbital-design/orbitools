@@ -271,7 +271,7 @@ class Admin
 
         wp_enqueue_script(
             'orbitools-admin',
-            ORBITOOLS_URL . 'assets/js/admin.js',
+            ORBITOOLS_URL . 'build/admin/js/admin.js',
             array(),
             ORBITOOLS_VERSION,
             true
