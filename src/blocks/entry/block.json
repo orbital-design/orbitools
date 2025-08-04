@@ -1,0 +1,43 @@
+{
+    "apiVersion": 3,
+    "name": "orb/entry",
+    "version": "1.0.0",
+    "title": "Entry",
+    "category": "layout",
+    "icon": "columns",
+    "description": "Individual entry within a collection",
+    "parent": [
+        "orb/collection"
+    ],
+    "supports": {
+        "html": false,
+        "reusable": false,
+        "lock": false,
+        "color": {
+            "background": true,
+            "text": true
+        },
+        "spacing": {
+            "padding": true
+        }
+    },
+    "attributes": {
+        "width": {
+            "type": "string",
+            "default": ""
+        },
+        "parentItemWidth": {
+            "type": "string",
+            "default": "equal"
+        }
+    },
+    "usesContext": [
+        "orb/layoutType",
+        "orb/itemWidth",
+        "orb/columnSystem"
+    ],
+    "textdomain": "orbitools",
+    "editorScript": "file:./index.js",
+    "editorStyle": "file:./editor.css",
+    "style": "file:./index.css"
+}

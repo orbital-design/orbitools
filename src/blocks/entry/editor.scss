@@ -1,0 +1,91 @@
+/**
+ * Block: Entry - Editor Styles
+ *
+ * Block editor specific styles for the Entry block. Handles editor-only styling,
+ * preview states, and block editor interface integration.
+ *
+ * @file        blocks/entry
+ * @package     Logger Theme
+ * @subpackage  orbitools/blocks
+ * @author      Adam Cullen, Orbital Tech Team
+ * @since       1.0.0
+ * @version     1.2.0
+ *
+ * @see         blocks/entry/style.scss - Frontend styles
+ */
+
+ .orb-entry {
+    border: 0px dashed #32a3e2;
+    border-radius: 2px;
+    background: rgba(0, 124, 186, 0);
+    padding: 0;
+    transition: all 0.25s ease;
+
+    // UI Cues
+    &:hover {
+        background: rgba(0, 124, 186, 0.05);
+        border-width: 1px;
+        border-radius: 6px;
+        padding: 10px;
+    }
+
+    &.is-selected,
+    &.has-child-selected {
+        border-width: 1px;
+        border-style: solid;
+        border-radius: 6px;
+        padding: 10px;
+    }
+
+    > .block-editor-inner-blocks,
+    > .block-editor-inner-blocks > .block-editor-block-list__layout {
+        display: contents;
+
+
+    }
+
+    &:has(> .block-editor-inner-blocks > .block-editor-block-list__layout .block-list-appender:only-child),
+    &:has(> .block-editor-inner-blocks > .block-editor-block-list__layout:empty) {
+        min-width: 100px;
+        min-height: 50px;
+        background: rgba(0, 124, 186, 0.2);
+        border-radius: 6px;
+
+        &:hover {
+            cursor: pointer;
+        }
+
+
+
+
+    }
+
+    &:has(> .block-editor-inner-blocks > .block-editor-block-list__layout:empty) {
+&:after {
+                content: '+';
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+            }
+    }
+ }
+
+.block-editor-block-list__block {
+   &.orb-entry {
+    .block-list-appender {
+        bottom: initial;
+        list-style: none;
+        padding: 0;
+        position: relative;
+        right: initial;
+        z-index: 2;
+
+        .block-editor-button-block-appender {
+            aspect-ratio: 1/1;
+            max-width: 50px;
+            max-height: initial !important;
+        }
+    }
+   }
+}

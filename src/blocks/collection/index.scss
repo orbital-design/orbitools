@@ -1,0 +1,86 @@
+/**
+ * Block: Collection - Frontend Styles
+ *
+ * Frontend specific styles for the Collection block. Handles frontend/editor styling,
+ * preview states.
+ *
+ * @file        blocks/collection
+ * @package     Logger Theme
+ * @subpackage  orbitools/blocks
+ * @author      Adam Cullen, Orbital Tech Team
+ * @since       1.0.0
+ * @version     1.2.0
+ *
+ * @see         blocks/collection/editor.scss - Editor styles
+ */
+
+$elem_base: 'orb-collection';
+
+.#{$elem_base} {
+    &.#{$elem_base}--row {
+
+        display: flex;
+        flex-flow: row nowrap;
+        align-items: stretch;
+        justify-content: flex-start;
+        align-content: stretch;
+        width: 100%;
+
+        // Set a default gap.
+        gap: var(--gutter, var(--wp--style--block-gap, 20px));
+
+        &, > * {
+            box-sizing: border-box;
+        }
+
+        // Gap Size Classes - Combined Dir and Wrap attrs
+        // Value: undefined → No data-gap -> Uses default gap above in core class
+        &[data-gap="spacing"] { gap: var(--orb-gap-size);}
+
+        // Constrain Content Class
+        // Active when Align is set to full and constrain is checked
+        &[data-constrain="true"] {
+            max-width: var(--wp--style--global--content-size, 1200px);
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        // Flex Flow Classes - Combined Dir and Wrap attrs
+        // Only output when NOT default value 'row nowrap'
+        &[data-flow="row wrap"]             { flex-flow: row wrap; }
+        &[data-flow="row wrap-reverse"]     { flex-flow: row wrap-reverse; }
+        &[data-flow="column nowrap"]        { flex-flow: column nowrap; }
+        &[data-flow="column wrap"]          { flex-flow: column wrap; }
+        &[data-flow="column wrap-reverse"]  { flex-flow: column wrap-reverse; }
+
+        // Align Items Classes
+        // Only output when NOT default value 'stretch'
+        &[data-align="center"]  { align-items: center;}
+        &[data-align="start"]   { align-items: flex-start;}
+        &[data-align="end"]     { align-items: flex-end;}
+
+        // Justify Content Classes
+        // Only output when NOT default value 'flex-start'
+        &[data-justify="center"]    { justify-content: center; }
+        &[data-justify="end"]       { justify-content: flex-end; }
+        &[data-justify="between"]   { justify-content: space-between; }
+        &[data-justify="around"]    { justify-content: space-around; }
+        &[data-justify="evenly"]    { justify-content: space-evenly; }
+
+        // Stacked Mobile Classes - Controls whether children automatically stack on smaller screens
+        // Only output when NOT 'false', default value is always true 'fit'
+        &[data-stacked="true"]  {
+            @media (max-width: var(--orb-mobile-breakpoint, 768px)) {
+                .flex.flex-stack-mobile {
+                    flex-direction: column !important;
+                }
+            }
+        }
+
+        // Layout Classes - Controls classes on children, fit | equal/grow | 5 col grid | 12 col grid
+        // Only output when NOT default value 'fit'
+        &[data-layout="equal"]  { /* Currently no class required but keeping here for record. */}
+        &[data-layout="penta"]  { /* 5-column grid system base styles */ }
+        &[data-layout="dodeca"] { /* 12-column grid system base styles */ }
+    }
+}

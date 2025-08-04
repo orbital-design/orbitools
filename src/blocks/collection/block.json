@@ -1,0 +1,113 @@
+{
+    "apiVersion": 3,
+    "name": "orb/collection",
+    "version": "1.0.0",
+    "title": "Collection",
+    "category": "layout",
+    "icon": "layout",
+    "description": "Container for entries with flexible row or grid options",
+    "supports": {
+        "html": false,
+        "align": [
+            "wide",
+            "full"
+        ],
+        "color": {
+            "background": true,
+            "text": true
+        },
+        "spacing": {
+            "padding": true
+        }
+    },
+    "attributes": {
+        "layoutType": {
+            "type": "string",
+            "default": "row",
+            "enum": [
+                "row",
+                "grid"
+            ]
+        },
+        "itemWidth": {
+            "type": "string",
+            "default": "equal",
+            "enum": [
+                "fit",
+                "equal",
+                "custom"
+            ]
+        },
+        "columnSystem": {
+            "type": "number",
+            "default": 12,
+            "enum": [
+                5,
+                12
+            ]
+        },
+        "columnCount": {
+            "type": "number",
+            "default": 2
+        },
+        "flexDirection": {
+            "type": "string",
+            "default": "row",
+            "enum": [
+                "row",
+                "column"
+            ]
+        },
+        "flexWrap": {
+            "type": "string",
+            "default": "nowrap",
+            "enum": [
+                "nowrap",
+                "wrap",
+                "wrap-reverse"
+            ]
+        },
+        "alignItems": {
+            "type": "string",
+            "default": "stretch",
+            "enum": [
+                "flex-start",
+                "center",
+                "flex-end",
+                "stretch"
+            ]
+        },
+        "justifyContent": {
+            "type": "string",
+            "default": "flex-start",
+            "enum": [
+                "flex-start",
+                "center",
+                "flex-end",
+                "space-between",
+                "space-around",
+                "space-evenly"
+            ]
+        },
+        "gapSize": {
+            "type": "string"
+        },
+        "restrictContentWidth": {
+            "type": "boolean",
+            "default": false
+        },
+        "stackOnMobile": {
+            "type": "boolean",
+            "default": true
+        }
+    },
+    "providesContext": {
+        "orb/layoutType": "layoutType",
+        "orb/itemWidth": "itemWidth",
+        "orb/columnSystem": "columnSystem"
+    },
+    "textdomain": "orbitools",
+    "editorScript": "file:./index.js",
+    "editorStyle": "file:./editor.css",
+    "style": "file:./index.css"
+}

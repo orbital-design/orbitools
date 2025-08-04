@@ -1,0 +1,48 @@
+/**
+ * Block: Collection - Editor Styles
+ *
+ * Block editor specific styles for the Collection block. Handles editor-only styling,
+ * preview states, and block editor interface integration that specifically overwrites fronted styles.
+ *
+ * @file        blocks/collection
+ * @package     Logger Theme
+ * @subpackage  orbitools/blocks
+ * @author      Adam Cullen, Orbital Tech Team
+ * @since       1.0.0
+ * @version     1.2.0
+ *
+ * @see         blocks/collection/index.scss - Frontend styles
+ */
+
+.orb-collection {
+    border: 0px dashed #32a3e2;
+    border-radius: 2px;
+    background: rgba(0, 124, 186, 0);
+    padding: 0;
+    transition: all 0.25s ease;
+
+    > .block-editor-inner-blocks {
+        display: contents;
+        > .block-editor-block-list__layout {
+            display: contents;
+
+
+        }
+    }
+
+    // UI Cues
+    &:hover {
+        background: rgba(0, 124, 186, 0.05);
+        border-width: 1px;
+        border-radius: 6px;
+        padding: 10px;
+    }
+
+    &.is-selected,
+    &.has-child-selected {
+        border-width: 1px;
+        border-style: solid;
+        border-radius: 6px;
+        padding: 10px;
+    }
+}
