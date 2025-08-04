@@ -21,17 +21,20 @@ $elem_base: 'orb-entry';
     flex-direction: column;
     min-width: 0; /* Prevent overflow */
     position: relative;
+}
 
-    // Parent Layout Classes - Controls classes on children, fit | equal/grow | 5 col grid | 12 col grid
-
-    // Automatic Equal columns
-    .orb-collection[data-layout="equal"] &  {
+// Parent Layout Classes - Controls classes on children, fit | equal/grow | 5 col grid | 12 col grid
+// Automatic Equal columns
+.orb-collection[data-layout="equal"]  {
+    > .#{$elem_base} {
         flex: 1 1 0;
         min-width: 0;
     }
+}
 
-    // 5-column grid system
-    .orb-collection[data-layout="penta"] &  {
+// 5-column grid system
+.orb-collection[data-layout="penta"]  {
+    > .#{$elem_base} {
         flex: 1 1 0;
         width: 100%;
         max-width: 100%;
@@ -42,9 +45,11 @@ $elem_base: 'orb-entry';
         &.#{$elem_base}--w-4 { max-width: 80%; }
         &.#{$elem_base}--w-5 { max-width: 100%; }
     }
+}
 
-    // 12-column grid system
-    .orb-collection[data-layout="dodeca"] & {
+// 12-column grid system
+.orb-collection[data-layout="dodeca"] {
+    > .#{$elem_base} {
         flex: 1 1 0;
         width: 100%;
         max-width: 100%;
@@ -60,6 +65,5 @@ $elem_base: 'orb-entry';
         &.#{$elem_base}--w-9 { max-width: 75%; }
         &.#{$elem_base}--w-10 { max-width: 83.333333%; }
         &.#{$elem_base}--w-11 { max-width: 91.666667%; }
-        &.#{$elem_base}--w-12 { max-width: 100%; }
     }
 }

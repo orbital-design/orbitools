@@ -15,7 +15,7 @@
  */
 
 import { Fragment } from '@wordpress/element';
-import { InspectorControls, useSetting } from '@wordpress/block-editor';
+import { InspectorControls, BlockControls, AlignmentToolbar, useSetting } from '@wordpress/block-editor';
 import {
     __experimentalToolsPanel as ToolsPanel,
     __experimentalToolsPanelItem as ToolsPanelItem,

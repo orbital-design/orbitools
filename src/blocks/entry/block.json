@@ -19,6 +19,9 @@
         },
         "spacing": {
             "padding": true
+        },
+        "typography": {
+            "textAlign": true
         }
     },
     "attributes": {
