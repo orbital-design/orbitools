@@ -1,12 +1,12 @@
 /**
  * Typography Presets - Core Controls Removal
- * 
+ *
  * Removes WordPress core typography controls for blocks that support typography presets
  */
 
 (function() {
     const { addFilter } = wp.hooks;
-    
+
     addFilter(
         'blocks.registerBlockType',
         'orbitools/remove-core-typography-controls',
@@ -17,20 +17,20 @@
             if (!moduleSettings) {
                 return settings;
             }
-            
+
             // Define allowed blocks (with fallback)
             const allowedBlocks = moduleSettings.allowed_blocks || [
-                'core/paragraph', 'core/heading', 'core/list', 'core/quote', 'core/button'
+                'core/paragraph', 'core/heading', 'core/list', 'core/quote', 'core/buttons', 'core/button'
             ];
-            
+
             if (!allowedBlocks.includes(name)) {
                 return settings;
             }
-            
+
             if (!settings.supports) {
                 settings.supports = {};
             }
-            
+
             // Remove all typography supports
             settings.supports.typography = false;
             settings.supports.fontSize = false;
@@ -43,7 +43,7 @@
             settings.supports.__experimentalTextDecoration = false;
             settings.supports.__experimentalTextTransform = false;
             settings.supports.__experimentalWritingMode = false;
-            
+
             return settings;
         },
         5  // Early priority

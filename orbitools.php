@@ -246,6 +246,13 @@ function orbitools_cleanup_plugin_data(): void
 register_deactivation_hook(__FILE__, 'orbitools_deactivate');
 
 /**
+ * Include debug helper
+ */
+if (defined('WP_DEBUG') && WP_DEBUG) {
+    require_once ORBITOOLS_DIR . 'debug-modules.php';
+}
+
+/**
  * Initialize the Orbitools plugin on plugins_loaded.
  */
 add_action('plugins_loaded', ['Orbitools', 'instance']);

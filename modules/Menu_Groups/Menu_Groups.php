@@ -13,6 +13,7 @@
 
 namespace Orbitools\Modules\Menu_Groups;
 
+use Orbitools\Abstracts\Module_Base;
 use Orbitools\Modules\Menu_Groups\Admin\Admin;
 use Orbitools\Modules\Menu_Groups\Core\Group_Manager;
 
@@ -29,23 +30,12 @@ if (!defined('ABSPATH')) {
  *
  * @since 1.0.0
  */
-class Menu_Groups
+class Menu_Groups extends Module_Base
 {
     /**
      * Module version
-     *
-     * @since 1.0.0
-     * @var string
      */
-    const VERSION = '1.0.0';
-
-    /**
-     * Module slug identifier
-     *
-     * @since 1.0.0
-     * @var string
-     */
-    const MODULE_SLUG = 'menu-groups';
+    protected const VERSION = '1.0.0';
 
     /**
      * Admin handler instance
@@ -63,42 +53,85 @@ class Menu_Groups
      */
     private $group_manager;
 
-    /**
-     * Whether the module has been initialized
-     *
-     * @since 1.0.0
-     * @var bool
-     */
-    private static $initialized = false;
 
     /**
      * Initialize the Menu Groups module
      *
-     * Sets up the module by initializing admin functionality and,
-     * if the module is enabled, the core components.
+     * Sets up the module by calling the parent constructor which handles
+     * the initialization logic via the Module_Base system.
      *
      * @since 1.0.0
      */
     public function __construct()
     {
-        // Prevent multiple initialization
-        if (self::$initialized) {
-            return;
-        }
+        // Call parent constructor which handles initialization
+        parent::__construct();
+    }
 
+    /**
+     * Get the module's unique slug
+     * 
+     * @return string
+     */
+    public function get_slug(): string
+    {
+        return 'menu-groups';
+    }
+
+    /**
+     * Get the module's display name
+     * 
+     * @return string
+     */
+    public function get_name(): string
+    {
+        return __('Menu Groups', 'orbitools');
+    }
+
+    /**
+     * Get the module's description
+     * 
+     * @return string
+     */
+    public function get_description(): string
+    {
+        return __('Organize navigation menu items into collapsible groups with headings.', 'orbitools');
+    }
+
+    /**
+     * Get module's default settings
+     * 
+     * @return array
+     */
+    public function get_default_settings(): array
+    {
+        return [
+            'menu-groups_enabled' => true,
+            'menu-groups_style' => 'default',
+            'menu-groups_collapsible' => true,
+            'menu-groups_custom_css' => ''
+        ];
+    }
+
+    /**
+     * Initialize the module
+     * Called by Module_Base when module should be initialized
+     * 
+     * @return void
+     */
+    public function init(): void
+    {
         // Always initialize admin functionality for module registration
         $this->admin = new Admin();
-
-        // Always initialize group manager for functionality
+        
+        // Initialize core group manager
         $this->group_manager = new Group_Manager();
 
-        // Only setup hooks if module is enabled
-        if ($this->admin->is_module_enabled()) {
-            $this->setup_admin_hooks();
-            $this->init_frontend_functionality();
-        }
+        // Initialize frontend functionality
+        $this->init_frontend_functionality();
 
-        self::$initialized = true;
+        // Set up admin hooks
+        $this->setup_admin_hooks();
     }
 
     /**

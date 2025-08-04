@@ -13,6 +13,7 @@
 
 namespace Orbitools\Modules\Typography_Presets;
 
+use Orbitools\Abstracts\Module_Base;
 use Orbitools\Modules\Typography_Presets\Admin\Admin;
 use Orbitools\Modules\Typography_Presets\Admin\Settings;
 use Orbitools\Modules\Typography_Presets\Core\Preset_Manager;
@@ -33,23 +34,12 @@ if (!defined('ABSPATH')) {
  *
  * @since 1.0.0
  */
-class Typography_Presets
+class Typography_Presets extends Module_Base
 {
     /**
      * Module version
-     *
-     * @since 1.0.0
-     * @var string
      */
-    const VERSION = '1.0.0';
-
-    /**
-     * Module slug identifier
-     *
-     * @since 1.0.0
-     * @var string
-     */
-    const MODULE_SLUG = 'typography-presets';
+    protected const VERSION = '1.0.0';
 
     /**
      * Admin handler instance
@@ -102,18 +92,71 @@ class Typography_Presets
     /**
      * Initialize the Typography Presets module
      *
-     * Sets up the module by initializing admin functionality and,
-     * if the module is enabled, the core and frontend components.
+     * Sets up the module by calling the parent constructor which handles
+     * the initialization logic via the Module_Base system.
      *
      * @since 1.0.0
      */
     public function __construct()
     {
-        // Prevent multiple initialization
-        if (self::$initialized) {
-            return;
-        }
+        // Call parent constructor which handles initialization
+        parent::__construct();
+    }
 
+    /**
+     * Get the module's unique slug
+     * 
+     * @return string
+     */
+    public function get_slug(): string
+    {
+        return 'typography-presets';
+    }
+
+    /**
+     * Get the module's display name
+     * 
+     * @return string
+     */
+    public function get_name(): string
+    {
+        return __('Typography Presets', 'orbitools');
+    }
+
+    /**
+     * Get the module's description
+     * 
+     * @return string
+     */
+    public function get_description(): string
+    {
+        return __('Predefined typography styles and custom font management for consistent design.', 'orbitools');
+    }
+
+    /**
+     * Get module's default settings
+     * 
+     * @return array
+     */
+    public function get_default_settings(): array
+    {
+        return [
+            'typography-presets_enabled' => true,
+            'typography-presets_disable_core_controls' => false,
+            'typography-presets_custom_fonts_enabled' => true,
+            'typography-presets_google_fonts_enabled' => true,
+            'typography-presets_presets' => []
+        ];
+    }
+
+    /**
+     * Initialize the module
+     * Called by Module_Base when module should be initialized
+     * 
+     * @return void
+     */
+    public function init(): void
+    {
         // Always initialize admin functionality for module registration
         $this->admin = new Admin();
         
@@ -124,12 +167,8 @@ class Typography_Presets
         $this->preset_manager = new Preset_Manager();
         $this->css_generator = new CSS_Generator($this->preset_manager);
 
-        // Only initialize frontend functionality if module is enabled
-        if ($this->admin->is_module_enabled()) {
-            $this->init_frontend_functionality();
-        }
-
-        self::$initialized = true;
+        // Initialize frontend functionality
+        $this->init_frontend_functionality();
     }
 
     /**

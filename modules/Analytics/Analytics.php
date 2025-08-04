@@ -13,6 +13,7 @@
 
 namespace Orbitools\Modules\Analytics;
 
+use Orbitools\Abstracts\Module_Base;
 use Orbitools\Modules\Analytics\Admin\Admin;
 use Orbitools\Modules\Analytics\Admin\Settings;
 use Orbitools\Modules\Analytics\Admin\Settings_Helper;
@@ -30,23 +31,12 @@ if (!defined('ABSPATH')) {
  *
  * @since 1.0.0
  */
-class Analytics
+class Analytics extends Module_Base
 {
     /**
      * Module version
-     *
-     * @since 1.0.0
-     * @var string
      */
-    const VERSION = '1.0.0';
-
-    /**
-     * Module slug identifier
-     *
-     * @since 1.0.0
-     * @var string
-     */
-    const MODULE_SLUG = 'analytics';
+    protected const VERSION = '1.0.0';
 
     /**
      * Admin handler instance
@@ -67,30 +57,89 @@ class Analytics
     /**
      * Initialize the Analytics module
      *
-     * Sets up the module by initializing admin functionality and,
-     * if the module is enabled, the core and frontend components.
+     * Sets up the module by calling the parent constructor which handles
+     * the initialization logic via the Module_Base system.
      *
      * @since 1.0.0
      */
     public function __construct()
     {
-        // Prevent multiple initialization
-        if (self::$initialized) {
-            return;
-        }
+        // Call parent constructor which handles initialization
+        parent::__construct();
+    }
 
+    /**
+     * Get the module's unique slug
+     * 
+     * @return string
+     */
+    public function get_slug(): string
+    {
+        return 'analytics';
+    }
+
+    /**
+     * Get the module's display name
+     * 
+     * @return string
+     */
+    public function get_name(): string
+    {
+        return __('Analytics', 'orbitools');
+    }
+
+    /**
+     * Get the module's description
+     * 
+     * @return string
+     */
+    public function get_description(): string
+    {
+        return __('Advanced analytics integration with Google Analytics 4, Google Tag Manager, and custom event tracking.', 'orbitools');
+    }
+
+    /**
+     * Get module's default settings
+     * 
+     * @return array
+     */
+    public function get_default_settings(): array
+    {
+        return [
+            'analytics_enabled' => true,
+            'analytics_type' => 'ga4',
+            'analytics_ga4_id' => '',
+            'analytics_gtm_id' => '',
+            'analytics_consent_mode' => false,
+            'analytics_track_performance' => false,
+            'analytics_ecommerce_enable' => false,
+            'analytics_ecommerce_currency' => 'USD',
+            'analytics_custom_events_enable' => false,
+            'analytics_custom_events' => [
+                'downloads' => false,
+                'outbound' => false,
+                'scroll' => false,
+                'forms' => false
+            ]
+        ];
+    }
+
+    /**
+     * Initialize the module
+     * Called by Module_Base when module should be initialized
+     * 
+     * @return void
+     */
+    public function init(): void
+    {
         // Always initialize admin functionality for module registration
         $this->admin = new Admin();
         
         // Initialize Settings class
         Settings::init();
 
-        // Only initialize frontend functionality if module is enabled
-        if ($this->admin->is_module_enabled()) {
-            $this->init_frontend_functionality();
-        }
-
-        self::$initialized = true;
+        // Initialize frontend functionality
+        $this->init_frontend_functionality();
     }
 
     /**
@@ -125,7 +174,7 @@ class Analytics
             return;
         }
 
-        $analytics_type = $this->get_setting('analytics_type', 'ga4');
+        $analytics_type = $this->get_analytics_setting('analytics_type', 'ga4');
 
         switch ($analytics_type) {
             case 'ga4':
@@ -146,7 +195,7 @@ class Analytics
             return;
         }
 
-        $analytics_type = $this->get_setting('analytics_type', 'ga4');
+        $analytics_type = $this->get_analytics_setting('analytics_type', 'ga4');
 
         if ($analytics_type === 'gtm') {
             $this->render_gtm_body();
@@ -171,7 +220,7 @@ class Analytics
      */
     private function render_ga4_head()
     {
-        $measurement_id = $this->get_setting('analytics_ga4_id');
+        $measurement_id = $this->get_analytics_setting('analytics_ga4_id');
         
         if (empty($measurement_id)) {
             return;
@@ -185,7 +234,7 @@ class Analytics
             window.dataLayer = window.dataLayer || [];
             function gtag(){dataLayer.push(arguments);}
             
-            <?php if ($this->get_setting('analytics_consent_mode')): ?>
+            <?php if ($this->get_analytics_setting('analytics_consent_mode')): ?>
             // Consent Mode v2
             gtag('consent', 'default', {
                 'ad_storage': 'denied',
@@ -206,7 +255,7 @@ class Analytics
      */
     private function render_gtm_head()
     {
-        $container_id = $this->get_setting('analytics_gtm_id');
+        $container_id = $this->get_analytics_setting('analytics_gtm_id');
         
         if (empty($container_id)) {
             return;
@@ -214,7 +263,7 @@ class Analytics
         ?>
         <!-- Google Tag Manager -->
         <script>
-            <?php if ($this->get_setting('analytics_consent_mode')): ?>
+            <?php if ($this->get_analytics_setting('analytics_consent_mode')): ?>
             // Consent Mode v2 for GTM
             window.dataLayer = window.dataLayer || [];
             function gtag(){dataLayer.push(arguments);}
@@ -241,7 +290,7 @@ class Analytics
      */
     private function render_gtm_body()
     {
-        $container_id = $this->get_setting('analytics_gtm_id');
+        $container_id = $this->get_analytics_setting('analytics_gtm_id');
         
         if (empty($container_id)) {
             return;
@@ -264,7 +313,7 @@ class Analytics
             return;
         }
 
-        $analytics_type = $this->get_setting('analytics_type', 'ga4');
+        $analytics_type = $this->get_analytics_setting('analytics_type', 'ga4');
         ?>
         <script>
         document.addEventListener('DOMContentLoaded', function() {
@@ -346,7 +395,7 @@ class Analytics
      */
     private function init_ecommerce_tracking()
     {
-        if (!$this->get_setting('analytics_ecommerce_enable')) {
+        if (!$this->get_analytics_setting('analytics_ecommerce_enable')) {
             return;
         }
 
@@ -386,7 +435,7 @@ class Analytics
         }
 
         // Use configured currency or fallback to order currency
-        $currency = $this->get_setting('analytics_ecommerce_currency');
+        $currency = $this->get_analytics_setting('analytics_ecommerce_currency');
         if (empty($currency)) {
             $currency = $order->get_currency();
         }
@@ -398,7 +447,7 @@ class Analytics
             'items' => $items
         ];
         
-        $analytics_type = $this->get_setting('analytics_type', 'ga4');
+        $analytics_type = $this->get_analytics_setting('analytics_type', 'ga4');
         ?>
         <script>
         <?php echo $this->get_tracking_code_for_data('purchase', $purchase_data, $analytics_type); ?>
@@ -422,7 +471,7 @@ class Analytics
         $config = [];
 
         // Add custom config parameters
-        $custom_config = $this->get_setting('analytics_custom_config');
+        $custom_config = $this->get_analytics_setting('analytics_custom_config');
         if (!empty($custom_config)) {
             $config_data = json_decode($custom_config, true);
             if (is_array($config_data)) {
@@ -434,9 +483,9 @@ class Analytics
     }
 
     /**
-     * Get setting value
+     * Get analytics-specific setting value
      */
-    private function get_setting($key, $default = '')
+    private function get_analytics_setting($key, $default = '')
     {
         return Settings_Helper::get_analytics_setting(str_replace('analytics_', '', $key), $default);
     }
@@ -623,8 +672,8 @@ class Analytics
                     ?>
                     <script>
                     console.log('OrbiTools Analytics Debug Mode');
-                    console.log('Analytics Type:', '<?php echo esc_js($this->get_setting('analytics_type')); ?>');
-                    console.log('Tracking ID:', '<?php echo esc_js($this->get_setting('analytics_' . $this->get_setting('analytics_type') . '_id')); ?>');
+                    console.log('Analytics Type:', '<?php echo esc_js($this->get_analytics_setting('analytics_type')); ?>');
+                    console.log('Tracking ID:', '<?php echo esc_js($this->get_analytics_setting('analytics_' . $this->get_analytics_setting('analytics_type') . '_id')); ?>');
                     </script>
                     <?php
                 }
@@ -632,7 +681,7 @@ class Analytics
         }
 
         // Add performance tracking
-        if ($this->get_setting('analytics_track_performance') && $this->get_setting('analytics_type') === 'ga4') {
+        if ($this->get_analytics_setting('analytics_track_performance') && $this->get_analytics_setting('analytics_type') === 'ga4') {
             add_action('wp_footer', function() {
                 if (!$this->should_track()) return;
                 ?>
@@ -666,7 +715,7 @@ class Analytics
         global $product;
         if (!$product) return;
 
-        $currency = $this->get_setting('analytics_ecommerce_currency');
+        $currency = $this->get_analytics_setting('analytics_ecommerce_currency');
         if (empty($currency) && function_exists('get_woocommerce_currency')) {
             $currency = get_woocommerce_currency();
         }
@@ -686,7 +735,7 @@ class Analytics
             ]]
         ];
         
-        $analytics_type = $this->get_setting('analytics_type', 'ga4');
+        $analytics_type = $this->get_analytics_setting('analytics_type', 'ga4');
         ?>
         <script>
         <?php echo $this->get_tracking_code_for_data('view_item', $product_data, $analytics_type); ?>
@@ -701,7 +750,7 @@ class Analytics
     {
         if (!is_woocommerce()) return;
         
-        $currency = $this->get_setting('analytics_ecommerce_currency');
+        $currency = $this->get_analytics_setting('analytics_ecommerce_currency');
         if (empty($currency) && function_exists('get_woocommerce_currency')) {
             $currency = get_woocommerce_currency();
         }
@@ -732,7 +781,7 @@ class Analytics
                     'value' => 0,
                     'items' => [['item_id' => 'productId', 'quantity' => 1]]
                 ];
-                echo $this->get_tracking_code_js_for_object('add_to_cart', $add_to_cart_data, $this->get_setting('analytics_type', 'ga4'));
+                echo $this->get_tracking_code_js_for_object('add_to_cart', $add_to_cart_data, $this->get_analytics_setting('analytics_type', 'ga4'));
                 ?>
             });
 
@@ -743,7 +792,7 @@ class Analytics
 
                 <?php 
                 $remove_data = ['currency' => $currency];
-                echo $this->get_tracking_code_js_for_object('remove_from_cart', $remove_data, $this->get_setting('analytics_type', 'ga4'));
+                echo $this->get_tracking_code_js_for_object('remove_from_cart', $remove_data, $this->get_analytics_setting('analytics_type', 'ga4'));
                 ?>
             });
         });
@@ -758,7 +807,7 @@ class Analytics
     {
         if (!is_checkout() || is_order_received_page()) return;
 
-        $currency = $this->get_setting('analytics_ecommerce_currency');
+        $currency = $this->get_analytics_setting('analytics_ecommerce_currency');
         if (empty($currency) && function_exists('get_woocommerce_currency')) {
             $currency = get_woocommerce_currency();
         }
@@ -790,7 +839,7 @@ class Analytics
                 'items' => $cart_data
             ];
             
-            $analytics_type = $this->get_setting('analytics_type', 'ga4');
+            $analytics_type = $this->get_analytics_setting('analytics_type', 'ga4');
             ?>
             <script>
             <?php echo $this->get_tracking_code_for_data('begin_checkout', $checkout_data, $analytics_type); ?>

@@ -13,6 +13,8 @@
 
 namespace Orbitools\Modules\Layout_Guides;
 
+use Orbitools\Abstracts\Module_Base;
+
 // Prevent direct access
 if (!defined('ABSPATH')) {
     exit;
@@ -26,23 +28,12 @@ if (!defined('ABSPATH')) {
  *
  * @since 1.0.0
  */
-class Layout_Guides
+class Layout_Guides extends Module_Base
 {
     /**
      * Module version
-     *
-     * @since 1.0.0
-     * @var string
      */
-    const VERSION = '1.0.0';
-
-    /**
-     * Module slug
-     *
-     * @since 1.0.0
-     * @var string
-     */
-    const SLUG = 'layout_guides';
+    protected const VERSION = '1.0.0';
 
     /**
      * Admin handler instance
@@ -83,22 +74,71 @@ class Layout_Guides
      */
     public function __construct()
     {
-        if (self::$initialized) {
-            return;
-        }
+        // Call parent constructor which handles initialization
+        parent::__construct();
+    }
 
-        self::$initialized = true;
+    /**
+     * Get the module's unique slug
+     * 
+     * @return string
+     */
+    public function get_slug(): string
+    {
+        return 'layout-guides';
+    }
 
+    /**
+     * Get the module's display name
+     * 
+     * @return string
+     */
+    public function get_name(): string
+    {
+        return __('Layout Guides', 'orbitools');
+    }
+
+    /**
+     * Get the module's description
+     * 
+     * @return string
+     */
+    public function get_description(): string
+    {
+        return __('Visual layout guides and grid systems for consistent design alignment.', 'orbitools');
+    }
+
+    /**
+     * Get module's default settings
+     * 
+     * @return array
+     */
+    public function get_default_settings(): array
+    {
+        return [
+            'layout-guides_enabled' => true,
+            'layout-guides_show_grid' => true,
+            'layout-guides_show_rulers' => false,
+            'layout-guides_admin_only' => true
+        ];
+    }
+
+    /**
+     * Initialize the module
+     * Called by Module_Base when module should be initialized
+     * 
+     * @return void
+     */
+    public function init(): void
+    {
         // Always initialize admin (needed for module registration)
         $this->init_admin();
 
         // Always initialize core (needed for admin previews)
         $this->init_core();
 
-        // Only initialize frontend when module is enabled
-        if ($this->is_enabled()) {
-            $this->init_frontend();
-        }
+        // Initialize frontend when module is enabled (this method is only called when enabled)
+        $this->init_frontend();
     }
 
     /**
@@ -134,17 +174,6 @@ class Layout_Guides
         $this->assets->init();
     }
 
-    /**
-     * Check if module is enabled
-     *
-     * @since 1.0.0
-     * @return bool
-     */
-    public function is_enabled()
-    {
-        $settings = get_option('orbitools_settings', array());
-        return !empty($settings['layout_guides_enabled']);
-    }
 
     /**
      * Get admin handler instance
@@ -179,25 +208,4 @@ class Layout_Guides
         return $this->assets;
     }
 
-    /**
-     * Get module version
-     *
-     * @since 1.0.0
-     * @return string
-     */
-    public function get_version()
-    {
-        return self::VERSION;
-    }
-
-    /**
-     * Get module slug
-     *
-     * @since 1.0.0
-     * @return string
-     */
-    public function get_slug()
-    {
-        return self::SLUG;
-    }
 }

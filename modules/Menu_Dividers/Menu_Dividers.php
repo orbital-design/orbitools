@@ -13,6 +13,7 @@
 
 namespace Orbitools\Modules\Menu_Dividers;
 
+use Orbitools\Abstracts\Module_Base;
 use Orbitools\Modules\Menu_Dividers\Admin\Admin;
 use Orbitools\Modules\Menu_Dividers\Core\Divider_Manager;
 
@@ -29,23 +30,12 @@ if (!defined('ABSPATH')) {
  *
  * @since 1.0.0
  */
-class Menu_Dividers
+class Menu_Dividers extends Module_Base
 {
     /**
      * Module version
-     *
-     * @since 1.0.0
-     * @var string
      */
-    const VERSION = '1.0.0';
-
-    /**
-     * Module slug identifier
-     *
-     * @since 1.0.0
-     * @var string
-     */
-    const MODULE_SLUG = 'menu-dividers';
+    protected const VERSION = '1.0.0';
 
     /**
      * Admin handler instance
@@ -74,31 +64,80 @@ class Menu_Dividers
     /**
      * Initialize the Menu Dividers module
      *
-     * Sets up the module by initializing admin functionality and,
-     * if the module is enabled, the core components.
+     * Sets up the module by calling the parent constructor which handles
+     * the initialization logic via the Module_Base system.
      *
      * @since 1.0.0
      */
     public function __construct()
     {
-        // Prevent multiple initialization
-        if (self::$initialized) {
-            return;
-        }
+        // Call parent constructor which handles initialization
+        parent::__construct();
+    }
 
+    /**
+     * Get the module's unique slug
+     * 
+     * @return string
+     */
+    public function get_slug(): string
+    {
+        return 'menu-dividers';
+    }
+
+    /**
+     * Get the module's display name
+     * 
+     * @return string
+     */
+    public function get_name(): string
+    {
+        return __('Menu Dividers', 'orbitools');
+    }
+
+    /**
+     * Get the module's description
+     * 
+     * @return string
+     */
+    public function get_description(): string
+    {
+        return __('Add visual dividers and separators to navigation menus for improved organization.', 'orbitools');
+    }
+
+    /**
+     * Get module's default settings
+     * 
+     * @return array
+     */
+    public function get_default_settings(): array
+    {
+        return [
+            'menu-dividers_enabled' => true,
+            'menu-dividers_style' => 'default',
+            'menu-dividers_custom_css' => ''
+        ];
+    }
+
+    /**
+     * Initialize the module
+     * Called by Module_Base when module should be initialized
+     * 
+     * @return void
+     */
+    public function init(): void
+    {
         // Always initialize admin functionality for module registration
         $this->admin = new Admin();
-
-        // Always initialize divider manager for functionality
+        
+        // Initialize core divider manager
         $this->divider_manager = new Divider_Manager();
 
-        // Only setup hooks if module is enabled
-        if ($this->admin->is_module_enabled()) {
-            $this->setup_admin_hooks();
-            $this->init_frontend_functionality();
-        }
+        // Initialize frontend functionality
+        $this->init_frontend_functionality();
 
-        self::$initialized = true;
+        // Set up admin hooks
+        $this->setup_admin_hooks();
     }
 
     /**
