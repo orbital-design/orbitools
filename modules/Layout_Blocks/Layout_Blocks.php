@@ -14,9 +14,9 @@ class Layout_Blocks
      */
     public function __construct()
     {
-        add_action('init', [$this, 'register_blocks']);
-        add_action('wp_enqueue_scripts', [$this, 'enqueue_frontend_assets']);
-        add_action('enqueue_block_editor_assets', [$this, 'enqueue_editor_assets']);
+        \add_action('init', [$this, 'register_blocks']);
+        \add_action('wp_enqueue_scripts', [$this, 'enqueue_frontend_assets']);
+        \add_action('enqueue_block_editor_assets', [$this, 'enqueue_editor_assets']);
     }
 
     /**
@@ -28,12 +28,12 @@ class Layout_Blocks
         
         // Register Collection block
         if (file_exists($blocks_dir . 'collection/block.json')) {
-            register_block_type($blocks_dir . 'collection/');
+            \register_block_type($blocks_dir . 'collection/');
         }
         
         // Register Entry block
         if (file_exists($blocks_dir . 'entry/block.json')) {
-            register_block_type($blocks_dir . 'entry/');
+            \register_block_type($blocks_dir . 'entry/');
         }
     }
 
@@ -44,7 +44,7 @@ class Layout_Blocks
     {
         $base_css = ORBITOOLS_DIR . 'build/frontend/css/base.css';
         if (file_exists($base_css)) {
-            wp_enqueue_style(
+            \wp_enqueue_style(
                 'orbitools-layout-blocks-frontend',
                 ORBITOOLS_URL . 'build/frontend/css/base.css',
                 [],
@@ -60,7 +60,7 @@ class Layout_Blocks
     {
         $editor_css = ORBITOOLS_DIR . 'build/admin/css/editor.css';
         if (file_exists($editor_css)) {
-            wp_enqueue_style(
+            \wp_enqueue_style(
                 'orbitools-layout-blocks-editor',
                 ORBITOOLS_URL . 'build/admin/css/editor.css',
                 ['wp-edit-blocks'],
@@ -70,7 +70,7 @@ class Layout_Blocks
         
         $admin_css = ORBITOOLS_DIR . 'build/admin/css/admin.css';
         if (file_exists($admin_css)) {
-            wp_enqueue_style(
+            \wp_enqueue_style(
                 'orbitools-layout-blocks-admin',
                 ORBITOOLS_URL . 'build/admin/css/admin.css',
                 [],
