@@ -30,13 +30,16 @@
         }
     }
 
-    // UI Cues
-    &:hover {
-        background: rgba(0, 124, 186, 0.05);
-        border-width: 1px;
-        border-radius: 6px;
-        padding: 10px;
+    &:not([data-constrain="true"]) {
+        // UI Cues
+        &:hover {
+            background: rgba(0, 124, 186, 0.05);
+            border-width: 1px;
+            border-radius: 6px;
+            padding: 10px;
+        }
     }
+
 
     &.is-selected,
     &.has-child-selected {
@@ -44,5 +47,17 @@
         border-style: solid;
         border-radius: 6px;
         padding: 10px;
+    }
+}
+
+.alignfull[data-type="orb/collection"] {
+    &:not(.orb-collection) {
+        // UI Cues
+        &:hover {
+            background: rgba(0, 124, 186, 0.05);
+            border-width: 1px;
+            border-radius: 6px;
+            padding: 10px;
+        }
     }
 }

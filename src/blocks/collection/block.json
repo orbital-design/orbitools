@@ -31,7 +31,7 @@
         },
         "itemWidth": {
             "type": "string",
-            "default": "equal",
+            "default": "fit",
             "enum": [
                 "fit",
                 "equal",

@@ -43,7 +43,7 @@ const ROW_DEFAULTS = {
     alignItems: 'stretch',
     justifyContent: 'flex-start',
     stackOnMobile: true,
-    itemWidth: 'equal',
+    itemWidth: 'fit',
     columnSystem: 12,
 } as const;
 

@@ -42,56 +42,68 @@ $elem_base: 'orb-entry';
     > .block-editor-inner-blocks,
     > .block-editor-inner-blocks > .block-editor-block-list__layout {
         display: contents;
-
-
     }
 
     &:has(> .block-editor-inner-blocks > .block-editor-block-list__layout .block-list-appender:only-child),
     &:has(> .block-editor-inner-blocks > .block-editor-block-list__layout:empty) {
-        min-width: 100px;
-        min-height: 50px;
+        padding: 10px;
         background: rgba(0, 124, 186, 0.2);
         border-radius: 6px;
 
         &:hover {
             cursor: pointer;
         }
-
-
-
-
     }
 
-    &:has(> .block-editor-inner-blocks > .block-editor-block-list__layout:empty) {
-&:after {
-                content: '+';
-                position: absolute;
-                top: 50%;
-                left: 50%;
-                transform: translate(-50%, -50%);
+    &.block-editor-block-list__block {
+        .block-list-appender {
+            bottom: initial;
+            list-style: none;
+            padding: 0;
+            position: relative;
+            right: initial;
+            z-index: 2;
+            display: none !important;
+            align-self: center;
+
+            &:only-child {
+                display: flex !important;
             }
-    }
- }
 
-.block-editor-block-list__block {
-   &.orb-entry {
-    .block-list-appender {
-        bottom: initial;
-        list-style: none;
-        padding: 0;
-        position: relative;
-        right: initial;
-        z-index: 2;
+            &:not(:only-child) {
+                margin-top: 10px;
+            }
+            .block-editor-button-block-appender {
+                background: #f2f6fc;
+                aspect-ratio: 1/1;
+                border-radius: 4px;
+                max-width: 40px;
+                max-height: initial !important;
+                transition: all .15s ease;
 
-        .block-editor-button-block-appender {
-            aspect-ratio: 1/1;
-            max-width: 50px;
-            max-height: initial !important;
+                &:hover,
+                &:focus {
+                    background: #32a3e2;
+                    color: white;
+                }
+            }
+
+        }
+
+        &.is-selected,
+        &.has-child-selected {
+            .block-list-appender {
+                display: flex !important;
+            }
+        }
+
+        &:has(> .block-editor-inner-blocks > .block-editor-block-list__layout > .block-list-appender:only-child) {
+            // background: red !important;
+            justify-content: center;
+            align-items: center;
         }
     }
-   }
 }
-
 
 // Parent Layout Classes - Controls classes on children, fit | equal/grow | 5 col grid | 12 col grid
 // Automatic Equal columns
