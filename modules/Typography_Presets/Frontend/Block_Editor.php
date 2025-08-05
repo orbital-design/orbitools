@@ -75,20 +75,35 @@ class Block_Editor
      */
     private function load_settings(): void
     {
-        $admin_settings = get_option('orbitools_settings', array());
-
-        $defaults = array(
-            'typography_allowed_blocks' => array(
+        // Use Settings_Manager to get settings from database (no hardcoded defaults)
+        $settings_manager = new \Orbitools\Helpers\Settings_Manager();
+        
+        $allowed_blocks = $settings_manager->get_module_setting(
+            'typography-presets', 
+            'typography_allowed_blocks', 
+            array()
+        );
+        
+        // If setting is empty (not configured yet), use sensible defaults
+        if (empty($allowed_blocks)) {
+            $allowed_blocks = array(
                 'core/paragraph',
                 'core/heading',
+                'core/post-title',
                 'core/list',
                 'core/quote',
-                'core/button',
+                'core/button'
+            );
+        }
+        
+        $this->settings = array(
+            'typography_allowed_blocks' => $allowed_blocks,
+            'typography_show_groups_in_dropdown' => $settings_manager->get_module_setting(
+                'typography-presets', 
+                'typography_show_groups_in_dropdown', 
+                false
             ),
-            'typography_show_groups_in_dropdown' => false,
         );
-
-        $this->settings = wp_parse_args($admin_settings, $defaults);
     }
 
     /**

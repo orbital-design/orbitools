@@ -1,6 +1,6 @@
 /**
  * Typography Presets - Class Application
- * 
+ *
  * Applies preset CSS classes to blocks in both editor and frontend
  */
 
@@ -13,14 +13,14 @@
         return function(props) {
             // Get data from localized script
             const { settings: moduleSettings } = window.orbitoolsTypographyPresets || {};
-            
+
             if (!moduleSettings) {
                 return wp.element.createElement(BlockListBlock, props);
             }
 
             // Define allowed blocks (with fallback)
             const allowedBlocks = moduleSettings.typography_allowed_blocks || [
-                'core/paragraph', 'core/heading', 'core/list', 'core/quote', 'core/button'
+                'core/paragraph', 'core/heading', 'core/post-title', 'core/list', 'core/quote', 'core/button'
             ];
 
             if (!allowedBlocks.includes(props.name)) {
@@ -33,12 +33,12 @@
                 const existingClasses = props.className || '';
                 const presetClasses = `has-type-preset has-type-preset-${orbitoolsTypographyPreset}`;
                 const newClassName = (existingClasses + ' ' + presetClasses).trim();
-                
+
                 const newProps = {
                     ...props,
                     className: newClassName
                 };
-                
+
                 return wp.element.createElement(BlockListBlock, newProps);
             }
 
@@ -50,14 +50,14 @@
     function addPresetClassToSave(props, blockType, attributes) {
         // Get data from localized script
         const { settings: moduleSettings } = window.orbitoolsTypographyPresets || {};
-        
+
         if (!moduleSettings) {
             return props;
         }
 
         // Define allowed blocks (with fallback)
         const allowedBlocks = moduleSettings.typography_allowed_blocks || [
-            'core/paragraph', 'core/heading', 'core/list', 'core/quote', 'core/button'
+            'core/paragraph', 'core/heading', 'core/post-title', 'core/list', 'core/quote', 'core/button'
         ];
 
         if (!allowedBlocks.includes(blockType.name)) {

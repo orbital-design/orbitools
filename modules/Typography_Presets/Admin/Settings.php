@@ -57,6 +57,7 @@ class Settings
             'typography_allowed_blocks' => array(
                 'core/paragraph',
                 'core/heading',
+                'core/post-title',
                 'core/list',
                 'core/quote',
                 'core/button',
@@ -121,6 +122,7 @@ class Settings
                 'options' => array(
                     'core/paragraph' => __('Paragraph', 'orbitools'),
                     'core/heading' => __('Heading', 'orbitools'),
+                    'core/post-title' => __('Title', 'orbitools'),
                     'core/list' => __('List', 'orbitools'),
                     'core/quote' => __('Quote', 'orbitools'),
                     'core/button' => __('Button', 'orbitools'),
@@ -133,7 +135,8 @@ class Settings
                     'core/heading',
                     'core/list',
                     'core/quote',
-                    'core/button'
+                    'core/button',
+                    'core/post-title'
                 ),
                 'section' => 'typography',
             ),

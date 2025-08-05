@@ -20,7 +20,7 @@
 
             // Define allowed blocks (with fallback)
             const allowedBlocks = moduleSettings.allowed_blocks || [
-                'core/paragraph', 'core/heading', 'core/list', 'core/quote', 'core/buttons', 'core/button'
+                'core/paragraph', 'core/heading', 'core/post-title', 'core/list', 'core/quote', 'core/buttons', 'core/button'
             ];
 
             if (!allowedBlocks.includes(name)) {

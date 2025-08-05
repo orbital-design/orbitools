@@ -1,6 +1,6 @@
 /**
  * Typography Presets - Attribute Registration
- * 
+ *
  * Handles registering the orbitoolsTypographyPreset attribute on allowed block types
  */
 
@@ -13,14 +13,14 @@ wp.hooks.addFilter(
         if (!window.orbitoolsTypographyPresets || !window.orbitoolsTypographyPresets.settings) {
             return settings;
         }
-        
+
         const moduleSettings = window.orbitoolsTypographyPresets.settings;
-        
+
         // Ensure allowed_blocks is an array
         let allowedBlocks = moduleSettings.typography_allowed_blocks;
         if (!Array.isArray(allowedBlocks)) {
             allowedBlocks = [
-                'core/paragraph', 'core/heading', 'core/list', 'core/quote', 'core/button'
+                'core/paragraph', 'core/heading', 'core/post-title', 'core/list', 'core/quote', 'core/button'
             ];
         }
 

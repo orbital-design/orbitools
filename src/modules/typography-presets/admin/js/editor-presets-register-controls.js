@@ -1,6 +1,6 @@
 /**
  * Typography Presets - Editor Controls
- * 
+ *
  * Adds the typography preset dropdown control to the block editor inspector
  */
 
@@ -16,7 +16,7 @@
         return function(props) {
             // Get data from localized script
             const { presets, settings, strings } = window.orbitoolsTypographyPresets || {};
-            
+
             if (!presets || !settings) {
                 return wp.element.createElement(BlockEdit, props);
             }
@@ -26,7 +26,7 @@
 
             // Define allowed blocks (with fallback)
             const allowedBlocks = settings.typography_allowed_blocks || [
-                'core/paragraph', 'core/heading', 'core/list', 'core/quote', 'core/button'
+                'core/paragraph', 'core/heading', 'core/post-title', 'core/list', 'core/quote', 'core/button'
             ];
 
             if (!allowedBlocks.includes(props.name)) {
@@ -247,22 +247,22 @@
                                     },
                                     Object.keys(currentPreset.properties).map(prop => {
                                         let value = currentPreset.properties[prop];
-                                        
+
                                         // Replace font-family CSS vars with font name from label
                                         if (prop === 'font-family' && value.startsWith('var(')) {
                                             const fontName = currentPreset.label.split(' • ')[0];
                                             value = fontName;
                                         }
-                                        
+
                                         return wp.element.createElement(
-                                            'div', 
-                                            { 
+                                            'div',
+                                            {
                                                 key: prop,
                                                 style: {
                                                     whiteSpace: 'nowrap',
                                                     overflow: 'hidden'
                                                 }
-                                            }, 
+                                            },
                                             `${prop}: ${value}`
                                         );
                                     })
