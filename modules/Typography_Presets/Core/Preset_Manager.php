@@ -3,7 +3,7 @@
 /**
  * Typography Presets Manager
  *
- * Handles loading, parsing, and managing typography presets from theme.json.
+ * Handles loading, parsing, and managing typography presets from config/orbitools.json.
  * This class is responsible for all preset-related data operations.
  *
  * @package    Orbitools
@@ -30,7 +30,7 @@ if (!defined('ABSPATH')) {
 class Preset_Manager
 {
     /**
-     * Current loaded presets from theme.json
+     * Current loaded presets from config/orbitools.json
      *
      * @since 1.0.0
      * @var array
@@ -132,95 +132,89 @@ class Preset_Manager
     }
 
     /**
-     * Load presets from theme.json only
+     * Load presets from config/orbitools.json only
      *
-     * This module exclusively uses theme.json for preset definitions.
+     * This module exclusively uses config/orbitools.json for preset definitions.
      *
      * @since 1.0.0
      */
     private function load_presets(): void
     {
-        $this->load_presets_from_theme_json();
+        $this->load_presets_from_config();
     }
 
     /**
-     * Load presets from theme.json file
+     * Load presets from config/orbitools.json file
      *
-     * Attempts to read typography presets from the active theme's theme.json file.
-     * Sets empty array if theme.json is not available or invalid.
+     * Attempts to read typography presets from the active theme's config/orbitools.json file.
+     * Sets empty array if config file is not available or invalid.
      *
      * @since 1.0.0
      */
-    private function load_presets_from_theme_json(): void
+    private function load_presets_from_config(): void
     {
-        $theme_data = $this->get_theme_json_data();
+        $config_data = $this->get_config_data();
 
-        if (!$theme_data) {
-            // No theme.json presets found - set empty array
+        if (!$config_data) {
+            // No config presets found - set empty array
             $this->presets = array();
             return;
         }
 
         // Parse and load presets
-        $this->presets = $this->parse_theme_json_presets($theme_data);
+        $this->presets = $this->parse_config_presets($config_data);
     }
 
     /**
-     * Get typography presets data from theme.json
+     * Get typography presets data from config/orbitools.json
      *
-     * Attempts to read and parse the theme.json file to extract typography
+     * Attempts to read and parse the config/orbitools.json file to extract typography
      * preset definitions specific to this plugin.
      *
      * @since 1.0.0
-     * @return array|false Theme data array or false if not found/invalid
+     * @return array|false Config data array or false if not found/invalid
      */
-    private function get_theme_json_data()
+    private function get_config_data()
     {
-        $theme_json_path = get_template_directory() . '/theme.json';
+        $config_path = get_template_directory() . '/config/orbitools.json';
 
-        if (!file_exists($theme_json_path)) {
+        if (!file_exists($config_path)) {
             return false;
         }
 
-        $theme_json_content = file_get_contents($theme_json_path);
-        $theme_json = json_decode($theme_json_content, true);
+        $config_content = file_get_contents($config_path);
+        $config_json = json_decode($config_content, true);
 
-        if (!$theme_json || JSON_ERROR_NONE !== json_last_error()) {
+        if (!$config_json || JSON_ERROR_NONE !== json_last_error()) {
             return false;
         }
 
-        // Get configurable path from settings
-        $plugin_path = Settings::get_theme_json_path();
-        $data = $theme_json;
-
-        foreach ($plugin_path as $key) {
-            if (!isset($data[$key])) {
-                return false;
-            }
-            $data = $data[$key];
+        // Navigate to modules -> typography-presets
+        if (!isset($config_json['modules']['typography-presets'])) {
+            return false;
         }
 
-        return $data;
+        return $config_json['modules']['typography-presets'];
     }
 
     /**
-     * Parse typography presets from theme.json data
+     * Parse typography presets from config data
      *
      * @since 1.0.0
-     * @param array $theme_data Raw theme.json data.
+     * @param array $config_data Raw config data.
      * @return array Parsed presets array
      */
-    private function parse_theme_json_presets(array $theme_data): array
+    private function parse_config_presets(array $config_data): array
     {
-        if (!isset($theme_data['items'])) {
+        if (!isset($config_data['items'])) {
             return array();
         }
 
         $parsed_presets = array();
-        $group_definitions = $theme_data['groups'] ?? array();
+        $group_definitions = $config_data['groups'] ?? array();
 
-        // Process each preset from theme.json
-        foreach ($theme_data['items'] as $preset_id => $preset_data) {
+        // Process each preset from config
+        foreach ($config_data['items'] as $preset_id => $preset_data) {
             $group_id = $preset_data['group'] ?? 'theme';
 
             // Determine group title
@@ -228,11 +222,11 @@ class Preset_Manager
 
             $parsed_presets[$preset_id] = array(
                 'label'         => $preset_data['label'] ?? $this->generate_preset_label($preset_id),
-                'description'   => $preset_data['description'] ?? 'From theme.json',
+                'description'   => $preset_data['description'] ?? 'From config/orbitools.json',
                 'properties'    => $this->normalize_css_properties($preset_data['properties']),
                 'group'         => $group_id,
                 'group_title'   => $group_title,
-                'is_theme_json' => true,
+                'is_theme_json' => false,
             );
         }
 
@@ -245,7 +239,7 @@ class Preset_Manager
      * @since 1.0.0
      * @param string $group_id Group identifier.
      * @param array  $preset_data Preset data array.
-     * @param array  $group_definitions Group definitions from theme.json.
+     * @param array  $group_definitions Group definitions from config.
      * @return string|null Group title or null
      */
     private function get_group_title(string $group_id, array $preset_data, array $group_definitions): ?string
@@ -283,7 +277,7 @@ class Preset_Manager
      * Ensures all CSS properties are in a consistent format for the frontend.
      *
      * @since 1.0.0
-     * @param array $properties Raw CSS properties from theme.json.
+     * @param array $properties Raw CSS properties from config.
      * @return array Normalized CSS properties.
      */
     private function normalize_css_properties(array $properties): array

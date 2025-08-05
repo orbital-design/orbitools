@@ -53,7 +53,6 @@ class Settings
             'typography_presets_enabled' => false,
             'typography_show_groups_in_dropdown' => false,
             'typography_output_preset_css' => true,
-            'typography_theme_json_path' => 'settings.custom.orbitools',
             'typography_allowed_blocks' => array(
                 'core/paragraph',
                 'core/heading',
@@ -104,14 +103,6 @@ class Settings
                 'desc'    => __('Clear the cached CSS to force regeneration of typography preset styles.', 'orbitools'),
                 'type'    => 'html',
                 'std'     => '<button type="button" class="button button-secondary" id="orbitools-clear-typography-cache" data-nonce="' . wp_create_nonce('orbitools_clear_cache') . '">' . __('Clear Cache', 'orbitools') . '</button><div id="orbitools-clear-cache-result" style="margin-top: 10px;"></div>',
-                'section' => 'typography',
-            ),
-            array(
-                'id'      => 'typography_theme_json_path',
-                'name'    => __('Theme.json Path', 'orbitools'),
-                'desc'    => __('Specify the full path to your presets in theme.json. Use dot notation for nested paths.<br><br><strong>Examples:</strong><br>• <code>settings.custom.orbitools</code> → <code>settings.custom.orbitools.Typography_Presets</code><br>• <code>settings.custom.mytheme.components</code> → <code>settings.custom.mytheme.components.Typography_Presets</code><br>• <code>orbital.plugins.orbitools</code> → <code>orbital.plugins.orbitools.Typography_Presets</code><br><br><strong>Note:</strong> Path automatically ends with "Typography_Presets"', 'orbitools'),
-                'type'    => 'text',
-                'std'     => 'settings.custom.orbitools',
                 'section' => 'typography',
             ),
             array(
@@ -178,32 +169,6 @@ class Settings
     }
 
     /**
-     * Get theme.json path array based on user settings
-     *
-     * @since 1.0.0
-     * @return array Path array for navigating theme.json structure.
-     */
-    public static function get_theme_json_path(): array
-    {
-        $settings = self::get_current_settings();
-        $path_setting = $settings['typography_theme_json_path'] ?? 'settings.custom.orbitools';
-
-        // Parse the path setting and add segments
-        $segments = explode('.', trim($path_setting, '.'));
-        $path = array();
-        foreach ($segments as $segment) {
-            if (!empty($segment)) {
-                $path[] = $segment;
-            }
-        }
-
-        // Always end with Typography_Presets
-        $path[] = 'Typography_Presets';
-
-        return $path;
-    }
-
-    /**
      * Get presets preview HTML
      *
      * @since 1.0.0
@@ -242,7 +207,7 @@ class Settings
         if (empty($presets)) {
             $html .= '<div class="presets-empty">
                 <p class="presets-empty__text"><strong>' . __('No presets found.', 'orbitools') . '</strong></p>
-                <p class="presets-empty__text">' . __('Add typography presets to your theme.json file to see them here.', 'orbitools') . '</p>
+                <p class="presets-empty__text">' . __('Add typography presets to your config/orbitools.json file to see them here.', 'orbitools') . '</p>
                 <p class="presets-empty__text presets-empty__text--last"><a href="https://github.com/orbital-design/orbitools/blob/main/modules/Typography_Presets/README.md" target="_blank">' . __('View Documentation', 'orbitools') . '</a></p>
             </div>';
         } else {
