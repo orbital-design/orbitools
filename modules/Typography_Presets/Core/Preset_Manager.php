@@ -189,12 +189,12 @@ class Preset_Manager
             return false;
         }
 
-        // Navigate to modules -> typography-presets
-        if (!isset($config_json['modules']['typography-presets'])) {
+        // Navigate to modules -> typographyPresets
+        if (!isset($config_json['modules']['typographyPresets'])) {
             return false;
         }
 
-        return $config_json['modules']['typography-presets'];
+        return $config_json['modules']['typographyPresets'];
     }
 
     /**
