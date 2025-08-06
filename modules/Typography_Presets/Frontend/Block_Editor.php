@@ -77,12 +77,10 @@ class Block_Editor
     {
         // Use Settings_Manager to get settings from database (no hardcoded defaults)
         $settings_manager = new \Orbitools\Helpers\Settings_Manager();
+        $all_settings = $settings_manager->get_all_settings();
         
-        $allowed_blocks = $settings_manager->get_module_setting(
-            'typography-presets', 
-            'typography_allowed_blocks', 
-            array()
-        );
+        // FIXED: Access settings directly by their field ID, not module-prefixed
+        $allowed_blocks = $all_settings['typography_allowed_blocks'] ?? array();
         
         // If setting is empty (not configured yet), use sensible defaults
         if (empty($allowed_blocks)) {
@@ -96,13 +94,15 @@ class Block_Editor
             );
         }
         
+        // FIXED: Access the setting directly by its field ID (not module-prefixed)
+        $show_groups_raw = $all_settings['typography_show_groups_in_dropdown'] ?? false;
+        
+        // Normalize the setting value - AdminKit stores checkboxes as '1' or '' (empty string)
+        $show_groups_setting = !empty($show_groups_raw) && $show_groups_raw !== '0';
+        
         $this->settings = array(
             'typography_allowed_blocks' => $allowed_blocks,
-            'typography_show_groups_in_dropdown' => $settings_manager->get_module_setting(
-                'typography-presets', 
-                'typography_show_groups_in_dropdown', 
-                false
-            ),
+            'typography_show_groups_in_dropdown' => $show_groups_setting,
         );
     }
 
@@ -143,7 +143,7 @@ class Block_Editor
     private function enqueue_preset_assets(): void
     {
         // Enqueue attribute registration first
-        wp_enqueue_script(
+        \wp_enqueue_script(
             'orbitools-typography-attribute-registration',
             ORBITOOLS_URL . 'build/admin/js/modules/typography-presets/editor-presets-attribute-registration.js',
             array('wp-hooks'),
@@ -152,14 +152,14 @@ class Block_Editor
         );
 
         // Localize data to the first script so all scripts can access it
-        wp_localize_script(
+        \wp_localize_script(
             'orbitools-typography-attribute-registration',
             'orbitoolsTypographyPresets',
             $this->get_localized_data()
         );
 
         // Enqueue core controls removal
-        wp_enqueue_script(
+        \wp_enqueue_script(
             'orbitools-typography-core-removal',
             ORBITOOLS_URL . 'build/admin/js/modules/typography-presets/editor-disable-core-typography-controls.js',
             array('wp-hooks', 'wp-blocks'),
@@ -168,7 +168,7 @@ class Block_Editor
         );
 
         // Enqueue editor controls
-        wp_enqueue_script(
+        \wp_enqueue_script(
             'orbitools-typography-editor-controls',
             ORBITOOLS_URL . 'build/admin/js/modules/typography-presets/editor-presets-register-controls.js',
             array(
@@ -184,7 +184,7 @@ class Block_Editor
         );
 
         // Enqueue class application
-        wp_enqueue_script(
+        \wp_enqueue_script(
             'orbitools-typography-class-application',
             ORBITOOLS_URL . 'build/admin/js/modules/typography-presets/editor-presets-classname-application.js',
             array(
@@ -206,7 +206,7 @@ class Block_Editor
     private function enqueue_empty_state_assets(): void
     {
         // Enqueue core controls removal even when no presets
-        wp_enqueue_script(
+        \wp_enqueue_script(
             'orbitools-typography-core-removal',
             ORBITOOLS_URL . 'build/admin/js/modules/typography-presets/editor-disable-core-typography-controls.js',
             array('wp-hooks', 'wp-blocks'),
@@ -215,7 +215,7 @@ class Block_Editor
         );
 
         // Enqueue empty state controls
-        wp_enqueue_script(
+        \wp_enqueue_script(
             'orbitools-typography-editor-controls',
             ORBITOOLS_URL . 'build/admin/js/modules/typography-presets/editor-presets-register-controls.js',
             array(
@@ -230,7 +230,7 @@ class Block_Editor
         );
 
         // Localize empty state data
-        wp_localize_script(
+        \wp_localize_script(
             'orbitools-typography-editor-controls',
             'orbitoolsTypographyPresets',
             array(
@@ -238,10 +238,10 @@ class Block_Editor
                 'groups'   => array(),
                 'settings' => $this->settings,
                 'strings'  => array(
-                    'selectPreset' => __('Select Typography Preset', 'orbitools'),
-                    'customPreset' => __('Custom Preset', 'orbitools'),
-                    'noPreset'     => __('No Preset', 'orbitools'),
-                    'noPresetsFound' => __('No typography presets found. Add presets to your theme.json file to use this feature.', 'orbitools'),
+                    'selectPreset' => \__('Select Typography Preset', 'orbitools'),
+                    'customPreset' => \__('Custom Preset', 'orbitools'),
+                    'noPreset'     => \__('No Preset', 'orbitools'),
+                    'noPresetsFound' => \__('No typography presets found. Add presets to your theme.json file to use this feature.', 'orbitools'),
                 ),
             )
         );
@@ -258,17 +258,20 @@ class Block_Editor
         // Normalize settings for JavaScript
         $normalized_settings = $this->normalize_settings_for_js($this->settings);
 
-        return array(
+        $localized_data = array(
             'presets'  => $this->preset_manager->get_presets(),
             'groups'   => $this->get_preset_groups(),
             'settings' => $normalized_settings,
             'strings'  => array(
-                'selectPreset' => __('Select Typography Preset', 'orbitools'),
-                'customPreset' => __('Custom Preset', 'orbitools'),
-                'noPreset'     => __('No Preset', 'orbitools'),
-                'noPresetsFound' => __('No typography presets found. Add presets to your theme.json file to use this feature.', 'orbitools'),
+                'selectPreset' => \__('Select Typography Preset', 'orbitools'),
+                'customPreset' => \__('Custom Preset', 'orbitools'),
+                'noPreset'     => \__('No Preset', 'orbitools'),
+                'noPresetsFound' => \__('No typography presets found. Add presets to your theme.json file to use this feature.', 'orbitools'),
             ),
         );
+        
+        
+        return $localized_data;
     }
 
     /**

@@ -145,18 +145,8 @@ class CSS_Generator
             $css_property = $this->sanitize_css_property($property);
             $css_value = $this->process_css_value($property, $value);
 
-            // Debug: Log when letter-spacing is being processed
-            if (strpos($property, 'letter') !== false || strpos($property, 'Letter') !== false) {
-                error_log("CSS Debug - Property: '$property', Sanitized: '$css_property', Value: '$value', Processed: '$css_value'");
-            }
-
             if ($css_property && $css_value !== null) {
                 $css_lines[] = sprintf('    %s: %s;', $css_property, $css_value);
-            } else {
-                // Debug: Log when properties are skipped
-                if (strpos($property, 'letter') !== false || strpos($property, 'Letter') !== false) {
-                    error_log("CSS Debug - SKIPPED - Property: '$property', Sanitized: '$css_property', Processed: '$css_value'");
-                }
             }
         }
 

@@ -15,7 +15,7 @@
  */
 
 import { Fragment } from '@wordpress/element';
-import { InspectorControls, BlockControls, AlignmentToolbar, useSetting } from '@wordpress/block-editor';
+import { InspectorControls, BlockControls, AlignmentToolbar, useSettings } from '@wordpress/block-editor';
 import {
     __experimentalToolsPanel as ToolsPanel,
     __experimentalToolsPanelItem as ToolsPanelItem,
@@ -173,7 +173,7 @@ export default function CollectionControls({ attributes, setAttributes }: Collec
     } = attributes;
 
     // Get spacing sizes from theme.json
-    const spacingSizes = useSetting('spacing.spacingSizes');
+    const [spacingSizes] = useSettings(['spacing.spacingSizes']);
 
     /**
      * Helper to update a single attribute

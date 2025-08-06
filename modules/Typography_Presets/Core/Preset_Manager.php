@@ -129,6 +129,10 @@ class Preset_Manager
         );
 
         $this->settings = wp_parse_args($admin_settings, $defaults);
+        
+        // Normalize checkbox values (AdminKit stores as '1' or empty string)
+        $this->settings['typography_show_groups_in_dropdown'] = !empty($this->settings['typography_show_groups_in_dropdown']) && $this->settings['typography_show_groups_in_dropdown'] !== '0';
+        $this->settings['typography_output_preset_css'] = !empty($this->settings['typography_output_preset_css']) && $this->settings['typography_output_preset_css'] !== '0';
     }
 
     /**
