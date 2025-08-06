@@ -36,9 +36,9 @@ module.exports = {
         // - JS ~ Module ~ Typography Presets
         'admin/js/modules/typography-presets/admin-handle-module-dashboard': path.resolve(process.cwd(), 'src', 'modules', 'typography-presets','admin', 'js','admin-handle-module-dashboard.js'),
         'admin/js/modules/typography-presets/editor-disable-core-typography-controls': path.resolve(process.cwd(), 'src', 'modules', 'typography-presets','admin', 'js','editor-disable-core-typography-controls.js'),
-        'admin/js/modules/typography-presets/editor-presets-attribute-registration': path.resolve(process.cwd(), 'src', 'modules', 'typography-presets','admin', 'js','editor-presets-attribute-registration'),
-        'admin/js/modules/typography-presets/editor-presets-classname-application': path.resolve(process.cwd(), 'src', 'modules', 'typography-presets','admin', 'js','editor-presets-classname-application'),
-        'admin/js/modules/typography-presets/editor-presets-register-controls': path.resolve(process.cwd(), 'src', 'modules', 'typography-presets','admin', 'js','editor-presets-register-controls'),
+        'admin/js/modules/typography-presets/editor-presets-attribute-registration': path.resolve(process.cwd(), 'src', 'modules', 'typography-presets','admin', 'js','editor-presets-attribute-registration.js'),
+        'admin/js/modules/typography-presets/editor-presets-classname-application': path.resolve(process.cwd(), 'src', 'modules', 'typography-presets','admin', 'js','editor-presets-classname-application.js'),
+        'admin/js/modules/typography-presets/editor-presets-register-controls': path.resolve(process.cwd(), 'src', 'modules', 'typography-presets','admin', 'js','editor-presets-register-controls.js'),
 
     },
     output: {
