@@ -16,4 +16,5 @@ export interface LayoutAttributes {
 export interface LayoutItemAttributes {
     width: string;
     parentItemWidth: 'fit' | 'equal' | 'custom';
+    gapSize?: string;
 }

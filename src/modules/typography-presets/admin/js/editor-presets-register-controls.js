@@ -41,25 +41,19 @@
                     wp.element.createElement(BlockEdit, props),
                     wp.element.createElement(
                         InspectorControls,
-                        { group: 'styles' },
+                        { group: 'typography' },
                         wp.element.createElement(
-                            ToolsPanel,
+                            ToolsPanelItem,
                             {
-                                label: 'Typography',
-                                resetAll: function() {
-                                    // Nothing to reset when no presets
-                                }
-                            },
-                            wp.element.createElement(
-                                ToolsPanelItem,
-                                {
-                                    hasValue: function() { return false; },
-                                    label: 'Preset',
-                                    onDeselect: function() {
-                                        // Nothing to deselect when no presets
-                                    },
-                                    isShownByDefault: true
+                                hasValue: function() { return false; },
+                                label: 'Preset',
+                                onDeselect: function() {
+                                    // Nothing to deselect when no presets
                                 },
+                                resetAllFilter: function() { return {}; },
+                                panelId: props.clientId,
+                                isShownByDefault: true
+                            },
                                 wp.element.createElement(
                                     'div',
                                     {
@@ -99,8 +93,7 @@
                                 )
                             )
                         )
-                    )
-                );
+                    );
             }
 
             const { attributes, setAttributes } = props;
@@ -173,25 +166,21 @@
                 wp.element.createElement(BlockEdit, props),
                 wp.element.createElement(
                     InspectorControls,
-                    { group: 'styles' },
+                    { group: 'typography' },
                     wp.element.createElement(
-                        ToolsPanel,
+                        ToolsPanelItem,
                         {
-                            label: 'Typography',
-                            resetAll: function() {
+                            hasValue: function() { return !!orbitoolsTypographyPreset; },
+                            label: 'Preset',
+                            onDeselect: function() {
                                 applyPresetToBlock(null, '', attributes, setAttributes);
-                            }
-                        },
-                        wp.element.createElement(
-                            ToolsPanelItem,
-                            {
-                                hasValue: function() { return !!orbitoolsTypographyPreset; },
-                                label: 'Preset',
-                                onDeselect: function() {
-                                    applyPresetToBlock(null, '', attributes, setAttributes);
-                                },
-                                isShownByDefault: true
                             },
+                            resetAllFilter: function() { 
+                                return { orbitoolsTypographyPreset: undefined }; 
+                            },
+                            panelId: props.clientId,
+                            isShownByDefault: true
+                        },
                             wp.element.createElement(ComboboxControl, {
                                 label: 'Preset',
                                 value: orbitoolsTypographyPreset || '',
@@ -270,8 +259,7 @@
                             )
                         )
                     )
-                )
-            );
+                );
         };
     }, 'withTypographyPresetControl');
 
@@ -279,6 +267,6 @@
         'editor.BlockEdit',
         'orbitools/add-preset-control',
         withTypographyPresetControl,
-        20  // Higher priority to ensure our controls show
+        5  // Very early priority to appear first in Typography panel
     );
 })();
