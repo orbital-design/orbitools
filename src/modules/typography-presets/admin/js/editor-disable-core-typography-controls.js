@@ -32,7 +32,7 @@
             }
 
             // Remove all typography supports
-            settings.supports.typography = false;
+            // settings.supports.typography = false;
             settings.supports.fontSize = false;
             settings.supports.lineHeight = false;
             settings.supports.__experimentalFontFamily = false;
@@ -40,9 +40,9 @@
             settings.supports.__experimentalFontWeight = false;
             settings.supports.__experimentalLineHeight = false;
             settings.supports.__experimentalLetterSpacing = false;
-            settings.supports.__experimentalTextDecoration = false;
-            settings.supports.__experimentalTextTransform = false;
-            settings.supports.__experimentalWritingMode = false;
+            // settings.supports.__experimentalTextDecoration = false;
+            // settings.supports.__experimentalTextTransform = false;
+            // settings.supports.__experimentalWritingMode = false;
 
             return settings;
         },
