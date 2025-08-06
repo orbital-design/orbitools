@@ -21,6 +21,14 @@ $elem_base: 'orb-entry';
     flex-direction: column;
     min-width: 0; /* Prevent overflow */
     position: relative;
+    box-sizing: border-box;
+
+    // Set a default gap.
+    gap: var(--gutter, var(--wp--style--block-gap, 20px));
+
+    // Gap Size Classes - Combined Dir and Wrap attrs
+    // Value: undefined → No data-gap -> Uses default gap above in core class
+    &[data-gap="spacing"] { gap: var(--orb-gap-size);}
 }
 
 // Parent Layout Classes - Controls classes on children, fit | equal/grow | 5 col grid | 12 col grid

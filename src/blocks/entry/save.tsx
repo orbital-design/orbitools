@@ -5,7 +5,7 @@ import type { LayoutItemAttributes } from '../types';
 import { buildEntryClasses, filterWordPressClasses, combineClasses } from '../utils/class-builders';
 
 const Save: React.FC<BlockSaveProps<LayoutItemAttributes>> = ({ attributes }) => {
-    const { width, parentItemWidth } = attributes;
+    const { width, parentItemWidth, gapSize } = attributes;
     
     const blockProps = useBlockProps.save();
     
@@ -23,9 +23,25 @@ const Save: React.FC<BlockSaveProps<LayoutItemAttributes>> = ({ attributes }) =>
     // Build semantic class names using utility functions
     const entryClasses = buildEntryClasses(width, shouldOutputWidthClass);
     const combinedClasses = combineClasses(entryClasses, filteredClasses);
+    
+    // Generate data attribute for gap spacing (matching Collection block approach)
+    const gapDataAttr: Record<string, string> = {};
+    if (gapSize !== undefined && gapSize !== null) {
+        gapDataAttr['data-gap'] = 'spacing';
+    }
+    
+    // Add CSS variable for custom gap spacing
+    const gapStyle = gapSize ? { '--orb-gap-size': gapSize } : {};
+
+    const finalProps = {
+        ...blockProps,
+        className: combinedClasses,
+        style: { ...blockProps.style, ...gapStyle },
+        ...gapDataAttr
+    };
 
     return (
-        <div {...blockProps} className={combinedClasses}>
+        <div {...finalProps}>
             <InnerBlocks.Content />
         </div>
     );

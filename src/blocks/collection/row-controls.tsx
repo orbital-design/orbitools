@@ -13,7 +13,7 @@
  */
 
 import { Fragment } from '@wordpress/element';
-import { InspectorControls, BlockControls, useSettings } from '@wordpress/block-editor';
+import { InspectorControls, BlockControls, useSetting } from '@wordpress/block-editor';
 import {
     __experimentalToolsPanel as ToolsPanel,
     __experimentalToolsPanelItem as ToolsPanelItem,
@@ -75,11 +75,21 @@ function getSpacingValueByIndex(spacingSizes: any[], index: number) {
 }
 
 /**
- * Helper to get spacing index by value
+ * Helper to get spacing index by value (now supports CSS variable references)
  */
 function getSpacingIndexByValue(spacingSizes: any[], value: string) {
     if (!spacingSizes || !Array.isArray(spacingSizes)) return -1;
     
+    // Handle CSS variable references (e.g., "var(--wp--preset--spacing--medium)")
+    if (value && value.startsWith('var(--wp--preset--spacing--')) {
+        const slug = value.match(/var\(--wp--preset--spacing--([^)]+)\)/)?.[1];
+        if (slug) {
+            const index = spacingSizes.findIndex((size: any) => size.slug === slug);
+            return index >= 0 ? index : -1;
+        }
+    }
+    
+    // Fallback: try to match by raw size value (for backward compatibility)
     const index = spacingSizes.findIndex((size: any) => size.size === value);
     return index >= 0 ? index : -1;
 }
@@ -502,7 +512,7 @@ export default function RowControls({ attributes, setAttributes }: RowControlsPr
      */
     const renderInspectorControls = () => {
         // Get spacing sizes from theme.json for the spacing control
-        const [spacingSizes] = useSettings(['spacing.spacingSizes']);
+        const spacingSizes = useSetting('spacing.spacingSizes');
         const currentGapSize = gapSize;
         const currentIndex = getSpacingIndexByValue(spacingSizes, currentGapSize || '');
         const maxIndex = spacingSizes ? spacingSizes.length - 1 : 0;
@@ -613,8 +623,14 @@ export default function RowControls({ attributes, setAttributes }: RowControlsPr
                                         updateAttribute('gapSize', '0');
                                     } else {
                                         // Index 2+ = Spacing values - shift back by 2 to get actual spacing index
-                                        const newValue = getSpacingValueByIndex(spacingSizes, index - 2);
-                                        updateAttribute('gapSize', newValue || undefined);
+                                        const spacingIndex = index - 2;
+                                        const spacing = spacingSizes && spacingSizes[spacingIndex];
+                                        if (spacing) {
+                                            // Store the CSS variable reference instead of raw value
+                                            updateAttribute('gapSize', `var(--wp--preset--spacing--${spacing.slug})`);
+                                        } else {
+                                            updateAttribute('gapSize', undefined);
+                                        }
                                     }
                                 }}
                                 min={0}

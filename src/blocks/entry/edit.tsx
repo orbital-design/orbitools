@@ -16,7 +16,7 @@ const Edit: React.FC<BlockEditProps<LayoutItemAttributes>> = ({
     context,
     clientId
 }) => {
-    const { width, parentItemWidth } = attributes;
+    const { width, parentItemWidth, gapSize } = attributes;
     const {
         'orb/layoutType': layoutType,
         'orb/itemWidth': itemWidth,
@@ -42,8 +42,19 @@ const Edit: React.FC<BlockEditProps<LayoutItemAttributes>> = ({
     // Build semantic class names using utility functions
     const entryClasses = buildEntryClasses(width, shouldShowWidthClass);
     
+    // Generate data attribute for gap spacing (matching Collection block approach)
+    const gapDataAttr: Record<string, string> = {};
+    if (gapSize !== undefined && gapSize !== null) {
+        gapDataAttr['data-gap'] = 'spacing';
+    }
+    
+    // Add CSS variable for custom gap spacing  
+    const gapStyle = gapSize ? { '--orb-gap-size': gapSize } : {};
+    
     const blockProps = useBlockProps({
-        className: entryClasses
+        className: entryClasses,
+        style: gapStyle,
+        ...gapDataAttr
     });
 
     return (

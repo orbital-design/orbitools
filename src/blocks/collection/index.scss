@@ -25,13 +25,10 @@ $elem_base: 'orb-collection';
         justify-content: flex-start;
         align-content: stretch;
         width: 100%;
+        box-sizing: border-box;
 
         // Set a default gap.
         gap: var(--gutter, var(--wp--style--block-gap, 20px));
-
-        &, > * {
-            box-sizing: border-box;
-        }
 
         // Gap Size Classes - Combined Dir and Wrap attrs
         // Value: undefined → No data-gap -> Uses default gap above in core class
@@ -70,9 +67,10 @@ $elem_base: 'orb-collection';
         // Stacked Mobile Classes - Controls whether children automatically stack on smaller screens
         // Only output when NOT 'false', default value is always true 'fit'
         &[data-stacked="true"]  {
-            flex-wrap: wrap !important;
-
             @media (max-width: 50.6875rem) {
+                flex-wrap: wrap !important;
+
+                &[data-layout="equal"],
                 &[data-layout=dodeca],
                 &[data-layout=penta] {
                     > .orb-entry {

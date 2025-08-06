@@ -22,7 +22,8 @@
         },
         "typography": {
             "textAlign": true
-        }
+        },
+        "shadow": true
     },
     "attributes": {
         "width": {
@@ -32,6 +33,9 @@
         "parentItemWidth": {
             "type": "string",
             "default": "equal"
+        },
+        "gapSize": {
+            "type": "string"
         }
     },
     "usesContext": [

@@ -9,7 +9,7 @@
  */
 
 import { Fragment, useMemo } from '@wordpress/element';
-import { InspectorControls } from '@wordpress/block-editor';
+import { InspectorControls, useSetting } from '@wordpress/block-editor';
 import {
     __experimentalToolsPanel as ToolsPanel,
     __experimentalToolsPanelItem as ToolsPanelItem,
@@ -103,6 +103,36 @@ function getColumnConfig(gridSystem: number) {
 }
 
 /**
+ * Helper to get spacing value by index
+ */
+function getSpacingValueByIndex(spacingSizes: any[], index: number) {
+    if (spacingSizes && Array.isArray(spacingSizes) && spacingSizes[index]) {
+        return spacingSizes[index].size;
+    }
+    return '';
+}
+
+/**
+ * Helper to get spacing index by value (now supports CSS variable references)
+ */
+function getSpacingIndexByValue(spacingSizes: any[], value: string) {
+    if (!spacingSizes || !Array.isArray(spacingSizes)) return -1;
+    
+    // Handle CSS variable references (e.g., "var(--wp--preset--spacing--medium)")
+    if (value && value.startsWith('var(--wp--preset--spacing--')) {
+        const slug = value.match(/var\(--wp--preset--spacing--([^)]+)\)/)?.[1];
+        if (slug) {
+            const index = spacingSizes.findIndex((size: any) => size.slug === slug);
+            return index >= 0 ? index : -1;
+        }
+    }
+    
+    // Fallback: try to match by raw size value (for backward compatibility)
+    const index = spacingSizes.findIndex((size: any) => size.size === value);
+    return index >= 0 ? index : -1;
+}
+
+/**
  * Helper function to create a ToolsPanelItem with consistent styling
  */
 function createToolsPanelItem(
@@ -130,12 +160,15 @@ function createToolsPanelItem(
  * Entry Block Controls Component
  */
 export default function EntryControls({ attributes, setAttributes, context }: EntryControlsProps) {
-    const { width } = attributes;
+    const { width, gapSize } = attributes;
     const { 
         'orb/layoutType': parentLayoutType = 'row',
         'orb/itemWidth': parentItemWidth = 'equal',
         'orb/columnSystem': parentColumnSystem = 12
     } = context;
+
+    // Get spacing sizes from theme.json
+    const spacingSizes = useSetting('spacing.spacingSizes');
 
     /**
      * Determine if width controls should be shown
@@ -189,34 +222,120 @@ export default function EntryControls({ attributes, setAttributes, context }: En
         return columnConfig.getValueLabel(sliderValue);
     };
 
-    // Don't render controls if not needed
-    if (!shouldShowWidthControls) {
-        return null;
-    }
+    /**
+     * Gap control functions
+     */
+    const currentGapSize = gapSize;
+    const currentGapIndex = getSpacingIndexByValue(spacingSizes, currentGapSize || '');
+    const maxGapIndex = spacingSizes ? spacingSizes.length - 1 : 0;
+    
+    const getCurrentGapName = () => {
+        if (!currentGapSize) return 'Default';
+        if (currentGapSize === '0') return 'None';
+        return spacingSizes && currentGapIndex >= 0 ? spacingSizes[currentGapIndex].name : currentGapSize;
+    };
+
+    const updateGapSize = (index: number) => {
+        if (index === 0) {
+            setAttributes({ gapSize: undefined });
+        } else if (index === 1) {
+            setAttributes({ gapSize: '0' });
+        } else {
+            const spacingIndex = index - 2;
+            const spacing = spacingSizes && spacingSizes[spacingIndex];
+            if (spacing) {
+                // Store the CSS variable reference instead of raw value
+                setAttributes({ gapSize: `var(--wp--preset--spacing--${spacing.slug})` });
+            } else {
+                setAttributes({ gapSize: undefined });
+            }
+        }
+    };
+
+    const resetGapSize = () => {
+        setAttributes({ gapSize: undefined });
+    };
+
+    const hasCustomGapSize = () => {
+        return gapSize !== undefined;
+    };
 
     return (
         <Fragment>
             <InspectorControls group="settings">
                 <ToolsPanel
                     label="Entry Settings"
-                    resetAll={resetWidth}
+                    resetAll={() => {
+                        resetWidth();
+                        resetGapSize();
+                    }}
                     panelId="entry-layout-panel"
                 >
-                    <p style={{ 
-                        fontSize: '13px', 
-                        color: '#757575', 
-                        margin: '0 0 16px 0',
-                        lineHeight: '1.4'
-                    }}>
-                        Set the column width within the {parentColumnSystem}-column grid layout.
-                    </p>
+                    {/* Width Control - only show for row layout with custom item width */}
+                    {shouldShowWidthControls && (
+                        <>
+                            <p style={{ 
+                                fontSize: '13px', 
+                                color: '#757575', 
+                                margin: '0 0 16px 0',
+                                lineHeight: '1.4'
+                            }}>
+                                Set the column width within the {parentColumnSystem}-column grid layout.
+                            </p>
 
-                    {/* Width Control */}
-                    {createToolsPanelItem(
-                        'width',
-                        hasCustomWidth,
-                        resetWidth,
-                        'Column Width',
+                            {createToolsPanelItem(
+                                'width',
+                                hasCustomWidth,
+                                resetWidth,
+                                'Column Width',
+                                <div>
+                                    <div style={{
+                                        display: 'flex',
+                                        justifyContent: 'space-between',
+                                        alignItems: 'center',
+                                        marginBottom: '8px'
+                                    }}>
+                                        <label style={{
+                                            fontSize: '11px',
+                                            fontWeight: '500',
+                                            textTransform: 'uppercase',
+                                            color: '#1e1e1e',
+                                            margin: 0
+                                        }}>
+                                            Column Width
+                                        </label>
+                                        <span style={{
+                                            fontSize: '13px',
+                                            fontWeight: '500',
+                                            color: '#757575'
+                                        }}>
+                                            {getCurrentLabel()}
+                                        </span>
+                                    </div>
+                                    <RangeControl
+                                        value={getCurrentSliderValue()}
+                                        onChange={updateColumnWidth}
+                                        min={0}
+                                        max={columnConfig.max}
+                                        step={1}
+                                        marks={columnConfig.marks}
+                                        withInputField={false}
+                                        renderTooltipContent={(value) => columnConfig.getTooltipLabel(value)}
+                                        __next40pxDefaultSize={true}
+                                        __nextHasNoMarginBottom={true}
+                                    />
+                                </div>,
+                                true
+                            )}
+                        </>
+                    )}
+
+                    {/* Gap Control */}
+                    {spacingSizes && createToolsPanelItem(
+                        'gapSize',
+                        hasCustomGapSize,
+                        resetGapSize,
+                        'Spacing',
                         <div>
                             <div style={{
                                 display: 'flex',
@@ -231,25 +350,30 @@ export default function EntryControls({ attributes, setAttributes, context }: En
                                     color: '#1e1e1e',
                                     margin: 0
                                 }}>
-                                    Column Width
+                                    Spacing
                                 </label>
                                 <span style={{
                                     fontSize: '13px',
                                     fontWeight: '500',
                                     color: '#757575'
                                 }}>
-                                    {getCurrentLabel()}
+                                    {getCurrentGapName()}
                                 </span>
                             </div>
                             <RangeControl
-                                value={getCurrentSliderValue()}
-                                onChange={updateColumnWidth}
+                                value={currentGapIndex === -1 ? (currentGapSize === '0' ? 1 : 0) : currentGapIndex + 2}
+                                onChange={updateGapSize}
                                 min={0}
-                                max={columnConfig.max}
+                                max={maxGapIndex + 2}
                                 step={1}
-                                marks={columnConfig.marks}
+                                marks={true}
                                 withInputField={false}
-                                renderTooltipContent={(value) => columnConfig.getTooltipLabel(value)}
+                                renderTooltipContent={(index) => {
+                                    if (index === 0) return 'Default';
+                                    if (index === 1) return 'None';
+                                    const spacing = spacingSizes && spacingSizes[index - 2];
+                                    return spacing ? spacing.name : 'None';
+                                }}
                                 __next40pxDefaultSize={true}
                                 __nextHasNoMarginBottom={true}
                             />
