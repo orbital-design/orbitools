@@ -3,5 +3,4 @@
 // Or without a prefix
 :root {
     @include generate-css-vars($orbi-breakpoints, 'orbi-bp');
-    @include generate-css-vars($wp-presets);
 }
