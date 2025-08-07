@@ -18,10 +18,12 @@
                 return wp.element.createElement(BlockListBlock, props);
             }
 
-            // Define allowed blocks (with fallback)
-            const allowedBlocks = moduleSettings.typography_allowed_blocks || [
-                'core/paragraph', 'core/heading', 'core/post-title', 'core/list', 'core/quote', 'core/button'
-            ];
+            // Get allowed blocks from settings  
+            const allowedBlocks = moduleSettings.typography_allowed_blocks;
+            
+            if (!Array.isArray(allowedBlocks) || allowedBlocks.length === 0) {
+                return wp.element.createElement(BlockListBlock, props);
+            }
 
             if (!allowedBlocks.includes(props.name)) {
                 return wp.element.createElement(BlockListBlock, props);
@@ -55,10 +57,12 @@
             return props;
         }
 
-        // Define allowed blocks (with fallback)
-        const allowedBlocks = moduleSettings.typography_allowed_blocks || [
-            'core/paragraph', 'core/heading', 'core/post-title', 'core/list', 'core/quote', 'core/button'
-        ];
+        // Get allowed blocks from settings
+        const allowedBlocks = moduleSettings.typography_allowed_blocks;
+        
+        if (!Array.isArray(allowedBlocks) || allowedBlocks.length === 0) {
+            return props;
+        }
 
         if (!allowedBlocks.includes(blockType.name)) {
             return props;

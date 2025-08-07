@@ -17,11 +17,12 @@
             if (!moduleSettings) {
                 return settings;
             }
-
-            // Define allowed blocks (with fallback)
-            const allowedBlocks = moduleSettings.allowed_blocks || [
-                'core/paragraph', 'core/heading', 'core/post-title', 'core/list', 'core/quote', 'core/buttons', 'core/button'
-            ];
+            // Get allowed blocks from settings
+            const allowedBlocks = moduleSettings.typography_allowed_blocks;
+            
+            if (!Array.isArray(allowedBlocks) || allowedBlocks.length === 0) {
+                return settings;
+            }
 
             if (!allowedBlocks.includes(name)) {
                 return settings;
@@ -30,12 +31,13 @@
             if (!settings.supports) {
                 settings.supports = {};
             }
-
+            console.log(settings.supports)
             // Remove all typography supports
             // settings.supports.typography = false;
             settings.supports.fontSize = false;
             settings.supports.lineHeight = false;
             settings.supports.__experimentalFontFamily = false;
+            settings.supports.__experimentalDefaultControls = false;
             settings.supports.__experimentalFontSize = false;
             settings.supports.__experimentalFontWeight = false;
             settings.supports.__experimentalLineHeight = false;

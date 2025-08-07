@@ -16,12 +16,11 @@ wp.hooks.addFilter(
 
         const moduleSettings = window.orbitoolsTypographyPresets.settings;
 
-        // Ensure allowed_blocks is an array
-        let allowedBlocks = moduleSettings.typography_allowed_blocks;
-        if (!Array.isArray(allowedBlocks)) {
-            allowedBlocks = [
-                'core/paragraph', 'core/heading', 'core/post-title', 'core/list', 'core/quote', 'core/button'
-            ];
+        // Get allowed blocks from settings
+        const allowedBlocks = moduleSettings.typography_allowed_blocks;
+        
+        if (!Array.isArray(allowedBlocks) || allowedBlocks.length === 0) {
+            return settings;
         }
 
         if (allowedBlocks.includes(name)) {

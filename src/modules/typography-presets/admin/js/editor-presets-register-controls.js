@@ -24,10 +24,12 @@
             // Check if we have any presets to work with
             const hasPresets = presets && Object.keys(presets).length > 0;
 
-            // Define allowed blocks (with fallback)
-            const allowedBlocks = settings.typography_allowed_blocks || [
-                'core/paragraph', 'core/heading', 'core/post-title', 'core/list', 'core/quote', 'core/button'
-            ];
+            // Get allowed blocks from settings
+            const allowedBlocks = settings.typography_allowed_blocks;
+            
+            if (!Array.isArray(allowedBlocks) || allowedBlocks.length === 0) {
+                return wp.element.createElement(BlockEdit, props);
+            }
 
             if (!allowedBlocks.includes(props.name)) {
                 return wp.element.createElement(BlockEdit, props);
@@ -175,8 +177,8 @@
                             onDeselect: function() {
                                 applyPresetToBlock(null, '', attributes, setAttributes);
                             },
-                            resetAllFilter: function() { 
-                                return { orbitoolsTypographyPreset: undefined }; 
+                            resetAllFilter: function() {
+                                return { orbitoolsTypographyPreset: undefined };
                             },
                             panelId: props.clientId,
                             isShownByDefault: true
