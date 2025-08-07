@@ -53,14 +53,7 @@ class Settings
             'typography_presets_enabled' => false,
             'typography_show_groups_in_dropdown' => false,
             'typography_output_preset_css' => true,
-            'typography_allowed_blocks' => array(
-                'core/paragraph',
-                'core/heading',
-                'core/post-title',
-                'core/list',
-                'core/quote',
-                'core/button',
-            ),
+            'typography_allowed_blocks' => \Orbitools\Modules\Typography_Presets\Typography_Presets::DEFAULT_ALLOWED_BLOCKS,
         );
     }
 
@@ -115,20 +108,15 @@ class Settings
                     'core/heading' => __('Heading', 'orbitools'),
                     'core/post-title' => __('Title', 'orbitools'),
                     'core/list' => __('List', 'orbitools'),
+                    'core/list-item' => __('List Item', 'orbitools'),
                     'core/quote' => __('Quote', 'orbitools'),
                     'core/button' => __('Button', 'orbitools'),
                     'core/group' => __('Group', 'orbitools'),
                     'core/column' => __('Column', 'orbitools'),
                     'core/cover' => __('Cover', 'orbitools'),
+                    'core/pullquote' => __('Pullquote', 'orbitools')
                 ),
-                'std'     => array(
-                    'core/paragraph',
-                    'core/heading',
-                    'core/list',
-                    'core/quote',
-                    'core/button',
-                    'core/post-title'
-                ),
+                'std'     => \Orbitools\Modules\Typography_Presets\Typography_Presets::DEFAULT_ALLOWED_BLOCKS,
                 'section' => 'typography',
             ),
         );

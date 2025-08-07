@@ -42,6 +42,22 @@ class Typography_Presets extends Module_Base
     protected const VERSION = '1.0.0';
 
     /**
+     * Default allowed blocks for typography presets
+     *
+     * @since 1.0.0
+     */
+    public const DEFAULT_ALLOWED_BLOCKS = [
+        'core/paragraph',
+        'core/heading',
+        'core/post-title',
+        'core/list',
+        'core/list-item',
+        'core/quote',
+        'core/button',
+        'core/pullquote'
+    ];
+
+    /**
      * Admin handler instance
      *
      * @since 1.0.0
@@ -146,14 +162,7 @@ class Typography_Presets extends Module_Base
             'typography-presets_custom_fonts_enabled' => true,
             'typography-presets_google_fonts_enabled' => true,
             'typography-presets_presets' => [],
-            'typography-presets_allowed_blocks' => [
-                'core/paragraph',
-                'core/heading',
-                'core/post-title',
-                'core/list',
-                'core/quote',
-                'core/button'
-            ]
+            'typography-presets_allowed_blocks' => self::DEFAULT_ALLOWED_BLOCKS
         ];
     }
 
@@ -221,8 +230,10 @@ class Typography_Presets extends Module_Base
 
         foreach ($registered_blocks as $block_name => $block_type) {
             // Check if this block type is supported and is dynamic (has render_callback)
-            if ($this->is_supported_block($block_name) &&
-                ($block_type->render_callback !== null || $block_type->is_dynamic())) {
+            if (
+                $this->is_supported_block($block_name) &&
+                ($block_type->render_callback !== null || $block_type->is_dynamic())
+            ) {
 
                 // Add specific filter for this dynamic block
                 $filter_name = 'render_block_' . $block_name;
@@ -242,8 +253,10 @@ class Typography_Presets extends Module_Base
     public function apply_typography_classes_to_dynamic_block($block_content, $block): string
     {
         // Check if block has typography preset attribute
-        if (!isset($block['attrs']['orbitoolsTypographyPreset']) ||
-            empty($block['attrs']['orbitoolsTypographyPreset'])) {
+        if (
+            !isset($block['attrs']['orbitoolsTypographyPreset']) ||
+            empty($block['attrs']['orbitoolsTypographyPreset'])
+        ) {
             return $block_content;
         }
 
@@ -262,7 +275,7 @@ class Typography_Presets extends Module_Base
         // This handles most block structures
         $block_content = preg_replace_callback(
             '/^(\s*)(<[a-zA-Z0-9]+)(\s+[^>]*class="([^"]*)"[^>]*)(>)/i',
-            function($matches) use ($preset_class) {
+            function ($matches) use ($preset_class) {
                 $leading_space = $matches[1];
                 $tag_start = $matches[2];
                 $attributes = $matches[3];
@@ -310,14 +323,7 @@ class Typography_Presets extends Module_Base
 
         // If setting is empty (not configured yet), use sensible defaults
         if (empty($allowed_blocks)) {
-            $allowed_blocks = [
-                'core/paragraph',
-                'core/heading',
-                'core/post-title',
-                'core/list',
-                'core/quote',
-                'core/button'
-            ];
+            $allowed_blocks = self::DEFAULT_ALLOWED_BLOCKS;
         }
 
         // Allow filtering of supported blocks
