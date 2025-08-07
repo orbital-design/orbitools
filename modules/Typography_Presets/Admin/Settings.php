@@ -106,6 +106,7 @@ class Settings
                 'options' => array(
                     'core/paragraph' => __('Paragraph', 'orbitools'),
                     'core/heading' => __('Heading', 'orbitools'),
+                    'core/details' => __('Details', 'orbitools'),
                     'core/post-title' => __('Title', 'orbitools'),
                     'core/list' => __('List', 'orbitools'),
                     'core/list-item' => __('List Item', 'orbitools'),

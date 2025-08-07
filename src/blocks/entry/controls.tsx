@@ -9,7 +9,7 @@
  */
 
 import { Fragment, useMemo } from '@wordpress/element';
-import { InspectorControls, useSetting } from '@wordpress/block-editor';
+import { InspectorControls, useSettings } from '@wordpress/block-editor';
 import {
     __experimentalToolsPanel as ToolsPanel,
     __experimentalToolsPanelItem as ToolsPanelItem,
@@ -168,7 +168,7 @@ export default function EntryControls({ attributes, setAttributes, context }: En
     } = context;
 
     // Get spacing sizes from theme.json
-    const spacingSizes = useSetting('spacing.spacingSizes');
+    const [spacingSizes] = useSettings(['spacing.spacingSizes']);
 
     /**
      * Determine if width controls should be shown

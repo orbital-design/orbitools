@@ -49,6 +49,7 @@ class Typography_Presets extends Module_Base
     public const DEFAULT_ALLOWED_BLOCKS = [
         'core/paragraph',
         'core/heading',
+        'core/details',
         'core/post-title',
         'core/list',
         'core/list-item',

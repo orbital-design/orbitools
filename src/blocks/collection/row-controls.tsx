@@ -13,7 +13,7 @@
  */
 
 import { Fragment } from '@wordpress/element';
-import { InspectorControls, BlockControls, useSetting } from '@wordpress/block-editor';
+import { InspectorControls, BlockControls, useSettings } from '@wordpress/block-editor';
 import {
     __experimentalToolsPanel as ToolsPanel,
     __experimentalToolsPanelItem as ToolsPanelItem,
@@ -512,7 +512,7 @@ export default function RowControls({ attributes, setAttributes }: RowControlsPr
      */
     const renderInspectorControls = () => {
         // Get spacing sizes from theme.json for the spacing control
-        const spacingSizes = useSetting('spacing.spacingSizes');
+        const [spacingSizes] = useSettings(['spacing.spacingSizes']);
         const currentGapSize = gapSize;
         const currentIndex = getSpacingIndexByValue(spacingSizes, currentGapSize || '');
         const maxIndex = spacingSizes ? spacingSizes.length - 1 : 0;
