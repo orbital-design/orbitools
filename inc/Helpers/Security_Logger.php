@@ -58,6 +58,15 @@ class Security_Logger
         'UPDATE_CHECK' => 'Update Check Performed',
         'PACKAGE_CORRUPT' => 'Package Integrity Failed',
         'PACKAGE_SIZE_WARNING' => 'Suspicious Package Size',
+        'PACKAGE_SUSPICIOUS' => 'Suspicious Package Content',
+        'PACKAGE_MALICIOUS' => 'Malicious Package Detected',
+        'PACKAGE_WARNING' => 'Package Verification Warning',
+        'PACKAGE_VERIFIED' => 'Package Successfully Verified',
+        'PACKAGE_CHECKSUM_ERROR' => 'Package Checksum Error',
+        'PACKAGE_CHECKSUM_VERIFIED' => 'Package Checksum Verified',
+        'PACKAGE_CHECKSUM_MISMATCH' => 'Package Checksum Mismatch',
+        'PACKAGE_CHECKSUM_GENERATED' => 'Package Checksum Generated',
+        'PACKAGE_VERIFICATION_FAILED' => 'Package Verification Failed',
         'ADMIN_ACCESS' => 'Admin Area Access',
         'SETTINGS_CHANGED' => 'Plugin Settings Modified',
         'MODULE_TOGGLED' => 'Module Enabled/Disabled',
@@ -104,11 +113,11 @@ class Security_Logger
         }
 
         $log_entry = array(
-            'timestamp' => current_time('mysql'),
+            'timestamp' => \current_time('mysql'),
             'event_type' => $event_type,
             'event_name' => self::EVENT_TYPES[$event_type],
             'severity' => $this->validate_severity($severity),
-            'user_id' => get_current_user_id(),
+            'user_id' => \get_current_user_id(),
             'user_login' => $this->get_current_user_login(),
             'user_ip' => $this->get_user_ip(),
             'user_agent' => $this->get_user_agent(),
@@ -179,7 +188,7 @@ class Security_Logger
      */
     public function get_log_entries(int $limit = 50, string $severity = ''): array
     {
-        $security_log = get_option('orbitools_security_log', array());
+        $security_log = \get_option('orbitools_security_log', array());
         
         // Filter by severity if specified
         if (!empty($severity)) {
@@ -200,7 +209,7 @@ class Security_Logger
     public function clear_log(): bool
     {
         $this->log_event('SECURITY_SCAN', array('action' => 'log_cleared'));
-        return delete_option('orbitools_security_log');
+        return \delete_option('orbitools_security_log');
     }
 
     /**
@@ -211,7 +220,7 @@ class Security_Logger
      */
     public function get_security_stats(): array
     {
-        $security_log = get_option('orbitools_security_log', array());
+        $security_log = \get_option('orbitools_security_log', array());
         $stats = array(
             'total_events' => count($security_log),
             'events_by_type' => array(),
@@ -261,7 +270,7 @@ class Security_Logger
      */
     private function get_current_user_login(): string
     {
-        $user = wp_get_current_user();
+        $user = \wp_get_current_user();
         return $user && $user->exists() ? $user->user_login : 'anonymous';
     }
 
@@ -277,7 +286,7 @@ class Security_Logger
         
         foreach ($ip_keys as $key) {
             if (!empty($_SERVER[$key])) {
-                $ip = sanitize_text_field($_SERVER[$key]);
+                $ip = \sanitize_text_field($_SERVER[$key]);
                 
                 // Handle comma-separated IPs
                 if (strpos($ip, ',') !== false) {
@@ -302,7 +311,7 @@ class Security_Logger
      */
     private function get_user_agent(): string
     {
-        return isset($_SERVER['HTTP_USER_AGENT']) ? substr(sanitize_text_field($_SERVER['HTTP_USER_AGENT']), 0, 255) : '';
+        return isset($_SERVER['HTTP_USER_AGENT']) ? substr(\sanitize_text_field($_SERVER['HTTP_USER_AGENT']), 0, 255) : '';
     }
 
     /**
@@ -313,7 +322,7 @@ class Security_Logger
      */
     private function get_request_uri(): string
     {
-        return isset($_SERVER['REQUEST_URI']) ? substr(sanitize_text_field($_SERVER['REQUEST_URI']), 0, 255) : '';
+        return isset($_SERVER['REQUEST_URI']) ? substr(\sanitize_text_field($_SERVER['REQUEST_URI']), 0, 255) : '';
     }
 
     /**
@@ -328,10 +337,10 @@ class Security_Logger
         $sanitized = array();
         
         foreach ($context as $key => $value) {
-            $key = sanitize_key($key);
+            $key = \sanitize_key($key);
             
             if (is_string($value)) {
-                $sanitized[$key] = substr(sanitize_text_field($value), 0, 500);
+                $sanitized[$key] = substr(\sanitize_text_field($value), 0, 500);
             } elseif (is_numeric($value)) {
                 $sanitized[$key] = $value;
             } elseif (is_bool($value)) {
@@ -355,7 +364,7 @@ class Security_Logger
      */
     private function store_log_entry(array $log_entry): void
     {
-        $security_log = get_option('orbitools_security_log', array());
+        $security_log = \get_option('orbitools_security_log', array());
         array_unshift($security_log, $log_entry);
         
         // Keep only the most recent entries
@@ -363,7 +372,7 @@ class Security_Logger
             $security_log = array_slice($security_log, 0, self::MAX_LOG_ENTRIES);
         }
         
-        update_option('orbitools_security_log', $security_log);
+        \update_option('orbitools_security_log', $security_log);
     }
 
     /**
@@ -375,17 +384,49 @@ class Security_Logger
      */
     private function send_security_alert(array $log_entry): void
     {
-        // Get admin email
-        $admin_email = get_option('admin_email');
-        if (!$admin_email) {
+        // Get admin email and validate
+        $admin_email = \get_option('admin_email');
+        if (!$admin_email || !\is_email($admin_email)) {
             return;
+        }
+
+        // Validate required log entry fields
+        $required_fields = array('event_name', 'timestamp', 'user_login', 'user_id', 'user_ip', 'user_agent', 'request_uri', 'context');
+        foreach ($required_fields as $field) {
+            if (!isset($log_entry[$field])) {
+                error_log('ORBITOOLS_SECURITY: Missing required field for email alert: ' . $field);
+                return;
+            }
+        }
+
+        $site_name = \get_bloginfo('name');
+        if (!$site_name) {
+            $site_name = 'WordPress Site';
         }
 
         $subject = sprintf(
             '[%s] Critical Security Alert: %s',
-            get_bloginfo('name'),
-            $log_entry['event_name']
+            \sanitize_text_field($site_name),
+            \sanitize_text_field($log_entry['event_name'])
         );
+
+        // Sanitize all message components
+        $event_name = \sanitize_text_field($log_entry['event_name']);
+        $timestamp = \sanitize_text_field($log_entry['timestamp']);
+        $user_login = \sanitize_text_field($log_entry['user_login']);
+        $user_id = intval($log_entry['user_id']);
+        $user_ip = \sanitize_text_field($log_entry['user_ip']);
+        $user_agent = \sanitize_text_field(substr($log_entry['user_agent'], 0, 100)); // Limit length
+        $request_uri = \sanitize_text_field(substr($log_entry['request_uri'], 0, 100)); // Limit length
+        
+        // Safely encode context
+        $context_json = '';
+        if (is_array($log_entry['context'])) {
+            $context_json = \wp_json_encode($log_entry['context']);
+            if ($context_json === false) {
+                $context_json = 'Unable to serialize context data';
+            }
+        }
 
         $message = sprintf(
             "A critical security event has been detected on your WordPress site:\n\n" .
@@ -398,21 +439,28 @@ class Security_Logger
             "Context: %s\n\n" .
             "Please review your site's security logs immediately.\n\n" .
             "This is an automated security notification from the Orbitools plugin.",
-            $log_entry['event_name'],
-            $log_entry['timestamp'],
-            $log_entry['user_login'],
-            $log_entry['user_id'],
-            $log_entry['user_ip'],
-            $log_entry['user_agent'],
-            $log_entry['request_uri'],
-            wp_json_encode($log_entry['context'])
+            $event_name,
+            $timestamp,
+            $user_login,
+            $user_id,
+            $user_ip,
+            $user_agent,
+            $request_uri,
+            $context_json
         );
 
         // Only send if we haven't sent an alert in the last hour (prevent spam)
-        $last_alert = get_transient('orbitools_last_security_alert');
+        $last_alert = \get_transient('orbitools_last_security_alert');
         if (!$last_alert) {
-            wp_mail($admin_email, $subject, $message);
-            set_transient('orbitools_last_security_alert', time(), HOUR_IN_SECONDS);
+            // Use error suppression and check result to prevent recovery mode triggers
+            $mail_result = @\wp_mail($admin_email, $subject, $message);
+            
+            if ($mail_result) {
+                \set_transient('orbitools_last_security_alert', time(), \HOUR_IN_SECONDS);
+            } else {
+                // Log email failure but don't let it trigger recovery mode
+                error_log('ORBITOOLS_SECURITY: Failed to send security alert email');
+            }
         }
     }
 }
