@@ -3,6 +3,7 @@ import { InnerBlocks, useBlockProps } from '@wordpress/block-editor';
 import type { BlockSaveProps } from '@wordpress/blocks';
 import type { LayoutItemAttributes } from '../types';
 import { buildEntryClasses, filterWordPressClasses, combineClasses } from '../utils/class-builders';
+import { getSpacingClasses } from '../utils/spacing-control';
 
 const Save: React.FC<BlockSaveProps<LayoutItemAttributes>> = ({ attributes }) => {
     const { width, parentItemWidth, gapSize } = attributes;
@@ -22,22 +23,15 @@ const Save: React.FC<BlockSaveProps<LayoutItemAttributes>> = ({ attributes }) =>
     
     // Build semantic class names using utility functions
     const entryClasses = buildEntryClasses(width, shouldOutputWidthClass);
-    const combinedClasses = combineClasses(entryClasses, filteredClasses);
     
-    // Generate data attribute for gap spacing (matching Collection block approach)
-    const gapDataAttr: Record<string, string> = {};
-    if (gapSize !== undefined && gapSize !== null) {
-        gapDataAttr['data-gap'] = 'spacing';
-    }
-    
-    // Add CSS variable for custom gap spacing
-    const gapStyle = gapSize ? { '--orb-gap-size': gapSize } : {};
+    // Generate responsive spacing classes
+    const spacingClasses = getSpacingClasses(gapSize || {});
+    const combinedClasses = combineClasses(entryClasses, spacingClasses, filteredClasses);
 
     const finalProps = {
         ...blockProps,
         className: combinedClasses,
-        style: { ...blockProps.style, ...gapStyle },
-        ...gapDataAttr
+        style: blockProps.style
     };
 
     return (

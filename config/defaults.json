@@ -1,0 +1,137 @@
+{
+    "defaults": {
+        "spacings": [
+            {
+                "size": "clamp(0.25rem, 0.2261rem + 0.1064vw, 0.3125rem)",
+                "slug": "1",
+                "name": "4px -> 5px"
+            },
+            {
+                "size": "clamp(0.4375rem, 0.3657rem + 0.3191vw, 0.625rem)",
+                "slug": "2",
+                "name": "7px -> 10px"
+            },
+            {
+                "size": "clamp(0.6875rem, 0.5918rem + 0.4255vw, 0.9375rem)",
+                "slug": "3",
+                "name": "11px -> 15px"
+            },
+            {
+                "size": "clamp(0.875rem, 0.7314rem + 0.6383vw, 1.25rem)",
+                "slug": "4",
+                "name": "14px -> 20px"
+            },
+            {
+                "size": "clamp(1.125rem, 0.9574rem + 0.7447vw, 1.5625rem)",
+                "slug": "5",
+                "name": "18px -> 25px"
+            },
+            {
+                "size": "clamp(1.3125rem, 1.0971rem + 0.9574vw, 1.875rem)",
+                "slug": "6",
+                "name": "21px -> 30px"
+            },
+            {
+                "size": "clamp(1.75rem, 1.4628rem + 1.2766vw, 2.5rem)",
+                "slug": "7",
+                "name": "28px -> 40px"
+            },
+            {
+                "size": "clamp(2.625rem, 2.1941rem + 1.9149vw, 3.75rem)",
+                "slug": "8",
+                "name": "42px -> 60px"
+            },
+            {
+                "size": "clamp(3.5rem, 2.9255rem + 2.5532vw, 5rem)",
+                "slug": "9",
+                "name": "56px -> 80px"
+            }
+        ],
+        "breakpoints": [
+            {
+                "value": "50.6875rem",
+                "slug": "sm",
+                "name": "810px"
+            },
+            {
+                "value": "67.5625rem",
+                "slug": "md",
+                "name": "1080px"
+            },
+            {
+                "value": "85rem",
+                "slug": "lg",
+                "name": "1360px"
+            },
+            {
+                "value": "100rem",
+                "slug": "xl",
+                "name": "1600px"
+            }
+        ]
+    },
+    "modules": {
+        "typographyPresets": {
+            "groups": {
+                "heading": {
+                    "title": "Headings & Standouts"
+                },
+                "body": {
+                    "title": "Body Text"
+                },
+                "nav": {
+                    "title": "Navigation"
+                }
+            },
+            "items": {
+                "arial-body-18-500": {
+                    "label": "Body • Med • Arial",
+                    "group": "body",
+                    "properties": {
+                        "font-family": "Arial, Helvetica, sans-serif",
+                        "font-weight": 500,
+                        "font-size": "18px",
+                        "line-height": "24px",
+                        "letter-spacing": "0px"
+                    }
+                },
+                "arial-heading-50-700": {
+                    "label": "Heading • 700 • Ariel",
+                    "group": "heading",
+                    "properties": {
+                        "font-family": "Arial, Helvetica, sans-serif",
+                        "font-weight": 700,
+                        "font-size": "50px",
+                        "line-height": "60px",
+                        "letter-spacing": "0px"
+                    }
+                },
+                "masthead": {
+                    "label": "Masthead",
+                    "group": "nav",
+                    "properties": {
+                        "font-family": "Arial, Helvetica, sans-serif",
+                        "font-weight": 500,
+                        "font-size": "14px",
+                        "line-height": "18px",
+                        "letter-spacing": "0px",
+                        "text-decoration": "none"
+                    }
+                },
+                "breadcrumbs": {
+                    "label": "Breadcrumbs",
+                    "group": "nav",
+                    "properties": {
+                        "font-family": "Arial, Helvetica, sans-serif",
+                        "font-weight": 500,
+                        "font-size": "10px",
+                        "line-height": "15px",
+                        "letter-spacing": "0.15px",
+                        "text-transform": "none",
+                        "text-decoration": "none"
+                    }
+                }
+            }
+        }
+    }
+}

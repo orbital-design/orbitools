@@ -8,8 +8,6 @@ import type { LayoutAttributes } from '../types';
 
 import './index.scss';
 
-
-
 const blockConfig: BlockConfiguration<LayoutAttributes> = {
     ...metadata,
     edit: Edit,

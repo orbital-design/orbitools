@@ -1,9 +1,9 @@
 /**
  * Shared utilities for generating flex layout data attributes
- * 
+ *
  * This ensures consistency between edit and save components by using
  * the same logic for generating data attributes across both contexts.
- * 
+ *
  * @file blocks/utils/flex-attributes.ts
  * @since 1.0.0
  */
@@ -58,31 +58,30 @@ const VALUE_MAPPINGS = {
 
 /**
  * Generate flex layout data attributes for clean, semantic HTML
- * 
+ *
  * Only outputs non-default values to keep HTML minimal and clean.
  * Maps complex CSS values to simpler, more semantic attribute names.
- * 
+ *
  * @param attributes - Block attributes from Collection block
  * @param blockProps - Optional WordPress block props for context detection
  * @returns Object with data-* attributes for the HTML element
  */
 export function generateFlexAttributes(
-    attributes: LayoutAttributes, 
+    attributes: LayoutAttributes,
     blockProps?: any
 ): Record<string, string> {
     const dataAttrs: Record<string, string> = {};
-    
+
     // Extract values with fallbacks to defaults
     const direction = attributes.flexDirection || FLEX_DEFAULTS.flexDirection;
     const flexWrap = attributes.flexWrap || FLEX_DEFAULTS.flexWrap;
     const alignItems = attributes.alignItems || FLEX_DEFAULTS.alignItems;
     const justifyContent = attributes.justifyContent || FLEX_DEFAULTS.justifyContent;
-    const gapSize = attributes.gapSize;
     const restrictContentWidth = attributes.restrictContentWidth || FLEX_DEFAULTS.restrictContentWidth;
     const stackOnMobile = attributes.stackOnMobile !== false; // Default true unless explicitly false
     const itemWidth = attributes.itemWidth || FLEX_DEFAULTS.itemWidth;
     const columnSystem = attributes.columnSystem || FLEX_DEFAULTS.columnSystem;
-    
+
     // Flex flow: Combine direction and wrap into single data attribute
     // Only add if not default combination (row nowrap)
     const isDefaultFlow = direction === FLEX_DEFAULTS.flexDirection && flexWrap === FLEX_DEFAULTS.flexWrap;
@@ -90,34 +89,28 @@ export function generateFlexAttributes(
         // Create flex-flow value: "direction wrap" (e.g., "row wrap", "column nowrap")
         dataAttrs['data-flow'] = `${direction} ${flexWrap}`;
     }
-    
+
     // Cross-axis alignment: Only add if not default (stretch)
     if (alignItems !== FLEX_DEFAULTS.alignItems) {
         dataAttrs['data-align'] = VALUE_MAPPINGS.alignItems[alignItems] || alignItems;
     }
-    
+
     // Main-axis alignment: Only add if not default (flex-start)
     if (justifyContent !== FLEX_DEFAULTS.justifyContent) {
         dataAttrs['data-justify'] = VALUE_MAPPINGS.justifyContent[justifyContent] || justifyContent;
     }
-    
-    // Gap spacing: Use semantic "spacing" attribute when gap is set
-    // CSS var --orb-gap-size will be set via style attribute
-    if (gapSize !== undefined && gapSize !== null) {
-        dataAttrs['data-gap'] = 'spacing';
-    }
-    
+
     // Content constraint: Only for full-width blocks with constraint enabled
     const isFullWidth = blockProps?.className?.includes('alignfull') || false;
     if (restrictContentWidth && isFullWidth) {
         dataAttrs['data-constrain'] = 'true';
     }
-    
+
     // Mobile stacking: Only add if enabled (which is default)
     if (stackOnMobile) {
         dataAttrs['data-stacked'] = 'true';
     }
-    
+
     // Layout mode: Only add non-default item width modes
     if (itemWidth !== FLEX_DEFAULTS.itemWidth) {
         if (itemWidth === 'custom') {
@@ -127,6 +120,6 @@ export function generateFlexAttributes(
             dataAttrs['data-layout'] = itemWidth; // 'equal'
         }
     }
-    
+
     return dataAttrs;
 }

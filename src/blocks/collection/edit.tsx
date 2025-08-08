@@ -10,7 +10,8 @@ import type { BlockEditProps } from '@wordpress/blocks';
 import type { LayoutAttributes } from '../types';
 import CollectionControls from './controls';
 import { generateFlexAttributes } from '../utils/flex-attributes';
-import { buildCollectionClasses, COLLECTION_LIMITS } from '../utils/class-builders';
+import { buildCollectionClasses, COLLECTION_LIMITS, combineClasses } from '../utils/class-builders';
+import { getSpacingClasses } from '../utils/spacing-control';
 
 const ALLOWED_BLOCKS = ['orb/entry'];
 
@@ -127,17 +128,17 @@ const Edit: React.FC<BlockEditProps<LayoutAttributes>> = ({
     // Build semantic class names using utility functions
     const collectionClasses = buildCollectionClasses(layoutType, itemWidth, columnSystem);
     
-    // Add CSS variable for custom gap spacing
-    const { gapSize } = attributes;
-    const gapStyle = gapSize ? { '--orb-gap-size': gapSize } : {};
+    // Generate responsive spacing classes
+    const { orbGap } = attributes;
+    const spacingClasses = getSpacingClasses(orbGap || {});
+    const allClasses = combineClasses(collectionClasses, spacingClasses);
     
     // Generate data attributes for layout consistency with save component  
     const tempBlockProps = useBlockProps();
     const flexAttributes = generateFlexAttributes(attributes, tempBlockProps);
     
     const blockProps = useBlockProps({
-        className: needsWrapper ? undefined : collectionClasses,
-        style: needsWrapper ? undefined : gapStyle,
+        className: needsWrapper ? undefined : allClasses,
         ...(needsWrapper ? {} : flexAttributes)
     });
 
@@ -150,7 +151,7 @@ const Edit: React.FC<BlockEditProps<LayoutAttributes>> = ({
             
             <div {...blockProps}>
                 {needsWrapper ? (
-                    <div className={collectionClasses} {...flexAttributes} style={gapStyle}>
+                    <div className={allClasses} {...flexAttributes}>
                         <InnerBlocks
                             allowedBlocks={ALLOWED_BLOCKS}
                             template={TEMPLATE}

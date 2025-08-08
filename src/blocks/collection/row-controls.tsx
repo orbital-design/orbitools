@@ -14,6 +14,8 @@
 
 import { Fragment } from '@wordpress/element';
 import { InspectorControls, BlockControls, useSettings } from '@wordpress/block-editor';
+import SpacingControl, { getSpacingClasses } from '../utils/spacing-control';
+import type { ResponsiveValue } from '../utils/responsive-controls';
 import {
     __experimentalToolsPanel as ToolsPanel,
     __experimentalToolsPanelItem as ToolsPanelItem,
@@ -178,7 +180,7 @@ export default function RowControls({ attributes, setAttributes }: RowControlsPr
         alignItems = ROW_DEFAULTS.alignItems,
         justifyContent = ROW_DEFAULTS.justifyContent,
         stackOnMobile = ROW_DEFAULTS.stackOnMobile,
-        gapSize,
+        orbGap,
     } = attributes;
 
     /**
@@ -511,18 +513,10 @@ export default function RowControls({ attributes, setAttributes }: RowControlsPr
      * Inspector panel controls for row-specific settings
      */
     const renderInspectorControls = () => {
-        // Get spacing sizes from theme.json for the spacing control
-        const [spacingSizes] = useSettings('spacing.spacingSizes');
-        const currentGapSize = gapSize;
-        const currentIndex = getSpacingIndexByValue(spacingSizes, currentGapSize || '');
-        const maxIndex = spacingSizes ? spacingSizes.length - 1 : 0;
-        
-        // Get current spacing name for display
-        const currentSpacingName = !currentGapSize 
-            ? 'Default'
-            : currentGapSize === '0' 
-                ? 'None' 
-                : (spacingSizes && currentIndex >= 0 ? spacingSizes[currentIndex].name : currentGapSize);
+        // Handle responsive spacing
+        const handleSpacingChange = (newSpacing: ResponsiveValue<string>) => {
+            updateAttribute('orbGap', newSpacing);
+        };
 
         return (
             <InspectorControls group="settings">
@@ -531,7 +525,7 @@ export default function RowControls({ attributes, setAttributes }: RowControlsPr
                     label="Layout"
                     resetAll={() => {
                         updateAttribute('columnCount', ROW_DEFAULTS.columnCount);
-                        updateAttribute('gapSize', undefined);
+                        updateAttribute('orbGap', undefined);
                         updateAttribute('stackOnMobile', ROW_DEFAULTS.stackOnMobile);
                     }}
                     panelId="collection-row-layout-panel"
@@ -582,75 +576,6 @@ export default function RowControls({ attributes, setAttributes }: RowControlsPr
                         true
                     )}
 
-                    {/* Spacing Control */}
-                    {spacingSizes && createToolsPanelItem(
-                        'gapSize',
-                        () => hasNonDefaultValue('gapSize', undefined),
-                        () => updateAttribute('gapSize', undefined),
-                        'Spacing',
-                        <div>
-                            <div style={{
-                                display: 'flex',
-                                justifyContent: 'space-between',
-                                alignItems: 'center',
-                                marginBottom: '8px'
-                            }}>
-                                <label style={{
-                                    fontSize: '11px',
-                                    fontWeight: '500',
-                                    textTransform: 'uppercase',
-                                    color: '#1e1e1e',
-                                    margin: 0
-                                }}>
-                                    Spacing
-                                </label>
-                                <span style={{
-                                    fontSize: '13px',
-                                    fontWeight: '500',
-                                    color: '#757575'
-                                }}>
-                                    {currentSpacingName}
-                                </span>
-                            </div>
-                            <RangeControl
-                                value={currentIndex === -1 ? (currentGapSize === '0' ? 1 : 0) : currentIndex + 2} // 0=Default, 1=None(0), 2+=Spacing
-                                onChange={(index) => {
-                                    if (index === 0) {
-                                        // Index 0 = "Default" - clear the gapSize
-                                        updateAttribute('gapSize', undefined);
-                                    } else if (index === 1) {
-                                        // Index 1 = "None" - set gap to 0
-                                        updateAttribute('gapSize', '0');
-                                    } else {
-                                        // Index 2+ = Spacing values - shift back by 2 to get actual spacing index
-                                        const spacingIndex = index - 2;
-                                        const spacing = spacingSizes && spacingSizes[spacingIndex];
-                                        if (spacing) {
-                                            // Store the CSS variable reference instead of raw value
-                                            updateAttribute('gapSize', `var(--wp--preset--spacing--${spacing.slug})`);
-                                        } else {
-                                            updateAttribute('gapSize', undefined);
-                                        }
-                                    }
-                                }}
-                                min={0}
-                                max={maxIndex + 2} // Add 2 for "Default" and "None" options
-                                step={1}
-                                marks={true}
-                                withInputField={false}
-                                renderTooltipContent={(index) => {
-                                    if (index === 0) return 'Default';
-                                    if (index === 1) return 'None';
-                                    const spacing = spacingSizes && spacingSizes[index - 2];
-                                    return spacing ? spacing.name : 'None';
-                                }}
-                                __next40pxDefaultSize={true}
-                                __nextHasNoMarginBottom={true}
-                            />
-                        </div>,
-                        true
-                    )}
-
                     {/* Stack on Mobile Control */}
                     {createToolsPanelItem(
                         'stackOnMobile',
@@ -667,6 +592,15 @@ export default function RowControls({ attributes, setAttributes }: RowControlsPr
                         true
                     )}
                 </ToolsPanel>
+
+                {/* Responsive Spacing Control */}
+                <SpacingControl
+                    spacing={orbGap || {}}
+                    onSpacingChange={handleSpacingChange}
+                    label="Dimensions"
+                    panelId="collection-spacing-panel"
+                    blockName="orb/collection"
+                />
 
                 {/* Entries ToolsPanel */}
                 <ToolsPanel

@@ -26,9 +26,53 @@ $elem_base: 'orb-entry';
     // Set a default gap.
     gap: var(--gutter, var(--wp--style--block-gap, 20px));
 
-    // Gap Size Classes - Combined Dir and Wrap attrs
-    // Value: undefined → No data-gap -> Uses default gap above in core class
-    &[data-gap="spacing"] { gap: var(--orb-gap-size);}
+    // Responsive Gap Classes - Base (mobile first)
+    &.gap-0 { gap: 0; }
+    &.gap-small { gap: var(--wp--preset--spacing--small, 1rem); }
+    &.gap-medium { gap: var(--wp--preset--spacing--medium, 2rem); }
+    &.gap-large { gap: var(--wp--preset--spacing--large, 3rem); }
+    &.gap-x-large { gap: var(--wp--preset--spacing--x-large, 4rem); }
+    &.gap-2-x-large { gap: var(--wp--preset--spacing--2-x-large, 5rem); }
+    
+    // Small breakpoint gap classes (810px and up)
+    @media (min-width: 810px) {
+        &.sm\\:gap-0 { gap: 0; }
+        &.sm\\:gap-small { gap: var(--wp--preset--spacing--small, 1rem); }
+        &.sm\\:gap-medium { gap: var(--wp--preset--spacing--medium, 2rem); }
+        &.sm\\:gap-large { gap: var(--wp--preset--spacing--large, 3rem); }
+        &.sm\\:gap-x-large { gap: var(--wp--preset--spacing--x-large, 4rem); }
+        &.sm\\:gap-2-x-large { gap: var(--wp--preset--spacing--2-x-large, 5rem); }
+    }
+    
+    // Medium breakpoint gap classes (1080px and up)
+    @media (min-width: 1080px) {
+        &.md\\:gap-0 { gap: 0; }
+        &.md\\:gap-small { gap: var(--wp--preset--spacing--small, 1rem); }
+        &.md\\:gap-medium { gap: var(--wp--preset--spacing--medium, 2rem); }
+        &.md\\:gap-large { gap: var(--wp--preset--spacing--large, 3rem); }
+        &.md\\:gap-x-large { gap: var(--wp--preset--spacing--x-large, 4rem); }
+        &.md\\:gap-2-x-large { gap: var(--wp--preset--spacing--2-x-large, 5rem); }
+    }
+    
+    // Large breakpoint gap classes (1360px and up)
+    @media (min-width: 1360px) {
+        &.lg\\:gap-0 { gap: 0; }
+        &.lg\\:gap-small { gap: var(--wp--preset--spacing--small, 1rem); }
+        &.lg\\:gap-medium { gap: var(--wp--preset--spacing--medium, 2rem); }
+        &.lg\\:gap-large { gap: var(--wp--preset--spacing--large, 3rem); }
+        &.lg\\:gap-x-large { gap: var(--wp--preset--spacing--x-large, 4rem); }
+        &.lg\\:gap-2-x-large { gap: var(--wp--preset--spacing--2-x-large, 5rem); }
+    }
+    
+    // Extra large breakpoint gap classes (1600px and up)
+    @media (min-width: 1600px) {
+        &.xl\\:gap-0 { gap: 0; }
+        &.xl\\:gap-small { gap: var(--wp--preset--spacing--small, 1rem); }
+        &.xl\\:gap-medium { gap: var(--wp--preset--spacing--medium, 2rem); }
+        &.xl\\:gap-large { gap: var(--wp--preset--spacing--large, 3rem); }
+        &.xl\\:gap-x-large { gap: var(--wp--preset--spacing--x-large, 4rem); }
+        &.xl\\:gap-2-x-large { gap: var(--wp--preset--spacing--2-x-large, 5rem); }
+    }
 }
 
 // Parent Layout Classes - Controls classes on children, fit | equal/grow | 5 col grid | 12 col grid

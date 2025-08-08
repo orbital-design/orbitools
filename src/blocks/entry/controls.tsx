@@ -9,13 +9,14 @@
  */
 
 import { Fragment, useMemo } from '@wordpress/element';
-import { InspectorControls, useSettings } from '@wordpress/block-editor';
+import { InspectorControls } from '@wordpress/block-editor';
 import {
     __experimentalToolsPanel as ToolsPanel,
     __experimentalToolsPanelItem as ToolsPanelItem,
     RangeControl,
 } from '@wordpress/components';
-
+import SpacingControl from '../utils/spacing-control';
+import type { ResponsiveValue } from '../utils/responsive-controls';
 import type { LayoutItemAttributes } from '../types';
 
 interface EntryControlsProps {
@@ -102,35 +103,6 @@ function getColumnConfig(gridSystem: number) {
     }
 }
 
-/**
- * Helper to get spacing value by index
- */
-function getSpacingValueByIndex(spacingSizes: any[], index: number) {
-    if (spacingSizes && Array.isArray(spacingSizes) && spacingSizes[index]) {
-        return spacingSizes[index].size;
-    }
-    return '';
-}
-
-/**
- * Helper to get spacing index by value (now supports CSS variable references)
- */
-function getSpacingIndexByValue(spacingSizes: any[], value: string) {
-    if (!spacingSizes || !Array.isArray(spacingSizes)) return -1;
-    
-    // Handle CSS variable references (e.g., "var(--wp--preset--spacing--medium)")
-    if (value && value.startsWith('var(--wp--preset--spacing--')) {
-        const slug = value.match(/var\(--wp--preset--spacing--([^)]+)\)/)?.[1];
-        if (slug) {
-            const index = spacingSizes.findIndex((size: any) => size.slug === slug);
-            return index >= 0 ? index : -1;
-        }
-    }
-    
-    // Fallback: try to match by raw size value (for backward compatibility)
-    const index = spacingSizes.findIndex((size: any) => size.size === value);
-    return index >= 0 ? index : -1;
-}
 
 /**
  * Helper function to create a ToolsPanelItem with consistent styling
@@ -167,8 +139,6 @@ export default function EntryControls({ attributes, setAttributes, context }: En
         'orb/columnSystem': parentColumnSystem = 12
     } = context;
 
-    // Get spacing sizes from theme.json
-    const [spacingSizes] = useSettings('spacing.spacingSizes');
 
     /**
      * Determine if width controls should be shown
@@ -188,9 +158,11 @@ export default function EntryControls({ attributes, setAttributes, context }: En
     /**
      * Helper to update width attribute using slider value
      */
-    const updateColumnWidth = (sliderValue: number) => {
-        const columnKey = columnConfig.getValueKey(sliderValue);
-        setAttributes({ width: columnKey });
+    const updateColumnWidth = (sliderValue?: number) => {
+        if (typeof sliderValue === 'number') {
+            const columnKey = columnConfig.getValueKey(sliderValue);
+            setAttributes({ width: columnKey });
+        }
     };
 
     /**
@@ -223,41 +195,10 @@ export default function EntryControls({ attributes, setAttributes, context }: En
     };
 
     /**
-     * Gap control functions
+     * Handle responsive spacing
      */
-    const currentGapSize = gapSize;
-    const currentGapIndex = getSpacingIndexByValue(spacingSizes, currentGapSize || '');
-    const maxGapIndex = spacingSizes ? spacingSizes.length - 1 : 0;
-    
-    const getCurrentGapName = () => {
-        if (!currentGapSize) return 'Default';
-        if (currentGapSize === '0') return 'None';
-        return spacingSizes && currentGapIndex >= 0 ? spacingSizes[currentGapIndex].name : currentGapSize;
-    };
-
-    const updateGapSize = (index: number) => {
-        if (index === 0) {
-            setAttributes({ gapSize: undefined });
-        } else if (index === 1) {
-            setAttributes({ gapSize: '0' });
-        } else {
-            const spacingIndex = index - 2;
-            const spacing = spacingSizes && spacingSizes[spacingIndex];
-            if (spacing) {
-                // Store the CSS variable reference instead of raw value
-                setAttributes({ gapSize: `var(--wp--preset--spacing--${spacing.slug})` });
-            } else {
-                setAttributes({ gapSize: undefined });
-            }
-        }
-    };
-
-    const resetGapSize = () => {
-        setAttributes({ gapSize: undefined });
-    };
-
-    const hasCustomGapSize = () => {
-        return gapSize !== undefined;
+    const handleSpacingChange = (newSpacing: ResponsiveValue<string>) => {
+        setAttributes({ gapSize: newSpacing });
     };
 
     return (
@@ -267,7 +208,7 @@ export default function EntryControls({ attributes, setAttributes, context }: En
                     label="Entry Settings"
                     resetAll={() => {
                         resetWidth();
-                        resetGapSize();
+                        setAttributes({ gapSize: {} });
                     }}
                     panelId="entry-layout-panel"
                 >
@@ -320,7 +261,7 @@ export default function EntryControls({ attributes, setAttributes, context }: En
                                         step={1}
                                         marks={columnConfig.marks}
                                         withInputField={false}
-                                        renderTooltipContent={(value) => columnConfig.getTooltipLabel(value)}
+                                        renderTooltipContent={(value) => columnConfig.getTooltipLabel(value || 0)}
                                         __next40pxDefaultSize={true}
                                         __nextHasNoMarginBottom={true}
                                     />
@@ -329,58 +270,15 @@ export default function EntryControls({ attributes, setAttributes, context }: En
                             )}
                         </>
                     )}
-
-                    {/* Gap Control */}
-                    {spacingSizes && createToolsPanelItem(
-                        'gapSize',
-                        hasCustomGapSize,
-                        resetGapSize,
-                        'Spacing',
-                        <div>
-                            <div style={{
-                                display: 'flex',
-                                justifyContent: 'space-between',
-                                alignItems: 'center',
-                                marginBottom: '8px'
-                            }}>
-                                <label style={{
-                                    fontSize: '11px',
-                                    fontWeight: '500',
-                                    textTransform: 'uppercase',
-                                    color: '#1e1e1e',
-                                    margin: 0
-                                }}>
-                                    Spacing
-                                </label>
-                                <span style={{
-                                    fontSize: '13px',
-                                    fontWeight: '500',
-                                    color: '#757575'
-                                }}>
-                                    {getCurrentGapName()}
-                                </span>
-                            </div>
-                            <RangeControl
-                                value={currentGapIndex === -1 ? (currentGapSize === '0' ? 1 : 0) : currentGapIndex + 2}
-                                onChange={updateGapSize}
-                                min={0}
-                                max={maxGapIndex + 2}
-                                step={1}
-                                marks={true}
-                                withInputField={false}
-                                renderTooltipContent={(index) => {
-                                    if (index === 0) return 'Default';
-                                    if (index === 1) return 'None';
-                                    const spacing = spacingSizes && spacingSizes[index - 2];
-                                    return spacing ? spacing.name : 'None';
-                                }}
-                                __next40pxDefaultSize={true}
-                                __nextHasNoMarginBottom={true}
-                            />
-                        </div>,
-                        true
-                    )}
                 </ToolsPanel>
+
+                {/* Responsive Spacing Control */}
+                <SpacingControl
+                    spacing={gapSize || {}}
+                    onSpacingChange={handleSpacingChange}
+                    label="Entry Spacing"
+                    panelId="entry-spacing-panel"
+                />
             </InspectorControls>
         </Fragment>
     );

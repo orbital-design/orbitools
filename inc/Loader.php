@@ -5,6 +5,7 @@ namespace Orbitools;
 use Orbitools\Admin\Admin;
 use Orbitools\Updater\Updater;
 use Orbitools\Toolbar_FAB;
+use Orbitools\SpacingConfig;
 use Orbitools\Modules\Typography_Presets\Typography_Presets;
 use Orbitools\Modules\Layout_Guides\Layout_Guides;
 use Orbitools\Modules\Menu_Groups\Menu_Groups;
@@ -56,6 +57,9 @@ class Loader
         // Initialize core classes.
         $this->admin = new Admin();
         $this->updater = new Updater();
+
+        // Initialize Spacing Configuration system
+        SpacingConfig::init();
 
         // Initialize Toolbar FAB
         new Toolbar_FAB();

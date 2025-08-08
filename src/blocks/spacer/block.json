@@ -1,0 +1,26 @@
+{
+    "apiVersion": 3,
+    "name": "orb/spacer",
+    "version": "1.0.0",
+    "title": "Spacer",
+    "category": "layout",
+    "icon": "editor-insertmore",
+    "description": "Add responsive spacing between blocks",
+    "supports": {
+        "html": false,
+        "reusable": true,
+        "lock": false,
+        "spacing": false,
+        "customClassName": true
+    },
+    "attributes": {
+        "height": {
+            "type": "object",
+            "default": {}
+        }
+    },
+    "textdomain": "orbitools",
+    "editorScript": "file:./index.js",
+    "editorStyle": "file:./editor.css",
+    "style": "file:./index.css"
+}

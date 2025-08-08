@@ -1,0 +1,55 @@
+/**
+ * Spacer Block - Editor Styles
+ *
+ * Block editor specific styles for the Spacer block. Provides visual feedback
+ * for the spacer element in the editor with hover and selection states.
+ *
+ * @file blocks/spacer/editor.scss  
+ * @since 1.0.0
+ */
+
+.orb-spacer {
+    // Editor-specific styling to make the spacer visible and interactive
+    position: relative;
+    transition: all 0.15s ease;
+    
+    // Default editor appearance when not selected/hovered
+    &:not(.is-selected):not(:hover) {
+        background: #f0f0f0;
+        border: 1px dashed #ddd;
+        
+        // Make the preview text more subtle when not interacting
+        span {
+            opacity: 0.7;
+        }
+    }
+    
+    // Hover state - more prominent border
+    &:hover {
+        border-color: #32a3e2;
+        background: rgba(50, 163, 226, 0.05);
+        
+        span {
+            opacity: 1;
+        }
+    }
+    
+    // Selected state - solid border and background
+    &.is-selected {
+        border-color: #32a3e2;
+        background: rgba(50, 163, 226, 0.1);
+        
+        span {
+            opacity: 1;
+            color: #32a3e2;
+        }
+    }
+    
+    // Ensure minimum visibility in editor
+    min-height: 24px;
+    
+    // Center the preview text
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}

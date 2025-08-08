@@ -35,7 +35,8 @@
             "default": "equal"
         },
         "gapSize": {
-            "type": "string"
+            "type": "object",
+            "default": {}
         }
     },
     "usesContext": [

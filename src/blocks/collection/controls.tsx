@@ -39,7 +39,7 @@ interface CollectionControlsProps {
  */
 const COMMON_DEFAULTS = {
     layoutType: 'row',
-    gapSize: undefined,
+    orbGap: undefined,
     restrictContentWidth: false,
 } as const;
 
@@ -167,7 +167,7 @@ function createToggleGroup(
 export default function CollectionControls({ attributes, setAttributes }: CollectionControlsProps) {
     const { 
         layoutType = COMMON_DEFAULTS.layoutType,
-        gapSize = COMMON_DEFAULTS.gapSize,
+        orbGap = COMMON_DEFAULTS.orbGap,
         restrictContentWidth = COMMON_DEFAULTS.restrictContentWidth,
         align
     } = attributes;
@@ -188,7 +188,7 @@ export default function CollectionControls({ attributes, setAttributes }: Collec
     const resetCommonAttributes = () => {
         setAttributes({
             layoutType: COMMON_DEFAULTS.layoutType,
-            gapSize: COMMON_DEFAULTS.gapSize,
+            orbGap: COMMON_DEFAULTS.orbGap,
             restrictContentWidth: COMMON_DEFAULTS.restrictContentWidth,
         });
     };

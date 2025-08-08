@@ -4,10 +4,11 @@ import type { BlockSaveProps } from '@wordpress/blocks';
 import type { LayoutAttributes } from '../types';
 import { generateFlexAttributes } from '../utils/flex-attributes';
 import { buildCollectionClasses, filterWordPressClasses, combineClasses } from '../utils/class-builders';
+import { getSpacingClasses } from '../utils/spacing-control';
 
 
 const Save: React.FC<BlockSaveProps<LayoutAttributes>> = ({ attributes }) => {
-    const { layoutType, itemWidth, columnSystem, align, restrictContentWidth, gapSize } = attributes;
+    const { layoutType, itemWidth, columnSystem, align, restrictContentWidth, orbGap } = attributes;
     
     const blockProps = useBlockProps.save();
     
@@ -22,10 +23,10 @@ const Save: React.FC<BlockSaveProps<LayoutAttributes>> = ({ attributes }) => {
     
     // Build semantic class names using utility functions
     const collectionClasses = buildCollectionClasses(layoutType, itemWidth, columnSystem);
-    const combinedClasses = combineClasses(collectionClasses, filteredClasses);
-
-    // Add CSS variable for custom gap spacing
-    const gapStyle = gapSize ? { '--orb-gap-size': gapSize } : {};
+    
+    // Generate responsive spacing classes
+    const spacingClasses = getSpacingClasses(orbGap || {});
+    const allClasses = combineClasses(collectionClasses, spacingClasses, filteredClasses);
 
     if (needsWrapper) {
         // Full-width with content constraint: wrapper gets filtered blockProps, inner div gets our classes
@@ -34,9 +35,11 @@ const Save: React.FC<BlockSaveProps<LayoutAttributes>> = ({ attributes }) => {
             className: filteredClasses
         };
         
+        const innerClasses = combineClasses(collectionClasses, spacingClasses);
+        
         return (
             <div {...wrapperProps}>
-                <div className={collectionClasses} {...flexAttributes} style={gapStyle}>
+                <div className={innerClasses} {...flexAttributes}>
                     <InnerBlocks.Content />
                 </div>
             </div>
@@ -47,8 +50,8 @@ const Save: React.FC<BlockSaveProps<LayoutAttributes>> = ({ attributes }) => {
     const finalProps = {
         ...blockProps,
         ...flexAttributes,
-        className: combinedClasses,
-        style: { ...blockProps.style, ...gapStyle }
+        className: allClasses,
+        style: blockProps.style
     };
 
     return (

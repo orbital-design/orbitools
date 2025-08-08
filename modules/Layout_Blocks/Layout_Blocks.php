@@ -104,5 +104,10 @@ class Layout_Blocks extends Module_Base
         if (file_exists($blocks_dir . 'entry/block.json')) {
             register_block_type($blocks_dir . 'entry/');
         }
+
+        // Register Spacer block
+        if (file_exists($blocks_dir . 'spacer/block.json')) {
+            register_block_type($blocks_dir . 'spacer/');
+        }
     }
 }

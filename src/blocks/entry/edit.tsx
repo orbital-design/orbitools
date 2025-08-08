@@ -8,7 +8,8 @@ import { __ } from '@wordpress/i18n';
 import type { BlockEditProps } from '@wordpress/blocks';
 import type { LayoutItemAttributes } from '../types';
 import EntryControls from './controls';
-import { buildEntryClasses } from '../utils/class-builders';
+import { buildEntryClasses, combineClasses } from '../utils/class-builders';
+import { getSpacingClasses } from '../utils/spacing-control';
 
 const Edit: React.FC<BlockEditProps<LayoutItemAttributes>> = ({
     attributes,
@@ -42,19 +43,12 @@ const Edit: React.FC<BlockEditProps<LayoutItemAttributes>> = ({
     // Build semantic class names using utility functions
     const entryClasses = buildEntryClasses(width, shouldShowWidthClass);
     
-    // Generate data attribute for gap spacing (matching Collection block approach)
-    const gapDataAttr: Record<string, string> = {};
-    if (gapSize !== undefined && gapSize !== null) {
-        gapDataAttr['data-gap'] = 'spacing';
-    }
-    
-    // Add CSS variable for custom gap spacing  
-    const gapStyle = gapSize ? { '--orb-gap-size': gapSize } : {};
+    // Generate responsive spacing classes
+    const spacingClasses = getSpacingClasses(gapSize || {});
+    const combinedClasses = combineClasses(entryClasses, spacingClasses);
     
     const blockProps = useBlockProps({
-        className: entryClasses,
-        style: gapStyle,
-        ...gapDataAttr
+        className: combinedClasses
     });
 
     return (
