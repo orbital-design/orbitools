@@ -5,3 +5,8 @@
     @include generate-css-vars($orbi-breakpoints, 'orbi-bp');
     @include generate-css-vars($wp-presets);
 }
+
+// Hide spacing control buttons for BoxControl
+#base_padding .spacing-sizes-control__range-control ~ .components-button {
+    display: none !important;
+}
