@@ -14,7 +14,7 @@
 
 import { Fragment } from '@wordpress/element';
 import { InspectorControls, BlockControls, useSettings } from '@wordpress/block-editor';
-import SpacingControl, { getSpacingClasses } from '../utils/spacing-control';
+import DimensionsControl, { getGapClasses, getPaddingClasses, getMarginClasses } from '../utils/tabbed-dimensions-control';
 import type { ResponsiveValue } from '../utils/responsive-controls';
 import {
     __experimentalToolsPanel as ToolsPanel,
@@ -181,6 +181,8 @@ export default function RowControls({ attributes, setAttributes }: RowControlsPr
         justifyContent = ROW_DEFAULTS.justifyContent,
         stackOnMobile = ROW_DEFAULTS.stackOnMobile,
         orbGap,
+        orbPadding,
+        orbMargin,
     } = attributes;
 
     /**
@@ -513,9 +515,17 @@ export default function RowControls({ attributes, setAttributes }: RowControlsPr
      * Inspector panel controls for row-specific settings
      */
     const renderInspectorControls = () => {
-        // Handle responsive spacing
-        const handleSpacingChange = (newSpacing: ResponsiveValue<string>) => {
-            updateAttribute('orbGap', newSpacing);
+        // Handle responsive dimensions
+        const handleGapChange = (newGap: ResponsiveValue<string>) => {
+            updateAttribute('orbGap', newGap);
+        };
+
+        const handlePaddingChange = (newPadding: ResponsiveValue<string>) => {
+            updateAttribute('orbPadding', newPadding);
+        };
+
+        const handleMarginChange = (newMargin: ResponsiveValue<string>) => {
+            updateAttribute('orbMargin', newMargin);
         };
 
         return (
@@ -526,6 +536,8 @@ export default function RowControls({ attributes, setAttributes }: RowControlsPr
                     resetAll={() => {
                         updateAttribute('columnCount', ROW_DEFAULTS.columnCount);
                         updateAttribute('orbGap', undefined);
+                        updateAttribute('orbPadding', undefined);
+                        updateAttribute('orbMargin', undefined);
                         updateAttribute('stackOnMobile', ROW_DEFAULTS.stackOnMobile);
                     }}
                     panelId="collection-row-layout-panel"
@@ -593,12 +605,14 @@ export default function RowControls({ attributes, setAttributes }: RowControlsPr
                     )}
                 </ToolsPanel>
 
-                {/* Responsive Spacing Control */}
-                <SpacingControl
-                    spacing={orbGap || {}}
-                    onSpacingChange={handleSpacingChange}
-                    label="Dimensions"
-                    panelId="collection-spacing-panel"
+                {/* Responsive Dimensions Control */}
+                <DimensionsControl
+                    gap={orbGap}
+                    padding={orbPadding}
+                    margin={orbMargin}
+                    onGapChange={handleGapChange}
+                    onPaddingChange={handlePaddingChange}
+                    onMarginChange={handleMarginChange}
                     blockName="orb/collection"
                 />
 

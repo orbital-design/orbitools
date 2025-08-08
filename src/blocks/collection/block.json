@@ -21,8 +21,8 @@
             "dimensions": {
                 "breakpoints": true,
                 "gap": true,
-                "margin": false,
-                "padding": false
+                "margin": true,
+                "padding": true
             }
         }
     },
@@ -96,6 +96,14 @@
             ]
         },
         "orbGap": {
+            "type": "object",
+            "default": {}
+        },
+        "orbPadding": {
+            "type": "object",
+            "default": {}
+        },
+        "orbMargin": {
             "type": "object",
             "default": {}
         },

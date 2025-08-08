@@ -11,7 +11,7 @@ import type { LayoutAttributes } from '../types';
 import CollectionControls from './controls';
 import { generateFlexAttributes } from '../utils/flex-attributes';
 import { buildCollectionClasses, COLLECTION_LIMITS, combineClasses } from '../utils/class-builders';
-import { getSpacingClasses } from '../utils/spacing-control';
+import { getGapClasses, getPaddingClasses, getMarginClasses } from '../utils/tabbed-dimensions-control';
 
 const ALLOWED_BLOCKS = ['orb/entry'];
 
@@ -128,10 +128,12 @@ const Edit: React.FC<BlockEditProps<LayoutAttributes>> = ({
     // Build semantic class names using utility functions
     const collectionClasses = buildCollectionClasses(layoutType, itemWidth, columnSystem);
     
-    // Generate responsive spacing classes
-    const { orbGap } = attributes;
-    const spacingClasses = getSpacingClasses(orbGap || {});
-    const allClasses = combineClasses(collectionClasses, spacingClasses);
+    // Generate responsive dimension classes
+    const { orbGap, orbPadding, orbMargin } = attributes;
+    const gapClasses = getGapClasses(orbGap || {});
+    const paddingClasses = getPaddingClasses(orbPadding || {});
+    const marginClasses = getMarginClasses(orbMargin || {});
+    const allClasses = combineClasses(collectionClasses, gapClasses, paddingClasses, marginClasses);
     
     // Generate data attributes for layout consistency with save component  
     const tempBlockProps = useBlockProps();

@@ -10,6 +10,8 @@ export interface LayoutAttributes {
     alignItems: 'flex-start' | 'center' | 'flex-end' | 'stretch';
     justifyContent: 'flex-start' | 'center' | 'flex-end' | 'space-between' | 'space-around' | 'space-evenly';
     orbGap?: ResponsiveValue<string>;
+    orbPadding?: ResponsiveValue<string>;
+    orbMargin?: ResponsiveValue<string>;
     restrictContentWidth: boolean;
     stackOnMobile: boolean;
     align?: 'wide' | 'full';

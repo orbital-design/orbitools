@@ -4,11 +4,11 @@ import type { BlockSaveProps } from '@wordpress/blocks';
 import type { LayoutAttributes } from '../types';
 import { generateFlexAttributes } from '../utils/flex-attributes';
 import { buildCollectionClasses, filterWordPressClasses, combineClasses } from '../utils/class-builders';
-import { getSpacingClasses } from '../utils/spacing-control';
+import { getGapClasses, getPaddingClasses, getMarginClasses } from '../utils/tabbed-dimensions-control';
 
 
 const Save: React.FC<BlockSaveProps<LayoutAttributes>> = ({ attributes }) => {
-    const { layoutType, itemWidth, columnSystem, align, restrictContentWidth, orbGap } = attributes;
+    const { layoutType, itemWidth, columnSystem, align, restrictContentWidth, orbGap, orbPadding, orbMargin } = attributes;
     
     const blockProps = useBlockProps.save();
     
@@ -24,9 +24,11 @@ const Save: React.FC<BlockSaveProps<LayoutAttributes>> = ({ attributes }) => {
     // Build semantic class names using utility functions
     const collectionClasses = buildCollectionClasses(layoutType, itemWidth, columnSystem);
     
-    // Generate responsive spacing classes
-    const spacingClasses = getSpacingClasses(orbGap || {});
-    const allClasses = combineClasses(collectionClasses, spacingClasses, filteredClasses);
+    // Generate responsive dimension classes
+    const gapClasses = getGapClasses(orbGap || {});
+    const paddingClasses = getPaddingClasses(orbPadding || {});
+    const marginClasses = getMarginClasses(orbMargin || {});
+    const allClasses = combineClasses(collectionClasses, gapClasses, paddingClasses, marginClasses, filteredClasses);
 
     if (needsWrapper) {
         // Full-width with content constraint: wrapper gets filtered blockProps, inner div gets our classes
@@ -35,7 +37,7 @@ const Save: React.FC<BlockSaveProps<LayoutAttributes>> = ({ attributes }) => {
             className: filteredClasses
         };
         
-        const innerClasses = combineClasses(collectionClasses, spacingClasses);
+        const innerClasses = combineClasses(collectionClasses, gapClasses, paddingClasses, marginClasses);
         
         return (
             <div {...wrapperProps}>

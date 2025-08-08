@@ -40,6 +40,8 @@ interface CollectionControlsProps {
 const COMMON_DEFAULTS = {
     layoutType: 'row',
     orbGap: undefined,
+    orbPadding: undefined,
+    orbMargin: undefined,
     restrictContentWidth: false,
 } as const;
 
@@ -168,6 +170,8 @@ export default function CollectionControls({ attributes, setAttributes }: Collec
     const { 
         layoutType = COMMON_DEFAULTS.layoutType,
         orbGap = COMMON_DEFAULTS.orbGap,
+        orbPadding = COMMON_DEFAULTS.orbPadding,
+        orbMargin = COMMON_DEFAULTS.orbMargin,
         restrictContentWidth = COMMON_DEFAULTS.restrictContentWidth,
         align
     } = attributes;
@@ -189,6 +193,8 @@ export default function CollectionControls({ attributes, setAttributes }: Collec
         setAttributes({
             layoutType: COMMON_DEFAULTS.layoutType,
             orbGap: COMMON_DEFAULTS.orbGap,
+            orbPadding: COMMON_DEFAULTS.orbPadding,
+            orbMargin: COMMON_DEFAULTS.orbMargin,
             restrictContentWidth: COMMON_DEFAULTS.restrictContentWidth,
         });
     };
