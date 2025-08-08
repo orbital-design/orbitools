@@ -173,7 +173,7 @@ export default function CollectionControls({ attributes, setAttributes }: Collec
     } = attributes;
 
     // Get spacing sizes from theme.json
-    const [spacingSizes] = useSettings(['spacing.spacingSizes']);
+    const [spacingSizes] = useSettings('spacing.spacingSizes');
 
     /**
      * Helper to update a single attribute

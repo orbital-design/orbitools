@@ -168,7 +168,7 @@ export default function EntryControls({ attributes, setAttributes, context }: En
     } = context;
 
     // Get spacing sizes from theme.json
-    const [spacingSizes] = useSettings(['spacing.spacingSizes']);
+    const [spacingSizes] = useSettings('spacing.spacingSizes');
 
     /**
      * Determine if width controls should be shown

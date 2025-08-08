@@ -512,7 +512,7 @@ export default function RowControls({ attributes, setAttributes }: RowControlsPr
      */
     const renderInspectorControls = () => {
         // Get spacing sizes from theme.json for the spacing control
-        const [spacingSizes] = useSettings(['spacing.spacingSizes']);
+        const [spacingSizes] = useSettings('spacing.spacingSizes');
         const currentGapSize = gapSize;
         const currentIndex = getSpacingIndexByValue(spacingSizes, currentGapSize || '');
         const maxIndex = spacingSizes ? spacingSizes.length - 1 : 0;
