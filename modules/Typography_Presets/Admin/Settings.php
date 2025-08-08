@@ -319,6 +319,16 @@ class Settings
             '1.0.0',
             true
         );
+
+        // Localize script with nonce for AJAX requests
+        wp_localize_script(
+            'orbitools-typography-presets-admin',
+            'orbitoolsAjax',
+            array(
+                'nonce' => wp_create_nonce('orbitools_ajax_nonce'),
+                'url'   => admin_url('admin-ajax.php')
+            )
+        );
     }
 
     /**
@@ -437,9 +447,22 @@ class Settings
      */
     public static function save_accordion_state(): void
     {
+        $security_logger = \Orbitools\Helpers\Security_Logger::instance();
+
         // Basic security check
         if (!current_user_can('manage_options')) {
+            $security_logger->log_event('PERMISSION_DENIED', array(
+                'action' => 'save_accordion_state',
+                'required_capability' => 'manage_options'
+            ), 'high');
             wp_die(__('You do not have sufficient permissions to access this page.'));
+        }
+
+        // Verify nonce
+        if (!wp_verify_nonce($_POST['nonce'] ?? '', 'orbitools_ajax_nonce')) {
+            $security_logger->log_nonce_failure('save_accordion_state', 'orbitools_ajax_nonce', $_POST['nonce'] ?? '');
+            wp_send_json_error(array('message' => __('Security check failed.', 'orbitools')));
+            return;
         }
 
         $expanded = sanitize_text_field($_POST['expanded'] ?? 'false');
@@ -447,6 +470,10 @@ class Settings
 
         if ($user_id && in_array($expanded, array('true', 'false'))) {
             update_user_meta($user_id, 'orbitools_presets_accordion_expanded', $expanded);
+            $security_logger->log_event('SETTINGS_CHANGED', array(
+                'action' => 'accordion_state_changed',
+                'expanded' => $expanded
+            ), 'low');
             wp_send_json_success();
         } else {
             wp_send_json_error();
@@ -460,13 +487,20 @@ class Settings
      */
     public static function clear_typography_cache(): void
     {
+        $security_logger = \Orbitools\Helpers\Security_Logger::instance();
+
         // Basic security check
         if (!current_user_can('manage_options')) {
+            $security_logger->log_event('PERMISSION_DENIED', array(
+                'action' => 'clear_typography_cache',
+                'required_capability' => 'manage_options'
+            ), 'high');
             wp_die(__('You do not have sufficient permissions to access this page.'));
         }
 
         // Verify nonce
-        if (!wp_verify_nonce($_POST['nonce'] ?? '', 'orbitools_clear_cache')) {
+        if (!wp_verify_nonce($_POST['nonce'] ?? '', 'orbitools_ajax_nonce')) {
+            $security_logger->log_nonce_failure('clear_typography_cache', 'orbitools_ajax_nonce', $_POST['nonce'] ?? '');
             wp_send_json_error(array('message' => __('Security check failed.', 'orbitools')));
             return;
         }
@@ -477,8 +511,17 @@ class Settings
             $css_generator = new \Orbitools\Modules\Typography_Presets\Core\CSS_Generator($preset_manager);
             $css_generator->clear_cache();
 
+            $security_logger->log_event('CACHE_CLEARED', array(
+                'cache_type' => 'typography_css'
+            ), 'medium');
+
             wp_send_json_success(array('message' => __('Cache cleared successfully!', 'orbitools')));
         } catch (Exception $e) {
+            $security_logger->log_event('CACHE_CLEARED', array(
+                'cache_type' => 'typography_css',
+                'error' => $e->getMessage(),
+                'status' => 'failed'
+            ), 'medium');
             wp_send_json_error(array('message' => __('Failed to clear cache: ', 'orbitools') . $e->getMessage()));
         }
     }

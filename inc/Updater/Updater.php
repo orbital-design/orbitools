@@ -53,6 +53,14 @@ class Updater
     private $github_config;
 
     /**
+     * Security logger instance.
+     *
+     * @since 1.0.0
+     * @var object
+     */
+    private $security_logger;
+
+    /**
      * Initialize the updater.
      *
      * @since 1.0.0
@@ -66,8 +74,12 @@ class Updater
         $this->github_config = array(
             'user' => 'orbital-design',
             'repo' => 'orbitools',
-            'access_token' => '' // Public repository
+            'access_token' => '', // Public repository
+            'allowed_domains' => array('api.github.com', 'github.com', 'codeload.github.com')
         );
+
+        // Initialize security logger
+        $this->security_logger = $this;
 
         $this->init_hooks();
     }
@@ -239,6 +251,15 @@ class Updater
     {
         $url = "https://api.github.com/repos/{$this->github_config['user']}/{$this->github_config['repo']}/{$endpoint}";
 
+        // Validate URL before making request
+        if (!$this->is_safe_url($url)) {
+            $this->log_security_event('SSRF_ATTEMPT', array(
+                'url' => $url,
+                'endpoint' => $endpoint
+            ));
+            return new \WP_Error('invalid_url', 'Invalid update server URL');
+        }
+
         $args = array(
             'timeout' => 10,
             'headers' => array(
@@ -246,7 +267,15 @@ class Updater
             )
         );
 
-        return wp_remote_get($url, $args);
+        $response = wp_remote_get($url, $args);
+
+        // Log API requests for security monitoring
+        $this->log_security_event('UPDATE_CHECK', array(
+            'url' => $url,
+            'response_code' => wp_remote_retrieve_response_code($response)
+        ));
+
+        return $response;
     }
 
     /**
@@ -312,5 +341,139 @@ class Updater
             'last_checked' => get_transient('orbitools_last_checked') ?: 'Never',
             'repository_type' => 'Public Repository'
         );
+    }
+
+    /**
+     * Validate URL is safe for external requests
+     *
+     * @since 1.0.0
+     * @param string $url URL to validate
+     * @return bool True if safe, false otherwise
+     */
+    private function is_safe_url(string $url): bool
+    {
+        $parsed_url = parse_url($url);
+        
+        if (!$parsed_url || !isset($parsed_url['host'])) {
+            return false;
+        }
+
+        // Only allow HTTPS
+        if (!isset($parsed_url['scheme']) || $parsed_url['scheme'] !== 'https') {
+            return false;
+        }
+
+        // Check against allowed domains
+        if (!in_array($parsed_url['host'], $this->github_config['allowed_domains'], true)) {
+            return false;
+        }
+
+        // Validate repository path structure
+        $expected_path_prefix = "/repos/{$this->github_config['user']}/{$this->github_config['repo']}/";
+        if (!isset($parsed_url['path']) || strpos($parsed_url['path'], $expected_path_prefix) !== 0) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Verify package integrity (placeholder for future implementation)
+     *
+     * @since 1.0.0
+     * @param string $package_path Path to downloaded package
+     * @param array $release_info Release information from API
+     * @return bool True if verified, false otherwise
+     */
+    private function verify_package_integrity(string $package_path, array $release_info): bool
+    {
+        // TODO: Implement SHA checksum verification when GitHub provides release checksums
+        // For now, perform basic file validation
+        
+        if (!file_exists($package_path)) {
+            return false;
+        }
+
+        // Check minimum file size (prevent empty/corrupted downloads)
+        $file_size = filesize($package_path);
+        if ($file_size < 1024) { // Less than 1KB is suspicious for a plugin
+            $this->log_security_event('PACKAGE_SIZE_WARNING', array(
+                'file_size' => $file_size,
+                'package_path' => basename($package_path)
+            ));
+            return false;
+        }
+
+        // Verify ZIP file structure
+        if (function_exists('zip_open')) {
+            $zip = zip_open($package_path);
+            if (!is_resource($zip)) {
+                $this->log_security_event('PACKAGE_CORRUPT', array(
+                    'package_path' => basename($package_path)
+                ));
+                return false;
+            }
+            zip_close($zip);
+        }
+
+        return true;
+    }
+
+    /**
+     * Log security events
+     *
+     * @since 1.0.0
+     * @param string $event_type Type of security event
+     * @param array $context Additional context data
+     * @return void
+     */
+    private function log_security_event(string $event_type, array $context = array()): void
+    {
+        $log_entry = array(
+            'timestamp' => current_time('mysql'),
+            'event_type' => $event_type,
+            'user_id' => get_current_user_id(),
+            'user_ip' => $this->get_user_ip(),
+            'context' => $context
+        );
+
+        // Log to WordPress error log
+        error_log('ORBITOOLS_SECURITY: ' . $event_type . ' - ' . wp_json_encode($log_entry));
+
+        // Store in options for security dashboard (keep last 100 events)
+        $security_log = get_option('orbitools_security_log', array());
+        array_unshift($security_log, $log_entry);
+        $security_log = array_slice($security_log, 0, 100);
+        update_option('orbitools_security_log', $security_log);
+    }
+
+    /**
+     * Get user IP address safely
+     *
+     * @since 1.0.0
+     * @return string User IP address
+     */
+    private function get_user_ip(): string
+    {
+        // Sanitize and validate IP addresses from various headers
+        $ip_keys = array('HTTP_CLIENT_IP', 'HTTP_X_FORWARDED_FOR', 'REMOTE_ADDR');
+        
+        foreach ($ip_keys as $key) {
+            if (!empty($_SERVER[$key])) {
+                $ip = sanitize_text_field($_SERVER[$key]);
+                
+                // Handle comma-separated IPs (X-Forwarded-For)
+                if (strpos($ip, ',') !== false) {
+                    $ip = trim(explode(',', $ip)[0]);
+                }
+                
+                // Validate IP format
+                if (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE)) {
+                    return $ip;
+                }
+            }
+        }
+        
+        return '0.0.0.0';
     }
 }

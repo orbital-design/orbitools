@@ -138,11 +138,17 @@
      * @param {boolean} isExpanded - Whether the accordion is expanded
      */
     function saveAccordionState(isExpanded) {
+        const nonce = getAjaxNonce();
+        if (!nonce) {
+            console.error('Orbitools: Cannot save accordion state - no valid nonce');
+            return;
+        }
+        
         // Use WordPress AJAX
         const formData = new FormData();
         formData.append('action', 'orbitools_save_accordion_state');
         formData.append('expanded', isExpanded ? 'true' : 'false');
-        formData.append('nonce', getAjaxNonce());
+        formData.append('nonce', nonce);
         
         fetch(ajaxurl, {
             method: 'POST',
@@ -154,7 +160,7 @@
     
     /**
      * Get AJAX nonce (from WordPress admin)
-     * @returns {string} AJAX nonce
+     * @returns {string|null} AJAX nonce or null if unavailable
      */
     function getAjaxNonce() {
         // Try to get from WordPress admin
@@ -162,8 +168,14 @@
             return window.wpApiSettings.nonce;
         }
         
-        // Fallback - generate a basic nonce-like string
-        return 'orbitools_nonce_' + Date.now();
+        // Try to get from orbitools specific nonce
+        if (typeof window.orbitoolsAjax !== 'undefined' && window.orbitoolsAjax.nonce) {
+            return window.orbitoolsAjax.nonce;
+        }
+        
+        // No fallback - security vulnerability removed
+        console.warn('Orbitools: No valid nonce available for AJAX request');
+        return null;
     }
     
     /**

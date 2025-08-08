@@ -665,15 +665,16 @@ class Analytics extends Module_Base
      */
     private function init_additional_features()
     {
-        // Add debug mode for development
-        if (defined('WP_DEBUG') && WP_DEBUG && current_user_can('manage_options')) {
+        // Add debug mode for development (only for localhost/staging)
+        if (defined('WP_DEBUG') && WP_DEBUG && current_user_can('manage_options') && $this->is_development_environment()) {
             add_action('wp_footer', function() {
                 if ($this->should_track()) {
                     ?>
                     <script>
-                    console.log('OrbiTools Analytics Debug Mode');
-                    console.log('Analytics Type:', '<?php echo esc_js($this->get_analytics_setting('analytics_type')); ?>');
-                    console.log('Tracking ID:', '<?php echo esc_js($this->get_analytics_setting('analytics_' . $this->get_analytics_setting('analytics_type') . '_id')); ?>');
+                    if (console && console.log) {
+                        console.log('OrbiTools Analytics Debug Mode - Config Loaded');
+                        // Note: Actual tracking IDs not exposed for security
+                    }
                     </script>
                     <?php
                 }
@@ -846,5 +847,40 @@ class Analytics extends Module_Base
             </script>
             <?php
         }
+    }
+
+    /**
+     * Check if this is a development environment
+     *
+     * @since 1.0.0
+     * @return bool True if development environment
+     */
+    private function is_development_environment(): bool
+    {
+        // Check for common development indicators
+        $server_name = $_SERVER['SERVER_NAME'] ?? '';
+        $server_addr = $_SERVER['SERVER_ADDR'] ?? '';
+        
+        $dev_indicators = array(
+            'localhost',
+            '127.0.0.1',
+            '.local',
+            '.dev',
+            '.test',
+            'staging.'
+        );
+        
+        foreach ($dev_indicators as $indicator) {
+            if (strpos($server_name, $indicator) !== false) {
+                return true;
+            }
+        }
+        
+        // Check for local IP ranges
+        if (filter_var($server_addr, FILTER_VALIDATE_IP, FILTER_FLAG_NO_RES_RANGE)) {
+            return false; // Public IP
+        }
+        
+        return true; // Private/local IP or undetected
     }
 }

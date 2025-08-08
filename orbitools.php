@@ -218,9 +218,19 @@ function orbitools_cleanup_plugin_data(): void
     // Remove plugin options
     delete_option('orbitools_settings');
 
-    // Clean up Typography Presets transients
-    $wpdb->query("DELETE FROM {$wpdb->options} WHERE option_name LIKE '_transient_orbitools_%'");
-    $wpdb->query("DELETE FROM {$wpdb->options} WHERE option_name LIKE '_transient_timeout_orbitools_%'");
+    // Clean up Typography Presets transients using prepared statements
+    $wpdb->query(
+        $wpdb->prepare(
+            "DELETE FROM {$wpdb->options} WHERE option_name LIKE %s",
+            '_transient_orbitools_%'
+        )
+    );
+    $wpdb->query(
+        $wpdb->prepare(
+            "DELETE FROM {$wpdb->options} WHERE option_name LIKE %s",
+            '_transient_timeout_orbitools_%'
+        )
+    );
 
     // Clean up updater transients
     delete_transient('orbitools_remote_version');
