@@ -17,7 +17,7 @@ const Edit: React.FC<BlockEditProps<LayoutItemAttributes>> = ({
     context,
     clientId
 }) => {
-    const { width, parentItemWidth, gapSize } = attributes;
+    const { width, parentItemWidth, orbGap } = attributes;
     const {
         'orb/layoutType': layoutType,
         'orb/itemWidth': itemWidth,
@@ -44,7 +44,7 @@ const Edit: React.FC<BlockEditProps<LayoutItemAttributes>> = ({
     const entryClasses = buildEntryClasses(width, shouldShowWidthClass);
     
     // Generate responsive spacing classes
-    const spacingClasses = getSpacingClasses(gapSize || {});
+    const spacingClasses = getSpacingClasses(orbGap || {});
     const combinedClasses = combineClasses(entryClasses, spacingClasses);
     
     const blockProps = useBlockProps({

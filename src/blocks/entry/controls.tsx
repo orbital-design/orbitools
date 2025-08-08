@@ -132,7 +132,7 @@ function createToolsPanelItem(
  * Entry Block Controls Component
  */
 export default function EntryControls({ attributes, setAttributes, context }: EntryControlsProps) {
-    const { width, gapSize } = attributes;
+    const { width, orbGap } = attributes;
     const { 
         'orb/layoutType': parentLayoutType = 'row',
         'orb/itemWidth': parentItemWidth = 'equal',
@@ -198,7 +198,7 @@ export default function EntryControls({ attributes, setAttributes, context }: En
      * Handle responsive spacing
      */
     const handleSpacingChange = (newSpacing: ResponsiveValue<string>) => {
-        setAttributes({ gapSize: newSpacing });
+        setAttributes({ orbGap: newSpacing });
     };
 
     return (
@@ -208,7 +208,7 @@ export default function EntryControls({ attributes, setAttributes, context }: En
                     label="Entry Settings"
                     resetAll={() => {
                         resetWidth();
-                        setAttributes({ gapSize: {} });
+                        setAttributes({ orbGap: {} });
                     }}
                     panelId="entry-layout-panel"
                 >
@@ -274,10 +274,11 @@ export default function EntryControls({ attributes, setAttributes, context }: En
 
                 {/* Responsive Spacing Control */}
                 <SpacingControl
-                    spacing={gapSize || {}}
+                    spacing={orbGap || {}}
                     onSpacingChange={handleSpacingChange}
                     label="Entry Spacing"
                     panelId="entry-spacing-panel"
+                    blockName="orb/entry"
                 />
             </InspectorControls>
         </Fragment>

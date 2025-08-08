@@ -20,7 +20,7 @@ export const FLEX_DEFAULTS = {
     flexWrap: 'nowrap' as const,
     alignItems: 'stretch' as const,
     justifyContent: 'flex-start' as const,
-    gapSize: undefined,
+    orbGap: undefined,
     restrictContentWidth: false,
     stackOnMobile: true,
     itemWidth: 'fit' as const,

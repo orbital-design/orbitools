@@ -17,8 +17,14 @@
             "background": true,
             "text": true
         },
-        "spacing": {
-            "padding": true
+        "spacing": false,
+        "orbitools": {
+            "dimensions": {
+                "breakpoints": true,
+                "gap": true,
+                "margin": false,
+                "padding": false
+            }
         },
         "typography": {
             "textAlign": true
@@ -34,7 +40,7 @@
             "type": "string",
             "default": "equal"
         },
-        "gapSize": {
+        "orbGap": {
             "type": "object",
             "default": {}
         }

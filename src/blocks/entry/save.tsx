@@ -6,7 +6,7 @@ import { buildEntryClasses, filterWordPressClasses, combineClasses } from '../ut
 import { getSpacingClasses } from '../utils/spacing-control';
 
 const Save: React.FC<BlockSaveProps<LayoutItemAttributes>> = ({ attributes }) => {
-    const { width, parentItemWidth, gapSize } = attributes;
+    const { width, parentItemWidth, orbGap } = attributes;
     
     const blockProps = useBlockProps.save();
     
@@ -25,7 +25,7 @@ const Save: React.FC<BlockSaveProps<LayoutItemAttributes>> = ({ attributes }) =>
     const entryClasses = buildEntryClasses(width, shouldOutputWidthClass);
     
     // Generate responsive spacing classes
-    const spacingClasses = getSpacingClasses(gapSize || {});
+    const spacingClasses = getSpacingClasses(orbGap || {});
     const combinedClasses = combineClasses(entryClasses, spacingClasses, filteredClasses);
 
     const finalProps = {
