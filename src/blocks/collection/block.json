@@ -95,18 +95,6 @@
                 "space-evenly"
             ]
         },
-        "orbGap": {
-            "type": "object",
-            "default": {}
-        },
-        "orbPadding": {
-            "type": "object",
-            "default": {}
-        },
-        "orbMargin": {
-            "type": "object",
-            "default": {}
-        },
         "restrictContentWidth": {
             "type": "boolean",
             "default": false

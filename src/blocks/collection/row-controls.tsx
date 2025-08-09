@@ -14,7 +14,6 @@
 
 import { Fragment } from '@wordpress/element';
 import { InspectorControls, BlockControls, useSettings } from '@wordpress/block-editor';
-import DimensionsControl, { getGapClasses, getPaddingClasses, getMarginClasses } from '../utils/tabbed-dimensions-control';
 import type { ResponsiveValue } from '../utils/responsive-controls';
 import {
     __experimentalToolsPanel as ToolsPanel,
@@ -180,9 +179,6 @@ export default function RowControls({ attributes, setAttributes }: RowControlsPr
         alignItems = ROW_DEFAULTS.alignItems,
         justifyContent = ROW_DEFAULTS.justifyContent,
         stackOnMobile = ROW_DEFAULTS.stackOnMobile,
-        orbGap,
-        orbPadding,
-        orbMargin,
     } = attributes;
 
     /**
@@ -515,18 +511,6 @@ export default function RowControls({ attributes, setAttributes }: RowControlsPr
      * Inspector panel controls for row-specific settings
      */
     const renderInspectorControls = () => {
-        // Handle responsive dimensions
-        const handleGapChange = (newGap: ResponsiveValue<string>) => {
-            updateAttribute('orbGap', newGap);
-        };
-
-        const handlePaddingChange = (newPadding: ResponsiveValue<string>) => {
-            updateAttribute('orbPadding', newPadding);
-        };
-
-        const handleMarginChange = (newMargin: ResponsiveValue<string>) => {
-            updateAttribute('orbMargin', newMargin);
-        };
 
         return (
             <>
@@ -646,18 +630,6 @@ export default function RowControls({ attributes, setAttributes }: RowControlsPr
                 </ToolsPanel>
             </InspectorControls>
 
-            <InspectorControls group="styles">
-                {/* Responsive Dimensions Control */}
-                <DimensionsControl
-                    gap={orbGap}
-                    padding={orbPadding}
-                    margin={orbMargin}
-                    onGapChange={handleGapChange}
-                    onPaddingChange={handlePaddingChange}
-                    onMarginChange={handleMarginChange}
-                    blockName="orb/collection"
-                />
-            </InspectorControls>
             </>
         );
     };

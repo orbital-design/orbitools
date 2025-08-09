@@ -39,6 +39,10 @@ module.exports = {
         'admin/js/modules/typography-presets/editor-presets-attribute-registration': path.resolve(process.cwd(), 'src', 'modules', 'typography-presets','admin', 'js','editor-presets-attribute-registration.js'),
         'admin/js/modules/typography-presets/editor-presets-classname-application': path.resolve(process.cwd(), 'src', 'modules', 'typography-presets','admin', 'js','editor-presets-classname-application.js'),
         'admin/js/modules/typography-presets/editor-presets-register-controls': path.resolve(process.cwd(), 'src', 'modules', 'typography-presets','admin', 'js','editor-presets-register-controls.js'),
+        // - JS ~ Controls ~ Dimensions
+        'controls/dimensions/editor-dimensions-attribute-registration': path.resolve(process.cwd(), 'src', 'controls', 'dimensions','admin', 'js','editor-dimensions-attribute-registration.js'),
+        'controls/dimensions/editor-dimensions-classname-application': path.resolve(process.cwd(), 'src', 'controls', 'dimensions','admin', 'js','editor-dimensions-classname-application.js'),
+        'controls/dimensions/editor-dimensions-register-controls': path.resolve(process.cwd(), 'src', 'controls', 'dimensions','admin', 'js','editor-dimensions-register-controls.js'),
 
     },
     output: {

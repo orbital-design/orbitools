@@ -15,7 +15,6 @@ import {
     __experimentalToolsPanelItem as ToolsPanelItem,
     RangeControl,
 } from '@wordpress/components';
-import DimensionsControl from '../utils/tabbed-dimensions-control';
 import type { ResponsiveValue } from '../utils/responsive-controls';
 import type { LayoutItemAttributes } from '../types';
 
@@ -132,7 +131,7 @@ function createToolsPanelItem(
  * Entry Block Controls Component
  */
 export default function EntryControls({ attributes, setAttributes, context }: EntryControlsProps) {
-    const { width, orbGap, orbPadding } = attributes;
+    const { width } = attributes;
     const { 
         'orb/layoutType': parentLayoutType = 'row',
         'orb/itemWidth': parentItemWidth = 'equal',
@@ -194,16 +193,6 @@ export default function EntryControls({ attributes, setAttributes, context }: En
         return columnConfig.getValueLabel(sliderValue);
     };
 
-    /**
-     * Handle responsive dimensions
-     */
-    const handleGapChange = (newGap: ResponsiveValue<string>) => {
-        setAttributes({ orbGap: newGap });
-    };
-
-    const handlePaddingChange = (newPadding: ResponsiveValue<string>) => {
-        setAttributes({ orbPadding: newPadding });
-    };
 
     return (
         <Fragment>
@@ -274,19 +263,6 @@ export default function EntryControls({ attributes, setAttributes, context }: En
                         </>
                     )}
                 </ToolsPanel>
-            </InspectorControls>
-
-            <InspectorControls group="styles">
-                {/* Responsive Dimensions Control */}
-                <DimensionsControl
-                    gap={orbGap}
-                    padding={orbPadding}
-                    margin={undefined}
-                    onGapChange={handleGapChange}
-                    onPaddingChange={handlePaddingChange}
-                    onMarginChange={undefined}
-                    blockName="orb/entry"
-                />
             </InspectorControls>
         </Fragment>
     );

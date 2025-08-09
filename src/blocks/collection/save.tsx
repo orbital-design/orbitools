@@ -4,7 +4,6 @@ import type { BlockSaveProps } from '@wordpress/blocks';
 import type { LayoutAttributes } from '../types';
 import { generateFlexAttributes } from '../utils/flex-attributes';
 import { buildCollectionClasses, filterWordPressClasses, combineClasses } from '../utils/class-builders';
-import { getGapClasses, getPaddingClasses, getMarginClasses } from '../utils/tabbed-dimensions-control';
 
 
 const Save: React.FC<BlockSaveProps<LayoutAttributes>> = ({ attributes }) => {
@@ -24,11 +23,8 @@ const Save: React.FC<BlockSaveProps<LayoutAttributes>> = ({ attributes }) => {
     // Build semantic class names using utility functions
     const collectionClasses = buildCollectionClasses(layoutType, itemWidth, columnSystem);
     
-    // Generate responsive dimension classes
-    const gapClasses = getGapClasses(orbGap || {});
-    const paddingClasses = getPaddingClasses(orbPadding || {});
-    const marginClasses = getMarginClasses(orbMargin || {});
-    const allClasses = combineClasses(collectionClasses, gapClasses, paddingClasses, marginClasses, filteredClasses);
+    // Dimension classes are now handled automatically by the dimensions control system
+    const allClasses = combineClasses(collectionClasses, filteredClasses);
 
     if (needsWrapper) {
         // Full-width with content constraint: wrapper gets filtered blockProps, inner div gets our classes
@@ -37,7 +33,7 @@ const Save: React.FC<BlockSaveProps<LayoutAttributes>> = ({ attributes }) => {
             className: filteredClasses
         };
         
-        const innerClasses = combineClasses(collectionClasses, gapClasses, paddingClasses, marginClasses);
+        const innerClasses = combineClasses(collectionClasses);
         
         return (
             <div {...wrapperProps}>

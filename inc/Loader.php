@@ -13,6 +13,7 @@ use Orbitools\Modules\Menu_Dividers\Menu_Dividers;
 use Orbitools\Modules\Analytics\Analytics;
 use Orbitools\Modules\Layout_Blocks\Layout_Blocks;
 use Orbitools\Modules\User_Avatars\User_Avatars;
+use Orbitools\Modules\Dimensions_Controls\Dimensions_Controls;
 
 /**
  * Class Loader
@@ -71,6 +72,7 @@ class Loader
         $this->modules[] = new Menu_Dividers();
         $this->modules[] = new Analytics();
         $this->modules[] = new Layout_Blocks();
+        $this->modules[] = new Dimensions_Controls();
         $this->modules[] = new User_Avatars();
     }
 }

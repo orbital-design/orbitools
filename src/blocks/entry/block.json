@@ -39,14 +39,6 @@
         "parentItemWidth": {
             "type": "string",
             "default": "equal"
-        },
-        "orbGap": {
-            "type": "object",
-            "default": {}
-        },
-        "orbPadding": {
-            "type": "object",
-            "default": {}
         }
     },
     "usesContext": [
