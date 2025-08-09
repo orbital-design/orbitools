@@ -529,19 +529,17 @@ export default function RowControls({ attributes, setAttributes }: RowControlsPr
         };
 
         return (
-            <InspectorControls group="settings">
-                {/* Layout ToolsPanel */}
-                <ToolsPanel
-                    label="Layout"
-                    resetAll={() => {
-                        updateAttribute('columnCount', ROW_DEFAULTS.columnCount);
-                        updateAttribute('orbGap', undefined);
-                        updateAttribute('orbPadding', undefined);
-                        updateAttribute('orbMargin', undefined);
-                        updateAttribute('stackOnMobile', ROW_DEFAULTS.stackOnMobile);
-                    }}
-                    panelId="collection-row-layout-panel"
-                >
+            <>
+                <InspectorControls group="settings">
+                    {/* Layout ToolsPanel */}
+                    <ToolsPanel
+                        label="Layout"
+                        resetAll={() => {
+                            updateAttribute('columnCount', ROW_DEFAULTS.columnCount);
+                            updateAttribute('stackOnMobile', ROW_DEFAULTS.stackOnMobile);
+                        }}
+                        panelId="collection-row-layout-panel"
+                    >
                     {/* Column Count Control */}
                     {createToolsPanelItem(
                         'columnCount',
@@ -605,17 +603,6 @@ export default function RowControls({ attributes, setAttributes }: RowControlsPr
                     )}
                 </ToolsPanel>
 
-                {/* Responsive Dimensions Control */}
-                <DimensionsControl
-                    gap={orbGap}
-                    padding={orbPadding}
-                    margin={orbMargin}
-                    onGapChange={handleGapChange}
-                    onPaddingChange={handlePaddingChange}
-                    onMarginChange={handleMarginChange}
-                    blockName="orb/collection"
-                />
-
                 {/* Entries ToolsPanel */}
                 <ToolsPanel
                     label="Entries"
@@ -658,6 +645,20 @@ export default function RowControls({ attributes, setAttributes }: RowControlsPr
                     )}
                 </ToolsPanel>
             </InspectorControls>
+
+            <InspectorControls group="styles">
+                {/* Responsive Dimensions Control */}
+                <DimensionsControl
+                    gap={orbGap}
+                    padding={orbPadding}
+                    margin={orbMargin}
+                    onGapChange={handleGapChange}
+                    onPaddingChange={handlePaddingChange}
+                    onMarginChange={handleMarginChange}
+                    blockName="orb/collection"
+                />
+            </InspectorControls>
+            </>
         );
     };
 

@@ -19,7 +19,7 @@
  */
 
 import { __ } from '@wordpress/i18n';
-import { RangeControl, Button, TabPanel } from '@wordpress/components';
+import { RangeControl, Button } from '@wordpress/components';
 import { useState, useEffect } from '@wordpress/element';
 import {
     __experimentalToolsPanel as ToolsPanel,
@@ -271,13 +271,13 @@ function createBoxControl(
     );
 
     return (
-        <div style={{ marginBottom: '16px' }}>
+        <div style={{ marginBottom: '8px' }}>
             {/* Header with label and toggle button */}
             <div style={{
                 display: 'flex',
                 justifyContent: 'space-between',
                 alignItems: 'center',
-                marginBottom: '12px'
+                marginBottom: '8px'
             }}>
                 <label style={{
                     fontSize: '11px',
@@ -451,7 +451,7 @@ function createSpacingControl(
     ) : null;
 
     return (
-        <div style={{ marginBottom: hideLabel ? '0' : '16px' }}>
+        <div style={{ marginBottom: hideLabel ? '0' : '8px' }}>
             {!hideLabel && (
                 <div style={{
                     display: 'flex',
@@ -697,119 +697,6 @@ export default function DimensionsControl({
         }
     };
 
-    // Create ToolsPanel content for a specific breakpoint
-    const createBreakpointToolsPanel = (breakpointSlug: string, breakpoint: Breakpoint | null) => {
-
-        // Reset all dimensions for this breakpoint
-        const resetBreakpoint = () => {
-            if (dimensions.gap && onGapChange) {
-                updateDimensionValue('gap', breakpointSlug, undefined);
-            }
-            if (dimensions.padding && onPaddingChange) {
-                updateDimensionValue('padding', breakpointSlug, undefined);
-            }
-            if (dimensions.margin && onMarginChange) {
-                updateDimensionValue('margin', breakpointSlug, undefined);
-            }
-        };
-
-        return (
-            <div>
-                {/* Breakpoint Label */}
-                {breakpoint && (
-                    <div style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        marginBottom: '16px',
-                        paddingBottom: '8px',
-                        borderBottom: '1px solid #e0e0e0',
-                        gap: '8px'
-                    }}>
-                        <span style={{
-                            fontSize: '10px',
-                            fontWeight: '500',
-                            textTransform: 'uppercase',
-                            color: '#fff',
-                            backgroundColor: '#757575',
-                            padding: '2px 6px',
-                            borderRadius: '3px',
-                            lineHeight: '1.2'
-                        }}>
-                            {breakpoint.slug}
-                        </span>
-                        <span style={{
-                            fontSize: '12px',
-                            fontWeight: '500',
-                            color: '#1e1e1e'
-                        }}>
-                            {breakpoint.name}
-                        </span>
-                    </div>
-                )}
-
-                <ToolsPanel
-                    label={__('Dimensions', 'orbitools')}
-                    resetAll={resetBreakpoint}
-                    panelId={`dimensions-${breakpointSlug}-panel`}
-                >
-                {/* Gap Control */}
-                {dimensions.gap && onGapChange && (
-                    <ToolsPanelItem
-                        hasValue={() => gap?.[breakpointSlug as keyof ResponsiveValue] !== undefined}
-                        label={__('Gap', 'orbitools')}
-                        onDeselect={() => updateDimensionValue('gap', breakpointSlug, undefined)}
-                        isShownByDefault={false}
-                        panelId={`dimensions-${breakpointSlug}-panel`}
-                    >
-                        {createSpacingControl(
-                            spacingSizes,
-                            'gap',
-                            gap?.[breakpointSlug as keyof ResponsiveValue],
-                            (value) => updateDimensionValue('gap', breakpointSlug, value)
-                        )}
-                    </ToolsPanelItem>
-                )}
-
-                {/* Padding Control */}
-                {dimensions.padding && onPaddingChange && (
-                    <ToolsPanelItem
-                        hasValue={() => padding?.[breakpointSlug as keyof ResponsiveValue] !== undefined}
-                        label={__('Padding', 'orbitools')}
-                        onDeselect={() => updateDimensionValue('padding', breakpointSlug, undefined)}
-                        isShownByDefault={false}
-                        panelId={`dimensions-${breakpointSlug}-panel`}
-                    >
-
-                        {createBoxControl(
-                            spacingSizes,
-                            'padding',
-                            padding?.[breakpointSlug as keyof ResponsiveValue] || {},
-                            (value) => updateDimensionValue('padding', breakpointSlug, value)
-                        )}
-                    </ToolsPanelItem>
-                )}
-
-                {/* Margin Control */}
-                {dimensions.margin && onMarginChange && (
-                    <ToolsPanelItem
-                        hasValue={() => margin?.[breakpointSlug as keyof ResponsiveValue] !== undefined}
-                        label={__('Margin', 'orbitools')}
-                        onDeselect={() => updateDimensionValue('margin', breakpointSlug, undefined)}
-                        isShownByDefault={false}
-                        panelId={`dimensions-${breakpointSlug}-panel`}
-                    >
-                        {createBoxControl(
-                            spacingSizes,
-                            'margin',
-                            margin?.[breakpointSlug as keyof ResponsiveValue] || {},
-                            (value) => updateDimensionValue('margin', breakpointSlug, value)
-                        )}
-                    </ToolsPanelItem>
-                )}
-                </ToolsPanel>
-            </div>
-        );
-    };
 
     // Breakpoint icons for tabs
     const breakpointIcons = {
@@ -845,33 +732,146 @@ export default function DimensionsControl({
         )
     };
 
-    // Create tab data for TabPanel
-    const tabs = allBreakpoints.map(breakpoint => {
-        const breakpointSlug = breakpoint?.slug || 'base';
-        const icon = breakpointIcons[breakpointSlug as keyof typeof breakpointIcons] || breakpointIcons.base;
-
-        return {
-            name: breakpointSlug,
-            title: '', // Empty title for icon-only tabs
-            icon: icon,
-            className: `dimensions-tab-${breakpointSlug}`
-        };
-    });
 
     return (
-        <div>
-            <TabPanel
-                className="dimensions-tab-panel"
-                tabs={tabs}
-                initialTabName="base"
-            >
-                {(tab) => {
-                    const breakpoint = allBreakpoints.find(bp =>
-                        (bp?.slug || 'base') === tab.name
-                    );
-                    return createBreakpointToolsPanel(tab.name, breakpoint || null);
-                }}
-            </TabPanel>
-        </div>
+        <ToolsPanel
+            label={__('Dimensions', 'orbitools')}
+            resetAll={resetAllDimensions}
+            panelId="main-dimensions-panel"
+        >
+            {allBreakpoints.map((breakpoint, index) => {
+                const breakpointSlug = breakpoint?.slug || 'base';
+                const icon = breakpointIcons[breakpointSlug as keyof typeof breakpointIcons] || breakpointIcons.base;
+                const label = breakpoint ? breakpoint.name : __('Base', 'orbitools');
+                
+                return (
+                    <ToolsPanelItem
+                        key={breakpointSlug}
+                        hasValue={() => {
+                            // Has value if any dimension is set for this breakpoint
+                            return (gap?.[breakpointSlug as keyof ResponsiveValue] !== undefined) ||
+                                   (padding?.[breakpointSlug as keyof ResponsiveValue] !== undefined) ||
+                                   (margin?.[breakpointSlug as keyof ResponsiveValue] !== undefined);
+                        }}
+                        label={label}
+                        onDeselect={() => {
+                            // Reset all dimensions for this breakpoint
+                            if (dimensions.gap && onGapChange) {
+                                updateDimensionValue('gap', breakpointSlug, undefined);
+                            }
+                            if (dimensions.padding && onPaddingChange) {
+                                updateDimensionValue('padding', breakpointSlug, undefined);
+                            }
+                            if (dimensions.margin && onMarginChange) {
+                                updateDimensionValue('margin', breakpointSlug, undefined);
+                            }
+                        }}
+                        isShownByDefault={index === 0} // Only show base by default
+                        panelId="main-dimensions-panel"
+                    >
+                        {/* Nested ToolsPanel for this breakpoint's dimensions */}
+                        <div style={{ 
+                            marginLeft: 'calc(16px * -1)',
+                            marginRight: 'calc(16px * -1)',
+                            maxWidth: 'none'
+                        }}>
+                            {/* Only show icon/label header for non-base breakpoints */}
+                            {breakpointSlug !== 'base' && (
+                                <div style={{ 
+                                    display: 'flex', 
+                                    alignItems: 'center', 
+                                    gap: '8px', 
+                                    paddingBottom: '8px',
+                                    borderBottom: '1px solid #e0e0e0',
+                                    marginLeft: '16px',
+                                    marginRight: '16px'
+                                }}>
+                                    <div style={{ width: '16px', height: '16px', flexShrink: 0 }}>
+                                        {icon}
+                                    </div>
+                                    <span style={{ 
+                                        fontSize: '12px', 
+                                        fontWeight: '500', 
+                                        color: '#1e1e1e' 
+                                    }}>
+                                        {label}
+                                    </span>
+                                </div>
+                            )}
+                            <ToolsPanel
+                                label={__('Controls', 'orbitools')}
+                                resetAll={() => {
+                                // Reset all dimensions for this breakpoint
+                                if (dimensions.gap && onGapChange) {
+                                    updateDimensionValue('gap', breakpointSlug, undefined);
+                                }
+                                if (dimensions.padding && onPaddingChange) {
+                                    updateDimensionValue('padding', breakpointSlug, undefined);
+                                }
+                                if (dimensions.margin && onMarginChange) {
+                                    updateDimensionValue('margin', breakpointSlug, undefined);
+                                }
+                            }}
+                            panelId={`${breakpointSlug}-dimensions-panel`}
+                        >
+                            {/* Gap Control */}
+                            {dimensions.gap && onGapChange && (
+                                <ToolsPanelItem
+                                    hasValue={() => gap?.[breakpointSlug as keyof ResponsiveValue] !== undefined}
+                                    label={__('Gap', 'orbitools')}
+                                    onDeselect={() => updateDimensionValue('gap', breakpointSlug, undefined)}
+                                    isShownByDefault={breakpointSlug === 'base'}
+                                    panelId={`${breakpointSlug}-dimensions-panel`}
+                                >
+                                    {createSpacingControl(
+                                        spacingSizes,
+                                        'gap',
+                                        gap?.[breakpointSlug as keyof ResponsiveValue],
+                                        (value) => updateDimensionValue('gap', breakpointSlug, value)
+                                    )}
+                                </ToolsPanelItem>
+                            )}
+
+                            {/* Padding Control */}
+                            {dimensions.padding && onPaddingChange && (
+                                <ToolsPanelItem
+                                    hasValue={() => padding?.[breakpointSlug as keyof ResponsiveValue] !== undefined}
+                                    label={__('Padding', 'orbitools')}
+                                    onDeselect={() => updateDimensionValue('padding', breakpointSlug, undefined)}
+                                    isShownByDefault={false}
+                                    panelId={`${breakpointSlug}-dimensions-panel`}
+                                >
+                                    {createBoxControl(
+                                        spacingSizes,
+                                        'padding',
+                                        padding?.[breakpointSlug as keyof ResponsiveValue] || {},
+                                        (value) => updateDimensionValue('padding', breakpointSlug, value)
+                                    )}
+                                </ToolsPanelItem>
+                            )}
+
+                            {/* Margin Control */}
+                            {dimensions.margin && onMarginChange && (
+                                <ToolsPanelItem
+                                    hasValue={() => margin?.[breakpointSlug as keyof ResponsiveValue] !== undefined}
+                                    label={__('Margin', 'orbitools')}
+                                    onDeselect={() => updateDimensionValue('margin', breakpointSlug, undefined)}
+                                    isShownByDefault={false}
+                                    panelId={`${breakpointSlug}-dimensions-panel`}
+                                >
+                                    {createBoxControl(
+                                        spacingSizes,
+                                        'margin',
+                                        margin?.[breakpointSlug as keyof ResponsiveValue] || {},
+                                        (value) => updateDimensionValue('margin', breakpointSlug, value)
+                                    )}
+                                </ToolsPanelItem>
+                            )}
+                        </ToolsPanel>
+                        </div>
+                    </ToolsPanelItem>
+                );
+            })}
+        </ToolsPanel>
     );
 }
