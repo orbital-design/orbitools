@@ -4,15 +4,17 @@
  * Automatically adds dimension controls to blocks with orbitools.dimensions support
  */
 
+import { getBreakpointOptions } from '../../../../core/utils/breakpoints.js';
+
 (function() {
     // Configuration functions from dimensions-config.js (available globally)
     function getBlockDimensionsConfig(blockName) {
         const configData = window.orbitoolsDimensionsConfig || {};
-        
+
         if (configData[blockName]) {
             return configData[blockName];
         }
-        
+
         return {
             spacings: [],
             breakpoints: [],
@@ -26,16 +28,12 @@
         };
     }
 
-    function getBreakpointOptions(blockName) {
-        const config = getBlockDimensionsConfig(blockName);
-        return config.breakpoints || [];
-    }
 
     const { addFilter } = wp.hooks;
     const { createHigherOrderComponent } = wp.compose;
     const { Fragment } = wp.element;
     const { InspectorControls, useSettings } = wp.blockEditor;
-    const { 
+    const {
         __experimentalToolsPanel: ToolsPanel,
         __experimentalToolsPanelItem: ToolsPanelItem,
         RangeControl,
@@ -52,7 +50,7 @@
         if (!blockType || !blockType.supports || !blockType.supports.orbitools) {
             return null;
         }
-        
+
         const dimensionsSupports = blockType.supports.orbitools.dimensions;
         if (!dimensionsSupports || dimensionsSupports === false) {
             return null;
@@ -74,10 +72,10 @@
      */
     function DimensionsControl({ gap, padding, margin, onGapChange, onPaddingChange, onMarginChange, blockName, supports }) {
         // Get proper breakpoints and spacing from configuration system
-        const breakpoints = getBreakpointOptions(blockName);
+        const breakpoints = getBreakpointOptions();
         const config = getBlockDimensionsConfig(blockName);
         const spacingPresets = config.spacings || useSpacingPresets();
-        
+
         const allBreakpoints = [null, ...breakpoints]; // null = base breakpoint
 
         // Breakpoint icons
@@ -130,7 +128,7 @@
                     value: value
                 };
             }
-            
+
             // Get current mode from stored data
             const currentMode = value?.type || 'all';
 
@@ -484,7 +482,7 @@
                         }
                     }, getSpacingDisplayName(spacingSizes, value || ''))
                 ),
-                
+
                 // Gap control with icon layout matching padding controls
                 dimensionType === 'gap' ? wp.element.createElement('div', {
                     style: {
@@ -569,7 +567,7 @@
                 const breakpointSlug = breakpoint?.slug || 'base';
                 const icon = breakpointIcons[breakpointSlug] || breakpointIcons.base;
                 const label = breakpoint ? breakpoint.name : 'Base';
-                
+
                 return wp.element.createElement(ToolsPanelItem, {
                     key: breakpointSlug,
                     hasValue: () => {
@@ -672,7 +670,7 @@
                                 )
                             ),
 
-                            // Margin Control  
+                            // Margin Control
                             supports.margin && wp.element.createElement(ToolsPanelItem, {
                                 hasValue: () => margin?.[breakpointSlug] !== undefined,
                                 label: 'Margin',
@@ -704,7 +702,7 @@
     const withDimensionControls = createHigherOrderComponent(function(BlockEdit) {
         return function(props) {
             const dimensionsSupports = blockHasDimensionsSupport(props.name);
-            
+
             if (!dimensionsSupports) {
                 return wp.element.createElement(BlockEdit, props);
             }

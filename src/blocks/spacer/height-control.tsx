@@ -1,8 +1,7 @@
 /**
  * Spacer Height Control
  * 
- * Responsive height control that uses theme.json spacing values
- * and generates CSS classes for different breakpoints.
+ * Uses ResponsiveToolsPanel pattern like dimensions control but for height with fill option
  * 
  * @file blocks/spacer/height-control.tsx
  * @since 1.0.0
@@ -12,47 +11,24 @@ import { __ } from '@wordpress/i18n';
 import { RangeControl } from '@wordpress/components';
 import { useSettings } from '@wordpress/block-editor';
 
-import ResponsiveToolsPanel, { 
+import ResponsiveControls, {
+    type ResponsiveValue, 
     type ResponsiveControlConfig,
-    type ResponsiveValue,
-    getResponsiveClasses,
-    type ControlRenderer
+    type ControlRenderer,
+    getResponsiveClasses
 } from '../../core/utils/responsive-controls';
 
-import { 
-    getBlockDimensionsConfig,
-    getBreakpointOptions 
-} from '../../core/utils/dimensions-config';
 
 export interface SpacerHeightControlProps {
     /** Current height responsive values */
     height: ResponsiveValue<string>;
     /** Callback when height values change */
     onHeightChange: (height: ResponsiveValue<string>) => void;
-    /** Block name for configuration lookup */
+    /** Block name for getting breakpoints */
     blockName: string;
 }
 
-
-/**
- * Helper to get spacing index by CSS variable reference
- */
-function getSpacingIndexByValue(spacingSizes: any[], value: string): number {
-    if (!spacingSizes || !Array.isArray(spacingSizes) || !value) return -1;
-
-    // Handle CSS variable references (e.g., "var(--wp--preset--spacing--medium)")
-    if (value.startsWith('var(--wp--preset--spacing--')) {
-        const slug = value.match(/var\(--wp--preset--spacing--([^)]+)\)/)?.[1];
-        if (slug) {
-            const index = spacingSizes.findIndex((size: any) => size.slug === slug);
-            return index >= 0 ? index : -1;
-        }
-    }
-
-    // Fallback: try to match by raw size value
-    const index = spacingSizes.findIndex((size: any) => size.size === value);
-    return index >= 0 ? index : -1;
-}
+export type { ResponsiveValue };
 
 /**
  * Get display name for spacing value
@@ -60,18 +36,14 @@ function getSpacingIndexByValue(spacingSizes: any[], value: string): number {
 function getSpacingDisplayName(spacingSizes: any[], value: string): string {
     if (!value) return 'Default';
     if (value === '0') return 'None';
+    if (value === 'fill') return 'Fill';
     
-    const index = getSpacingIndexByValue(spacingSizes, value);
-    if (index >= 0 && spacingSizes[index]) {
-        return spacingSizes[index].name;
-    }
-    
-    return value;
+    const spacing = spacingSizes.find((size: any) => size.slug === value);
+    return spacing ? spacing.name : value;
 }
 
 /**
  * Height Control Renderer Factory
- * Creates a renderer with access to spacing sizes
  */
 function createHeightControlRenderer(spacingSizes: any[]): ControlRenderer<string> {
     return ({ value, onChange, breakpoint }) => {
@@ -79,46 +51,18 @@ function createHeightControlRenderer(spacingSizes: any[]): ControlRenderer<strin
             return <div>Loading spacing sizes...</div>;
         }
 
-        const currentIndex = getSpacingIndexByValue(spacingSizes, value || '');
-        const maxIndex = spacingSizes.length - 1;
-        const fillIndex = maxIndex + 3; // After spacing sizes
+        // Add fill option to spacing sizes
+        const allOptions = [...spacingSizes, { slug: 'fill', name: 'Fill' }];
         
-        // Convert to slider index (0 = default, 1 = none, 2+ = spacing sizes, final = fill)
-        let sliderValue = 0;
-        if (value === undefined) {
-            sliderValue = 0; // Default
-        } else if (value === '0') {
-            sliderValue = 1; // None
-        } else if (value === 'fill') {
-            sliderValue = fillIndex; // Fill
-        } else if (currentIndex >= 0) {
-            sliderValue = currentIndex + 2; // Spacing size
-        } else {
-            sliderValue = 0; // Fallback to default
-        }
+        const currentIndex = value ? allOptions.findIndex(option => option.slug === value) : -1;
+        const sliderValue = currentIndex >= 0 ? currentIndex : 0;
         
         const updateHeight = (index: number | undefined) => {
-            if (index === undefined || index === 0) {
-                onChange(undefined); // Default
-            } else if (index === 1) {
-                onChange('0'); // None
-            } else if (index === fillIndex) {
-                onChange('fill'); // Fill
-            } else {
-                const spacingIndex = index - 2;
-                const spacing = spacingSizes[spacingIndex];
-                if (spacing) {
-                    // Store CSS variable reference
-                    onChange(`var(--wp--preset--spacing--${spacing.slug})`);
-                } else {
-                    onChange(undefined);
-                }
+            if (index === undefined || index < 0) {
+                onChange(undefined);
+            } else if (index < allOptions.length) {
+                onChange(allOptions[index].slug);
             }
-        };
-
-        const getCurrentDisplayName = () => {
-            if (value === 'fill') return 'Fill';
-            return getSpacingDisplayName(spacingSizes, value || '');
         };
 
         return (
@@ -143,27 +87,21 @@ function createHeightControlRenderer(spacingSizes: any[]): ControlRenderer<strin
                         fontWeight: '500',
                         color: '#757575'
                     }}>
-                        {getCurrentDisplayName()}
+                        {getSpacingDisplayName(spacingSizes, value || '')}
                     </span>
                 </div>
                 <RangeControl
                     value={sliderValue}
                     onChange={updateHeight}
                     min={0}
-                    max={fillIndex}
+                    max={allOptions.length - 1}
                     step={1}
                     marks={true}
                     withInputField={false}
                     renderTooltipContent={(index) => {
-                        if (index === 0) return 'Default';
-                        if (index === 1) return 'None';
-                        if (index === fillIndex) return 'Fill';
-                        const spacingIndex = index - 2;
-                        if (spacingIndex >= 0 && spacingIndex < spacingSizes.length) {
-                            const spacing = spacingSizes[spacingIndex];
-                            return spacing ? spacing.name : 'None';
-                        }
-                        return 'None';
+                        if (index === undefined || index === null || typeof index !== 'number') return '';
+                        if (index < 0 || index >= allOptions.length) return 'Default';
+                        return allOptions[index].name;
                     }}
                     __next40pxDefaultSize={true}
                     __nextHasNoMarginBottom={true}
@@ -185,7 +123,6 @@ function createHeightControlConfig(spacingSizes: any[]): ResponsiveControlConfig
             return Object.values(responsiveValue).some(value => value !== undefined);
         },
         onDeselect: () => {
-            // Reset all breakpoint values
             return {};
         },
         renderControl: createHeightControlRenderer(spacingSizes)
@@ -197,17 +134,7 @@ function createHeightControlConfig(spacingSizes: any[]): ResponsiveControlConfig
  */
 export function getHeightClasses(height: ResponsiveValue<string>): string {
     return getResponsiveClasses(height, 'h', (value: string) => {
-        // Handle special values
-        if (value === 'fill') return 'fill';
-        if (value === '0') return '0';
-        
-        // Convert CSS variable to class name
-        if (value.startsWith('var(--wp--preset--spacing--')) {
-            const slug = value.match(/var\(--wp--preset--spacing--([^)]+)\)/)?.[1];
-            return slug || '0';
-        }
-        
-        return value;
+        return value; // Just use the slug as-is
     });
 }
 
@@ -219,11 +146,7 @@ export default function SpacerHeightControl({
     onHeightChange,
     blockName
 }: SpacerHeightControlProps) {
-    // Get configuration from dimensions config system (with fallback to WordPress settings)
-    const config = getBlockDimensionsConfig(blockName);
-    const [wpSpacingSizes] = useSettings('spacing.spacingSizes');
-    
-    const spacingSizes = config.spacings || wpSpacingSizes || [];
+    const [spacingSizes] = useSettings('spacing.spacingSizes');
     
     // Don't render until we have spacing sizes
     if (!spacingSizes || !Array.isArray(spacingSizes)) {
@@ -241,13 +164,13 @@ export default function SpacerHeightControl({
     };
 
     return (
-        <ResponsiveToolsPanel
-            label={__('Height Settings', 'orbitools')}
-            panelId="spacer-height-panel"
+        <ResponsiveControls
+            label={__('Height', 'orbitools')}
             controls={[heightControlConfig]}
             values={{ height }}
             onValuesChange={handleValuesChange}
             resetAll={resetAll}
+            panelId="spacer-height-panel"
             blockName={blockName}
         />
     );

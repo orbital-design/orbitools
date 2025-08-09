@@ -12,8 +12,7 @@ import { Fragment } from '@wordpress/element';
 import { InspectorControls, useBlockProps } from '@wordpress/block-editor';
 import type { BlockEditProps } from '@wordpress/blocks';
 
-import SpacerHeightControl, { getHeightClasses } from './height-control';
-import type { ResponsiveValue } from '../../core/utils/responsive-controls';
+import SpacerHeightControl, { getHeightClasses, type ResponsiveValue } from './height-control';
 
 export interface SpacerAttributes {
     height: ResponsiveValue<string>;
@@ -72,7 +71,7 @@ export default function SpacerEdit({
 
     return (
         <Fragment>
-            <InspectorControls group="settings">
+            <InspectorControls>
                 <SpacerHeightControl
                     height={height}
                     onHeightChange={onHeightChange}

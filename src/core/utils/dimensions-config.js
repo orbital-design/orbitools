@@ -51,6 +51,7 @@ export function getSpacingOptions(blockName) {
  * 
  * @param {string} blockName - The block name
  * @returns {Array} Array of breakpoint options with slug, value, and name
+ * @deprecated Use getBreakpointOptions from '../../core/utils/breakpoints' instead
  */
 export function getBreakpointOptions(blockName) {
     const config = getBlockDimensionsConfig(blockName);

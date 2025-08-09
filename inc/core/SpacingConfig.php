@@ -487,6 +487,24 @@ class SpacingConfig {
                 'orbitoolsDimensionsConfig',
                 $blocks_config
             );
+            
+            // Localize theme configuration
+            \wp_localize_script(
+                $handle,
+                'orbitoolsThemeConfig',
+                [
+                    'settings' => [
+                        'breakpoints' => self::get_theme_breakpoints()
+                    ]
+                ]
+            );
+            
+            // Localize plugin breakpoints configuration  
+            \wp_localize_script(
+                $handle,
+                'orbitoolsBreakpoints',
+                self::get_plugin_default_breakpoints()
+            );
         }
     }
 }

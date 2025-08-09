@@ -28,7 +28,8 @@ import {
 
 import type { ResponsiveValue, Breakpoint } from '../../core/utils/responsive-controls';
 import { getResponsiveClasses } from '../../core/utils/responsive-controls';
-import { getBlockDimensionsConfig, getBreakpointOptions } from '../../core/utils/dimensions-config';
+import { getBlockDimensionsConfig } from '../../core/utils/dimensions-config';
+import { getBreakpointOptions } from '../../core/utils/breakpoints';
 
 export interface DimensionsControlProps {
     /** Current gap responsive values */
