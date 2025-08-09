@@ -23,7 +23,7 @@
                 "breakpoints": true,
                 "gap": true,
                 "margin": false,
-                "padding": false
+                "padding": true
             }
         },
         "typography": {
@@ -41,6 +41,10 @@
             "default": "equal"
         },
         "orbGap": {
+            "type": "object",
+            "default": {}
+        },
+        "orbPadding": {
             "type": "object",
             "default": {}
         }

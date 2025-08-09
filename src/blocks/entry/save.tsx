@@ -3,10 +3,10 @@ import { InnerBlocks, useBlockProps } from '@wordpress/block-editor';
 import type { BlockSaveProps } from '@wordpress/blocks';
 import type { LayoutItemAttributes } from '../types';
 import { buildEntryClasses, filterWordPressClasses, combineClasses } from '../utils/class-builders';
-import { getSpacingClasses } from '../utils/spacing-control';
+import { getGapClasses, getPaddingClasses } from '../utils/tabbed-dimensions-control';
 
 const Save: React.FC<BlockSaveProps<LayoutItemAttributes>> = ({ attributes }) => {
-    const { width, parentItemWidth, orbGap } = attributes;
+    const { width, parentItemWidth, orbGap, orbPadding } = attributes;
     
     const blockProps = useBlockProps.save();
     
@@ -24,9 +24,10 @@ const Save: React.FC<BlockSaveProps<LayoutItemAttributes>> = ({ attributes }) =>
     // Build semantic class names using utility functions
     const entryClasses = buildEntryClasses(width, shouldOutputWidthClass);
     
-    // Generate responsive spacing classes
-    const spacingClasses = getSpacingClasses(orbGap || {});
-    const combinedClasses = combineClasses(entryClasses, spacingClasses, filteredClasses);
+    // Generate responsive dimension classes
+    const gapClasses = getGapClasses(orbGap || {});
+    const paddingClasses = getPaddingClasses(orbPadding || {});
+    const combinedClasses = combineClasses(entryClasses, gapClasses, paddingClasses, filteredClasses);
 
     const finalProps = {
         ...blockProps,

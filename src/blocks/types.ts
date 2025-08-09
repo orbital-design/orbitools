@@ -21,4 +21,5 @@ export interface LayoutItemAttributes {
     width: string;
     parentItemWidth: 'fit' | 'equal' | 'custom';
     orbGap?: ResponsiveValue<string>;
+    orbPadding?: ResponsiveValue<string>;
 }

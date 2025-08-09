@@ -15,7 +15,7 @@ import {
     __experimentalToolsPanelItem as ToolsPanelItem,
     RangeControl,
 } from '@wordpress/components';
-import SpacingControl from '../utils/spacing-control';
+import DimensionsControl from '../utils/tabbed-dimensions-control';
 import type { ResponsiveValue } from '../utils/responsive-controls';
 import type { LayoutItemAttributes } from '../types';
 
@@ -132,7 +132,7 @@ function createToolsPanelItem(
  * Entry Block Controls Component
  */
 export default function EntryControls({ attributes, setAttributes, context }: EntryControlsProps) {
-    const { width, orbGap } = attributes;
+    const { width, orbGap, orbPadding } = attributes;
     const { 
         'orb/layoutType': parentLayoutType = 'row',
         'orb/itemWidth': parentItemWidth = 'equal',
@@ -195,10 +195,14 @@ export default function EntryControls({ attributes, setAttributes, context }: En
     };
 
     /**
-     * Handle responsive spacing
+     * Handle responsive dimensions
      */
-    const handleSpacingChange = (newSpacing: ResponsiveValue<string>) => {
-        setAttributes({ orbGap: newSpacing });
+    const handleGapChange = (newGap: ResponsiveValue<string>) => {
+        setAttributes({ orbGap: newGap });
+    };
+
+    const handlePaddingChange = (newPadding: ResponsiveValue<string>) => {
+        setAttributes({ orbPadding: newPadding });
     };
 
     return (
@@ -208,7 +212,6 @@ export default function EntryControls({ attributes, setAttributes, context }: En
                     label="Entry Settings"
                     resetAll={() => {
                         resetWidth();
-                        setAttributes({ orbGap: {} });
                     }}
                     panelId="entry-layout-panel"
                 >
@@ -271,13 +274,17 @@ export default function EntryControls({ attributes, setAttributes, context }: En
                         </>
                     )}
                 </ToolsPanel>
+            </InspectorControls>
 
-                {/* Responsive Spacing Control */}
-                <SpacingControl
-                    spacing={orbGap || {}}
-                    onSpacingChange={handleSpacingChange}
-                    label="Entry Spacing"
-                    panelId="entry-spacing-panel"
+            <InspectorControls group="styles">
+                {/* Responsive Dimensions Control */}
+                <DimensionsControl
+                    gap={orbGap}
+                    padding={orbPadding}
+                    margin={undefined}
+                    onGapChange={handleGapChange}
+                    onPaddingChange={handlePaddingChange}
+                    onMarginChange={undefined}
                     blockName="orb/entry"
                 />
             </InspectorControls>

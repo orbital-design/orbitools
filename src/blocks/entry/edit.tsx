@@ -9,7 +9,7 @@ import type { BlockEditProps } from '@wordpress/blocks';
 import type { LayoutItemAttributes } from '../types';
 import EntryControls from './controls';
 import { buildEntryClasses, combineClasses } from '../utils/class-builders';
-import { getSpacingClasses } from '../utils/spacing-control';
+import { getGapClasses, getPaddingClasses } from '../utils/tabbed-dimensions-control';
 
 const Edit: React.FC<BlockEditProps<LayoutItemAttributes>> = ({
     attributes,
@@ -17,7 +17,7 @@ const Edit: React.FC<BlockEditProps<LayoutItemAttributes>> = ({
     context,
     clientId
 }) => {
-    const { width, parentItemWidth, orbGap } = attributes;
+    const { width, parentItemWidth, orbGap, orbPadding } = attributes;
     const {
         'orb/layoutType': layoutType,
         'orb/itemWidth': itemWidth,
@@ -43,9 +43,10 @@ const Edit: React.FC<BlockEditProps<LayoutItemAttributes>> = ({
     // Build semantic class names using utility functions
     const entryClasses = buildEntryClasses(width, shouldShowWidthClass);
     
-    // Generate responsive spacing classes
-    const spacingClasses = getSpacingClasses(orbGap || {});
-    const combinedClasses = combineClasses(entryClasses, spacingClasses);
+    // Generate responsive dimension classes
+    const gapClasses = getGapClasses(orbGap || {});
+    const paddingClasses = getPaddingClasses(orbPadding || {});
+    const combinedClasses = combineClasses(entryClasses, gapClasses, paddingClasses);
     
     const blockProps = useBlockProps({
         className: combinedClasses
