@@ -15,7 +15,7 @@ import {
     __experimentalToolsPanelItem as ToolsPanelItem,
     RangeControl,
 } from '@wordpress/components';
-import type { ResponsiveValue } from '../utils/responsive-controls';
+import type { ResponsiveValue } from '../../core/utils/responsive-controls';
 import type { LayoutItemAttributes } from '../types';
 
 interface EntryControlsProps {

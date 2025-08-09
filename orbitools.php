@@ -139,8 +139,8 @@ final class Orbitools
     {
         add_action('init', [$this, 'load_textdomain']);
 
-        if (class_exists('\Orbitools\Loader')) {
-            $loader = new \Orbitools\Loader();
+        if (class_exists('\Orbitools\Core\Loader')) {
+            $loader = new \Orbitools\Core\Loader();
             $loader->init();
         }
     }

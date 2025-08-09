@@ -16,11 +16,11 @@ import ResponsiveToolsPanel, {
     type ResponsiveValue,
     getResponsiveClasses,
     type ControlRenderer
-} from './responsive-controls';
+} from '../../core/utils/responsive-controls';
 
 import { 
     getBlockDimensionsConfig
-} from './dimensions-config';
+} from '../../core/utils/dimensions-config';
 
 export interface DimensionsControlProps {
     /** Current gap responsive values */

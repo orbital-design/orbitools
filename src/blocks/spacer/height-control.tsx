@@ -17,13 +17,20 @@ import ResponsiveToolsPanel, {
     type ResponsiveValue,
     getResponsiveClasses,
     type ControlRenderer
-} from '../utils/responsive-controls';
+} from '../../core/utils/responsive-controls';
+
+import { 
+    getBlockDimensionsConfig,
+    getBreakpointOptions 
+} from '../../core/utils/dimensions-config';
 
 export interface SpacerHeightControlProps {
     /** Current height responsive values */
     height: ResponsiveValue<string>;
     /** Callback when height values change */
     onHeightChange: (height: ResponsiveValue<string>) => void;
+    /** Block name for configuration lookup */
+    blockName: string;
 }
 
 
@@ -209,9 +216,14 @@ export function getHeightClasses(height: ResponsiveValue<string>): string {
  */
 export default function SpacerHeightControl({ 
     height, 
-    onHeightChange 
+    onHeightChange,
+    blockName
 }: SpacerHeightControlProps) {
-    const [spacingSizes] = useSettings('spacing.spacingSizes');
+    // Get configuration from dimensions config system (with fallback to WordPress settings)
+    const config = getBlockDimensionsConfig(blockName);
+    const [wpSpacingSizes] = useSettings('spacing.spacingSizes');
+    
+    const spacingSizes = config.spacings || wpSpacingSizes || [];
     
     // Don't render until we have spacing sizes
     if (!spacingSizes || !Array.isArray(spacingSizes)) {
@@ -236,6 +248,7 @@ export default function SpacerHeightControl({
             values={{ height }}
             onValuesChange={handleValuesChange}
             resetAll={resetAll}
+            blockName={blockName}
         />
     );
 }

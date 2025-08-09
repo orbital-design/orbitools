@@ -16,12 +16,12 @@ import ResponsiveToolsPanel, {
     type ResponsiveValue,
     getResponsiveClasses,
     type ControlRenderer
-} from './responsive-controls';
+} from '../../core/utils/responsive-controls';
 
 import { 
     getBlockDimensionsConfig,
     getBreakpointOptions 
-} from './dimensions-config';
+} from '../../core/utils/dimensions-config';
 
 export interface SpacingControlProps {
     /** Current spacing responsive values */

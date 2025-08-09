@@ -26,9 +26,9 @@ import {
     __experimentalToolsPanelItem as ToolsPanelItem,
 } from '@wordpress/components';
 
-import type { ResponsiveValue, Breakpoint } from './responsive-controls';
-import { getResponsiveClasses } from './responsive-controls';
-import { getBlockDimensionsConfig, getBreakpointOptions } from './dimensions-config';
+import type { ResponsiveValue, Breakpoint } from '../../core/utils/responsive-controls';
+import { getResponsiveClasses } from '../../core/utils/responsive-controls';
+import { getBlockDimensionsConfig, getBreakpointOptions } from '../../core/utils/dimensions-config';
 
 export interface DimensionsControlProps {
     /** Current gap responsive values */

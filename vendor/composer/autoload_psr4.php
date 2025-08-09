@@ -6,6 +6,12 @@ $vendorDir = dirname(__DIR__);
 $baseDir = dirname($vendorDir);
 
 return array(
-    'Orbitools\\Modules\\' => array($baseDir . '/modules'),
+    'Orbitools\\Modules\\' => array($baseDir . '/inc/modules'),
+    'Orbitools\\Core\\' => array($baseDir . '/inc/core'),
+    'Orbitools\\Controls\\' => array($baseDir . '/inc/controls'),
+    'Orbitools\\Blocks\\Spacer\\' => array($baseDir . '/inc/blocks/Spacer'),
+    'Orbitools\\Blocks\\Entry\\' => array($baseDir . '/inc/blocks/Entry'),
+    'Orbitools\\Blocks\\Collection\\' => array($baseDir . '/inc/blocks/Collection'),
+    'Orbitools\\Blocks\\' => array($baseDir . '/inc/blocks'),
     'Orbitools\\' => array($baseDir . '/inc'),
 );

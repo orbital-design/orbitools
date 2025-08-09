@@ -14,7 +14,7 @@
 
 import { Fragment } from '@wordpress/element';
 import { InspectorControls, BlockControls, useSettings } from '@wordpress/block-editor';
-import type { ResponsiveValue } from '../utils/responsive-controls';
+import type { ResponsiveValue } from '../../core/utils/responsive-controls';
 import {
     __experimentalToolsPanel as ToolsPanel,
     __experimentalToolsPanelItem as ToolsPanelItem,

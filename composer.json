@@ -2,7 +2,13 @@
     "autoload": {
       "psr-4": {
         "Orbitools\\": "inc/",
-        "Orbitools\\Modules\\": "modules/"
+        "Orbitools\\Core\\": "inc/core/",
+        "Orbitools\\Blocks\\": "inc/blocks/",
+        "Orbitools\\Blocks\\Collection\\": "inc/blocks/Collection/",
+        "Orbitools\\Blocks\\Entry\\": "inc/blocks/Entry/",
+        "Orbitools\\Blocks\\Spacer\\": "inc/blocks/Spacer/", 
+        "Orbitools\\Controls\\": "inc/controls/",
+        "Orbitools\\Modules\\": "inc/modules/"
       }
     }
   }

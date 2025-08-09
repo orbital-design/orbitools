@@ -19,8 +19,8 @@ module.exports = {
         'admin/css/modules/menu-dividers/admin': path.resolve(process.cwd(), 'src', 'modules', 'menu-dividers','admin', 'scss','admin.scss'),
         // - SCSS ~ Module ~ Menu Groups
         'admin/css/modules/menu-groups/admin': path.resolve(process.cwd(), 'src', 'modules', 'menu-groups','admin', 'scss','admin.scss'),
-        // - SCSS ~ Module ~ Typography Presets
-        'admin/css/modules/typography-presets/admin': path.resolve(process.cwd(), 'src', 'modules', 'typography-presets','admin', 'scss','admin.scss'),
+        // - SCSS ~ Controls ~ Typography Presets
+        'admin/css/controls/typography-presets/admin': path.resolve(process.cwd(), 'src', 'controls', 'typography-presets','admin', 'scss','admin.scss'),
 
         // JS entries for JavaScript compilation
         // - JS ~ Admin ~ Loaded in the admin area
@@ -33,16 +33,16 @@ module.exports = {
         // - JS ~ Module ~ Menu Groups
         'admin/js/modules/menu-groups/admin': path.resolve(process.cwd(), 'src', 'modules', 'menu-groups','admin', 'js','admin.js'),
         'admin/js/modules/menu-groups/processor': path.resolve(process.cwd(), 'src', 'modules', 'menu-groups','admin', 'js','processor.js'),
-        // - JS ~ Module ~ Typography Presets
-        'admin/js/modules/typography-presets/admin-handle-module-dashboard': path.resolve(process.cwd(), 'src', 'modules', 'typography-presets','admin', 'js','admin-handle-module-dashboard.js'),
-        'admin/js/modules/typography-presets/editor-disable-core-typography-controls': path.resolve(process.cwd(), 'src', 'modules', 'typography-presets','admin', 'js','editor-disable-core-typography-controls.js'),
-        'admin/js/modules/typography-presets/editor-presets-attribute-registration': path.resolve(process.cwd(), 'src', 'modules', 'typography-presets','admin', 'js','editor-presets-attribute-registration.js'),
-        'admin/js/modules/typography-presets/editor-presets-classname-application': path.resolve(process.cwd(), 'src', 'modules', 'typography-presets','admin', 'js','editor-presets-classname-application.js'),
-        'admin/js/modules/typography-presets/editor-presets-register-controls': path.resolve(process.cwd(), 'src', 'modules', 'typography-presets','admin', 'js','editor-presets-register-controls.js'),
+        // - JS ~ Controls ~ Typography Presets
+        'admin/js/controls/typography-presets/admin-handle-module-dashboard': path.resolve(process.cwd(), 'src', 'controls', 'typography-presets','admin', 'js','admin-handle-module-dashboard.js'),
+        'admin/js/controls/typography-presets/editor-disable-core-typography-controls': path.resolve(process.cwd(), 'src', 'controls', 'typography-presets','admin', 'js','editor-disable-core-typography-controls.js'),
+        'admin/js/controls/typography-presets/editor-presets-attribute-registration': path.resolve(process.cwd(), 'src', 'controls', 'typography-presets','admin', 'js','editor-presets-attribute-registration.js'),
+        'admin/js/controls/typography-presets/editor-presets-classname-application': path.resolve(process.cwd(), 'src', 'controls', 'typography-presets','admin', 'js','editor-presets-classname-application.js'),
+        'admin/js/controls/typography-presets/editor-presets-register-controls': path.resolve(process.cwd(), 'src', 'controls', 'typography-presets','admin', 'js','editor-presets-register-controls.js'),
         // - JS ~ Controls ~ Dimensions
-        'controls/dimensions/editor-dimensions-attribute-registration': path.resolve(process.cwd(), 'src', 'controls', 'dimensions','admin', 'js','editor-dimensions-attribute-registration.js'),
-        'controls/dimensions/editor-dimensions-classname-application': path.resolve(process.cwd(), 'src', 'controls', 'dimensions','admin', 'js','editor-dimensions-classname-application.js'),
-        'controls/dimensions/editor-dimensions-register-controls': path.resolve(process.cwd(), 'src', 'controls', 'dimensions','admin', 'js','editor-dimensions-register-controls.js'),
+        'admin/js/controls/dimensions/editor-dimensions-attribute-registration': path.resolve(process.cwd(), 'src', 'controls', 'dimensions','admin', 'js','editor-dimensions-attribute-registration.js'),
+        'admin/js/controls/dimensions/editor-dimensions-classname-application': path.resolve(process.cwd(), 'src', 'controls', 'dimensions','admin', 'js','editor-dimensions-classname-application.js'),
+        'admin/js/controls/dimensions/editor-dimensions-register-controls': path.resolve(process.cwd(), 'src', 'controls', 'dimensions','admin', 'js','editor-dimensions-register-controls.js'),
 
     },
     output: {

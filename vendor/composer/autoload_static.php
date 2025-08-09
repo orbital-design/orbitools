@@ -10,6 +10,12 @@ class ComposerStaticInit2729b1ccb17b637437551504dec0f927
         'O' => 
         array (
             'Orbitools\\Modules\\' => 18,
+            'Orbitools\\Core\\' => 15,
+            'Orbitools\\Controls\\' => 19,
+            'Orbitools\\Blocks\\Spacer\\' => 24,
+            'Orbitools\\Blocks\\Entry\\' => 23,
+            'Orbitools\\Blocks\\Collection\\' => 28,
+            'Orbitools\\Blocks\\' => 17,
             'Orbitools\\' => 10,
         ),
     );
@@ -17,7 +23,31 @@ class ComposerStaticInit2729b1ccb17b637437551504dec0f927
     public static $prefixDirsPsr4 = array (
         'Orbitools\\Modules\\' => 
         array (
-            0 => __DIR__ . '/../..' . '/modules',
+            0 => __DIR__ . '/../..' . '/inc/modules',
+        ),
+        'Orbitools\\Core\\' => 
+        array (
+            0 => __DIR__ . '/../..' . '/inc/core',
+        ),
+        'Orbitools\\Controls\\' => 
+        array (
+            0 => __DIR__ . '/../..' . '/inc/controls',
+        ),
+        'Orbitools\\Blocks\\Spacer\\' => 
+        array (
+            0 => __DIR__ . '/../..' . '/inc/blocks/Spacer',
+        ),
+        'Orbitools\\Blocks\\Entry\\' => 
+        array (
+            0 => __DIR__ . '/../..' . '/inc/blocks/Entry',
+        ),
+        'Orbitools\\Blocks\\Collection\\' => 
+        array (
+            0 => __DIR__ . '/../..' . '/inc/blocks/Collection',
+        ),
+        'Orbitools\\Blocks\\' => 
+        array (
+            0 => __DIR__ . '/../..' . '/inc/blocks',
         ),
         'Orbitools\\' => 
         array (
