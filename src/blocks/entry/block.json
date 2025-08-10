@@ -19,7 +19,7 @@
         },
         "spacing": false,
         "orbitools": {
-            "dimensions": {
+            "spacings": {
                 "breakpoints": true,
                 "gap": true,
                 "margin": false,

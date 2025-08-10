@@ -3,7 +3,7 @@
 namespace Orbitools\Blocks\Collection;
 
 use Orbitools\Core\Abstracts\Module_Base;
-use Orbitools\Controls\Dimensions_Controls\DimensionsRenderer;
+use Orbitools\Controls\Spacings_Controls\SpacingsRenderer;
 
 // Prevent direct access
 if (!defined('ABSPATH')) {
@@ -152,9 +152,9 @@ class Collection extends Module_Base
         // Build semantic class names
         $collection_classes = $this->build_collection_classes($layout_type);
 
-        // Combine classes and add dimensions
+        // Combine classes and add spacings
         $base_classes = trim($collection_classes . ' ' . $filtered_classes);
-        $all_classes = DimensionsRenderer::add_dimensions($base_classes, $attributes);
+        $all_classes = SpacingsRenderer::add_spacings($base_classes, $attributes);
 
         // Format data attributes as HTML attributes
         $data_attrs_html = '';

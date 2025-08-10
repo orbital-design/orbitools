@@ -15,7 +15,7 @@ use Orbitools\Blocks\Collection\Collection;
 use Orbitools\Blocks\Entry\Entry;
 use Orbitools\Blocks\Spacer\Spacer;
 use Orbitools\Modules\User_Avatars\User_Avatars;
-use Orbitools\Controls\Dimensions_Controls\Dimensions_Controls;
+use Orbitools\Controls\Spacings_Controls\Spacings_Controls;
 
 /**
  * Class Loader
@@ -77,7 +77,7 @@ class Loader
         $this->modules[] = new Collection();
         $this->modules[] = new Entry();
         $this->modules[] = new Spacer();
-        $this->modules[] = new Dimensions_Controls();
+        $this->modules[] = new Spacings_Controls();
         $this->modules[] = new User_Avatars();
     }
 }

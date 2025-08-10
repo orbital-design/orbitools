@@ -1,21 +1,21 @@
 <?php
 /**
- * Dimensions Renderer
+ * Spacings Renderer
  *
- * Standalone utility for generating dimension CSS classes in PHP render callbacks.
- * This mirrors the JavaScript dimension class generation for server-side rendering.
+ * Standalone utility for generating spacing CSS classes in PHP render callbacks.
+ * This mirrors the JavaScript spacing class generation for server-side rendering.
  *
  * @since 1.0.0
  */
 
-namespace Orbitools\Controls\Dimensions_Controls;
+namespace Orbitools\Controls\Spacings_Controls;
 
 // Prevent direct access
 if (!defined('ABSPATH')) {
     exit;
 }
 
-class DimensionsRenderer
+class SpacingsRenderer
 {
     /**
      * Generate responsive gap classes from gap data
@@ -181,12 +181,12 @@ class DimensionsRenderer
     }
 
     /**
-     * Generate all dimension classes from block attributes
+     * Generate all spacing classes from block attributes
      * 
      * @param array $attributes Block attributes containing orbGap, orbPadding, orbMargin
-     * @return string All dimension classes combined
+     * @return string All spacing classes combined
      */
-    public static function get_all_dimensions_classes($attributes): string
+    public static function get_all_spacings_classes($attributes): string
     {
         $gap_classes = self::get_gap_classes($attributes['orbGap'] ?? []);
         $padding_classes = self::get_padding_classes($attributes['orbPadding'] ?? []);
@@ -198,52 +198,52 @@ class DimensionsRenderer
     }
 
     /**
-     * Check if block has dimensions support
+     * Check if block has spacings support
      * 
      * @param string $block_name Block name (e.g., 'orb/collection')
-     * @return bool Whether block supports dimensions
+     * @return bool Whether block supports spacings
      */
-    public static function block_has_dimensions_support($block_name): bool
+    public static function block_has_spacings_support($block_name): bool
     {
         $block_type = \WP_Block_Type_Registry::get_instance()->get_registered($block_name);
         
-        if (!$block_type || !isset($block_type->supports['orbitools']['dimensions'])) {
+        if (!$block_type || !isset($block_type->supports['orbitools']['spacings'])) {
             return false;
         }
         
-        $dimensions_supports = $block_type->supports['orbitools']['dimensions'];
-        return $dimensions_supports && $dimensions_supports !== false && 
-               ($dimensions_supports === true || (is_array($dimensions_supports) && count($dimensions_supports) > 0));
+        $spacings_supports = $block_type->supports['orbitools']['spacings'];
+        return $spacings_supports && $spacings_supports !== false && 
+               ($spacings_supports === true || (is_array($spacings_supports) && count($spacings_supports) > 0));
     }
 
     /**
-     * Apply dimension classes to existing class string
+     * Apply spacing classes to existing class string
      * 
      * @param string $existing_classes Existing CSS classes
      * @param array $attributes Block attributes
-     * @return string Combined classes with dimensions
+     * @return string Combined classes with spacings
      */
-    public static function apply_dimensions_classes($existing_classes, $attributes): string
+    public static function apply_spacings_classes($existing_classes, $attributes): string
     {
-        $dimensions_classes = self::get_all_dimensions_classes($attributes);
+        $spacings_classes = self::get_all_spacings_classes($attributes);
         
-        if (empty($dimensions_classes)) {
+        if (empty($spacings_classes)) {
             return $existing_classes;
         }
         
-        return trim($existing_classes . ' ' . $dimensions_classes);
+        return trim($existing_classes . ' ' . $spacings_classes);
     }
 
     /**
-     * Helper function for blocks to easily add dimensions classes
-     * Call this in your block's render callback to add dimensions support
+     * Helper function for blocks to easily add spacing classes
+     * Call this in your block's render callback to add spacings support
      * 
      * @param string $base_classes Your block's base CSS classes
      * @param array $attributes Block attributes from render callback
-     * @return string Classes with dimensions added
+     * @return string Classes with spacings added
      */
-    public static function add_dimensions($base_classes, $attributes): string
+    public static function add_spacings($base_classes, $attributes): string
     {
-        return self::apply_dimensions_classes($base_classes, $attributes);
+        return self::apply_spacings_classes($base_classes, $attributes);
     }
 }

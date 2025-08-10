@@ -1,13 +1,13 @@
 <?php
-namespace Orbitools\Controls\Dimensions_Controls;
+namespace Orbitools\Controls\Spacings_Controls;
 
 use Orbitools\Core\Abstracts\Module_Base;
 
 /**
- * Dimensions Controls Module
+ * Spacings Controls Module
  *
- * Provides automatic responsive dimensions controls for blocks with orbitools.dimensions support.
- * Blocks only need to add orbitools.dimensions to their supports to get automatic:
+ * Provides automatic responsive spacings controls for blocks with orbitools.spacings support.
+ * Blocks only need to add orbitools.spacings to their supports to get automatic:
  * - Attribute registration (orbGap, orbPadding, orbMargin)
  * - Control injection in styles tab 
  * - CSS class application
@@ -15,7 +15,7 @@ use Orbitools\Core\Abstracts\Module_Base;
  * @package Orbitools
  * @since 1.0.0
  */
-class Dimensions_Controls extends Module_Base {
+class Spacings_Controls extends Module_Base {
     
     /**
      * Constructor
@@ -28,21 +28,21 @@ class Dimensions_Controls extends Module_Base {
      * Get the module's unique slug identifier
      */
     public function get_slug(): string {
-        return 'dimensions-controls';
+        return 'spacings-controls';
     }
 
     /**
      * Get the module's display name
      */
     public function get_name(): string {
-        return __('Dimensions Controls', 'orbitools');
+        return __('Spacings Controls', 'orbitools');
     }
 
     /**
      * Get the module's description
      */
     public function get_description(): string {
-        return __('Automatic responsive dimensions controls for blocks with orbitools.dimensions support.', 'orbitools');
+        return __('Automatic responsive spacings controls for blocks with orbitools.spacings support.', 'orbitools');
     }
 
     /**
@@ -68,33 +68,33 @@ class Dimensions_Controls extends Module_Base {
     }
 
     /**
-     * Enqueue editor assets for dimensions controls
+     * Enqueue editor assets for spacings controls
      */
     public function enqueue_editor_assets(): void {
-        $asset_url = ORBITOOLS_URL . 'build/admin/js/controls/dimensions/';
+        $asset_url = ORBITOOLS_URL . 'build/admin/js/controls/spacings/';
 
         // Enqueue attribute registration (must be loaded first)
-        wp_enqueue_script(
-            'orbitools-dimensions-attributes',
-            $asset_url . 'editor-dimensions-attribute-registration.js',
+        \wp_enqueue_script(
+            'orbitools-spacings-attributes',
+            $asset_url . 'editor-spacings-attribute-registration.js',
             ['wp-hooks', 'wp-blocks'],
             $this->get_version(),
             true
         );
 
         // Enqueue class name application
-        wp_enqueue_script(
-            'orbitools-dimensions-classes',
-            $asset_url . 'editor-dimensions-classname-application.js',
+        \wp_enqueue_script(
+            'orbitools-spacings-classes',
+            $asset_url . 'editor-spacings-classname-application.js',
             ['wp-hooks', 'wp-compose', 'wp-blocks'],
             $this->get_version(),
             true
         );
 
         // Enqueue control registration (must be loaded after attributes)
-        wp_enqueue_script(
-            'orbitools-dimensions-controls',
-            $asset_url . 'editor-dimensions-register-controls.js',
+        \wp_enqueue_script(
+            'orbitools-spacings-controls',
+            $asset_url . 'editor-spacings-register-controls.js',
             ['wp-hooks', 'wp-compose', 'wp-element', 'wp-block-editor', 'wp-components'],
             $this->get_version(),
             true

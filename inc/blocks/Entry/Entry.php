@@ -3,7 +3,7 @@
 namespace Orbitools\Blocks\Entry;
 
 use Orbitools\Core\Abstracts\Module_Base;
-use Orbitools\Controls\Dimensions_Controls\DimensionsRenderer;
+use Orbitools\Controls\Spacings_Controls\SpacingsRenderer;
 
 // Prevent direct access
 if (!defined('ABSPATH')) {
@@ -141,9 +141,9 @@ class Entry extends Module_Base
         // Build semantic class names
         $entry_classes = $this->build_entry_classes($width, $should_output_width_class);
 
-        // Combine classes and add dimensions  
+        // Combine classes and add spacings  
         $base_classes = trim($entry_classes . ' ' . $filtered_classes);
-        $all_classes = DimensionsRenderer::add_dimensions($base_classes, $attributes);
+        $all_classes = SpacingsRenderer::add_spacings($base_classes, $attributes);
 
         // Extract other attributes but replace class
         $other_attrs = preg_replace('/class=["\'][^"\']*["\']/', '', $wrapper_attributes);
