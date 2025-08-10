@@ -95,7 +95,7 @@ import { getBreakpointOptions } from '../../../../core/utils/breakpoints.js';
         };
 
         /**
-         * Helper to get spacing index by slug (from working version)
+         * Helper to get spacing index by slug
          */
         function getSpacingIndexByValue(spacingSizes, value) {
             if (!spacingSizes || !Array.isArray(spacingSizes) || !value) return -1;
@@ -103,7 +103,7 @@ import { getBreakpointOptions } from '../../../../core/utils/breakpoints.js';
         }
 
         /**
-         * Get display name for spacing value (from working version)
+         * Get display name for spacing value
          */
         function getSpacingDisplayName(spacingSizes, value) {
             if (!value) return 'Default';

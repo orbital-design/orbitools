@@ -9,6 +9,7 @@
  */
 
 import { Fragment, useMemo } from '@wordpress/element';
+import { createToolsPanelItem } from '../utils/control-helpers';
 import { InspectorControls } from '@wordpress/block-editor';
 import {
     __experimentalToolsPanel as ToolsPanel,
@@ -103,29 +104,6 @@ function getColumnConfig(gridSystem: number) {
 }
 
 
-/**
- * Helper function to create a ToolsPanelItem with consistent styling
- */
-function createToolsPanelItem(
-    controlName: string,
-    hasValue: () => boolean,
-    onDeselect: () => void,
-    label: string,
-    children: React.ReactNode,
-    isShownByDefault = false
-) {
-    return (
-        <ToolsPanelItem
-            hasValue={hasValue}
-            onDeselect={onDeselect}
-            label={label}
-            isShownByDefault={isShownByDefault}
-            panelId="entry-layout-panel"
-        >
-            {children}
-        </ToolsPanelItem>
-    );
-}
 
 /**
  * Entry Block Controls Component

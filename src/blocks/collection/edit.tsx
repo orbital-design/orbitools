@@ -10,8 +10,7 @@ import type { BlockEditProps } from '@wordpress/blocks';
 import type { LayoutAttributes } from '../types';
 import CollectionControls from './controls';
 import { generateFlexAttributes } from '../utils/flex-attributes';
-import { buildCollectionClasses, COLLECTION_LIMITS, combineClasses } from '../utils/class-builders';
-import { getGapClasses, getPaddingClasses, getMarginClasses } from '../utils/tabbed-spacings-control';
+import { buildCollectionClasses, COLLECTION_LIMITS } from '../utils/class-builders';
 
 const ALLOWED_BLOCKS = ['orb/entry'];
 
@@ -128,19 +127,12 @@ const Edit: React.FC<BlockEditProps<LayoutAttributes>> = ({
     // Build semantic class names using utility functions
     const collectionClasses = buildCollectionClasses(layoutType, itemWidth, columnSystem);
 
-    // Generate responsive spacings classes
-    const { orbGap, orbPadding, orbMargin } = attributes;
-    const gapClasses = getGapClasses(orbGap || {});
-    const paddingClasses = getPaddingClasses(orbPadding || {});
-    const marginClasses = getMarginClasses(orbMargin || {});
-    const allClasses = combineClasses(collectionClasses, gapClasses, paddingClasses, marginClasses);
-
     // Generate data attributes for layout consistency with save component
     const tempBlockProps = useBlockProps();
     const flexAttributes = generateFlexAttributes(attributes, tempBlockProps);
 
     const blockProps = useBlockProps({
-        className: needsWrapper ? undefined : allClasses,
+        className: needsWrapper ? undefined : collectionClasses,
         ...(needsWrapper ? {} : flexAttributes)
     });
 
@@ -153,7 +145,7 @@ const Edit: React.FC<BlockEditProps<LayoutAttributes>> = ({
 
             <div {...blockProps}>
                 {needsWrapper ? (
-                    <div className={allClasses} {...flexAttributes}>
+                    <div className={collectionClasses} {...flexAttributes}>
                         <InnerBlocks
                             allowedBlocks={ALLOWED_BLOCKS}
                             template={TEMPLATE}

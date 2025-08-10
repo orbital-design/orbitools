@@ -13,6 +13,7 @@
  */
 
 import { Fragment } from '@wordpress/element';
+import { createToolsPanelItem, createToggleGroup, getSpacingValueByIndex, getSpacingIndexByValue } from '../utils/control-helpers';
 import { InspectorControls, BlockControls, useSettings } from '@wordpress/block-editor';
 import type { ResponsiveValue } from '../../core/utils/responsive-controls';
 import {
@@ -65,107 +66,6 @@ const COLUMN_SYSTEM_OPTIONS = [
     { value: 12, label: '12 Column Grid' },
 ] as const;
 
-/**
- * Helper to get spacing value by index
- */
-function getSpacingValueByIndex(spacingSizes: any[], index: number) {
-    if (spacingSizes && Array.isArray(spacingSizes) && spacingSizes[index]) {
-        return spacingSizes[index].size;
-    }
-    return '';
-}
-
-/**
- * Helper to get spacing index by value (now supports CSS variable references)
- */
-function getSpacingIndexByValue(spacingSizes: any[], value: string) {
-    if (!spacingSizes || !Array.isArray(spacingSizes)) return -1;
-    
-    // Handle CSS variable references (e.g., "var(--wp--preset--spacing--medium)")
-    if (value && value.startsWith('var(--wp--preset--spacing--')) {
-        const slug = value.match(/var\(--wp--preset--spacing--([^)]+)\)/)?.[1];
-        if (slug) {
-            const index = spacingSizes.findIndex((size: any) => size.slug === slug);
-            return index >= 0 ? index : -1;
-        }
-    }
-    
-    // Fallback: try to match by raw size value (for backward compatibility)
-    const index = spacingSizes.findIndex((size: any) => size.size === value);
-    return index >= 0 ? index : -1;
-}
-
-/**
- * Helper function to create a ToolsPanelItem with consistent styling
- */
-function createToolsPanelItem(
-    controlName: string,
-    hasValue: () => boolean,
-    onDeselect: () => void,
-    label: string,
-    children: React.ReactNode,
-    isShownByDefault = false
-) {
-    return (
-        <ToolsPanelItem
-            hasValue={hasValue}
-            onDeselect={onDeselect} // Use actual onDeselect function instead of no-op
-            label={label}
-            isShownByDefault={isShownByDefault}
-            panelId="collection-row-panel"
-        >
-            {children}
-        </ToolsPanelItem>
-    );
-}
-
-/**
- * Helper function to create labeled toggle group controls
- */
-function createToggleGroup(
-    value: string | number,
-    onChange: (value: string | number) => void,
-    options: readonly { value: string | number; label: string }[],
-    label?: string
-) {
-    const control = (
-        <ToggleGroupControl
-            value={value}
-            onChange={onChange}
-            isBlock={true}
-            __next40pxDefaultSize={true}
-            __nextHasNoMarginBottom={true}
-        >
-            {options.map(option => (
-                <ToggleGroupControlOption
-                    key={option.value}
-                    value={option.value}
-                    label={option.label}
-                />
-            ))}
-        </ToggleGroupControl>
-    );
-
-    if (label) {
-        return (
-            <div>
-                <label style={{
-                    display: 'block',
-                    marginBottom: '8px',
-                    fontSize: '11px',
-                    fontWeight: '500',
-                    textTransform: 'uppercase',
-                    color: '#1e1e1e'
-                }}>
-                    {label}
-                </label>
-                {control}
-            </div>
-        );
-    }
-
-    return control;
-}
 
 /**
  * Row Controls Component

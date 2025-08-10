@@ -1,20 +1,21 @@
 /**
  * Collection Block Controls
- * 
+ *
  * Main controls for the Collection block that are common to all layout types:
  * - Layout type selection (row vs grid)
  * - Gap/spacing controls with theme.json integration
  * - Content width restriction for full-width blocks
- * 
+ *
  * Layout-specific controls are handled by separate components:
  * - RowControls for row layout
  * - GridControls for grid layout
- * 
+ *
  * @file blocks/collection/controls.tsx
  * @since 1.0.0
  */
 
 import { Fragment } from '@wordpress/element';
+import { createToolsPanelItem, createToggleGroup, getSpacingValueByIndex, getSpacingIndexByValue } from '../utils/control-helpers';
 import { InspectorControls, BlockControls, AlignmentToolbar, useSettings } from '@wordpress/block-editor';
 import {
     __experimentalToolsPanel as ToolsPanel,
@@ -58,7 +59,7 @@ const LAYOUT_OPTIONS = [
  */
 function getSpacingMarks(spacingSizes: any[]) {
     const marks: { value: number; label: string }[] = [];
-    
+
     if (spacingSizes && Array.isArray(spacingSizes)) {
         spacingSizes.forEach((size, index) => {
             marks.push({
@@ -67,107 +68,16 @@ function getSpacingMarks(spacingSizes: any[]) {
             });
         });
     }
-    
+
     return marks;
 }
 
-/**
- * Helper to get spacing value by index
- */
-function getSpacingValueByIndex(spacingSizes: any[], index: number) {
-    if (spacingSizes && Array.isArray(spacingSizes) && spacingSizes[index]) {
-        return spacingSizes[index].size;
-    }
-    return '';
-}
-
-/**
- * Helper to get spacing index by value
- */
-function getSpacingIndexByValue(spacingSizes: any[], value: string) {
-    if (!spacingSizes || !Array.isArray(spacingSizes)) return -1;
-    
-    const index = spacingSizes.findIndex((size: any) => size.size === value);
-    return index >= 0 ? index : -1;
-}
-
-/**
- * Helper function to create a ToolsPanelItem with consistent styling
- */
-function createToolsPanelItem(
-    controlName: string,
-    hasValue: () => boolean,
-    onDeselect: () => void,
-    label: string,
-    children: React.ReactNode,
-    isShownByDefault = false
-) {
-    return (
-        <ToolsPanelItem
-            hasValue={hasValue}
-            onDeselect={onDeselect} // Use actual onDeselect function instead of no-op
-            label={label}
-            isShownByDefault={isShownByDefault}
-            panelId="collection-common-panel"
-        >
-            {children}
-        </ToolsPanelItem>
-    );
-}
-
-/**
- * Helper function to create labeled toggle group controls
- */
-function createToggleGroup(
-    value: string | number,
-    onChange: (value: string | number) => void,
-    options: readonly { value: string | number; label: string }[],
-    label?: string
-) {
-    const control = (
-        <ToggleGroupControl
-            value={value}
-            onChange={onChange}
-            isBlock={true}
-            __next40pxDefaultSize={true}
-            __nextHasNoMarginBottom={true}
-        >
-            {options.map(option => (
-                <ToggleGroupControlOption
-                    key={option.value}
-                    value={option.value}
-                    label={option.label}
-                />
-            ))}
-        </ToggleGroupControl>
-    );
-
-    if (label) {
-        return (
-            <div>
-                <label style={{
-                    display: 'block',
-                    marginBottom: '8px',
-                    fontSize: '11px',
-                    fontWeight: '500',
-                    textTransform: 'uppercase',
-                    color: '#1e1e1e'
-                }}>
-                    {label}
-                </label>
-                {control}
-            </div>
-        );
-    }
-
-    return control;
-}
 
 /**
  * Collection Block Controls Component
  */
 export default function CollectionControls({ attributes, setAttributes }: CollectionControlsProps) {
-    const { 
+    const {
         layoutType = COMMON_DEFAULTS.layoutType,
         orbGap = COMMON_DEFAULTS.orbGap,
         orbPadding = COMMON_DEFAULTS.orbPadding,
@@ -252,18 +162,18 @@ export default function CollectionControls({ attributes, setAttributes }: Collec
     return (
         <Fragment>
             {renderCommonControls()}
-            
+
             {/* Layout-specific controls */}
             {layoutType === 'row' && (
-                <RowControls 
-                    attributes={attributes} 
+                <RowControls
+                    attributes={attributes}
                     setAttributes={setAttributes}
                 />
             )}
-            
+
             {layoutType === 'grid' && (
-                <GridControls 
-                    attributes={attributes} 
+                <GridControls
+                    attributes={attributes}
                     setAttributes={setAttributes}
                 />
             )}

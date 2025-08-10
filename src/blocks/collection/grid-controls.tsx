@@ -12,6 +12,7 @@
  */
 
 import { Fragment } from '@wordpress/element';
+import { createToolsPanelItem } from '../utils/control-helpers';
 import { InspectorControls, BlockControls } from '@wordpress/block-editor';
 import {
     __experimentalToolsPanel as ToolsPanel,
@@ -40,29 +41,6 @@ const GRID_DEFAULTS = {
     // Grid-specific defaults will be added here as we develop grid features
 } as const;
 
-/**
- * Helper function to create a ToolsPanelItem with consistent styling
- */
-function createToolsPanelItem(
-    controlName: string,
-    hasValue: () => boolean,
-    onDeselect: () => void,
-    label: string,
-    children: React.ReactNode,
-    isShownByDefault = false
-) {
-    return (
-        <ToolsPanelItem
-            hasValue={hasValue}
-            onDeselect={onDeselect} // Use actual onDeselect function instead of no-op
-            label={label}
-            isShownByDefault={isShownByDefault}
-            panelId="collection-grid-panel"
-        >
-            {children}
-        </ToolsPanelItem>
-    );
-}
 
 /**
  * Grid Controls Component

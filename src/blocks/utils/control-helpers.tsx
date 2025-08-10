@@ -99,8 +99,7 @@ export function getSpacingValueByIndex(spacingSizes: any[], index: number) {
  * Helper to get spacing index by value from theme.json spacing sizes
  */
 export function getSpacingIndexByValue(spacingSizes: any[], value: string) {
-    if (!spacingSizes || !Array.isArray(spacingSizes)) return -1;
-    
-    const index = spacingSizes.findIndex((size: any) => size.size === value);
-    return index >= 0 ? index : -1;
+    if (!spacingSizes || !Array.isArray(spacingSizes) || !value) return -1;
+    return spacingSizes.findIndex((size: any) => size.slug === value);
 }
+
