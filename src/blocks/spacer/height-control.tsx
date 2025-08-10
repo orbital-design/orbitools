@@ -120,12 +120,22 @@ function createHeightControlConfig(spacingSizes: any[]): ResponsiveControlConfig
 }
 
 /**
- * Generate CSS classes for height values
+ * Generate CSS classes for height values using BEM methodology
  */
 export function getHeightClasses(height: ResponsiveValue<string>): string {
-    return getResponsiveClasses(height, 'h', (value: string) => {
-        return value; // Just use the slug as-is
+    const classes: string[] = [];
+    
+    Object.entries(height).forEach(([breakpoint, value]) => {
+        if (value === undefined || value === null || value === '') return;
+        
+        const className = breakpoint === 'base'
+            ? `orb-spacer--${value}`
+            : `${breakpoint}:orb-spacer--${value}`;
+        
+        classes.push(className);
     });
+    
+    return classes.join(' ');
 }
 
 /**

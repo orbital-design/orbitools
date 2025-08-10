@@ -1,7 +1,7 @@
 /**
  * Spacer Block - Frontend Styles
  *
- * Simple responsive height utilities using WordPress spacing presets
+ * BEM-style responsive height utilities using WordPress spacing presets
  *
  * @file blocks/spacer/index.scss
  * @since 1.0.0
@@ -11,164 +11,156 @@
     display: block;
     width: 100%;
     min-height: 1rem; // Default when no height is set
-    
-    // Special cases
-    &.h-0 { 
-        height: 0; 
-        min-height: 0; 
+
+    // Special case: zero height
+    &--0 {
+        min-height: 0;
     }
-    
-    &.h-fill { 
-        height: 100vh; 
-        min-height: 100vh; 
+
+    // Special case: fill height (flex container)
+    &--fill {
+        display: flex;
+        flex: 1;
     }
-    
-    // Dynamic height classes using WordPress spacing presets
-    // These will use any spacing slug defined in theme.json
-    &[class*="h-"]:not(.h-0):not(.h-fill) {
-        // Common WordPress spacing slugs
-        &.h-10 { height: var(--wp--preset--spacing--10, 0.5rem); }
-        &.h-20 { height: var(--wp--preset--spacing--20, 1rem); }
-        &.h-30 { height: var(--wp--preset--spacing--30, 1.5rem); }
-        &.h-40 { height: var(--wp--preset--spacing--40, 2rem); }
-        &.h-50 { height: var(--wp--preset--spacing--50, 3rem); }
-        &.h-60 { height: var(--wp--preset--spacing--60, 4rem); }
-        &.h-70 { height: var(--wp--preset--spacing--70, 5rem); }
-        &.h-80 { height: var(--wp--preset--spacing--80, 6rem); }
-        
-        // Named spacing slugs
-        &.h-xs { height: var(--wp--preset--spacing--xs, 0.5rem); }
-        &.h-sm { height: var(--wp--preset--spacing--sm, 1rem); }
-        &.h-md { height: var(--wp--preset--spacing--md, 1.5rem); }
-        &.h-lg { height: var(--wp--preset--spacing--lg, 2rem); }
-        &.h-xl { height: var(--wp--preset--spacing--xl, 3rem); }
-        &.h-2xl { height: var(--wp--preset--spacing--2xl, 4rem); }
-        &.h-3xl { height: var(--wp--preset--spacing--3xl, 5rem); }
-        
-        // Size-based slugs
-        &.h-small { height: var(--wp--preset--spacing--small, 1rem); }
-        &.h-medium { height: var(--wp--preset--spacing--medium, 2rem); }
-        &.h-large { height: var(--wp--preset--spacing--large, 3rem); }
-        &.h-x-large { height: var(--wp--preset--spacing--x-large, 4rem); }
-    }
-    
-    // Responsive breakpoints - sm (640px+)
+
+    // Dynamic height modifiers using WordPress spacing presets
+    // This works with any spacing slug defined in theme.json
+
+    // Numeric spacing slugs (common in WordPress themes)
+    &--10 { min-height: var(--wp--preset--spacing--10, 0.5rem); }
+    &--20 { min-height: var(--wp--preset--spacing--20, 1rem); }
+    &--30 { min-height: var(--wp--preset--spacing--30, 1.5rem); }
+    &--40 { min-height: var(--wp--preset--spacing--40, 2rem); }
+    &--50 { min-height: var(--wp--preset--spacing--50, 3rem); }
+    &--60 { min-height: var(--wp--preset--spacing--60, 4rem); }
+    &--70 { min-height: var(--wp--preset--spacing--70, 5rem); }
+    &--80 { min-height: var(--wp--preset--spacing--80, 6rem); }
+
+    // Named spacing slugs (t-shirt sizes)
+    &--xs { min-height: var(--wp--preset--spacing--xs, 0.5rem); }
+    &--sm { min-height: var(--wp--preset--spacing--sm, 1rem); }
+    &--md { min-height: var(--wp--preset--spacing--md, 1.5rem); }
+    &--lg { min-height: var(--wp--preset--spacing--lg, 2rem); }
+    &--xl { min-height: var(--wp--preset--spacing--xl, 3rem); }
+    &--2xl { min-height: var(--wp--preset--spacing--2xl, 4rem); }
+    &--3xl { min-height: var(--wp--preset--spacing--3xl, 5rem); }
+
+    // Semantic spacing slugs
+    &--small { min-height: var(--wp--preset--spacing--small, 1rem); }
+    &--medium { min-height: var(--wp--preset--spacing--medium, 2rem); }
+    &--large { min-height: var(--wp--preset--spacing--large, 3rem); }
+    &--x-large { min-height: var(--wp--preset--spacing--x-large, 4rem); }
+
+    // Responsive breakpoints using custom CSS properties
+    // sm breakpoint (640px+)
     @media (min-width: 640px) {
-        &.sm\\:h-0 { height: 0; min-height: 0; }
-        &.sm\\:h-fill { height: 100vh; min-height: 100vh; }
-        
-        &[class*="sm:h-"]:not(.sm\\:h-0):not(.sm\\:h-fill) {
-            &.sm\\:h-10 { height: var(--wp--preset--spacing--10, 0.5rem); }
-            &.sm\\:h-20 { height: var(--wp--preset--spacing--20, 1rem); }
-            &.sm\\:h-30 { height: var(--wp--preset--spacing--30, 1.5rem); }
-            &.sm\\:h-40 { height: var(--wp--preset--spacing--40, 2rem); }
-            &.sm\\:h-50 { height: var(--wp--preset--spacing--50, 3rem); }
-            &.sm\\:h-60 { height: var(--wp--preset--spacing--60, 4rem); }
-            &.sm\\:h-70 { height: var(--wp--preset--spacing--70, 5rem); }
-            &.sm\\:h-80 { height: var(--wp--preset--spacing--80, 6rem); }
-            
-            &.sm\\:h-xs { height: var(--wp--preset--spacing--xs, 0.5rem); }
-            &.sm\\:h-sm { height: var(--wp--preset--spacing--sm, 1rem); }
-            &.sm\\:h-md { height: var(--wp--preset--spacing--md, 1.5rem); }
-            &.sm\\:h-lg { height: var(--wp--preset--spacing--lg, 2rem); }
-            &.sm\\:h-xl { height: var(--wp--preset--spacing--xl, 3rem); }
-            &.sm\\:h-2xl { height: var(--wp--preset--spacing--2xl, 4rem); }
-            &.sm\\:h-3xl { height: var(--wp--preset--spacing--3xl, 5rem); }
-            
-            &.sm\\:h-small { height: var(--wp--preset--spacing--small, 1rem); }
-            &.sm\\:h-medium { height: var(--wp--preset--spacing--medium, 2rem); }
-            &.sm\\:h-large { height: var(--wp--preset--spacing--large, 3rem); }
-            &.sm\\:h-x-large { height: var(--wp--preset--spacing--x-large, 4rem); }
-        }
+        &.sm\:orb-spacer--0 { min-height: 0; }
+        &.sm\:orb-spacer--fill { display: flex; flex: 1; }
+
+        &.sm\:orb-spacer--10 { min-height: var(--wp--preset--spacing--10, 0.5rem); }
+        &.sm\:orb-spacer--20 { min-height: var(--wp--preset--spacing--20, 1rem); }
+        &.sm\:orb-spacer--30 { min-height: var(--wp--preset--spacing--30, 1.5rem); }
+        &.sm\:orb-spacer--40 { min-height: var(--wp--preset--spacing--40, 2rem); }
+        &.sm\:orb-spacer--50 { min-height: var(--wp--preset--spacing--50, 3rem); }
+        &.sm\:orb-spacer--60 { min-height: var(--wp--preset--spacing--60, 4rem); }
+        &.sm\:orb-spacer--70 { min-height: var(--wp--preset--spacing--70, 5rem); }
+        &.sm\:orb-spacer--80 { min-height: var(--wp--preset--spacing--80, 6rem); }
+
+        &.sm\:orb-spacer--xs { min-height: var(--wp--preset--spacing--xs, 0.5rem); }
+        &.sm\:orb-spacer--sm { min-height: var(--wp--preset--spacing--sm, 1rem); }
+        &.sm\:orb-spacer--md { min-height: var(--wp--preset--spacing--md, 1.5rem); }
+        &.sm\:orb-spacer--lg { min-height: var(--wp--preset--spacing--lg, 2rem); }
+        &.sm\:orb-spacer--xl { min-height: var(--wp--preset--spacing--xl, 3rem); }
+        &.sm\:orb-spacer--2xl { min-height: var(--wp--preset--spacing--2xl, 4rem); }
+        &.sm\:orb-spacer--3xl { min-height: var(--wp--preset--spacing--3xl, 5rem); }
+
+        &.sm\:orb-spacer--small { min-height: var(--wp--preset--spacing--small, 1rem); }
+        &.sm\:orb-spacer--medium { min-height: var(--wp--preset--spacing--medium, 2rem); }
+        &.sm\:orb-spacer--large { min-height: var(--wp--preset--spacing--large, 3rem); }
+        &.sm\:orb-spacer--x-large { min-height: var(--wp--preset--spacing--x-large, 4rem); }
     }
-    
+
     // md breakpoint (768px+)
     @media (min-width: 768px) {
-        &.md\\:h-0 { height: 0; min-height: 0; }
-        &.md\\:h-fill { height: 100vh; min-height: 100vh; }
-        
-        &[class*="md:h-"]:not(.md\\:h-0):not(.md\\:h-fill) {
-            &.md\\:h-10 { height: var(--wp--preset--spacing--10, 0.5rem); }
-            &.md\\:h-20 { height: var(--wp--preset--spacing--20, 1rem); }
-            &.md\\:h-30 { height: var(--wp--preset--spacing--30, 1.5rem); }
-            &.md\\:h-40 { height: var(--wp--preset--spacing--40, 2rem); }
-            &.md\\:h-50 { height: var(--wp--preset--spacing--50, 3rem); }
-            &.md\\:h-60 { height: var(--wp--preset--spacing--60, 4rem); }
-            &.md\\:h-70 { height: var(--wp--preset--spacing--70, 5rem); }
-            &.md\\:h-80 { height: var(--wp--preset--spacing--80, 6rem); }
-            
-            &.md\\:h-xs { height: var(--wp--preset--spacing--xs, 0.5rem); }
-            &.md\\:h-sm { height: var(--wp--preset--spacing--sm, 1rem); }
-            &.md\\:h-md { height: var(--wp--preset--spacing--md, 1.5rem); }
-            &.md\\:h-lg { height: var(--wp--preset--spacing--lg, 2rem); }
-            &.md\\:h-xl { height: var(--wp--preset--spacing--xl, 3rem); }
-            &.md\\:h-2xl { height: var(--wp--preset--spacing--2xl, 4rem); }
-            &.md\\:h-3xl { height: var(--wp--preset--spacing--3xl, 5rem); }
-            
-            &.md\\:h-small { height: var(--wp--preset--spacing--small, 1rem); }
-            &.md\\:h-medium { height: var(--wp--preset--spacing--medium, 2rem); }
-            &.md\\:h-large { height: var(--wp--preset--spacing--large, 3rem); }
-            &.md\\:h-x-large { height: var(--wp--preset--spacing--x-large, 4rem); }
-        }
+        &.md\:orb-spacer--0 { min-height: 0; }
+        &.md\:orb-spacer--fill { display: flex; flex: 1; }
+
+        &.md\:orb-spacer--10 { min-height: var(--wp--preset--spacing--10, 0.5rem); }
+        &.md\:orb-spacer--20 { min-height: var(--wp--preset--spacing--20, 1rem); }
+        &.md\:orb-spacer--30 { min-height: var(--wp--preset--spacing--30, 1.5rem); }
+        &.md\:orb-spacer--40 { min-height: var(--wp--preset--spacing--40, 2rem); }
+        &.md\:orb-spacer--50 { min-height: var(--wp--preset--spacing--50, 3rem); }
+        &.md\:orb-spacer--60 { min-height: var(--wp--preset--spacing--60, 4rem); }
+        &.md\:orb-spacer--70 { min-height: var(--wp--preset--spacing--70, 5rem); }
+        &.md\:orb-spacer--80 { min-height: var(--wp--preset--spacing--80, 6rem); }
+
+        &.md\:orb-spacer--xs { min-height: var(--wp--preset--spacing--xs, 0.5rem); }
+        &.md\:orb-spacer--sm { min-height: var(--wp--preset--spacing--sm, 1rem); }
+        &.md\:orb-spacer--md { min-height: var(--wp--preset--spacing--md, 1.5rem); }
+        &.md\:orb-spacer--lg { min-height: var(--wp--preset--spacing--lg, 2rem); }
+        &.md\:orb-spacer--xl { min-height: var(--wp--preset--spacing--xl, 3rem); }
+        &.md\:orb-spacer--2xl { min-height: var(--wp--preset--spacing--2xl, 4rem); }
+        &.md\:orb-spacer--3xl { min-height: var(--wp--preset--spacing--3xl, 5rem); }
+
+        &.md\:orb-spacer--small { min-height: var(--wp--preset--spacing--small, 1rem); }
+        &.md\:orb-spacer--medium { min-height: var(--wp--preset--spacing--medium, 2rem); }
+        &.md\:orb-spacer--large { min-height: var(--wp--preset--spacing--large, 3rem); }
+        &.md\:orb-spacer--x-large { min-height: var(--wp--preset--spacing--x-large, 4rem); }
     }
-    
+
     // lg breakpoint (1024px+)
     @media (min-width: 1024px) {
-        &.lg\\:h-0 { height: 0; min-height: 0; }
-        &.lg\\:h-fill { height: 100vh; min-height: 100vh; }
-        
-        &[class*="lg:h-"]:not(.lg\\:h-0):not(.lg\\:h-fill) {
-            &.lg\\:h-10 { height: var(--wp--preset--spacing--10, 0.5rem); }
-            &.lg\\:h-20 { height: var(--wp--preset--spacing--20, 1rem); }
-            &.lg\\:h-30 { height: var(--wp--preset--spacing--30, 1.5rem); }
-            &.lg\\:h-40 { height: var(--wp--preset--spacing--40, 2rem); }
-            &.lg\\:h-50 { height: var(--wp--preset--spacing--50, 3rem); }
-            &.lg\\:h-60 { height: var(--wp--preset--spacing--60, 4rem); }
-            &.lg\\:h-70 { height: var(--wp--preset--spacing--70, 5rem); }
-            &.lg\\:h-80 { height: var(--wp--preset--spacing--80, 6rem); }
-            
-            &.lg\\:h-xs { height: var(--wp--preset--spacing--xs, 0.5rem); }
-            &.lg\\:h-sm { height: var(--wp--preset--spacing--sm, 1rem); }
-            &.lg\\:h-md { height: var(--wp--preset--spacing--md, 1.5rem); }
-            &.lg\\:h-lg { height: var(--wp--preset--spacing--lg, 2rem); }
-            &.lg\\:h-xl { height: var(--wp--preset--spacing--xl, 3rem); }
-            &.lg\\:h-2xl { height: var(--wp--preset--spacing--2xl, 4rem); }
-            &.lg\\:h-3xl { height: var(--wp--preset--spacing--3xl, 5rem); }
-            
-            &.lg\\:h-small { height: var(--wp--preset--spacing--small, 1rem); }
-            &.lg\\:h-medium { height: var(--wp--preset--spacing--medium, 2rem); }
-            &.lg\\:h-large { height: var(--wp--preset--spacing--large, 3rem); }
-            &.lg\\:h-x-large { height: var(--wp--preset--spacing--x-large, 4rem); }
-        }
+        &.lg\:orb-spacer--0 { min-height: 0; }
+        &.lg\:orb-spacer--fill { display: flex; flex: 1; }
+
+        &.lg\:orb-spacer--10 { min-height: var(--wp--preset--spacing--10, 0.5rem); }
+        &.lg\:orb-spacer--20 { min-height: var(--wp--preset--spacing--20, 1rem); }
+        &.lg\:orb-spacer--30 { min-height: var(--wp--preset--spacing--30, 1.5rem); }
+        &.lg\:orb-spacer--40 { min-height: var(--wp--preset--spacing--40, 2rem); }
+        &.lg\:orb-spacer--50 { min-height: var(--wp--preset--spacing--50, 3rem); }
+        &.lg\:orb-spacer--60 { min-height: var(--wp--preset--spacing--60, 4rem); }
+        &.lg\:orb-spacer--70 { min-height: var(--wp--preset--spacing--70, 5rem); }
+        &.lg\:orb-spacer--80 { min-height: var(--wp--preset--spacing--80, 6rem); }
+
+        &.lg\:orb-spacer--xs { min-height: var(--wp--preset--spacing--xs, 0.5rem); }
+        &.lg\:orb-spacer--sm { min-height: var(--wp--preset--spacing--sm, 1rem); }
+        &.lg\:orb-spacer--md { min-height: var(--wp--preset--spacing--md, 1.5rem); }
+        &.lg\:orb-spacer--lg { min-height: var(--wp--preset--spacing--lg, 2rem); }
+        &.lg\:orb-spacer--xl { min-height: var(--wp--preset--spacing--xl, 3rem); }
+        &.lg\:orb-spacer--2xl { min-height: var(--wp--preset--spacing--2xl, 4rem); }
+        &.lg\:orb-spacer--3xl { min-height: var(--wp--preset--spacing--3xl, 5rem); }
+
+        &.lg\:orb-spacer--small { min-height: var(--wp--preset--spacing--small, 1rem); }
+        &.lg\:orb-spacer--medium { min-height: var(--wp--preset--spacing--medium, 2rem); }
+        &.lg\:orb-spacer--large { min-height: var(--wp--preset--spacing--large, 3rem); }
+        &.lg\:orb-spacer--x-large { min-height: var(--wp--preset--spacing--x-large, 4rem); }
     }
-    
+
     // xl breakpoint (1280px+)
     @media (min-width: 1280px) {
-        &.xl\\:h-0 { height: 0; min-height: 0; }
-        &.xl\\:h-fill { height: 100vh; min-height: 100vh; }
-        
-        &[class*="xl:h-"]:not(.xl\\:h-0):not(.xl\\:h-fill) {
-            &.xl\\:h-10 { height: var(--wp--preset--spacing--10, 0.5rem); }
-            &.xl\\:h-20 { height: var(--wp--preset--spacing--20, 1rem); }
-            &.xl\\:h-30 { height: var(--wp--preset--spacing--30, 1.5rem); }
-            &.xl\\:h-40 { height: var(--wp--preset--spacing--40, 2rem); }
-            &.xl\\:h-50 { height: var(--wp--preset--spacing--50, 3rem); }
-            &.xl\\:h-60 { height: var(--wp--preset--spacing--60, 4rem); }
-            &.xl\\:h-70 { height: var(--wp--preset--spacing--70, 5rem); }
-            &.xl\\:h-80 { height: var(--wp--preset--spacing--80, 6rem); }
-            
-            &.xl\\:h-xs { height: var(--wp--preset--spacing--xs, 0.5rem); }
-            &.xl\\:h-sm { height: var(--wp--preset--spacing--sm, 1rem); }
-            &.xl\\:h-md { height: var(--wp--preset--spacing--md, 1.5rem); }
-            &.xl\\:h-lg { height: var(--wp--preset--spacing--lg, 2rem); }
-            &.xl\\:h-xl { height: var(--wp--preset--spacing--xl, 3rem); }
-            &.xl\\:h-2xl { height: var(--wp--preset--spacing--2xl, 4rem); }
-            &.xl\\:h-3xl { height: var(--wp--preset--spacing--3xl, 5rem); }
-            
-            &.xl\\:h-small { height: var(--wp--preset--spacing--small, 1rem); }
-            &.xl\\:h-medium { height: var(--wp--preset--spacing--medium, 2rem); }
-            &.xl\\:h-large { height: var(--wp--preset--spacing--large, 3rem); }
-            &.xl\\:h-x-large { height: var(--wp--preset--spacing--x-large, 4rem); }
-        }
+        &.xl\:orb-spacer--0 { min-height: 0; }
+        &.xl\:orb-spacer--fill { display: flex; flex: 1; }
+
+        &.xl\:orb-spacer--10 { min-height: var(--wp--preset--spacing--10, 0.5rem); }
+        &.xl\:orb-spacer--20 { min-height: var(--wp--preset--spacing--20, 1rem); }
+        &.xl\:orb-spacer--30 { min-height: var(--wp--preset--spacing--30, 1.5rem); }
+        &.xl\:orb-spacer--40 { min-height: var(--wp--preset--spacing--40, 2rem); }
+        &.xl\:orb-spacer--50 { min-height: var(--wp--preset--spacing--50, 3rem); }
+        &.xl\:orb-spacer--60 { min-height: var(--wp--preset--spacing--60, 4rem); }
+        &.xl\:orb-spacer--70 { min-height: var(--wp--preset--spacing--70, 5rem); }
+        &.xl\:orb-spacer--80 { min-height: var(--wp--preset--spacing--80, 6rem); }
+
+        &.xl\:orb-spacer--xs { min-height: var(--wp--preset--spacing--xs, 0.5rem); }
+        &.xl\:orb-spacer--sm { min-height: var(--wp--preset--spacing--sm, 1rem); }
+        &.xl\:orb-spacer--md { min-height: var(--wp--preset--spacing--md, 1.5rem); }
+        &.xl\:orb-spacer--lg { min-height: var(--wp--preset--spacing--lg, 2rem); }
+        &.xl\:orb-spacer--xl { min-height: var(--wp--preset--spacing--xl, 3rem); }
+        &.xl\:orb-spacer--2xl { min-height: var(--wp--preset--spacing--2xl, 4rem); }
+        &.xl\:orb-spacer--3xl { min-height: var(--wp--preset--spacing--3xl, 5rem); }
+
+        &.xl\:orb-spacer--small { min-height: var(--wp--preset--spacing--small, 1rem); }
+        &.xl\:orb-spacer--medium { min-height: var(--wp--preset--spacing--medium, 2rem); }
+        &.xl\:orb-spacer--large { min-height: var(--wp--preset--spacing--large, 3rem); }
+        &.xl\:orb-spacer--x-large { min-height: var(--wp--preset--spacing--x-large, 4rem); }
     }
 }

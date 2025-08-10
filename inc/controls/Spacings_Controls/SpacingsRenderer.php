@@ -32,7 +32,7 @@ class SpacingsRenderer
         $classes = [];
         
         foreach ($gap as $breakpoint => $value) {
-            if (!$value) {
+            if ($value === null || $value === '' || $value === false) {
                 continue;
             }
             
@@ -63,7 +63,7 @@ class SpacingsRenderer
         $classes = [];
         
         foreach ($padding as $breakpoint => $config) {
-            if (!$config) {
+            if ($config === null || $config === false) {
                 continue;
             }
             
@@ -79,29 +79,29 @@ class SpacingsRenderer
                 
                 switch ($type) {
                     case 'all':
-                        if (!empty($config['value'])) {
+                        if (isset($config['value']) && $config['value'] !== '' && $config['value'] !== null) {
                             $class_names[] = "{$prefix}-{$config['value']}";
                         }
                         break;
                     case 'split':
-                        if (!empty($config['x'])) {
+                        if (isset($config['x']) && $config['x'] !== '' && $config['x'] !== null) {
                             $class_names[] = "{$prefix}x-{$config['x']}";
                         }
-                        if (!empty($config['y'])) {
+                        if (isset($config['y']) && $config['y'] !== '' && $config['y'] !== null) {
                             $class_names[] = "{$prefix}y-{$config['y']}";
                         }
                         break;
                     case 'sides':
-                        if (!empty($config['top'])) {
+                        if (isset($config['top']) && $config['top'] !== '' && $config['top'] !== null) {
                             $class_names[] = "{$prefix}t-{$config['top']}";
                         }
-                        if (!empty($config['right'])) {
+                        if (isset($config['right']) && $config['right'] !== '' && $config['right'] !== null) {
                             $class_names[] = "{$prefix}r-{$config['right']}";
                         }
-                        if (!empty($config['bottom'])) {
+                        if (isset($config['bottom']) && $config['bottom'] !== '' && $config['bottom'] !== null) {
                             $class_names[] = "{$prefix}b-{$config['bottom']}";
                         }
-                        if (!empty($config['left'])) {
+                        if (isset($config['left']) && $config['left'] !== '' && $config['left'] !== null) {
                             $class_names[] = "{$prefix}l-{$config['left']}";
                         }
                         break;
@@ -129,7 +129,7 @@ class SpacingsRenderer
         $classes = [];
         
         foreach ($margin as $breakpoint => $config) {
-            if (!$config) {
+            if ($config === null || $config === false) {
                 continue;
             }
             
@@ -145,29 +145,29 @@ class SpacingsRenderer
                 
                 switch ($type) {
                     case 'all':
-                        if (!empty($config['value'])) {
+                        if (isset($config['value']) && $config['value'] !== '' && $config['value'] !== null) {
                             $class_names[] = "{$prefix}-{$config['value']}";
                         }
                         break;
                     case 'split':
-                        if (!empty($config['x'])) {
+                        if (isset($config['x']) && $config['x'] !== '' && $config['x'] !== null) {
                             $class_names[] = "{$prefix}x-{$config['x']}";
                         }
-                        if (!empty($config['y'])) {
+                        if (isset($config['y']) && $config['y'] !== '' && $config['y'] !== null) {
                             $class_names[] = "{$prefix}y-{$config['y']}";
                         }
                         break;
                     case 'sides':
-                        if (!empty($config['top'])) {
+                        if (isset($config['top']) && $config['top'] !== '' && $config['top'] !== null) {
                             $class_names[] = "{$prefix}t-{$config['top']}";
                         }
-                        if (!empty($config['right'])) {
+                        if (isset($config['right']) && $config['right'] !== '' && $config['right'] !== null) {
                             $class_names[] = "{$prefix}r-{$config['right']}";
                         }
-                        if (!empty($config['bottom'])) {
+                        if (isset($config['bottom']) && $config['bottom'] !== '' && $config['bottom'] !== null) {
                             $class_names[] = "{$prefix}b-{$config['bottom']}";
                         }
-                        if (!empty($config['left'])) {
+                        if (isset($config['left']) && $config['left'] !== '' && $config['left'] !== null) {
                             $class_names[] = "{$prefix}l-{$config['left']}";
                         }
                         break;
