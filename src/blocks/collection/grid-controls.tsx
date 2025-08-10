@@ -16,14 +16,8 @@ import { createToolsPanelItem } from '../utils/control-helpers';
 import { InspectorControls, BlockControls } from '@wordpress/block-editor';
 import {
     __experimentalToolsPanel as ToolsPanel,
-    __experimentalToolsPanelItem as ToolsPanelItem,
-    __experimentalToggleGroupControl as ToggleGroupControl,
-    __experimentalToggleGroupControlOption as ToggleGroupControlOption,
     ToolbarGroup,
-    ToolbarDropdownMenu,
     RangeControl,
-    SVG,
-    Path,
 } from '@wordpress/components';
 
 import type { LayoutAttributes } from '../types';

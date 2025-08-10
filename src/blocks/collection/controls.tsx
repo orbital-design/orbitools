@@ -15,15 +15,11 @@
  */
 
 import { Fragment } from '@wordpress/element';
-import { createToolsPanelItem, createToggleGroup, getSpacingValueByIndex, getSpacingIndexByValue } from '../utils/control-helpers';
-import { InspectorControls, BlockControls, AlignmentToolbar, useSettings } from '@wordpress/block-editor';
+import { createToolsPanelItem, createToggleGroup } from '../utils/control-helpers';
+import { InspectorControls } from '@wordpress/block-editor';
 import {
     __experimentalToolsPanel as ToolsPanel,
-    __experimentalToolsPanelItem as ToolsPanelItem,
-    __experimentalToggleGroupControl as ToggleGroupControl,
-    __experimentalToggleGroupControlOption as ToggleGroupControlOption,
     ToggleControl,
-    RangeControl,
 } from '@wordpress/components';
 
 import type { LayoutAttributes } from '../types';
@@ -40,9 +36,6 @@ interface CollectionControlsProps {
  */
 const COMMON_DEFAULTS = {
     layoutType: 'row',
-    orbGap: undefined,
-    orbPadding: undefined,
-    orbMargin: undefined,
     restrictContentWidth: false,
 } as const;
 
@@ -54,23 +47,6 @@ const LAYOUT_OPTIONS = [
     { value: 'grid', label: 'Grid' },
 ] as const;
 
-/**
- * Helper to get spacing marks from theme.json
- */
-function getSpacingMarks(spacingSizes: any[]) {
-    const marks: { value: number; label: string }[] = [];
-
-    if (spacingSizes && Array.isArray(spacingSizes)) {
-        spacingSizes.forEach((size, index) => {
-            marks.push({
-                value: index,
-                label: size.name
-            });
-        });
-    }
-
-    return marks;
-}
 
 
 /**
@@ -79,15 +55,9 @@ function getSpacingMarks(spacingSizes: any[]) {
 export default function CollectionControls({ attributes, setAttributes }: CollectionControlsProps) {
     const {
         layoutType = COMMON_DEFAULTS.layoutType,
-        orbGap = COMMON_DEFAULTS.orbGap,
-        orbPadding = COMMON_DEFAULTS.orbPadding,
-        orbMargin = COMMON_DEFAULTS.orbMargin,
         restrictContentWidth = COMMON_DEFAULTS.restrictContentWidth,
         align
     } = attributes;
-
-    // Get spacing sizes from theme.json
-    const [spacingSizes] = useSettings('spacing.spacingSizes');
 
     /**
      * Helper to update a single attribute
@@ -102,9 +72,6 @@ export default function CollectionControls({ attributes, setAttributes }: Collec
     const resetCommonAttributes = () => {
         setAttributes({
             layoutType: COMMON_DEFAULTS.layoutType,
-            orbGap: COMMON_DEFAULTS.orbGap,
-            orbPadding: COMMON_DEFAULTS.orbPadding,
-            orbMargin: COMMON_DEFAULTS.orbMargin,
             restrictContentWidth: COMMON_DEFAULTS.restrictContentWidth,
         });
     };

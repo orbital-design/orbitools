@@ -13,10 +13,8 @@ import { createToolsPanelItem } from '../utils/control-helpers';
 import { InspectorControls } from '@wordpress/block-editor';
 import {
     __experimentalToolsPanel as ToolsPanel,
-    __experimentalToolsPanelItem as ToolsPanelItem,
     RangeControl,
 } from '@wordpress/components';
-import type { ResponsiveValue } from '../../core/utils/responsive-controls';
 import type { LayoutItemAttributes } from '../types';
 
 interface EntryControlsProps {

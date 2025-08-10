@@ -10,6 +10,7 @@
 import { __ } from '@wordpress/i18n';
 import { RangeControl } from '@wordpress/components';
 import { useSettings } from '@wordpress/block-editor';
+import { getSpacingDisplayName } from '../utils/control-helpers';
 
 import ResponsiveControls, {
     type ResponsiveValue,
@@ -30,17 +31,6 @@ export interface SpacerHeightControlProps {
 
 export type { ResponsiveValue };
 
-/**
- * Get display name for spacing value
- */
-function getSpacingDisplayName(spacingSizes: any[], value: string): string {
-    if (!value) return 'Default';
-    if (value === '0') return 'None';
-    if (value === 'fill') return 'Fill';
-
-    const spacing = spacingSizes.find((size: any) => size.slug === value);
-    return spacing ? spacing.name : value;
-}
 
 /**
  * Height Control Renderer Factory

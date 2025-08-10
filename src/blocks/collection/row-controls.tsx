@@ -13,14 +13,10 @@
  */
 
 import { Fragment } from '@wordpress/element';
-import { createToolsPanelItem, createToggleGroup, getSpacingValueByIndex, getSpacingIndexByValue } from '../utils/control-helpers';
-import { InspectorControls, BlockControls, useSettings } from '@wordpress/block-editor';
-import type { ResponsiveValue } from '../../core/utils/responsive-controls';
+import { createToolsPanelItem, createToggleGroup } from '../utils/control-helpers';
+import { InspectorControls, BlockControls } from '@wordpress/block-editor';
 import {
     __experimentalToolsPanel as ToolsPanel,
-    __experimentalToolsPanelItem as ToolsPanelItem,
-    __experimentalToggleGroupControl as ToggleGroupControl,
-    __experimentalToggleGroupControlOption as ToggleGroupControlOption,
     ToolbarGroup,
     ToolbarDropdownMenu,
     ToggleControl,

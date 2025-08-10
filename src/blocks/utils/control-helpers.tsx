@@ -103,3 +103,15 @@ export function getSpacingIndexByValue(spacingSizes: any[], value: string) {
     return spacingSizes.findIndex((size: any) => size.slug === value);
 }
 
+/**
+ * Get display name for spacing value (including special cases like fill)
+ */
+export function getSpacingDisplayName(spacingSizes: any[], value: string): string {
+    if (!value) return 'Default';
+    if (value === '0') return 'None';
+    if (value === 'fill') return 'Fill';
+
+    const spacing = spacingSizes.find((size: any) => size.slug === value);
+    return spacing ? spacing.name : value;
+}
+
