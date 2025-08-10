@@ -1,15 +1,15 @@
 /**
- * Dimensions Controls - Control Registration
+ * Spacings Controls - Control Registration
  *
- * Automatically adds dimension controls to blocks with orbitools.dimensions support
+ * Automatically adds spacing controls to blocks with orbitools.spacings support
  */
 
 import { getBreakpointOptions } from '../../../../core/utils/breakpoints.js';
 
 (function() {
-    // Configuration functions from dimensions-config.js (available globally)
-    function getBlockDimensionsConfig(blockName) {
-        const configData = window.orbitoolsDimensionsConfig || {};
+    // Configuration functions from spacings-config.js (available globally)
+    function getBlockSpacingsConfig(blockName) {
+        const configData = window.orbitoolsSpacingsConfig || {};
 
         if (configData[blockName]) {
             return configData[blockName];
@@ -18,7 +18,7 @@ import { getBreakpointOptions } from '../../../../core/utils/breakpoints.js';
         return {
             spacings: [],
             breakpoints: [],
-            dimensions: {
+            supports: {
                 enabled: false,
                 breakpoints: false,
                 gap: false,
@@ -43,20 +43,20 @@ import { getBreakpointOptions } from '../../../../core/utils/breakpoints.js';
     } = wp.components;
 
     /**
-     * Check if block has dimensions support
+     * Check if block has spacings support
      */
-    function blockHasDimensionsSupport(blockName) {
+    function blockHasSpacingsSupport(blockName) {
         const blockType = wp.blocks.getBlockType(blockName);
         if (!blockType || !blockType.supports || !blockType.supports.orbitools) {
             return null;
         }
 
-        const dimensionsSupports = blockType.supports.orbitools.dimensions;
-        if (!dimensionsSupports || dimensionsSupports === false) {
+        const spacingsSupports = blockType.supports.orbitools.spacings;
+        if (!spacingsSupports || spacingsSupports === false) {
             return null;
         }
 
-        return dimensionsSupports;
+        return spacingsSupports;
     }
 
     /**
@@ -68,12 +68,12 @@ import { getBreakpointOptions } from '../../../../core/utils/breakpoints.js';
     }
 
     /**
-     * Simple Dimensions Control Component
+     * Simple Spacings Control Component
      */
-    function DimensionsControl({ gap, padding, margin, onGapChange, onPaddingChange, onMarginChange, blockName, supports }) {
+    function SpacingsControl({ gap, padding, margin, onGapChange, onPaddingChange, onMarginChange, blockName, supports }) {
         // Get proper breakpoints and spacing from configuration system
         const breakpoints = getBreakpointOptions();
-        const config = getBlockDimensionsConfig(blockName);
+        const config = getBlockSpacingsConfig(blockName);
         const spacingPresets = config.spacings || useSpacingPresets();
 
         const allBreakpoints = [null, ...breakpoints]; // null = base breakpoint
@@ -120,7 +120,7 @@ import { getBreakpointOptions } from '../../../../core/utils/breakpoints.js';
         /**
          * Create a custom box control for padding/margin using our spacing presets (EXACT COPY from working version)
          */
-        function createBoxControl(spacingSizes, dimensionType, value, onChange) {
+        function createBoxControl(spacingSizes, spacingType, value, onChange) {
             // Handle legacy string format (convert to new format)
             if (typeof value === 'string') {
                 value = {
@@ -314,7 +314,7 @@ import { getBreakpointOptions } from '../../../../core/utils/breakpoints.js';
                             color: '#1e1e1e',
                             margin: 0
                         }
-                    }, dimensionType === 'padding' ? 'Padding' : 'Margin'),
+                    }, spacingType === 'padding' ? 'Padding' : 'Margin'),
                     wp.element.createElement(Button, {
                         size: 'small',
                         variant: 'tertiary',
@@ -344,7 +344,7 @@ import { getBreakpointOptions } from '../../../../core/utils/breakpoints.js';
                             }
                         }, icons.all),
                         wp.element.createElement('div', { style: { flex: 1 } },
-                            createSpacingControl(spacingSizes, dimensionType, currentValues.all, handleAllChange, true)
+                            createSpacingControl(spacingSizes, spacingType, currentValues.all, handleAllChange, true)
                         )
                     )
                 ) : currentMode === 'split' ? (
@@ -371,7 +371,7 @@ import { getBreakpointOptions } from '../../../../core/utils/breakpoints.js';
                                     }
                                 }, icons.split[axis]),
                                 wp.element.createElement('div', { style: { flex: 1 } },
-                                    createSpacingControl(spacingSizes, dimensionType, currentValues[axis], (newValue) => handleSplitChange(axis, newValue), true)
+                                    createSpacingControl(spacingSizes, spacingType, currentValues[axis], (newValue) => handleSplitChange(axis, newValue), true)
                                 )
                             )
                         )
@@ -400,7 +400,7 @@ import { getBreakpointOptions } from '../../../../core/utils/breakpoints.js';
                                     }
                                 }, icons.sides[side]),
                                 wp.element.createElement('div', { style: { flex: 1 } },
-                                    createSpacingControl(spacingSizes, dimensionType, currentValues[side], (newValue) => handleSideChange(side, newValue), true)
+                                    createSpacingControl(spacingSizes, spacingType, currentValues[side], (newValue) => handleSideChange(side, newValue), true)
                                 )
                             )
                         )
@@ -412,7 +412,7 @@ import { getBreakpointOptions } from '../../../../core/utils/breakpoints.js';
         /**
          * Create a spacing control for gap (simple slider) (EXACT COPY from working version)
          */
-        function createSpacingControl(spacingSizes, dimensionType, value, onChange, hideLabel) {
+        function createSpacingControl(spacingSizes, spacingType, value, onChange, hideLabel) {
             const currentIndex = getSpacingIndexByValue(spacingSizes, value || '');
             const maxIndex = spacingSizes.length - 1;
 
@@ -444,14 +444,14 @@ import { getBreakpointOptions } from '../../../../core/utils/breakpoints.js';
                 }
             };
 
-            const dimensionLabels = {
+            const spacingLabels = {
                 gap: 'Gap',
                 padding: 'Padding',
                 margin: 'Margin'
             };
 
             // Gap icon for consistency with padding controls
-            const gapIcon = dimensionType === 'gap' ? wp.element.createElement('svg', { xmlns: "http://www.w3.org/2000/svg", fill: "none", viewBox: "0 0 640 640", width: "16", height: "16" },
+            const gapIcon = spacingType === 'gap' ? wp.element.createElement('svg', { xmlns: "http://www.w3.org/2000/svg", fill: "none", viewBox: "0 0 640 640", width: "16", height: "16" },
                 wp.element.createElement('path', { fill: "#32A3E2", d: "M32 192v256c0 17.7 14.3 32 32 32s32-14.3 32-32V192c0-17.7-14.3-32-32-32s-32 14.3-32 32Zm512 0v256c0 17.7 14.3 32 32 32s32-14.3 32-32V192c0-17.7-14.3-32-32-32s-32 14.3-32 32Z" }),
                 wp.element.createElement('path', { fill: "#1D303A", d: "m422.6 406.6 64-64c12.5-12.5 12.5-32.8 0-45.3l-64-64c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l9.4 9.4H253.2l9.4-9.4c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-64 64c-6 6-9.4 14.1-9.4 22.6 0 8.5 3.4 16.6 9.4 22.6l64 64c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3l-9.4-9.4h133.5l-9.4 9.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0v.1Z" })
             ) : null;
@@ -473,7 +473,7 @@ import { getBreakpointOptions } from '../../../../core/utils/breakpoints.js';
                             color: '#1e1e1e',
                             margin: 0
                         }
-                    }, dimensionLabels[dimensionType]),
+                    }, spacingLabels[spacingType]),
                     wp.element.createElement('span', {
                         style: {
                             fontSize: '13px',
@@ -484,7 +484,7 @@ import { getBreakpointOptions } from '../../../../core/utils/breakpoints.js';
                 ),
 
                 // Gap control with icon layout matching padding controls
-                dimensionType === 'gap' ? wp.element.createElement('div', {
+                spacingType === 'gap' ? wp.element.createElement('div', {
                     style: {
                         display: 'flex',
                         alignItems: 'center',
@@ -550,18 +550,18 @@ import { getBreakpointOptions } from '../../../../core/utils/breakpoints.js';
         }
 
         /**
-         * Reset all dimensions
+         * Reset all spacings
          */
-        const resetAllDimensions = () => {
+        const resetAllSpacings = () => {
             if (supports.gap && onGapChange) onGapChange({});
             if (supports.padding && onPaddingChange) onPaddingChange({});
             if (supports.margin && onMarginChange) onMarginChange({});
         };
 
         return wp.element.createElement(ToolsPanel, {
-            label: 'Dimensions',
-            resetAll: resetAllDimensions,
-            panelId: 'main-dimensions-panel'
+            label: 'Spacings',
+            resetAll: resetAllSpacings,
+            panelId: 'main-spacings-panel'
         },
             allBreakpoints.map((breakpoint, index) => {
                 const breakpointSlug = breakpoint?.slug || 'base';
@@ -577,7 +577,7 @@ import { getBreakpointOptions } from '../../../../core/utils/breakpoints.js';
                     },
                     label: label,
                     onDeselect: () => {
-                        // Reset all dimensions for this breakpoint
+                        // Reset all spacings for this breakpoint
                         if (supports.gap && onGapChange) {
                             const newGap = { ...gap };
                             delete newGap[breakpointSlug];
@@ -595,7 +595,7 @@ import { getBreakpointOptions } from '../../../../core/utils/breakpoints.js';
                         }
                     },
                     isShownByDefault: index === 0,
-                    panelId: 'main-dimensions-panel'
+                    panelId: 'main-spacings-panel'
                 },
                     wp.element.createElement('div', {
                         style: {
@@ -624,7 +624,7 @@ import { getBreakpointOptions } from '../../../../core/utils/breakpoints.js';
 
                         wp.element.createElement(ToolsPanel, {
                             label: 'Controls',
-                            panelId: `${breakpointSlug}-dimensions-panel`
+                            panelId: `${breakpointSlug}-spacings-panel`
                         },
                             // Gap Control
                             supports.gap && wp.element.createElement(ToolsPanelItem, {
@@ -636,7 +636,7 @@ import { getBreakpointOptions } from '../../../../core/utils/breakpoints.js';
                                     onGapChange(newGap);
                                 },
                                 isShownByDefault: breakpointSlug === 'base',
-                                panelId: `${breakpointSlug}-dimensions-panel`
+                                panelId: `${breakpointSlug}-spacings-panel`
                             },
                                 createSpacingControl(
                                     spacingPresets,
@@ -658,7 +658,7 @@ import { getBreakpointOptions } from '../../../../core/utils/breakpoints.js';
                                     onPaddingChange(newPadding);
                                 },
                                 isShownByDefault: breakpointSlug === 'base',
-                                panelId: `${breakpointSlug}-dimensions-panel`
+                                panelId: `${breakpointSlug}-spacings-panel`
                             },
                                 createBoxControl(
                                     spacingPresets,
@@ -680,7 +680,7 @@ import { getBreakpointOptions } from '../../../../core/utils/breakpoints.js';
                                     onMarginChange(newMargin);
                                 },
                                 isShownByDefault: breakpointSlug === 'base',
-                                panelId: `${breakpointSlug}-dimensions-panel`
+                                panelId: `${breakpointSlug}-spacings-panel`
                             },
                                 createBoxControl(
                                     spacingPresets,
@@ -698,19 +698,19 @@ import { getBreakpointOptions } from '../../../../core/utils/breakpoints.js';
         );
     }
 
-    // Add automatic dimension controls
-    const withDimensionControls = createHigherOrderComponent(function(BlockEdit) {
+    // Add automatic spacing controls
+    const withSpacingControls = createHigherOrderComponent(function(BlockEdit) {
         return function(props) {
-            const dimensionsSupports = blockHasDimensionsSupport(props.name);
+            const spacingsSupports = blockHasSpacingsSupport(props.name);
 
-            if (!dimensionsSupports) {
+            if (!spacingsSupports) {
                 return wp.element.createElement(BlockEdit, props);
             }
 
             const { attributes, setAttributes } = props;
             const { orbGap, orbPadding, orbMargin } = attributes;
 
-            // Handle dimension changes
+            // Handle spacing changes
             const handleGapChange = (newGap) => {
                 setAttributes({ orbGap: newGap });
             };
@@ -726,7 +726,7 @@ import { getBreakpointOptions } from '../../../../core/utils/breakpoints.js';
             return wp.element.createElement(Fragment, {},
                 wp.element.createElement(BlockEdit, props),
                 wp.element.createElement(InspectorControls, { group: 'styles' },
-                    wp.element.createElement(DimensionsControl, {
+                    wp.element.createElement(SpacingsControl, {
                         gap: orbGap,
                         padding: orbPadding,
                         margin: orbMargin,
@@ -734,17 +734,17 @@ import { getBreakpointOptions } from '../../../../core/utils/breakpoints.js';
                         onPaddingChange: handlePaddingChange,
                         onMarginChange: handleMarginChange,
                         blockName: props.name,
-                        supports: dimensionsSupports
+                        supports: spacingsSupports
                     })
                 )
             );
         };
-    }, 'withDimensionControls');
+    }, 'withSpacingControls');
 
     addFilter(
         'editor.BlockEdit',
-        'orbitools/add-dimension-controls',
-        withDimensionControls,
+        'orbitools/add-spacing-controls',
+        withSpacingControls,
         5
     );
 })();

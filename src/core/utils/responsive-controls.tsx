@@ -22,7 +22,7 @@ import {
 
 import { getBreakpointOptions } from './breakpoints';
 
-// Re-export Breakpoint type from dimensions-config
+// Re-export Breakpoint type from spacings-config
 export interface Breakpoint {
     name: string;
     slug: string;

@@ -39,10 +39,10 @@ module.exports = {
         'admin/js/controls/typography-presets/editor-presets-attribute-registration': path.resolve(process.cwd(), 'src', 'controls', 'typography-presets','admin', 'js','editor-presets-attribute-registration.js'),
         'admin/js/controls/typography-presets/editor-presets-classname-application': path.resolve(process.cwd(), 'src', 'controls', 'typography-presets','admin', 'js','editor-presets-classname-application.js'),
         'admin/js/controls/typography-presets/editor-presets-register-controls': path.resolve(process.cwd(), 'src', 'controls', 'typography-presets','admin', 'js','editor-presets-register-controls.js'),
-        // - JS ~ Controls ~ Dimensions
-        'admin/js/controls/dimensions/editor-dimensions-attribute-registration': path.resolve(process.cwd(), 'src', 'controls', 'dimensions','admin', 'js','editor-dimensions-attribute-registration.js'),
-        'admin/js/controls/dimensions/editor-dimensions-classname-application': path.resolve(process.cwd(), 'src', 'controls', 'dimensions','admin', 'js','editor-dimensions-classname-application.js'),
-        'admin/js/controls/dimensions/editor-dimensions-register-controls': path.resolve(process.cwd(), 'src', 'controls', 'dimensions','admin', 'js','editor-dimensions-register-controls.js'),
+        // - JS ~ Controls ~ Spacings
+        'admin/js/controls/spacings/editor-spacings-attribute-registration': path.resolve(process.cwd(), 'src', 'controls', 'spacings','admin', 'js','editor-spacings-attribute-registration.js'),
+        'admin/js/controls/spacings/editor-spacings-classname-application': path.resolve(process.cwd(), 'src', 'controls', 'spacings','admin', 'js','editor-spacings-classname-application.js'),
+        'admin/js/controls/spacings/editor-spacings-register-controls': path.resolve(process.cwd(), 'src', 'controls', 'spacings','admin', 'js','editor-spacings-register-controls.js'),
 
     },
     output: {

@@ -1,11 +1,11 @@
 /**
- * Dimensions Control
+ * Spacings Control
  *
  * Single ToolsPanel with ToolsPanelItems for each breakpoint.
  * Each ToolsPanelItem contains gap, padding, and margin controls for that breakpoint.
  *
  * Structure:
- * ToolsPanel - Dimensions
+ * ToolsPanel - Spacings
  *   └── ToolsPanelItem - Base breakpoint (shown by default)
  *       └── gap, padding, margin controls
  *   └── ToolsPanelItem - SM breakpoint
@@ -14,7 +14,7 @@
  *       └── gap, padding, margin controls
  *   etc.
  *
- * @file blocks/utils/tabbed-dimensions-control.tsx
+ * @file blocks/utils/tabbed-spacings-control.tsx
  * @since 1.0.0
  */
 
@@ -28,10 +28,10 @@ import {
 
 import type { ResponsiveValue, Breakpoint } from '../../core/utils/responsive-controls';
 import { getResponsiveClasses } from '../../core/utils/responsive-controls';
-import { getBlockDimensionsConfig } from '../../core/utils/dimensions-config';
+import { getBlockSpacingsConfig } from '../../core/utils/spacings-config';
 import { getBreakpointOptions } from '../../core/utils/breakpoints';
 
-export interface DimensionsControlProps {
+export interface SpacingsControlProps {
     /** Current gap responsive values */
     gap?: ResponsiveValue<string>;
     /** Current padding responsive values */
@@ -76,7 +76,7 @@ function getSpacingDisplayName(spacingSizes: any[], value: string): string {
  */
 function createBoxControl(
     spacingSizes: any[],
-    dimensionType: 'padding' | 'margin',
+    spacingType: 'padding' | 'margin',
     value: any,
     onChange: (value: any) => void
 ) {
@@ -287,7 +287,7 @@ function createBoxControl(
                     color: '#1e1e1e',
                     margin: 0
                 }}>
-                    {dimensionType === 'padding' ? 'Padding' : 'Margin'}
+                    {spacingType === 'padding' ? 'Padding' : 'Margin'}
                 </label>
                 <Button
                     size="small"
@@ -320,7 +320,7 @@ function createBoxControl(
                     <div style={{ flex: 1 }}>
                         {createSpacingControl(
                             spacingSizes,
-                            dimensionType as any,
+                            spacingType as any,
                             currentValues.all,
                             handleAllChange,
                             true
@@ -350,7 +350,7 @@ function createBoxControl(
                             <div style={{ flex: 1 }}>
                                 {createSpacingControl(
                                     spacingSizes,
-                                    dimensionType as any,
+                                    spacingType as any,
                                     currentValues[axis],
                                     (newValue) => handleSplitChange(axis, newValue),
                                     true
@@ -382,7 +382,7 @@ function createBoxControl(
                             <div style={{ flex: 1 }}>
                                 {createSpacingControl(
                                     spacingSizes,
-                                    dimensionType as any,
+                                    spacingType as any,
                                     currentValues[side],
                                     (newValue) => handleSideChange(side, newValue),
                                     true
@@ -401,7 +401,7 @@ function createBoxControl(
  */
 function createSpacingControl(
     spacingSizes: any[],
-    dimensionType: 'gap' | 'padding' | 'margin',
+    spacingType: 'gap' | 'padding' | 'margin',
     value: string | undefined,
     onChange: (value: string | undefined) => void,
     hideLabel: boolean = false
@@ -437,14 +437,14 @@ function createSpacingControl(
         }
     };
 
-    const dimensionLabels = {
+    const spacingLabels = {
         gap: 'Gap',
         padding: 'Padding',
         margin: 'Margin'
     };
 
     // Gap icon for consistency with padding controls
-    const gapIcon = dimensionType === 'gap' ? (
+    const gapIcon = spacingType === 'gap' ? (
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 640 640" width="16" height="16">
             <path fill="#32A3E2" d="M32 192v256c0 17.7 14.3 32 32 32s32-14.3 32-32V192c0-17.7-14.3-32-32-32s-32 14.3-32 32Zm512 0v256c0 17.7 14.3 32 32 32s32-14.3 32-32V192c0-17.7-14.3-32-32-32s-32 14.3-32 32Z"/>
             <path fill="#1D303A" d="m422.6 406.6 64-64c12.5-12.5 12.5-32.8 0-45.3l-64-64c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l9.4 9.4H253.2l9.4-9.4c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-64 64c-6 6-9.4 14.1-9.4 22.6 0 8.5 3.4 16.6 9.4 22.6l64 64c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3l-9.4-9.4h133.5l-9.4 9.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0v.1Z"/>
@@ -467,7 +467,7 @@ function createSpacingControl(
                         color: '#1e1e1e',
                         margin: 0
                     }}>
-                        {dimensionLabels[dimensionType]}
+                        {spacingLabels[spacingType]}
                     </label>
                     <span style={{
                         fontSize: '13px',
@@ -480,7 +480,7 @@ function createSpacingControl(
             )}
             
             {/* Gap control with icon layout matching padding controls */}
-            {dimensionType === 'gap' ? (
+            {spacingType === 'gap' ? (
                 <div style={{
                     display: 'flex',
                     alignItems: 'center',
@@ -623,9 +623,9 @@ export function getMarginClasses(margin: ResponsiveValue<any>): string {
 }
 
 /**
- * Dimensions Control Component
+ * Spacings Control Component
  */
-export default function DimensionsControl({
+export default function SpacingsControl({
     gap,
     padding,
     margin,
@@ -633,16 +633,16 @@ export default function DimensionsControl({
     onPaddingChange,
     onMarginChange,
     blockName
-}: DimensionsControlProps) {
-    // Get configuration from our dimensions config system
-    const config = getBlockDimensionsConfig(blockName);
+}: SpacingsControlProps) {
+    // Get configuration from our spacings config system
+    const config = getBlockSpacingsConfig(blockName);
     const spacingSizes = (config as any).spacings;
-    const { dimensions } = config as any;
+    const { supports } = config as any;
     const breakpoints = getBreakpointOptions(blockName);
 
     // Don't render until we have spacing sizes and breakpoints
     if (!spacingSizes || !Array.isArray(spacingSizes) || !breakpoints) {
-        return <div>Loading dimensions settings...</div>;
+        return <div>Loading spacings settings...</div>;
     }
 
     // All available breakpoints (base + configured breakpoints)
@@ -651,9 +651,9 @@ export default function DimensionsControl({
         ...breakpoints
     ];
 
-    // Helper to update a specific dimension's responsive value
-    const updateDimensionValue = (
-        dimensionType: 'gap' | 'padding' | 'margin',
+    // Helper to update a specific spacing's responsive value
+    const updateSpacingValue = (
+        spacingType: 'gap' | 'padding' | 'margin',
         breakpointSlug: string,
         value: string | undefined
     ) => {
@@ -669,10 +669,10 @@ export default function DimensionsControl({
             margin: margin || {}
         };
 
-        const callback = callbacks[dimensionType];
+        const callback = callbacks[spacingType];
         if (!callback) return;
 
-        const currentValue = currentValues[dimensionType];
+        const currentValue = currentValues[spacingType];
         const newValue = { ...currentValue, [breakpointSlug]: value };
 
         // Clean up undefined values
@@ -685,15 +685,15 @@ export default function DimensionsControl({
         callback(newValue);
     };
 
-    // Reset all dimensions for all breakpoints
-    const resetAllDimensions = () => {
-        if (dimensions.gap && onGapChange) {
+    // Reset all spacings for all breakpoints
+    const resetAllSpacings = () => {
+        if (supports.gap && onGapChange) {
             onGapChange({});
         }
-        if (dimensions.padding && onPaddingChange) {
+        if (supports.padding && onPaddingChange) {
             onPaddingChange({});
         }
-        if (dimensions.margin && onMarginChange) {
+        if (supports.margin && onMarginChange) {
             onMarginChange({});
         }
     };
@@ -736,9 +736,9 @@ export default function DimensionsControl({
 
     return (
         <ToolsPanel
-            label={__('Dimensions', 'orbitools')}
-            resetAll={resetAllDimensions}
-            panelId="main-dimensions-panel"
+            label={__('Spacings', 'orbitools')}
+            resetAll={resetAllSpacings}
+            panelId="main-spacings-panel"
         >
             {allBreakpoints.map((breakpoint, index) => {
                 const breakpointSlug = breakpoint?.slug || 'base';
@@ -749,28 +749,28 @@ export default function DimensionsControl({
                     <ToolsPanelItem
                         key={breakpointSlug}
                         hasValue={() => {
-                            // Has value if any dimension is set for this breakpoint
+                            // Has value if any spacing is set for this breakpoint
                             return (gap?.[breakpointSlug as keyof ResponsiveValue] !== undefined) ||
                                    (padding?.[breakpointSlug as keyof ResponsiveValue] !== undefined) ||
                                    (margin?.[breakpointSlug as keyof ResponsiveValue] !== undefined);
                         }}
                         label={label}
                         onDeselect={() => {
-                            // Reset all dimensions for this breakpoint
-                            if (dimensions.gap && onGapChange) {
-                                updateDimensionValue('gap', breakpointSlug, undefined);
+                            // Reset all spacings for this breakpoint
+                            if (supports.gap && onGapChange) {
+                                updateSpacingValue('gap', breakpointSlug, undefined);
                             }
-                            if (dimensions.padding && onPaddingChange) {
-                                updateDimensionValue('padding', breakpointSlug, undefined);
+                            if (supports.padding && onPaddingChange) {
+                                updateSpacingValue('padding', breakpointSlug, undefined);
                             }
-                            if (dimensions.margin && onMarginChange) {
-                                updateDimensionValue('margin', breakpointSlug, undefined);
+                            if (supports.margin && onMarginChange) {
+                                updateSpacingValue('margin', breakpointSlug, undefined);
                             }
                         }}
                         isShownByDefault={index === 0} // Only show base by default
-                        panelId="main-dimensions-panel"
+                        panelId="main-spacings-panel"
                     >
-                        {/* Nested ToolsPanel for this breakpoint's dimensions */}
+                        {/* Nested ToolsPanel for this breakpoint's spacings */}
                         <div style={{ 
                             marginLeft: 'calc(16px * -1)',
                             marginRight: 'calc(16px * -1)',
@@ -802,69 +802,69 @@ export default function DimensionsControl({
                             <ToolsPanel
                                 label={__('Controls', 'orbitools')}
                                 resetAll={() => {
-                                // Reset all dimensions for this breakpoint
-                                if (dimensions.gap && onGapChange) {
-                                    updateDimensionValue('gap', breakpointSlug, undefined);
+                                // Reset all spacings for this breakpoint
+                                if (supports.gap && onGapChange) {
+                                    updateSpacingValue('gap', breakpointSlug, undefined);
                                 }
-                                if (dimensions.padding && onPaddingChange) {
-                                    updateDimensionValue('padding', breakpointSlug, undefined);
+                                if (supports.padding && onPaddingChange) {
+                                    updateSpacingValue('padding', breakpointSlug, undefined);
                                 }
-                                if (dimensions.margin && onMarginChange) {
-                                    updateDimensionValue('margin', breakpointSlug, undefined);
+                                if (supports.margin && onMarginChange) {
+                                    updateSpacingValue('margin', breakpointSlug, undefined);
                                 }
                             }}
-                            panelId={`${breakpointSlug}-dimensions-panel`}
+                            panelId={`${breakpointSlug}-spacings-panel`}
                         >
                             {/* Gap Control */}
-                            {dimensions.gap && onGapChange && (
+                            {supports.gap && onGapChange && (
                                 <ToolsPanelItem
                                     hasValue={() => gap?.[breakpointSlug as keyof ResponsiveValue] !== undefined}
                                     label={__('Gap', 'orbitools')}
-                                    onDeselect={() => updateDimensionValue('gap', breakpointSlug, undefined)}
+                                    onDeselect={() => updateSpacingValue('gap', breakpointSlug, undefined)}
                                     isShownByDefault={breakpointSlug === 'base'}
-                                    panelId={`${breakpointSlug}-dimensions-panel`}
+                                    panelId={`${breakpointSlug}-spacings-panel`}
                                 >
                                     {createSpacingControl(
                                         spacingSizes,
                                         'gap',
                                         gap?.[breakpointSlug as keyof ResponsiveValue],
-                                        (value) => updateDimensionValue('gap', breakpointSlug, value)
+                                        (value) => updateSpacingValue('gap', breakpointSlug, value)
                                     )}
                                 </ToolsPanelItem>
                             )}
 
                             {/* Padding Control */}
-                            {dimensions.padding && onPaddingChange && (
+                            {supports.padding && onPaddingChange && (
                                 <ToolsPanelItem
                                     hasValue={() => padding?.[breakpointSlug as keyof ResponsiveValue] !== undefined}
                                     label={__('Padding', 'orbitools')}
-                                    onDeselect={() => updateDimensionValue('padding', breakpointSlug, undefined)}
+                                    onDeselect={() => updateSpacingValue('padding', breakpointSlug, undefined)}
                                     isShownByDefault={false}
-                                    panelId={`${breakpointSlug}-dimensions-panel`}
+                                    panelId={`${breakpointSlug}-spacings-panel`}
                                 >
                                     {createBoxControl(
                                         spacingSizes,
                                         'padding',
                                         padding?.[breakpointSlug as keyof ResponsiveValue] || {},
-                                        (value) => updateDimensionValue('padding', breakpointSlug, value)
+                                        (value) => updateSpacingValue('padding', breakpointSlug, value)
                                     )}
                                 </ToolsPanelItem>
                             )}
 
                             {/* Margin Control */}
-                            {dimensions.margin && onMarginChange && (
+                            {supports.margin && onMarginChange && (
                                 <ToolsPanelItem
                                     hasValue={() => margin?.[breakpointSlug as keyof ResponsiveValue] !== undefined}
                                     label={__('Margin', 'orbitools')}
-                                    onDeselect={() => updateDimensionValue('margin', breakpointSlug, undefined)}
+                                    onDeselect={() => updateSpacingValue('margin', breakpointSlug, undefined)}
                                     isShownByDefault={false}
-                                    panelId={`${breakpointSlug}-dimensions-panel`}
+                                    panelId={`${breakpointSlug}-spacings-panel`}
                                 >
                                     {createBoxControl(
                                         spacingSizes,
                                         'margin',
                                         margin?.[breakpointSlug as keyof ResponsiveValue] || {},
-                                        (value) => updateDimensionValue('margin', breakpointSlug, value)
+                                        (value) => updateSpacingValue('margin', breakpointSlug, value)
                                     )}
                                 </ToolsPanelItem>
                             )}

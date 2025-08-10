@@ -1,32 +1,32 @@
 /**
- * Dimensions Controls - Attribute Registration
+ * Spacings Controls - Attribute Registration
  *
- * Handles registering orb* dimension attributes on blocks with orbitools.dimensions support
+ * Handles registering orb* spacing attributes on blocks with orbitools.spacings support
  */
 
 
 // Register attributes immediately when script loads
 wp.hooks.addFilter(
     'blocks.registerBlockType',
-    'orbitools/add-dimensions-attributes',
+    'orbitools/add-spacings-attributes',
     function(settings, name) {
-        // Check if block has orbitools dimensions support
-        if (!settings.supports || !settings.supports.orbitools || !settings.supports.orbitools.dimensions) {
+        // Check if block has orbitools spacings support
+        if (!settings.supports || !settings.supports.orbitools || !settings.supports.orbitools.spacings) {
             return settings;
         }
 
-        const dimensionsSupports = settings.supports.orbitools.dimensions;
+        const spacingsSupports = settings.supports.orbitools.spacings;
 
-        // Only proceed if dimensions support is enabled
-        if (dimensionsSupports === false || (typeof dimensionsSupports === 'object' && Object.keys(dimensionsSupports).length === 0)) {
+        // Only proceed if spacings support is enabled
+        if (spacingsSupports === false || (typeof spacingsSupports === 'object' && Object.keys(spacingsSupports).length === 0)) {
             return settings;
         }
 
-        // Add dimension attributes based on what's enabled in supports
+        // Add spacing attributes based on what's enabled in supports
         const newAttributes = {};
 
         // Add gap attribute if gap support is enabled
-        if (dimensionsSupports.gap === true) {
+        if (spacingsSupports.gap === true) {
             newAttributes.orbGap = {
                 type: 'object',
                 default: {}
@@ -34,7 +34,7 @@ wp.hooks.addFilter(
         }
 
         // Add padding attribute if padding support is enabled
-        if (dimensionsSupports.padding === true) {
+        if (spacingsSupports.padding === true) {
             newAttributes.orbPadding = {
                 type: 'object',
                 default: {}
@@ -42,7 +42,7 @@ wp.hooks.addFilter(
         }
 
         // Add margin attribute if margin support is enabled
-        if (dimensionsSupports.margin === true) {
+        if (spacingsSupports.margin === true) {
             newAttributes.orbMargin = {
                 type: 'object',
                 default: {}

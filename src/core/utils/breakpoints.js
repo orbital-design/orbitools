@@ -2,30 +2,30 @@
  * Breakpoints Utility
  *
  * Standalone utility for getting breakpoint configuration
- * Can be imported anywhere without dimensions control dependencies
+ * Can be imported anywhere without spacings control dependencies
  *
  * @since 1.0.0
  */
 
 /**
- * Get breakpoint options - completely standalone from dimensions control
+ * Get breakpoint options - completely standalone from spacings control
  *
  * @returns {Array} Array of breakpoint options with slug, value, and name
  */
 export function getBreakpointOptions(blockName = '') {
     // Priority Order:
-    // 1. Block Supports (if using block-level configuration)  
+    // 1. Block Supports (if using block-level configuration)
     // 2. Theme configuration (themeRoot/config/orbitools.json)
     // 3. Global plugin configuration (final fallback)
     // 4. Empty array (no breakpoints available)
-    
-    
+
+
     // 1. Check block-specific configuration first
-    const configData = window.orbitoolsDimensionsConfig || {};
+    const configData = window.orbitoolsSpacingsConfig || {};
     if (configData[blockName] && configData[blockName].breakpoints) {
         return configData[blockName].breakpoints;
     }
-    
+
     // 2. Check theme orbitools.json settings
     const themeConfig = window.orbitoolsThemeConfig || {};
     if (themeConfig.settings && themeConfig.settings.breakpoints) {

@@ -11,7 +11,7 @@ import type { LayoutAttributes } from '../types';
 import CollectionControls from './controls';
 import { generateFlexAttributes } from '../utils/flex-attributes';
 import { buildCollectionClasses, COLLECTION_LIMITS, combineClasses } from '../utils/class-builders';
-import { getGapClasses, getPaddingClasses, getMarginClasses } from '../utils/tabbed-dimensions-control';
+import { getGapClasses, getPaddingClasses, getMarginClasses } from '../utils/tabbed-spacings-control';
 
 const ALLOWED_BLOCKS = ['orb/entry'];
 
@@ -26,7 +26,7 @@ const Edit: React.FC<BlockEditProps<LayoutAttributes>> = ({
     clientId
 }) => {
     const { layoutType, itemWidth, columnSystem, columnCount = 2 } = attributes;
-    
+
     // Get inner blocks and dispatch functions
     const { innerBlocks } = useSelect((select) => {
         const { getBlocks } = select('core/block-editor');
@@ -72,7 +72,7 @@ const Edit: React.FC<BlockEditProps<LayoutAttributes>> = ({
 
     // Track previous columnSystem to detect actual changes
     const prevColumnSystemRef = useRef(columnSystem);
-    
+
     /**
      * Reset Entry block widths when column system changes
      */
@@ -81,10 +81,10 @@ const Edit: React.FC<BlockEditProps<LayoutAttributes>> = ({
         if (prevColumnSystemRef.current === columnSystem) {
             return;
         }
-        
+
         // Update the ref for next comparison
         prevColumnSystemRef.current = columnSystem;
-        
+
         if (!innerBlocks || innerBlocks.length === 0) {
             return;
         }
@@ -109,7 +109,7 @@ const Edit: React.FC<BlockEditProps<LayoutAttributes>> = ({
         });
 
         // Only update if there were changes
-        const hasChanges = updatedBlocks.some((block, index) => 
+        const hasChanges = updatedBlocks.some((block, index) =>
             block.attributes.width !== innerBlocks[index].attributes.width
         );
 
@@ -121,24 +121,24 @@ const Edit: React.FC<BlockEditProps<LayoutAttributes>> = ({
     }, [columnSystem, innerBlocks, itemWidth, clientId, replaceInnerBlocks]);
 
     const { align, restrictContentWidth } = attributes;
-    
+
     // Check if we need content constraint wrapper in editor
     const needsWrapper = align === 'full' && restrictContentWidth;
-    
+
     // Build semantic class names using utility functions
     const collectionClasses = buildCollectionClasses(layoutType, itemWidth, columnSystem);
-    
-    // Generate responsive dimension classes
+
+    // Generate responsive spacings classes
     const { orbGap, orbPadding, orbMargin } = attributes;
     const gapClasses = getGapClasses(orbGap || {});
     const paddingClasses = getPaddingClasses(orbPadding || {});
     const marginClasses = getMarginClasses(orbMargin || {});
     const allClasses = combineClasses(collectionClasses, gapClasses, paddingClasses, marginClasses);
-    
-    // Generate data attributes for layout consistency with save component  
+
+    // Generate data attributes for layout consistency with save component
     const tempBlockProps = useBlockProps();
     const flexAttributes = generateFlexAttributes(attributes, tempBlockProps);
-    
+
     const blockProps = useBlockProps({
         className: needsWrapper ? undefined : allClasses,
         ...(needsWrapper ? {} : flexAttributes)
@@ -146,11 +146,11 @@ const Edit: React.FC<BlockEditProps<LayoutAttributes>> = ({
 
     return (
         <>
-            <CollectionControls 
+            <CollectionControls
                 attributes={attributes}
                 setAttributes={setAttributes}
             />
-            
+
             <div {...blockProps}>
                 {needsWrapper ? (
                     <div className={allClasses} {...flexAttributes}>

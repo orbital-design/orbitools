@@ -65,8 +65,8 @@ class SpacingConfig {
             });
         }
         
-        // Enqueue dimensions configuration for JavaScript
-        \add_action('enqueue_block_editor_assets', [self::class, 'enqueue_dimensions_config']);
+        // Enqueue spacings configuration for JavaScript
+        \add_action('enqueue_block_editor_assets', [self::class, 'enqueue_spacings_config']);
     }
     
     /**
@@ -412,7 +412,7 @@ class SpacingConfig {
             return [
                 'spacings' => [],
                 'breakpoints' => [],
-                'dimensions' => [
+                'supports' => [
                     'enabled' => false,
                     'breakpoints' => false,
                     'gap' => false,
@@ -424,14 +424,14 @@ class SpacingConfig {
         
         $supports = $block_type->supports ?? [];
         $orbitools_supports = $supports['orbitools'] ?? [];
-        $dimensions_supports = $orbitools_supports['dimensions'] ?? [];
+        $spacings_supports = $orbitools_supports['spacings'] ?? [];
         
-        // Check if dimensions are enabled at all
-        if (empty($dimensions_supports) || $dimensions_supports === false) {
+        // Check if spacings are enabled at all
+        if (empty($spacings_supports) || $spacings_supports === false) {
             return [
                 'spacings' => [],
                 'breakpoints' => [],
-                'dimensions' => [
+                'supports' => [
                     'enabled' => false,
                     'breakpoints' => false,
                     'gap' => false,
@@ -442,40 +442,40 @@ class SpacingConfig {
         }
         
         return [
-            'spacings' => self::get_spacing_config($dimensions_supports),
+            'spacings' => self::get_spacing_config($spacings_supports),
             'breakpoints' => self::get_breakpoints_config(),
-            'dimensions' => [
+            'supports' => [
                 'enabled' => true,
-                'breakpoints' => $dimensions_supports['breakpoints'] ?? false,
-                'gap' => $dimensions_supports['gap'] ?? false,
-                'margin' => $dimensions_supports['margin'] ?? false,
-                'padding' => $dimensions_supports['padding'] ?? false
+                'breakpoints' => $spacings_supports['breakpoints'] ?? false,
+                'gap' => $spacings_supports['gap'] ?? false,
+                'margin' => $spacings_supports['margin'] ?? false,
+                'padding' => $spacings_supports['padding'] ?? false
             ]
         ];
     }
     
     /**
-     * Enqueue dimensions configuration for JavaScript
+     * Enqueue spacings configuration for JavaScript
      * 
-     * This provides configuration data to JavaScript for blocks that use orbitools.dimensions
+     * This provides configuration data to JavaScript for blocks that use orbitools.spacings
      */
-    public static function enqueue_dimensions_config() {
-        // Get all registered blocks that use orbitools dimensions
+    public static function enqueue_spacings_config() {
+        // Get all registered blocks that use orbitools spacings
         $registry = \WP_Block_Type_Registry::get_instance();
         $blocks_config = [];
         
         foreach ($registry->get_all_registered() as $block_name => $block_type) {
             $supports = $block_type->supports ?? [];
             
-            // Check if block uses orbitools dimensions
-            if (isset($supports['orbitools']['dimensions'])) {
+            // Check if block uses orbitools spacings
+            if (isset($supports['orbitools']['spacings'])) {
                 $blocks_config[$block_name] = self::get_block_config($block_name);
             }
         }
         
         // Debug the configuration in development
         if (defined('WP_DEBUG') && WP_DEBUG) {
-            error_log('OrbiTools Dimensions Config loaded for ' . count($blocks_config) . ' blocks');
+            error_log('OrbiTools Spacings Config loaded for ' . count($blocks_config) . ' blocks');
         }
         
         // Localize the configuration for JavaScript on multiple possible script handles
@@ -484,7 +484,7 @@ class SpacingConfig {
         foreach ($script_handles as $handle) {
             \wp_localize_script(
                 $handle,
-                'orbitoolsDimensionsConfig',
+                'orbitoolsSpacingsConfig',
                 $blocks_config
             );
             

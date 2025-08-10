@@ -1,5 +1,5 @@
 /**
- * Dimensions Configuration JavaScript Interface
+ * Spacings Configuration JavaScript Interface
  * 
  * Provides JavaScript access to the spacing and breakpoint configuration
  * resolved on the PHP side with caching.
@@ -11,11 +11,11 @@
  * Get configuration for a specific block
  * 
  * @param {string} blockName - The block name (e.g., 'orb/collection')
- * @returns {Object} Block configuration including spacings, breakpoints, and dimensions settings
+ * @returns {Object} Block configuration including spacings, breakpoints, and supports settings
  */
-export function getBlockDimensionsConfig(blockName) {
+export function getBlockSpacingsConfig(blockName) {
     // Get the configuration from PHP localized data
-    const configData = window.orbitoolsDimensionsConfig || {};
+    const configData = window.orbitoolsSpacingsConfig || {};
     
     if (configData[blockName]) {
         return configData[blockName];
@@ -25,7 +25,7 @@ export function getBlockDimensionsConfig(blockName) {
     return {
         spacings: [],
         breakpoints: [],
-        dimensions: {
+        supports: {
             enabled: false,
             breakpoints: false,
             gap: false,
@@ -42,7 +42,7 @@ export function getBlockDimensionsConfig(blockName) {
  * @returns {Array} Array of spacing options with slug, size, and name
  */
 export function getSpacingOptions(blockName) {
-    const config = getBlockDimensionsConfig(blockName);
+    const config = getBlockSpacingsConfig(blockName);
     return config.spacings || [];
 }
 
@@ -54,31 +54,31 @@ export function getSpacingOptions(blockName) {
  * @deprecated Use getBreakpointOptions from '../../core/utils/breakpoints' instead
  */
 export function getBreakpointOptions(blockName) {
-    const config = getBlockDimensionsConfig(blockName);
+    const config = getBlockSpacingsConfig(blockName);
     return config.breakpoints || [];
 }
 
 /**
- * Check if dimensions are enabled for a block
+ * Check if spacings are enabled for a block
  * 
  * @param {string} blockName - The block name
- * @returns {boolean} Whether dimensions are enabled
+ * @returns {boolean} Whether spacings are enabled
  */
-export function isDimensionsEnabled(blockName) {
-    const config = getBlockDimensionsConfig(blockName);
-    return config.dimensions?.enabled || false;
+export function isSpacingsEnabled(blockName) {
+    const config = getBlockSpacingsConfig(blockName);
+    return config.supports?.enabled || false;
 }
 
 /**
- * Check if a specific dimension type is enabled for a block
+ * Check if a specific spacing type is enabled for a block
  * 
  * @param {string} blockName - The block name
- * @param {string} dimensionType - The dimension type ('gap', 'margin', 'padding')
- * @returns {boolean} Whether the dimension type is enabled
+ * @param {string} spacingType - The spacing type ('gap', 'margin', 'padding')
+ * @returns {boolean} Whether the spacing type is enabled
  */
-export function isDimensionTypeEnabled(blockName, dimensionType) {
-    const config = getBlockDimensionsConfig(blockName);
-    return config.dimensions?.[dimensionType] || false;
+export function isSpacingTypeEnabled(blockName, spacingType) {
+    const config = getBlockSpacingsConfig(blockName);
+    return config.supports?.[spacingType] || false;
 }
 
 /**
@@ -88,21 +88,21 @@ export function isDimensionTypeEnabled(blockName, dimensionType) {
  * @returns {boolean} Whether responsive breakpoints are enabled
  */
 export function areBreakpointsEnabled(blockName) {
-    const config = getBlockDimensionsConfig(blockName);
-    return config.dimensions?.breakpoints || false;
+    const config = getBlockSpacingsConfig(blockName);
+    return config.supports?.breakpoints || false;
 }
 
 /**
- * Get all enabled dimension types for a block
+ * Get all enabled spacing types for a block
  * 
  * @param {string} blockName - The block name
- * @returns {Array} Array of enabled dimension type names
+ * @returns {Array} Array of enabled spacing type names
  */
-export function getEnabledDimensionTypes(blockName) {
-    const config = getBlockDimensionsConfig(blockName);
-    const dimensions = config.dimensions || {};
+export function getEnabledSpacingTypes(blockName) {
+    const config = getBlockSpacingsConfig(blockName);
+    const supports = config.supports || {};
     
-    return ['gap', 'margin', 'padding'].filter(type => dimensions[type]);
+    return ['gap', 'margin', 'padding'].filter(type => supports[type]);
 }
 
 /**

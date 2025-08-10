@@ -1,7 +1,7 @@
 /**
- * Dimensions Controls - Class Application
+ * Spacings Controls - Class Application
  *
- * Applies dimension CSS classes to blocks in both editor and frontend
+ * Applies spacing CSS classes to blocks in both editor and frontend
  */
 
 (function() {
@@ -130,40 +130,40 @@
     }
 
     /**
-     * Check if block has dimensions support
+     * Check if block has spacings support
      */
-    function blockHasDimensionsSupport(blockName) {
+    function blockHasSpacingsSupport(blockName) {
         const blockType = wp.blocks.getBlockType(blockName);
         if (!blockType || !blockType.supports || !blockType.supports.orbitools) {
             return false;
         }
         
-        const dimensionsSupports = blockType.supports.orbitools.dimensions;
-        return dimensionsSupports && dimensionsSupports !== false && 
-               (dimensionsSupports === true || Object.keys(dimensionsSupports).length > 0);
+        const spacingsSupports = blockType.supports.orbitools.spacings;
+        return spacingsSupports && spacingsSupports !== false && 
+               (spacingsSupports === true || Object.keys(spacingsSupports).length > 0);
     }
 
-    // Add dimension classes to editor blocks
-    const addDimensionClassesToEditor = createHigherOrderComponent(function(BlockListBlock) {
+    // Add spacing classes to editor blocks
+    const addSpacingClassesToEditor = createHigherOrderComponent(function(BlockListBlock) {
         return function(props) {
-            if (!blockHasDimensionsSupport(props.name)) {
+            if (!blockHasSpacingsSupport(props.name)) {
                 return wp.element.createElement(BlockListBlock, props);
             }
 
             const { orbGap, orbPadding, orbMargin } = props.attributes;
 
-            // Generate dimension classes
+            // Generate spacing classes
             const gapClasses = getGapClasses(orbGap);
             const paddingClasses = getPaddingClasses(orbPadding);
             const marginClasses = getMarginClasses(orbMargin);
 
-            const dimensionClasses = [gapClasses, paddingClasses, marginClasses]
+            const spacingClasses = [gapClasses, paddingClasses, marginClasses]
                 .filter(Boolean)
                 .join(' ');
 
-            if (dimensionClasses) {
+            if (spacingClasses) {
                 const existingClasses = props.className || '';
-                const newClassName = (existingClasses + ' ' + dimensionClasses).trim();
+                const newClassName = (existingClasses + ' ' + spacingClasses).trim();
 
                 const newProps = {
                     ...props,
@@ -175,28 +175,28 @@
 
             return wp.element.createElement(BlockListBlock, props);
         };
-    }, 'addDimensionClassesToEditor');
+    }, 'addSpacingClassesToEditor');
 
-    // Add dimension classes to block wrapper for frontend
-    function addDimensionClassesToSave(props, blockType, attributes) {
-        if (!blockHasDimensionsSupport(blockType.name)) {
+    // Add spacing classes to block wrapper for frontend
+    function addSpacingClassesToSave(props, blockType, attributes) {
+        if (!blockHasSpacingsSupport(blockType.name)) {
             return props;
         }
 
         const { orbGap, orbPadding, orbMargin } = attributes;
 
-        // Generate dimension classes
+        // Generate spacing classes
         const gapClasses = getGapClasses(orbGap);
         const paddingClasses = getPaddingClasses(orbPadding);
         const marginClasses = getMarginClasses(orbMargin);
 
-        const dimensionClasses = [gapClasses, paddingClasses, marginClasses]
+        const spacingClasses = [gapClasses, paddingClasses, marginClasses]
             .filter(Boolean)
             .join(' ');
 
-        if (dimensionClasses) {
+        if (spacingClasses) {
             const existingClasses = props.className || '';
-            props.className = (existingClasses + ' ' + dimensionClasses).trim();
+            props.className = (existingClasses + ' ' + spacingClasses).trim();
         }
 
         return props;
@@ -204,15 +204,15 @@
 
     addFilter(
         'editor.BlockListBlock',
-        'orbitools/add-dimension-editor-classes',
-        addDimensionClassesToEditor,
+        'orbitools/add-spacing-editor-classes',
+        addSpacingClassesToEditor,
         20
     );
 
     addFilter(
         'blocks.getSaveContent.extraProps',
-        'orbitools/add-dimension-classes',
-        addDimensionClassesToSave,
+        'orbitools/add-spacing-classes',
+        addSpacingClassesToSave,
         20
     );
 })();

@@ -1,8 +1,8 @@
 /**
  * Spacer Height Control
- * 
- * Uses ResponsiveToolsPanel pattern like dimensions control but for height with fill option
- * 
+ *
+ * Uses ResponsiveToolsPanel pattern like spacings control but for height with fill option
+ *
  * @file blocks/spacer/height-control.tsx
  * @since 1.0.0
  */
@@ -12,7 +12,7 @@ import { RangeControl } from '@wordpress/components';
 import { useSettings } from '@wordpress/block-editor';
 
 import ResponsiveControls, {
-    type ResponsiveValue, 
+    type ResponsiveValue,
     type ResponsiveControlConfig,
     type ControlRenderer,
     getResponsiveClasses
@@ -37,7 +37,7 @@ function getSpacingDisplayName(spacingSizes: any[], value: string): string {
     if (!value) return 'Default';
     if (value === '0') return 'None';
     if (value === 'fill') return 'Fill';
-    
+
     const spacing = spacingSizes.find((size: any) => size.slug === value);
     return spacing ? spacing.name : value;
 }
@@ -53,10 +53,10 @@ function createHeightControlRenderer(spacingSizes: any[]): ControlRenderer<strin
 
         // Add fill option to spacing sizes
         const allOptions = [...spacingSizes, { slug: 'fill', name: 'Fill' }];
-        
+
         const currentIndex = value ? allOptions.findIndex(option => option.slug === value) : -1;
         const sliderValue = currentIndex >= 0 ? currentIndex : 0;
-        
+
         const updateHeight = (index: number | undefined) => {
             if (index === undefined || index < 0) {
                 onChange(undefined);
@@ -141,13 +141,13 @@ export function getHeightClasses(height: ResponsiveValue<string>): string {
 /**
  * Spacer Height Control Component
  */
-export default function SpacerHeightControl({ 
-    height, 
+export default function SpacerHeightControl({
+    height,
     onHeightChange,
     blockName
 }: SpacerHeightControlProps) {
     const [spacingSizes] = useSettings('spacing.spacingSizes');
-    
+
     // Don't render until we have spacing sizes
     if (!spacingSizes || !Array.isArray(spacingSizes)) {
         return <div>Loading spacing settings...</div>;
