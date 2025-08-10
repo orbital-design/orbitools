@@ -73,8 +73,8 @@ class Collection extends Module_Base
             return;
         }
         $registered = true;
-        
-        
+
+
         // Register immediately if init has already fired, otherwise hook into it
         if (\did_action('init')) {
             $this->register_block();
@@ -89,7 +89,7 @@ class Collection extends Module_Base
     public function register_block(): void
     {
         $block_dir = ORBITOOLS_DIR . 'build/blocks/collection/';
-        
+
         if (file_exists($block_dir . 'block.json')) {
             \register_block_type($block_dir, [
                 'render_callback' => [$this, 'render_callback']
@@ -99,9 +99,9 @@ class Collection extends Module_Base
 
     /**
      * Render callback for Collection block
-     * 
+     *
      * @param array    $attributes Block attributes
-     * @param string   $content    Block inner content 
+     * @param string   $content    Block inner content
      * @param \WP_Block $block      Block instance
      * @return string  Rendered HTML
      */
@@ -133,7 +133,7 @@ class Collection extends Module_Base
         // Get wrapper attributes
         $wrapper_attributes = \get_block_wrapper_attributes();
 
-        // Parse existing class names from wrapper_attributes 
+        // Parse existing class names from wrapper_attributes
         $existing_classes = '';
         if (preg_match('/class=["\']([^"\']*)["\']/', $wrapper_attributes, $matches)) {
             $existing_classes = $matches[1];
@@ -173,11 +173,11 @@ class Collection extends Module_Base
         if ($needs_wrapper) {
             // Full-width with content constraint
             $wrapper_class_attr = !empty($filtered_classes) ? ' class="' . \esc_attr($filtered_classes) . '"' : '';
-            
+
             // Extract other attributes but replace class
             $other_attrs = preg_replace('/class=["\'][^"\']*["\']/', '', $wrapper_attributes);
             $other_attrs = trim($other_attrs);
-            
+
             return sprintf(
                 '<div%s%s><div class="%s"%s>%s</div></div>',
                 $other_attrs ? ' ' . $other_attrs : '',
@@ -190,7 +190,7 @@ class Collection extends Module_Base
             // Normal output
             $other_attrs = preg_replace('/class=["\'][^"\']*["\']/', '', $wrapper_attributes);
             $other_attrs = trim($other_attrs);
-            
+
             return sprintf(
                 '<div%s class="%s"%s>%s</div>',
                 $other_attrs ? ' ' . $other_attrs : '',
@@ -219,12 +219,12 @@ class Collection extends Module_Base
         if (empty($class_names)) {
             return '';
         }
-        
+
         $classes = explode(' ', $class_names);
-        $filtered = array_filter($classes, function($class) use ($classes_to_filter) {
+        $filtered = array_filter($classes, function ($class) use ($classes_to_filter) {
             return !empty($class) && !in_array($class, $classes_to_filter);
         });
-        
+
         return implode(' ', $filtered);
     }
 
@@ -234,7 +234,7 @@ class Collection extends Module_Base
     private function generate_flex_attributes(array $attributes, bool $is_full_width = false): array
     {
         $data_attrs = [];
-        
+
         // Extract values with defaults
         $direction = $attributes['flexDirection'] ?? 'row';
         $flex_wrap = $attributes['flexWrap'] ?? 'nowrap';
@@ -244,54 +244,54 @@ class Collection extends Module_Base
         $stack_on_mobile = $attributes['stackOnMobile'] ?? true;
         $item_width = $attributes['itemWidth'] ?? 'fit';
         $column_system = $attributes['columnSystem'] ?? 12;
-        
+
         // Value mappings
         $align_mappings = [
             'flex-start' => 'start',
             'flex-end' => 'end',
             'center' => 'center'
         ];
-        
+
         $justify_mappings = [
             'flex-start' => 'start',
-            'flex-end' => 'end', 
+            'flex-end' => 'end',
             'center' => 'center',
             'space-between' => 'between',
             'space-around' => 'around',
             'space-evenly' => 'evenly'
         ];
-        
+
         $grid_system_mappings = [
             5 => 'penta',
             12 => 'dodeca'
         ];
-        
+
         // Flex flow: Only add if not default
         $is_default_flow = $direction === 'row' && $flex_wrap === 'nowrap';
         if (!$is_default_flow) {
             $data_attrs['data-flow'] = $direction . ' ' . $flex_wrap;
         }
-        
+
         // Cross-axis alignment
         if ($align_items !== 'stretch') {
             $data_attrs['data-align'] = $align_mappings[$align_items] ?? $align_items;
         }
-        
+
         // Main-axis alignment
         if ($justify_content !== 'flex-start') {
             $data_attrs['data-justify'] = $justify_mappings[$justify_content] ?? $justify_content;
         }
-        
+
         // Content constraint
         if ($restrict_content_width && $is_full_width) {
             $data_attrs['data-constrain'] = 'true';
         }
-        
+
         // Mobile stacking
         if ($stack_on_mobile) {
             $data_attrs['data-stacked'] = 'true';
         }
-        
+
         // Layout mode
         if ($item_width !== 'fit') {
             if ($item_width === 'custom') {
@@ -300,7 +300,7 @@ class Collection extends Module_Base
                 $data_attrs['data-layout'] = $item_width; // 'equal'
             }
         }
-        
+
         return $data_attrs;
     }
 

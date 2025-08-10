@@ -1,9 +1,9 @@
 /**
  * Spacer Block Edit Component
- * 
+ *
  * Editor component for the spacer block with responsive height controls.
  * Outputs a single empty div with height classes.
- * 
+ *
  * @file blocks/spacer/edit.tsx
  * @since 1.0.0
  */
@@ -53,15 +53,7 @@ export default function SpacerEdit({
     };
 
     const editorStyles: React.CSSProperties = {
-        height: getPreviewHeight(),
-        backgroundColor: '#e0e0e0',
-        border: '1px dashed #ccc',
-        borderRadius: '2px',
-        minHeight: '1px',
-        position: 'relative',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center'
+        height: getPreviewHeight()
     };
 
     const blockProps = useBlockProps({
