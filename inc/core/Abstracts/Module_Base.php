@@ -8,11 +8,11 @@ use Orbitools\Core\Helpers\Asset_Manager;
 
 /**
  * Module Base Class
- * 
+ *
  * Provides common functionality for all OrbiTools modules.
  * Implements standard patterns for module initialization, settings management,
  * and asset loading to reduce code duplication.
- * 
+ *
  * @package Orbitools
  * @since 1.0.0
  */
@@ -25,42 +25,42 @@ abstract class Module_Base implements Module_Interface
 
     /**
      * Settings manager instance
-     * 
+     *
      * @var Settings_Manager
      */
     protected $settings_manager;
 
     /**
      * Asset manager instance
-     * 
+     *
      * @var Asset_Manager
      */
     protected $asset_manager;
 
     /**
      * Whether the module has been initialized
-     * 
+     *
      * @var bool
      */
     private $initialized = false;
 
     /**
      * Constructor
-     * 
+     *
      * Sets up the module with dependency injection for settings and assets
      */
     public function __construct()
     {
         $this->settings_manager = new Settings_Manager();
         $this->asset_manager = new Asset_Manager();
-        
+
         // Defer initialization to WordPress init hook to avoid early execution
-        add_action('init', [$this, 'initialize_module'], 10);
+        add_action('setup_theme', [$this, 'initialize_module']);
     }
 
     /**
      * Initialize the module after WordPress is ready
-     * 
+     *
      * @return void
      */
     public function initialize_module(): void
@@ -69,7 +69,7 @@ abstract class Module_Base implements Module_Interface
         if ($this->initialized) {
             return;
         }
-        
+
         $this->initialized = true;
 
         // Only initialize if module is enabled
@@ -80,7 +80,7 @@ abstract class Module_Base implements Module_Interface
 
     /**
      * Get the module's version
-     * 
+     *
      * @return string
      */
     public function get_version(): string
@@ -90,7 +90,7 @@ abstract class Module_Base implements Module_Interface
 
     /**
      * Check if the module is enabled
-     * 
+     *
      * @return bool
      */
     public function is_enabled(): bool
@@ -101,7 +101,7 @@ abstract class Module_Base implements Module_Interface
     /**
      * Get module's default settings
      * Override in child classes if module has settings
-     * 
+     *
      * @return array
      */
     public function get_default_settings(): array
@@ -113,7 +113,7 @@ abstract class Module_Base implements Module_Interface
 
     /**
      * Enqueue admin styles
-     * 
+     *
      * @param string $handle Unique handle for the stylesheet
      * @param string $path Path relative to build/admin/css/modules/{module-slug}/
      * @param array $deps Dependencies
@@ -130,7 +130,7 @@ abstract class Module_Base implements Module_Interface
 
     /**
      * Enqueue admin scripts
-     * 
+     *
      * @param string $handle Unique handle for the script
      * @param string $path Path relative to build/admin/js/modules/{module-slug}/
      * @param array $deps Dependencies
@@ -147,7 +147,7 @@ abstract class Module_Base implements Module_Interface
 
     /**
      * Enqueue frontend styles
-     * 
+     *
      * @param string $handle Unique handle for the stylesheet
      * @param string $path Path relative to build/frontend/css/modules/{module-slug}/
      * @param array $deps Dependencies
@@ -164,7 +164,7 @@ abstract class Module_Base implements Module_Interface
 
     /**
      * Enqueue frontend scripts
-     * 
+     *
      * @param string $handle Unique handle for the script
      * @param string $path Path relative to build/frontend/js/modules/{module-slug}/
      * @param array $deps Dependencies
@@ -181,7 +181,7 @@ abstract class Module_Base implements Module_Interface
 
     /**
      * Enqueue block editor styles
-     * 
+     *
      * @param string $handle Unique handle for the stylesheet
      * @param string $path Path relative to build/admin/css/modules/{module-slug}/
      * @param array $deps Dependencies
@@ -198,7 +198,7 @@ abstract class Module_Base implements Module_Interface
 
     /**
      * Enqueue block editor scripts
-     * 
+     *
      * @param string $handle Unique handle for the script
      * @param string $path Path relative to build/admin/js/modules/{module-slug}/
      * @param array $deps Dependencies
@@ -215,7 +215,7 @@ abstract class Module_Base implements Module_Interface
 
     /**
      * Get module setting value
-     * 
+     *
      * @param string $key Setting key
      * @param mixed $default Default value if setting doesn't exist
      * @return mixed Setting value
@@ -227,7 +227,7 @@ abstract class Module_Base implements Module_Interface
 
     /**
      * Update module setting value
-     * 
+     *
      * @param string $key Setting key
      * @param mixed $value New value
      * @return bool True on success
@@ -239,7 +239,7 @@ abstract class Module_Base implements Module_Interface
 
     /**
      * Localize script data
-     * 
+     *
      * @param string $handle Script handle that was already enqueued
      * @param string $object_name JavaScript object name
      * @param array $data Data to pass to JavaScript
