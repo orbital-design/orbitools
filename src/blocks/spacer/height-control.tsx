@@ -124,17 +124,17 @@ function createHeightControlConfig(spacingSizes: any[]): ResponsiveControlConfig
  */
 export function getHeightClasses(height: ResponsiveValue<string>): string {
     const classes: string[] = [];
-    
+
     Object.entries(height).forEach(([breakpoint, value]) => {
         if (value === undefined || value === null || value === '') return;
-        
+
         const className = breakpoint === 'base'
             ? `orb-spacer--${value}`
             : `${breakpoint}:orb-spacer--${value}`;
-        
+
         classes.push(className);
     });
-    
+
     return classes.join(' ');
 }
 
@@ -165,7 +165,7 @@ export default function SpacerHeightControl({
 
     return (
         <ResponsiveControls
-            label={__('Height', 'orbitools')}
+            label={__('Dynamic Height', 'orbitools')}
             controls={[heightControlConfig]}
             values={{ height }}
             onValuesChange={handleValuesChange}
