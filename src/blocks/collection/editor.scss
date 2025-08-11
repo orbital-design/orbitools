@@ -14,50 +14,101 @@
  * @see         blocks/collection/index.scss - Frontend styles
  */
 
-.orb-collection {
-    border: 0px dashed #32a3e2;
-    border-radius: 2px;
+ %before {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
     background: rgba(0, 124, 186, 0);
-    padding: 0;
+    border: 0px dashed #32a3e2;
+    border-radius: 6px;
     transition: all 0.25s ease;
+}
+
+.orb-collection {
+    position: relative;
+
+    // UI Cues
+    &::before {
+        @extend %before;
+    }
 
     > .block-editor-inner-blocks {
         display: contents;
         > .block-editor-block-list__layout {
             display: contents;
-
-
         }
     }
 
     &:not([data-constrain="true"]) {
-        // UI Cues
         &:hover {
-            background: rgba(0, 124, 186, 0.05);
-            border-width: 1px;
-            border-radius: 6px;
-            padding: 10px;
+            // UI Cues
+            &:before {
+                background: rgba(0, 124, 186, 0.05);
+                top: -10px;
+                right: -10px;
+                bottom: -10px;
+                left: -10px;
+                border-width: 1px;
+            }
         }
     }
 
 
     &.is-selected,
     &.has-child-selected {
-        border-width: 1px;
-        border-style: solid;
-        border-radius: 6px;
-        padding: 10px;
+        // UI Cues
+        &:before {
+            background: rgba(0, 124, 186, 0.05);
+            top: -10px;
+            right: -10px;
+            bottom: -10px;
+            left: -10px;
+            border-width: 1px;
+            border-style: solid;
+        }
     }
 }
 
 .alignfull[data-type="orb/collection"] {
+
+    &.is-selected,
+    &.has-child-selected {
+        // UI Cues
+        &:before {
+            right: 0;
+            left: 0;
+        }
+    }
+
     &:not(.orb-collection) {
         // UI Cues
+        &::before {
+            @extend %before;
+        }
+
+        // UI Cues
+        &.is-selected,
+        &.has-child-selected,
         &:hover {
-            background: rgba(0, 124, 186, 0.05);
-            border-width: 1px;
-            border-radius: 6px;
-            padding: 10px;
+            // UI Cues
+            &:before {
+                background: rgba(0, 124, 186, 0.05);
+                border-width: 1px;
+                top: -10px;
+                bottom: -10px;
+                right: 0;
+                left: 0;
+            }
+        }
+
+        &.is-selected,
+        &.has-child-selected {
+            &:before {
+                border-style: solid;
+            }
         }
     }
 }

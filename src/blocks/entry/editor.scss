@@ -17,26 +17,48 @@
 $elem_base: 'orb-entry';
 
 .#{$elem_base} {
-    border: 0px dashed #32a3e2;
-    border-radius: 2px;
-    background: rgba(0, 124, 186, 0);
-    padding: 0;
-    transition: all 0.25s ease;
+    position: relative;
+
+    // UI Cues
+    &::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        background: rgba(0, 124, 186, 0);
+        border: 0px dashed #32a3e2;
+        border-radius: 6px;
+        transition: all 0.25s ease;
+    }
 
     // UI Cues
     &:hover {
-        background: rgba(0, 124, 186, 0.05);
-        border-width: 1px;
-        border-radius: 6px;
-        padding: 10px;
+        // UI Cues
+        &:before {
+            background: rgba(0, 124, 186, 0.05);
+            top: -10px;
+            right: -10px;
+            bottom: -10px;
+            left: -10px;
+            border-width: 1px;
+        }
     }
 
     &.is-selected,
     &.has-child-selected {
-        border-width: 1px;
-        border-style: solid;
-        border-radius: 6px;
-        padding: 10px;
+
+        // UI Cues
+        &:before {
+            background: rgba(0, 124, 186, 0.05);
+            top: -10px;
+            right: -10px;
+            bottom: -10px;
+            left: -10px;
+            border-width: 1px;
+            border-style: solid;
+        }
     }
 
     > .block-editor-inner-blocks,
