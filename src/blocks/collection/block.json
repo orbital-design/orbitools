@@ -16,12 +16,11 @@
             "background": true,
             "text": true
         },
-        "spacing": false,
         "orbitools": {
             "spacings": {
                 "breakpoints": true,
                 "gap": true,
-                "margin": true,
+                "margin": false,
                 "padding": true
             }
         }

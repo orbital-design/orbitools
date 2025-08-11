@@ -203,12 +203,12 @@ class Spacer extends Module_Base
             $css .= "@media (min-width: {$breakpoint_value}) {\n";
 
             // Zero height for this breakpoint
-            $css .= "    .{$breakpoint_slug}\\:orb-spacer--0 {\n";
+            $css .= "    .{$breakpoint_slug}\:orb-spacer--0 {\n";
             $css .= "        min-height: 0;\n";
             $css .= "    }\n\n";
 
             // Fill for this breakpoint
-            $css .= "    .{$breakpoint_slug}\\:orb-spacer--fill {\n";
+            $css .= "    .{$breakpoint_slug}\:orb-spacer--fill {\n";
             $css .= "        display: flex;\n";
             $css .= "        flex: 1;\n";
             $css .= "    }\n\n";
@@ -218,7 +218,7 @@ class Spacer extends Module_Base
                 $slug = $spacing['slug'];
                 $size = $spacing['size'];
 
-                $css .= "    .{$breakpoint_slug}\\:orb-spacer--{$slug} {\n";
+                $css .= "    .{$breakpoint_slug}\:orb-spacer--{$slug} {\n";
                 $css .= "        min-height: var(--wp--preset--spacing--{$slug}, {$size});\n";
                 $css .= "    }\n\n";
             }

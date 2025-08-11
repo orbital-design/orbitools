@@ -6,6 +6,7 @@ use Orbitools\Core\Admin\Admin;
 use Orbitools\Core\Updater\Updater;
 use Orbitools\Core\Toolbar_FAB;
 use Orbitools\Core\SpacingConfig;
+use Orbitools\Core\Helpers\Gaps_CSS_Generator;
 use Orbitools\Controls\Typography_Presets\Typography_Presets;
 use Orbitools\Modules\Layout_Guides\Layout_Guides;
 use Orbitools\Modules\Menu_Groups\Menu_Groups;
@@ -63,6 +64,9 @@ class Loader
 
         // Initialize Spacing Configuration system
         SpacingConfig::init();
+
+        // Initialize Gaps CSS generation
+        Gaps_CSS_Generator::init();
 
         // Initialize Toolbar FAB
         new Toolbar_FAB();

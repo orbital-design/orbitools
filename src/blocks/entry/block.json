@@ -17,7 +17,6 @@
             "background": true,
             "text": true
         },
-        "spacing": false,
         "orbitools": {
             "spacings": {
                 "breakpoints": true,
@@ -28,8 +27,7 @@
         },
         "typography": {
             "textAlign": true
-        },
-        "shadow": true
+        }
     },
     "attributes": {
         "width": {

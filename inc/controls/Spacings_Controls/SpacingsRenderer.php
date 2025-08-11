@@ -18,7 +18,7 @@ if (!defined('ABSPATH')) {
 class SpacingsRenderer
 {
     /**
-     * Generate responsive gap classes from gap data
+     * Generate responsive gap classes from gap data using has-gap pattern
      * 
      * @param array $gap Gap configuration data
      * @return string Generated gap classes
@@ -29,7 +29,7 @@ class SpacingsRenderer
             return '';
         }
 
-        $classes = [];
+        $classes = ['has-gap']; // Always include base class
         
         foreach ($gap as $breakpoint => $value) {
             if ($value === null || $value === '' || $value === false) {
@@ -38,14 +38,15 @@ class SpacingsRenderer
             
             $class_name = '';
             if ($breakpoint === 'base') {
-                $class_name = "gap-{$value}";
+                $class_name = "has-gap--{$value}";
             } else {
-                $class_name = "{$breakpoint}:gap-{$value}";
+                $class_name = "{$breakpoint}:has-gap--{$value}";
             }
             $classes[] = $class_name;
         }
         
-        return implode(' ', $classes);
+        // Only return classes if we have modifiers (not just the base class)
+        return count($classes) > 1 ? implode(' ', $classes) : '';
     }
 
     /**

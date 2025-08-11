@@ -9,26 +9,27 @@
     const { createHigherOrderComponent } = wp.compose;
 
     /**
-     * Generate responsive gap classes from gap data
+     * Generate responsive gap classes from gap data using has-gap pattern
      */
     function getGapClasses(gap) {
         if (!gap || typeof gap !== 'object') return '';
 
-        const classes = [];
+        const classes = ['has-gap']; // Always include base class
         
         Object.entries(gap).forEach(([breakpoint, value]) => {
-            if (!value) return;
+            if (!value && value !== '0') return;
             
             let className = '';
             if (breakpoint === 'base') {
-                className = `gap-${value}`;
+                className = `has-gap--${value}`;
             } else {
-                className = `${breakpoint}:gap-${value}`;
+                className = `${breakpoint}:has-gap--${value}`;
             }
             classes.push(className);
         });
         
-        return classes.join(' ');
+        // Only return classes if we have modifiers (not just the base class)
+        return classes.length > 1 ? classes.join(' ') : '';
     }
 
     /**
