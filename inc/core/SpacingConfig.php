@@ -204,7 +204,6 @@ class SpacingConfig {
      */
     private static function get_theme_spacing_sizes() {
         if (!\function_exists('wp_get_global_settings')) {
-            error_log('OrbiTools: wp_get_global_settings function not available');
             return null;
         }
         
@@ -214,17 +213,13 @@ class SpacingConfig {
         // WordPress returns spacing sizes in a nested format: { default: [], theme: [] }
         // We want the theme spacings
         if (is_array($spacing_data) && isset($spacing_data['theme']) && !empty($spacing_data['theme'])) {
-            error_log('OrbiTools: Using theme spacings (' . count($spacing_data['theme']) . ' options)');
             return $spacing_data['theme'];
         }
         
         // Fallback to default spacings if no theme spacings
         if (is_array($spacing_data) && isset($spacing_data['default']) && !empty($spacing_data['default'])) {
-            error_log('OrbiTools: Using default spacings (' . count($spacing_data['default']) . ' options)');
             return $spacing_data['default'];
         }
-        
-        error_log('OrbiTools: No theme spacing data found');
         return null;
     }
     
@@ -276,7 +271,6 @@ class SpacingConfig {
         
         // Plugin defaults should always be valid - if not, return empty to prevent errors
         if (!self::validate_spacing_format($plugin_spacings)) {
-            error_log('OrbiTools: Plugin defaults.json has invalid spacing format');
             return [];
         }
         
@@ -473,10 +467,6 @@ class SpacingConfig {
             }
         }
         
-        // Debug the configuration in development
-        if (defined('WP_DEBUG') && WP_DEBUG) {
-            error_log('OrbiTools Spacings Config loaded for ' . count($blocks_config) . ' blocks');
-        }
         
         // Localize the configuration for JavaScript on multiple possible script handles
         $script_handles = ['wp-blocks', 'orb-collection-editor-script', 'wp-edit-post'];

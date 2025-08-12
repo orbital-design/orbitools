@@ -32,11 +32,6 @@
                 settings.supports = {};
             }
 
-            // Debug specific block
-            if (name === 'core/list-item') {
-                console.log('core/list-item supports:', settings.supports);
-            }
-
             // Define typography keys to disable at different levels
             const typographyKeys = {
                 'supports': ['fontSize', 'lineHeight', '__experimentalFontFamily', '__experimentalDefaultControls', '__experimentalFontSize', '__experimentalFontWeight', '__experimentalLineHeight', '__experimentalLetterSpacing', '__experimentalWritingMode'],

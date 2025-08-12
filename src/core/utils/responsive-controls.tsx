@@ -218,7 +218,7 @@ export default function ResponsiveControls({
             {/* Render one ToolsPanelItem per breakpoint, containing all controls for that breakpoint */}
             {allBreakpoints.map((breakpoint, index) => {
                 const bpSlug = breakpoint?.slug || 'base';
-                const breakpointLabel = breakpoint ? getBreakpointLabel(breakpoint) : 'Base';
+                const breakpointLabel = breakpoint ? getBreakpointLabel(breakpoint) : 'All Screens';
 
                 // Check if any control has a value for this breakpoint
                 const hasValueForBreakpoint = () => {
@@ -249,24 +249,22 @@ export default function ResponsiveControls({
                         panelId={panelId}
                     >
                         <VStack spacing="12px">
-                            {/* Breakpoint header for non-base breakpoints */}
-                            {breakpoint && (
-                                <View>
-                                    <div style={{
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        gap: '8px'
-                                    }}>
-                                        <div style={{ width: '20px', height: '20px', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                            <Icon
-                                                icon={BreakpointIconComponents[breakpoint.slug as keyof typeof BreakpointIconComponents] || BreakpointIconComponents.base}
-                                                size={16}
-                                            />
-                                        </div>
-                                        <span style={{ fontWeight: '500' }}>{breakpointLabel}</span>
+                            {/* Breakpoint header for all breakpoints */}
+                            <View>
+                                <div style={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '8px'
+                                }}>
+                                    <div style={{ width: '20px', height: '20px', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                        <Icon
+                                            icon={breakpoint ? BreakpointIconComponents[breakpoint.slug as keyof typeof BreakpointIconComponents] || BreakpointIconComponents.base : BreakpointIconComponents.base}
+                                            size={16}
+                                        />
                                     </div>
-                                </View>
-                            )}
+                                    <span style={{ fontWeight: '500' }}>{breakpointLabel}</span>
+                                </div>
+                            </View>
 
                             {/* Render controls */}
                             {controls.map(control => {

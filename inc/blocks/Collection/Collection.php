@@ -182,7 +182,7 @@ class Collection extends Module_Base
                 '<div%s%s><div class="%s"%s>%s</div></div>',
                 $other_attrs ? ' ' . $other_attrs : '',
                 $wrapper_class_attr,
-                \esc_attr($collection_classes),
+                \esc_attr($all_classes), // Inner div gets collection classes + spacing classes
                 $data_attrs_html,
                 $inner_blocks_content
             );

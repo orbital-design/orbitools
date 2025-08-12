@@ -78,19 +78,23 @@ import { getBreakpointOptions } from '../../../../core/utils/breakpoints.js';
 
         const allBreakpoints = [null, ...breakpoints]; // null = base breakpoint
 
-        // Breakpoint icons
+        // Breakpoint icons (matching responsive controls)
         const breakpointIcons = {
-            base: wp.element.createElement(SVG, { width: "16", height: "16", viewBox: "0 0 16 16" },
-                wp.element.createElement(Path, { fill: "#007cba", d: "M2 2h12v12H2z" })
+            base: wp.element.createElement(SVG, { width: "16", height: "16", viewBox: "0 0 640 640", fill: "none" },
+                wp.element.createElement(Path, { fill: "#1D303A", d: "M32 339.2c0 42.4 34.4 76.8 76.8 76.8H304v-96H160V128h288v48h64v-48c0-35.3-28.7-64-64-64H160c-35.3 0-64 28.7-64 64v192H51.2c-10.6 0-19.2 8.6-19.2 19.2Z" }),
+                wp.element.createElement(Path, { fill: "#32A3E2", d: "M416 224c-35.3 0-64 28.7-64 64v224c0 35.3 28.7 64 64 64h96c35.3 0 64-28.7 64-64V288c0-35.3-28.7-64-64-64h-96Zm24 240h48c13.3 0 24 10.7 24 24s-10.7 24-24 24h-48c-13.3 0-24-10.7-24-24s10.7-24 24-24Z" })
             ),
-            sm: wp.element.createElement(SVG, { width: "16", height: "16", viewBox: "0 0 16 16" },
-                wp.element.createElement(Path, { fill: "#007cba", d: "M1 1h8v8H1z" })
+            sm: wp.element.createElement(SVG, { width: "16", height: "16", viewBox: "0 0 640 640", fill: "none" },
+                wp.element.createElement(Path, { fill: "#1D303A", d: "M96 128c0-35.3 28.7-64 64-64h320c35.3 0 64 28.7 64 64v384c0 35.3-28.7 64-64 64H160c-35.3 0-64-28.7-64-64V128Zm64 24v256c0 13.3 10.7 24 24 24h272c13.3 0 24-10.7 24-24V152c0-13.3-10.7-24-24-24H184c-13.3 0-24 10.7-24 24Zm96 352c0 13.3 10.7 24 24 24h80c13.3 0 24-10.7 24-24s-10.7-24-24-24h-80c-13.3 0-24 10.7-24 24Z" }),
+                wp.element.createElement(Path, { fill: "#32A3E2", d: "M160 152c0-13.3 10.7-24 24-24h272c13.3 0 24 10.7 24 24v256c0 13.3-10.7 24-24 24H184c-13.3 0-24-10.7-24-24V152Z" })
             ),
-            md: wp.element.createElement(SVG, { width: "16", height: "16", viewBox: "0 0 16 16" },
-                wp.element.createElement(Path, { fill: "#007cba", d: "M0 0h10v10H0z" })
+            md: wp.element.createElement(SVG, { width: "16", height: "16", viewBox: "0 0 640 640", fill: "none" },
+                wp.element.createElement(Path, { fill: "#1D303A", d: "M0 467.2C0 509.6 34.4 544 76.8 544h486.4c42.4 0 76.8-34.4 76.8-76.8 0-10.6-8.6-19.2-19.2-19.2H19.2C8.6 448 0 456.6 0 467.2ZM64 160v240h64V160h384v240h64V160c0-35.3-28.7-64-64-64H128c-35.3 0-64 28.7-64 64Z" }),
+                wp.element.createElement(Path, { fill: "#32A3E2", d: "M128 160h384v240H128V160Z" })
             ),
-            lg: wp.element.createElement(SVG, { width: "16", height: "16", viewBox: "0 0 16 16" },
-                wp.element.createElement(Path, { fill: "#007cba", d: "M0 0h12v12H0z" })
+            lg: wp.element.createElement(SVG, { width: "16", height: "16", viewBox: "0 0 640 640", fill: "none" },
+                wp.element.createElement(Path, { fill: "#1D303A", d: "M0 172.8C0 215.2 34.4 249.6 76.8 249.6h486.4c42.4 0 76.8-34.4 76.8-76.8 0-10.6-8.6-19.2-19.2-19.2H19.2C8.6 153.6 0 162.2 0 172.8ZM64 64v48h512V64c0-35.3-28.7-64-64-64H128c-35.3 0-64 28.7-64 64ZM0 467.2C0 509.6 34.4 544 76.8 544h486.4c42.4 0 76.8-34.4 76.8-76.8 0-10.6-8.6-19.2-19.2-19.2H19.2C8.6 448 0 456.6 0 467.2ZM64 288v128h512V288H64Z" }),
+                wp.element.createElement(Path, { fill: "#32A3E2", d: "M64 288h512v128H64V288Z" })
             )
         };
 
@@ -559,14 +563,14 @@ import { getBreakpointOptions } from '../../../../core/utils/breakpoints.js';
         };
 
         return wp.element.createElement(ToolsPanel, {
-            label: 'Spacings',
+            label: 'Spacings • Add Breakpoints  →',
             resetAll: resetAllSpacings,
             panelId: 'main-spacings-panel'
         },
             allBreakpoints.map((breakpoint, index) => {
                 const breakpointSlug = breakpoint?.slug || 'base';
                 const icon = breakpointIcons[breakpointSlug] || breakpointIcons.base;
-                const label = breakpoint ? breakpoint.name : 'Base';
+                const label = breakpoint ? breakpoint.name : 'All Screens';
 
                 return wp.element.createElement(ToolsPanelItem, {
                     key: breakpointSlug,
@@ -604,8 +608,8 @@ import { getBreakpointOptions } from '../../../../core/utils/breakpoints.js';
                             maxWidth: 'none'
                         }
                     },
-                        // Icon/label header for non-base breakpoints
-                        breakpointSlug !== 'base' && wp.element.createElement('div', {
+                        // Icon/label header for all breakpoints
+                        wp.element.createElement('div', {
                             style: {
                                 display: 'flex',
                                 alignItems: 'center',
@@ -622,10 +626,17 @@ import { getBreakpointOptions } from '../../../../core/utils/breakpoints.js';
                             wp.element.createElement('span', {}, label)
                         ),
 
-                        wp.element.createElement(ToolsPanel, {
-                            label: 'Controls',
-                            panelId: `${breakpointSlug}-spacings-panel`
+                        wp.element.createElement('div', {
+                            className: 'orbitools-nested-spacings-panel',
+                            style: {
+                                marginTop: '-1px', // Overlap the border
+                                overflow: 'hidden'
+                            }
                         },
+                                wp.element.createElement(ToolsPanel, {
+                                    label: 'Select spacing type →',
+                                    panelId: `${breakpointSlug}-spacings-panel`
+                                },
                             // Gap Control
                             supports.gap && wp.element.createElement(ToolsPanelItem, {
                                 hasValue: () => gap?.[breakpointSlug] !== undefined,
@@ -635,7 +646,7 @@ import { getBreakpointOptions } from '../../../../core/utils/breakpoints.js';
                                     delete newGap[breakpointSlug];
                                     onGapChange(newGap);
                                 },
-                                isShownByDefault: breakpointSlug === 'base',
+                                isShownByDefault: false,
                                 panelId: `${breakpointSlug}-spacings-panel`
                             },
                                 createSpacingControl(
@@ -657,7 +668,7 @@ import { getBreakpointOptions } from '../../../../core/utils/breakpoints.js';
                                     delete newPadding[breakpointSlug];
                                     onPaddingChange(newPadding);
                                 },
-                                isShownByDefault: breakpointSlug === 'base',
+                                isShownByDefault: false,
                                 panelId: `${breakpointSlug}-spacings-panel`
                             },
                                 createBoxControl(
@@ -679,7 +690,7 @@ import { getBreakpointOptions } from '../../../../core/utils/breakpoints.js';
                                     delete newMargin[breakpointSlug];
                                     onMarginChange(newMargin);
                                 },
-                                isShownByDefault: breakpointSlug === 'base',
+                                isShownByDefault: false,
                                 panelId: `${breakpointSlug}-spacings-panel`
                             },
                                 createBoxControl(
@@ -691,9 +702,11 @@ import { getBreakpointOptions } from '../../../../core/utils/breakpoints.js';
                                     }
                                 )
                             )
-                        )
+
                     )
                 )
+            )
+        )
             })
         );
     }
