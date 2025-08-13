@@ -185,13 +185,23 @@ class SpacingsRenderer
      * Generate all spacing classes from block attributes
      * 
      * @param array $attributes Block attributes containing orbGap, orbPadding, orbMargin
-     * @return string All spacing classes combined
+     * @param bool $as_array Whether to return as array instead of string
+     * @return string|array All spacing classes combined as string or array
      */
-    public static function get_all_spacings_classes($attributes): string
+    public static function get_all_spacings_classes($attributes, $as_array = false)
     {
         $gap_classes = self::get_gap_classes($attributes['orbGap'] ?? []);
         $padding_classes = self::get_padding_classes($attributes['orbPadding'] ?? []);
         $margin_classes = self::get_margin_classes($attributes['orbMargin'] ?? []);
+        
+        if ($as_array) {
+            $all_classes = array_filter(array_merge(
+                $gap_classes ? explode(' ', $gap_classes) : [],
+                $padding_classes ? explode(' ', $padding_classes) : [],
+                $margin_classes ? explode(' ', $margin_classes) : []
+            ));
+            return $all_classes;
+        }
         
         $all_classes = trim($gap_classes . ' ' . $padding_classes . ' ' . $margin_classes);
         

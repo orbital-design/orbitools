@@ -95,7 +95,7 @@ class Settings
                 'name'    => __('Clear CSS Cache', 'orbitools'),
                 'desc'    => __('Clear the cached CSS to force regeneration of typography preset styles.', 'orbitools'),
                 'type'    => 'html',
-                'std'     => '<button type="button" class="button button-secondary" id="orbitools-clear-typography-cache" data-nonce="' . wp_create_nonce('orbitools_clear_cache') . '">' . __('Clear Cache', 'orbitools') . '</button><div id="orbitools-clear-cache-result" style="margin-top: 10px;"></div>',
+                'std'     => '<button type="button" class="button button-secondary" id="orbitools-clear-typography-cache" data-nonce="' . wp_create_nonce('orbitools_ajax_nonce') . '">' . __('Clear Cache', 'orbitools') . '</button><div id="orbitools-clear-cache-result" style="margin-top: 10px;"></div>',
                 'section' => 'typography',
             ),
             array(
