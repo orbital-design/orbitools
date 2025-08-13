@@ -194,16 +194,30 @@ class SpacingsRenderer
         $padding_classes = self::get_padding_classes($attributes['orbPadding'] ?? []);
         $margin_classes = self::get_margin_classes($attributes['orbMargin'] ?? []);
         
+        // Check if we have any spacing classes
+        $has_spacing_classes = !empty($gap_classes) || !empty($padding_classes) || !empty($margin_classes);
+        
         if ($as_array) {
             $all_classes = array_filter(array_merge(
                 $gap_classes ? explode(' ', $gap_classes) : [],
                 $padding_classes ? explode(' ', $padding_classes) : [],
                 $margin_classes ? explode(' ', $margin_classes) : []
             ));
+            
+            // Add has-spacing class if we have any spacing classes
+            if ($has_spacing_classes && !empty($all_classes)) {
+                array_unshift($all_classes, 'has-spacing');
+            }
+            
             return $all_classes;
         }
         
         $all_classes = trim($gap_classes . ' ' . $padding_classes . ' ' . $margin_classes);
+        
+        // Add has-spacing class if we have any spacing classes
+        if ($has_spacing_classes && !empty($all_classes)) {
+            $all_classes = 'has-spacing ' . $all_classes;
+        }
         
         return $all_classes;
     }

@@ -164,7 +164,7 @@
 
             if (spacingClasses) {
                 const existingClasses = props.className || '';
-                const newClassName = (existingClasses + ' ' + spacingClasses).trim();
+                const newClassName = (existingClasses + ' has-spacing ' + spacingClasses).trim();
 
                 const newProps = {
                     ...props,
@@ -197,7 +197,7 @@
 
         if (spacingClasses) {
             const existingClasses = props.className || '';
-            props.className = (existingClasses + ' ' + spacingClasses).trim();
+            props.className = (existingClasses + ' has-spacing ' + spacingClasses).trim();
         }
 
         return props;

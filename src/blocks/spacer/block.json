@@ -11,15 +11,7 @@
         "reusable": true,
         "lock": false,
         "spacing": false,
-        "customClassName": true,
-        "orbitools": {
-            "spacings": {
-                "breakpoints": true,
-                "gap": false,
-                "margin": true,
-                "padding": false
-            }
-        }
+        "customClassName": true
     },
     "attributes": {
         "height": {
