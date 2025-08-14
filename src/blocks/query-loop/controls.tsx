@@ -31,6 +31,7 @@ import { __ } from '@wordpress/i18n';
 
 import FormTokenDropdown from './components/FormTokenDropdown';
 import QueryTemplateControl from './components/QueryTemplateControl';
+import PostSelector from './components/PostSelector';
 
 interface QueryLoopAttributes {
     queryParameters: {
@@ -875,27 +876,21 @@ export default function QueryLoopControls({ attributes, setAttributes }: QueryLo
                             }}
                             panelId="query-loop-panel"
                         >
-                            <TextControl
-                                label={__('Include Posts (IDs)', 'orbitools')}
-                                help={__('Comma-separated post IDs to include', 'orbitools')}
-                                value={includePosts.join(',')}
-                                onChange={(value) => {
-                                    const ids = value.split(',').map(id => id.trim()).filter(id => id);
-                                    updateAttribute('includePosts', ids);
-                                }}
-                                placeholder={__('e.g. 1,2,3', 'orbitools')}
-                                __nextHasNoMarginBottom={true}
+                            <PostSelector
+                                label={__('Include Posts', 'orbitools')}
+                                help={__('Select specific posts to include in the query', 'orbitools')}
+                                value={includePosts}
+                                onChange={(ids) => updateAttribute('includePosts', ids)}
+                                placeholder={__('Search and select posts to include...', 'orbitools')}
+                                postTypes={postTypes}
                             />
-                            <TextControl
-                                label={__('Exclude Posts (IDs)', 'orbitools')}
-                                help={__('Comma-separated post IDs to exclude', 'orbitools')}
-                                value={excludePosts.join(',')}
-                                onChange={(value) => {
-                                    const ids = value.split(',').map(id => id.trim()).filter(id => id);
-                                    updateAttribute('excludePosts', ids);
-                                }}
-                                placeholder={__('e.g. 4,5,6', 'orbitools')}
-                                __nextHasNoMarginBottom={true}
+                            <PostSelector
+                                label={__('Exclude Posts', 'orbitools')}
+                                help={__('Select specific posts to exclude from the query', 'orbitools')}
+                                value={excludePosts}
+                                onChange={(ids) => updateAttribute('excludePosts', ids)}
+                                placeholder={__('Search and select posts to exclude...', 'orbitools')}
+                                postTypes={postTypes}
                             />
                             <ToggleControl
                                 label={__('Parent posts only', 'orbitools')}
@@ -904,16 +899,13 @@ export default function QueryLoopControls({ attributes, setAttributes }: QueryLo
                                 onChange={(value) => updateAttribute('parentPostsOnly', value)}
                                 __nextHasNoMarginBottom={true}
                             />
-                            <TextControl
-                                label={__('Children of Posts (IDs)', 'orbitools')}
-                                help={__('Comma-separated post IDs to show children of', 'orbitools')}
-                                value={childrenOfPosts.join(',')}
-                                onChange={(value) => {
-                                    const ids = value.split(',').map(id => id.trim()).filter(id => id);
-                                    updateAttribute('childrenOfPosts', ids);
-                                }}
-                                placeholder={__('e.g. 7,8,9', 'orbitools')}
-                                __nextHasNoMarginBottom={true}
+                            <PostSelector
+                                label={__('Children of Posts', 'orbitools')}
+                                help={__('Select posts to show children/sub-pages of', 'orbitools')}
+                                value={childrenOfPosts}
+                                onChange={(ids) => updateAttribute('childrenOfPosts', ids)}
+                                placeholder={__('Search and select parent posts...', 'orbitools')}
+                                postTypes={postTypes}
                             />
                         </ToolsPanelItem>
                     </ToolsPanel>
