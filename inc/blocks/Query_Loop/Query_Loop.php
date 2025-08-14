@@ -73,13 +73,26 @@ class Query_Loop extends Module_Base
         }
         $registered = true;
 
+        // Load built-in templates
+        $this->register_builtin_templates();
 
         // Register immediately if init has already fired, otherwise hook into it
         if (\did_action('init')) {
             $this->register_block();
+            $this->register_rest_endpoints();
         } else {
             \add_action('init', [$this, 'register_block']);
+            \add_action('rest_api_init', [$this, 'register_rest_endpoints']);
         }
+    }
+
+    /**
+     * Register built-in template function
+     */
+    private function register_builtin_templates(): void
+    {
+        // Built-in default template function is handled directly in render_with_template
+        // No need to register a global function
     }
 
     /**
@@ -381,11 +394,28 @@ class Query_Loop extends Module_Base
      */
     private function render_query_results(?\WP_Query $query, array $query_parameters, string $query_id): string
     {
-        // Get wrapper attributes
-        $wrapper_attributes = \get_block_wrapper_attributes([
-            'class' => 'orb-query-loop',
-            'data-query-id' => $query_id
-        ]);
+        // Get wrapper attributes and filter out WordPress block classes
+        $wrapper_attributes = \get_block_wrapper_attributes();
+        
+        // Extract class names from the wrapper attributes string
+        $existing_classes = '';
+        if (preg_match('/class=["\']([^"\']*)["\']/', $wrapper_attributes, $matches)) {
+            $existing_classes = $matches[1];
+        }
+        
+        // Remove unwanted WordPress block classes while keeping useful ones
+        $filtered_classes = $this->filter_wordpress_classes($existing_classes, ['wp-block-orb-query-loop']);
+        
+        // Combine our BEM base class with filtered WordPress classes
+        $final_classes = trim('orb-query-loop ' . $filtered_classes);
+        
+        // Replace the class attribute in wrapper attributes with our cleaned version
+        $wrapper_attributes = preg_replace('/class=["\'][^"\']*["\']/', 'class="' . \esc_attr($final_classes) . '"', $wrapper_attributes);
+        
+        // Add data-query-id if not present
+        if (strpos($wrapper_attributes, 'data-query-id') === false) {
+            $wrapper_attributes .= ' data-query-id="' . \esc_attr($query_id) . '"';
+        }
 
         // Handle query errors
         if (!$query || !$query->have_posts()) {
@@ -409,28 +439,50 @@ class Query_Loop extends Module_Base
         // Start building HTML
         $html = sprintf('<div %s>', $wrapper_attributes);
         
-        // Add layout classes based on display settings
+        // Add results wrapper with layout data attributes
         $display = $query_parameters['display'] ?? [];
         $layout = $display['layout'] ?? [];
         $layout_type = $layout['type'] ?? 'grid';
+        $grid_columns = $layout['gridColumns'] ?? '3';
         
+        // Build results wrapper with data attributes
+        $results_attrs = sprintf(
+            'class="orb-query-loop__results" data-layout="%s"',
+            \esc_attr($layout_type)
+        );
+        
+        // Add columns data attribute only for grid layout
         if ($layout_type === 'grid') {
-            $grid_columns = $layout['gridColumns'] ?? '3';
-            $html .= sprintf('<div class="orb-query-loop__grid orb-query-loop__grid--cols-%s">', \esc_attr($grid_columns));
-        } else {
-            $html .= '<div class="orb-query-loop__list">';
+            $results_attrs .= sprintf(' data-cols="%s"', \esc_attr($grid_columns));
+        }
+        
+        $html .= sprintf('<div %s>', $results_attrs);
+
+        // Get selected template
+        $selected_template = $query_parameters['display']['template'] ?? 'default';
+        $available_templates = $this->get_available_templates($layout_type);
+        
+        // Ensure selected template exists, fallback to default
+        if (!isset($available_templates[$selected_template])) {
+            $selected_template = 'default';
+        }
+        
+        // Debug logging
+        if (\defined('WP_DEBUG') && WP_DEBUG) {
+            \error_log('Orbitools Query Loop - Selected Template: ' . $selected_template);
+            \error_log('Orbitools Query Loop - Available Templates: ' . print_r(array_keys($available_templates), true));
         }
 
         // Loop through posts
         while ($query->have_posts()) {
             $query->the_post();
-            $html .= $this->render_post_item(get_post(), $layout_type);
+            $html .= $this->render_post_item(get_post(), $layout_type, $selected_template);
         }
         
         // Reset post data
         \wp_reset_postdata();
         
-        // Close layout container
+        // Close results container
         $html .= '</div>';
         
         // Add pagination if needed
@@ -445,39 +497,142 @@ class Query_Loop extends Module_Base
     }
 
     /**
-     * Render individual post item
+     * Render individual post item using template
      *
      * @param \WP_Post $post Post object
      * @param string $layout_type Layout type (grid/list)
+     * @param array|null $template_data Template data with path and metadata
      * @return string Rendered post HTML
      */
-    private function render_post_item(\WP_Post $post, string $layout_type): string
+    private function render_post_item(\WP_Post $post, string $layout_type, string $template_key): string
     {
-        $html = sprintf('<article class="orb-query-loop__item orb-query-loop__item--%s" data-post-id="%d">', 
-            \esc_attr($layout_type),
-            $post->ID
-        );
+        // Debug logging
+        if (\defined('WP_DEBUG') && WP_DEBUG) {
+            \error_log('Orbitools Query Loop - render_post_item called with template_key: ' . $template_key);
+        }
         
-        // Basic post content - can be enhanced later
-        $html .= sprintf(
-            '<h3 class="orb-query-loop__title"><a href="%s">%s</a></h3>',
-            \esc_url(\get_permalink($post->ID)),
-            \esc_html(\get_the_title($post->ID))
-        );
+        // Use template function if available
+        return $this->render_with_template($post, $layout_type, $template_key);
+    }
+
+    /**
+     * Built-in default template function
+     *
+     * @param \WP_Post $post Post object
+     * @param string $layout_type Layout type
+     * @return string Rendered HTML
+     */
+    private function render_default_template(\WP_Post $post, string $layout_type): string
+    {
+        $html = '<article class="orb-query-loop__item orb-query-loop__item--' . esc_attr($layout_type) . '" data-post-id="' . $post->ID . '" data-template="default">';
         
-        $html .= sprintf(
-            '<div class="orb-query-loop__excerpt">%s</div>',
-            \wp_kses_post(\get_the_excerpt($post->ID))
-        );
+        // Featured image
+        if (has_post_thumbnail($post->ID)) {
+            $html .= '<div class="orb-query-loop__featured-image">';
+            $html .= '<a href="' . esc_url(get_permalink($post->ID)) . '" aria-label="' . esc_attr(sprintf(__('Read more about %s', 'orbitools'), get_the_title($post->ID))) . '">';
+            $html .= get_the_post_thumbnail($post->ID, 'medium', ['class' => 'orb-query-loop__image']);
+            $html .= '</a>';
+            $html .= '</div>';
+        }
         
-        $html .= sprintf(
-            '<div class="orb-query-loop__meta">%s</div>',
-            \esc_html(\get_the_date('', $post->ID))
-        );
+        $html .= '<div class="orb-query-loop__content">';
+        $html .= '<header class="orb-query-loop__header">';
         
+        // Title
+        $html .= '<h3 class="orb-query-loop__title">';
+        $html .= '<a href="' . esc_url(get_permalink($post->ID)) . '">';
+        $html .= esc_html(get_the_title($post->ID));
+        $html .= '</a>';
+        $html .= '</h3>';
+        
+        // Meta
+        $html .= '<div class="orb-query-loop__meta">';
+        $html .= '<time class="orb-query-loop__date" datetime="' . esc_attr(get_the_date('c', $post->ID)) . '">';
+        $html .= esc_html(get_the_date('', $post->ID));
+        $html .= '</time>';
+        
+        if (get_post_type($post->ID) === 'post') {
+            $html .= '<span class="orb-query-loop__author">';
+            $html .= esc_html(sprintf(__('by %s', 'orbitools'), get_the_author_meta('display_name', $post->post_author)));
+            $html .= '</span>';
+        }
+        
+        $html .= '</div>'; // meta
+        $html .= '</header>'; // header
+        
+        // Excerpt
+        if (has_excerpt($post->ID) || $post->post_content) {
+            $html .= '<div class="orb-query-loop__excerpt">';
+            $html .= wp_kses_post(get_the_excerpt($post->ID));
+            $html .= '</div>';
+        }
+        
+        // Categories for posts
+        if (get_post_type($post->ID) === 'post') {
+            $categories = get_the_category($post->ID);
+            if (!empty($categories)) {
+                $html .= '<div class="orb-query-loop__categories">';
+                foreach ($categories as $category) {
+                    $html .= '<span class="orb-query-loop__category">';
+                    $html .= '<a href="' . esc_url(get_category_link($category->term_id)) . '">';
+                    $html .= esc_html($category->name);
+                    $html .= '</a>';
+                    $html .= '</span>';
+                }
+                $html .= '</div>';
+            }
+        }
+        
+        // Footer
+        $html .= '<footer class="orb-query-loop__footer">';
+        $html .= '<a href="' . esc_url(get_permalink($post->ID)) . '" class="orb-query-loop__read-more">';
+        $html .= esc_html__('Read More', 'orbitools');
+        $html .= '</a>';
+        $html .= '</footer>';
+        
+        $html .= '</div>'; // content
         $html .= '</article>';
         
         return $html;
+    }
+
+    /**
+     * Render post item using template function
+     *
+     * @param \WP_Post $post Post object
+     * @param string $layout_type Layout type
+     * @param string $template_key Template key
+     * @return string Rendered HTML
+     */
+    private function render_with_template(\WP_Post $post, string $layout_type, string $template_key): string
+    {
+        // Handle built-in default template
+        if ($template_key === 'default') {
+            if (\defined('WP_DEBUG') && WP_DEBUG) {
+                \error_log('Orbitools Query Loop - Using built-in default template');
+            }
+            return $this->render_default_template($post, $layout_type);
+        }
+        
+        // Generate function name from template key (replace hyphens with underscores)
+        $template_function = "orbitools_query_loop_template_" . str_replace('-', '_', $template_key);
+        
+        // Check if template function exists
+        if (\function_exists($template_function)) {
+            if (\defined('WP_DEBUG') && WP_DEBUG) {
+                \error_log('Orbitools Query Loop - Using function: ' . $template_function);
+            }
+            
+            $template_data = $this->get_available_templates($layout_type)[$template_key] ?? [];
+            return \call_user_func($template_function, $post, $layout_type, $template_data);
+        }
+        
+        // Template function doesn't exist, fallback to built-in default
+        if (\defined('WP_DEBUG') && WP_DEBUG) {
+            \error_log('Orbitools Query Loop - Template function not found: ' . $template_function . ', using built-in default');
+        }
+        
+        return $this->render_default_template($post, $layout_type);
     }
 
     /**
@@ -580,5 +735,143 @@ class Query_Loop extends Module_Base
          * @param array $types Array of filter control type options
          */
         return apply_filters('orbitools_query_loop_frontend_filter_types', $default_types);
+    }
+
+    /**
+     * Filter out unwanted WordPress block classes
+     *
+     * @param string $class_string The original class string
+     * @param array $classes_to_remove Classes to remove from the string
+     * @return string Filtered class string
+     */
+    private function filter_wordpress_classes(string $class_string, array $classes_to_remove = []): string
+    {
+        if (empty($class_string)) {
+            return '';
+        }
+
+        // Split classes into array
+        $classes = explode(' ', $class_string);
+        
+        // Filter out unwanted classes
+        $filtered_classes = array_filter($classes, function($class) use ($classes_to_remove) {
+            $class = trim($class);
+            if (empty($class)) {
+                return false;
+            }
+            
+            // Remove specific classes
+            if (in_array($class, $classes_to_remove)) {
+                return false;
+            }
+            
+            return true;
+        });
+        
+        return implode(' ', $filtered_classes);
+    }
+
+    /**
+     * Get available templates for Query Loop
+     *
+     * @param string $layout_type Layout type (grid/list/etc)
+     * @return array Array of template options with metadata
+     */
+    public function get_available_templates(string $layout_type = 'grid'): array
+    {
+        $templates = [];
+        
+        // Add built-in default template (function-based)
+        $templates['default'] = [
+            'label' => 'Default',
+            'description' => 'Built-in default template',
+            'type' => 'function',
+            'metadata' => [
+                'Template Name' => 'Default',
+                'Description' => 'Built-in default template',
+                'Author' => 'OrbiTools',
+                'Version' => '1.0.0',
+                'Supports' => ['featured-images', 'excerpts', 'dates', 'categories', 'tags']
+            ]
+        ];
+        
+        /**
+         * Filter available Query Loop templates
+         * 
+         * Register your templates using this hook:
+         * 
+         * add_filter('orbitools/query_loop/available_templates', function($templates, $layout_type) {
+         *     $templates['my-template'] = [
+         *         'label' => 'My Custom Template',
+         *         'description' => 'Description of my template',
+         *         'type' => 'function',
+         *         'metadata' => [...]
+         *     ];
+         *     return $templates;
+         * }, 10, 2);
+         * 
+         * Then create the function: orbitools_query_loop_template_my_template($post, $layout_type, $template_data)
+         * 
+         * @param array $templates Array of template data
+         * @param string $layout_type Layout type being requested
+         */
+        return \apply_filters('orbitools/query_loop/available_templates', $templates, $layout_type);
+    }
+
+
+    /**
+     * Get template options for frontend dropdown
+     *
+     * @param string $layout_type Layout type
+     * @return array Simple array for select options
+     */
+    public function get_template_options(string $layout_type = 'grid'): array
+    {
+        $templates = $this->get_available_templates($layout_type);
+        $options = [];
+        
+        foreach ($templates as $key => $template) {
+            $options[] = [
+                'label' => $template['label'],
+                'value' => $key
+            ];
+        }
+        
+        return $options;
+    }
+
+    /**
+     * Register REST API endpoints for template options
+     */
+    public function register_rest_endpoints(): void
+    {
+        \register_rest_route('orbitools/v1', '/query-loop/templates', [
+            'methods' => 'GET',
+            'callback' => [$this, 'get_template_options_rest'],
+            'permission_callback' => function() {
+                return \current_user_can('edit_posts');
+            },
+            'args' => [
+                'layout' => [
+                    'required' => false,
+                    'default' => 'grid',
+                    'sanitize_callback' => 'sanitize_text_field'
+                ]
+            ]
+        ]);
+    }
+
+    /**
+     * REST API callback to get template options
+     *
+     * @param \WP_REST_Request $request
+     * @return \WP_REST_Response
+     */
+    public function get_template_options_rest(\WP_REST_Request $request): \WP_REST_Response
+    {
+        $layout_type = $request->get_param('layout') ?? 'grid';
+        $templates = $this->get_template_options($layout_type);
+        
+        return new \WP_REST_Response($templates, 200);
     }
 }

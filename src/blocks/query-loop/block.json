@@ -45,6 +45,7 @@
                         "type": "grid",
                         "gridColumns": "3"
                     },
+                    "template": "default",
                     "sorting": {
                         "enableSortControls": false,
                         "availableSortOptions": []

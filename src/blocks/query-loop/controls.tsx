@@ -30,6 +30,7 @@ import {
 import { __ } from '@wordpress/i18n';
 
 import FormTokenDropdown from './components/FormTokenDropdown';
+import QueryTemplateControl from './components/QueryTemplateControl';
 
 interface QueryLoopAttributes {
     queryParameters: {
@@ -71,6 +72,7 @@ interface QueryLoopAttributes {
                 type: string;
                 gridColumns: string;
             };
+            template: string;
             sorting: {
                 enableSortControls: boolean;
                 availableSortOptions: string[];
@@ -118,6 +120,7 @@ const QUERY_DEFAULTS = {
     childrenOfPosts: [] as string[],
     layout: 'grid',
     gridColumns: '3',
+    template: 'default',
     sortBy: [] as string[],
     sortOrder: 'date-newest',
     filterTaxonomies: [] as string[],
@@ -160,6 +163,7 @@ export default function QueryLoopControls({ attributes, setAttributes }: QueryLo
     const childrenOfPosts = params?.args?.childrenOfPosts || QUERY_DEFAULTS.childrenOfPosts;
     const layout = params?.display?.layout?.type || QUERY_DEFAULTS.layout;
     const gridColumns = params?.display?.layout?.gridColumns || QUERY_DEFAULTS.gridColumns;
+    const template = params?.display?.template || QUERY_DEFAULTS.template;
     const sortBy = params?.display?.sorting?.availableSortOptions || QUERY_DEFAULTS.sortBy;
     const enableTaxonomyFilters = params?.display?.filtering?.enableTaxonomyFilters || QUERY_DEFAULTS.enableTaxonomyFilters;
     const enableDateFilter = params?.display?.filtering?.enableDateFilter || QUERY_DEFAULTS.enableDateFilter;
@@ -453,6 +457,24 @@ export default function QueryLoopControls({ attributes, setAttributes }: QueryLo
             case 'gridColumns':
                 updateDisplay('layout', key === 'layout' ? 'type' : key, value);
                 break;
+            case 'template':
+                // Template is stored directly in display, not in a subsection
+                const currentParams = attributes.queryParameters || { type: 'inherit' };
+                const currentDisplay = { ...currentParams.display };
+                
+                if (value !== QUERY_DEFAULTS.template) {
+                    currentDisplay.template = value;
+                } else {
+                    delete currentDisplay.template;
+                }
+                
+                setAttributes({
+                    queryParameters: {
+                        ...currentParams,
+                        display: Object.keys(currentDisplay).length > 0 ? currentDisplay : undefined
+                    }
+                });
+                break;
             case 'sortBy':
                 updateDisplay('sorting', 'availableSortOptions', value);
                 break;
@@ -561,6 +583,9 @@ export default function QueryLoopControls({ attributes, setAttributes }: QueryLo
                 break;
             case 'gridColumns':
                 currentValue = params.display?.layout?.gridColumns;
+                break;
+            case 'template':
+                currentValue = params.display?.template;
                 break;
             case 'sortBy':
                 currentValue = params.display?.sorting?.availableSortOptions;
@@ -1148,6 +1173,7 @@ export default function QueryLoopControls({ attributes, setAttributes }: QueryLo
                     resetAll={() => {
                         updateAttribute('layout', QUERY_DEFAULTS.layout);
                         updateAttribute('gridColumns', QUERY_DEFAULTS.gridColumns);
+                        updateAttribute('template', QUERY_DEFAULTS.template);
                         updateAttribute('sortBy', QUERY_DEFAULTS.sortBy);
                         updateAttribute('sortOrder', QUERY_DEFAULTS.sortOrder);
                         updateAttribute('filterTaxonomies', QUERY_DEFAULTS.filterTaxonomies);
@@ -1159,13 +1185,15 @@ export default function QueryLoopControls({ attributes, setAttributes }: QueryLo
                     <ToolsPanelItem
                         hasValue={() =>
                             hasNonDefaultValue('layout', QUERY_DEFAULTS.layout) ||
-                            hasNonDefaultValue('gridColumns', QUERY_DEFAULTS.gridColumns)
+                            hasNonDefaultValue('gridColumns', QUERY_DEFAULTS.gridColumns) ||
+                            hasNonDefaultValue('template', QUERY_DEFAULTS.template)
                         }
                         isShownByDefault={true}
                         label={__('Layout', 'orbitools')}
                         onDeselect={() => {
                             updateAttribute('layout', QUERY_DEFAULTS.layout);
                             updateAttribute('gridColumns', QUERY_DEFAULTS.gridColumns);
+                            updateAttribute('template', QUERY_DEFAULTS.template);
                         }}
                         panelId="results-settings-panel"
                     >
@@ -1212,6 +1240,25 @@ export default function QueryLoopControls({ attributes, setAttributes }: QueryLo
                                 />
                             </ToggleGroupControl>
                         )}
+                    </ToolsPanelItem>
+
+                    {/* Template Control */}
+                    <ToolsPanelItem
+                        hasValue={() =>
+                            hasNonDefaultValue('template', QUERY_DEFAULTS.template)
+                        }
+                        isShownByDefault={true}
+                        label={__('Template', 'orbitools')}
+                        onDeselect={() => {
+                            updateAttribute('template', QUERY_DEFAULTS.template);
+                        }}
+                        panelId="results-settings-panel"
+                    >
+                        <QueryTemplateControl
+                            layout={layout}
+                            template={template}
+                            onChange={(value) => updateAttribute('template', value)}
+                        />
                     </ToolsPanelItem>
 
                     {/* Frontend Sorting Controls */}

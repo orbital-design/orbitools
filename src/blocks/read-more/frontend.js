@@ -1,9 +1,9 @@
 /**
  * Read More Block Frontend JavaScript
- * 
+ *
  * Handles toggle functionality with smooth animations for read more content.
  * Uses proper accessibility attributes and CSS transitions for smooth expand/collapse.
- * 
+ *
  * @file blocks/read-more/frontend.js
  * @since 1.0.0
  */
@@ -16,13 +16,13 @@
         // Find all read more toggle buttons on the page
         // Uses the BEM class for targeting
         const toggles = document.querySelectorAll('.orb-read-more__toggle');
-
+        console.log(toggles)
         // Initialize each toggle button
         toggles.forEach(function(toggle) {
             toggle.addEventListener('click', function() {
                 // Check current state from accessibility attribute
                 const expanded = this.getAttribute('aria-expanded') === 'true';
-                
+
                 // Get the ID of the content area this button controls
                 const contentId = this.getAttribute('aria-controls');
                 const content = document.getElementById(contentId);
@@ -39,11 +39,11 @@
                         // Update accessibility attributes for screen readers
                         this.setAttribute('aria-expanded', 'false');
                         content.setAttribute('aria-hidden', 'true');
-                        
+
                         // Update button text and icon state, remove visual state class
                         updateButtonContent(this, openText, iconType, false);
                         this.classList.remove('orb-read-more__toggle--is-open');
-                        
+
                         // Animate the closing with smooth transition
                         slideUp(content);
                     } else {
@@ -51,11 +51,11 @@
                         // Update accessibility attributes for screen readers
                         this.setAttribute('aria-expanded', 'true');
                         content.setAttribute('aria-hidden', 'false');
-                        
+
                         // Update button text and icon state, add visual state class
                         updateButtonContent(this, closeText, iconType, true);
                         this.classList.add('orb-read-more__toggle--is-open');
-                        
+
                         // Animate the opening with smooth transition
                         slideDown(content);
                     }
@@ -65,7 +65,7 @@
 
         /**
          * Update button content with text and appropriate icon
-         * 
+         *
          * @param {HTMLElement} button The button element
          * @param {string} text The text to display
          * @param {string} iconType The type of icon (none, chevron, arrow, plus)
@@ -74,22 +74,22 @@
         function updateButtonContent(button, text, iconType, isOpen) {
             // Clear existing content
             button.innerHTML = '';
-            
+
             // Add text node
             button.appendChild(document.createTextNode(text));
-            
+
             // Add icon if not 'none'
             if (iconType !== 'none') {
                 const iconSpan = document.createElement('span');
                 iconSpan.className = `orb-read-more__icon ${isOpen ? 'orb-read-more__icon--is-rotated' : ''}`;
-                
+
                 // Set icon based on type with SVG icons
                 const icons = {
                     chevron: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right"><path d="m9 18 6-6-6-6"/></svg>',
                     arrow: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>',
                     plus: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>'
                 };
-                
+
                 iconSpan.innerHTML = icons[iconType] || icons['chevron'];
                 button.appendChild(iconSpan);
             }
@@ -97,10 +97,10 @@
 
         /**
          * Slide down animation (expand/show content)
-         * 
+         *
          * Creates smooth expansion by transitioning from 0 to natural height.
          * Also handles padding/margins to prevent content jumping.
-         * 
+         *
          * @param {HTMLElement} element The content container to expand
          */
         function slideDown(element) {
@@ -109,19 +109,19 @@
             element.style.removeProperty('height');
             element.style.removeProperty('overflow');
             element.style.removeProperty('transition');
-            
+
             // Measure the natural height
             const height = element.scrollHeight;
-            
+
             // Start from collapsed state
             element.style.height = '0px';
             element.style.overflow = 'hidden';
             element.style.transition = 'height 0.3s ease-out';
-            
+
             // Force reflow then animate to full height
             element.offsetHeight;
             element.style.height = height + 'px';
-            
+
             // Clean up after animation
             setTimeout(function() {
                 element.style.removeProperty('height');
@@ -132,27 +132,27 @@
 
         /**
          * Slide up animation (collapse/hide content)
-         * 
+         *
          * Creates smooth collapse by transitioning from natural height to 0.
          * Sets display:none at the end to fully hide from screen readers.
-         * 
+         *
          * @param {HTMLElement} element The content container to collapse
          */
         function slideUp(element) {
             // Get current height as starting point
             const height = element.scrollHeight;
-            
+
             // Set up initial state for animation
             element.style.height = height + 'px';
             element.style.overflow = 'hidden';
             element.style.transition = 'height 0.3s ease-out';
-            
+
             // Force reflow before animating
             element.offsetHeight;
-            
+
             // Animate to collapsed state
             element.style.height = '0px';
-            
+
             // After animation completes, fully hide and clean up
             setTimeout(function() {
                 element.style.display = 'none';
