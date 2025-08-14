@@ -99,6 +99,38 @@
 		"gridColumns": {
 			"type": "string",
 			"default": "3"
+		},
+		"sortBy": {
+			"type": "array",
+			"default": []
+		},
+		"sortOrder": {
+			"type": "string",
+			"default": "date-newest"
+		},
+		"filterTaxonomies": {
+			"type": "array",
+			"default": []
+		},
+		"filterArchives": {
+			"type": "array",
+			"default": []
+		},
+		"dateFilterType": {
+			"type": "string",
+			"default": "none"
+		},
+		"dateFilterYear": {
+			"type": "string",
+			"default": ""
+		},
+		"dateFilterMonth": {
+			"type": "string",
+			"default": ""
+		},
+		"dateFilterDateRange": {
+			"type": "object",
+			"default": {}
 		}
 	},
 	"providesContext": {

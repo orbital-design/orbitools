@@ -60,6 +60,14 @@ interface QueryLoopAttributes {
     childrenOfPosts: string[];
     layout: string;
     gridColumns: string;
+    sortBy: string[];
+    sortOrder: string;
+    filterTaxonomies: string[];
+    filterArchives: string[];
+    dateFilterType: string;
+    dateFilterYear: string;
+    dateFilterMonth: string;
+    dateFilterDateRange: Record<string, any>;
 }
 
 interface QueryLoopControlsProps {
@@ -90,7 +98,15 @@ const QUERY_DEFAULTS = {
     parentPostsOnly: false,
     childrenOfPosts: [],
     layout: 'grid',
-    gridColumns: '3'
+    gridColumns: '3',
+    sortBy: [],
+    sortOrder: 'date-newest',
+    filterTaxonomies: [],
+    filterArchives: [],
+    dateFilterType: 'none',
+    dateFilterYear: '',
+    dateFilterMonth: '',
+    dateFilterDateRange: {}
 } as const;
 
 /**
@@ -117,7 +133,11 @@ export default function QueryLoopControls({ attributes, setAttributes }: QueryLo
         parentPostsOnly = QUERY_DEFAULTS.parentPostsOnly,
         childrenOfPosts = QUERY_DEFAULTS.childrenOfPosts,
         layout = QUERY_DEFAULTS.layout,
-        gridColumns = QUERY_DEFAULTS.gridColumns
+        gridColumns = QUERY_DEFAULTS.gridColumns,
+        sortBy = QUERY_DEFAULTS.sortBy,
+        sortOrder = QUERY_DEFAULTS.sortOrder,
+        filterTaxonomies = QUERY_DEFAULTS.filterTaxonomies,
+        filterArchives = QUERY_DEFAULTS.filterArchives
     } = attributes;
 
     // Get available post types and taxonomies
@@ -697,22 +717,33 @@ export default function QueryLoopControls({ attributes, setAttributes }: QueryLo
                 </InspectorControls>
             )}
 
-            {/* Results Layout - Separate panel */}
+            {/* Results Settings - Multiple panels */}
             <InspectorControls group="settings">
                 <ToolsPanel
-                    label={__('Results Layout', 'orbitools')}
+                    label={__('Results Settings', 'orbitools')}
                     resetAll={() => {
                         updateAttribute('layout', QUERY_DEFAULTS.layout);
                         updateAttribute('gridColumns', QUERY_DEFAULTS.gridColumns);
+                        updateAttribute('sortBy', QUERY_DEFAULTS.sortBy);
+                        updateAttribute('sortOrder', QUERY_DEFAULTS.sortOrder);
+                        updateAttribute('filterTaxonomies', QUERY_DEFAULTS.filterTaxonomies);
+                        updateAttribute('filterArchives', QUERY_DEFAULTS.filterArchives);
                     }}
-                    panelId="query-layout-panel"
+                    panelId="results-settings-panel"
                 >
+                    {/* Layout Controls */}
                     <ToolsPanelItem
-                        hasValue={() => hasNonDefaultValue('layout', QUERY_DEFAULTS.layout)}
+                        hasValue={() => 
+                            hasNonDefaultValue('layout', QUERY_DEFAULTS.layout) ||
+                            hasNonDefaultValue('gridColumns', QUERY_DEFAULTS.gridColumns)
+                        }
                         isShownByDefault={false}
-                        label={__('Display Type', 'orbitools')}
-                        onDeselect={() => updateAttribute('layout', QUERY_DEFAULTS.layout)}
-                        panelId="query-layout-panel"
+                        label={__('Layout', 'orbitools')}
+                        onDeselect={() => {
+                            updateAttribute('layout', QUERY_DEFAULTS.layout);
+                            updateAttribute('gridColumns', QUERY_DEFAULTS.gridColumns);
+                        }}
+                        panelId="results-settings-panel"
                     >
                         <ToggleGroupControl
                             label={__('Display Type', 'orbitools')}
@@ -730,18 +761,8 @@ export default function QueryLoopControls({ attributes, setAttributes }: QueryLo
                                 label={__('List', 'orbitools')}
                             />
                         </ToggleGroupControl>
-                    </ToolsPanelItem>
 
-                    {layout === 'grid' && (
-                        <ToolsPanelItem
-                            hasValue={() => hasNonDefaultValue('gridColumns', QUERY_DEFAULTS.gridColumns)}
-                            isShownByDefault={
-                                hasNonDefaultValue('layout', QUERY_DEFAULTS.layout) && layout === 'grid'
-                            }
-                            label={__('Grid Columns', 'orbitools')}
-                            onDeselect={() => updateAttribute('gridColumns', QUERY_DEFAULTS.gridColumns)}
-                            panelId="query-layout-panel"
-                        >
+                        {layout === 'grid' && (
                             <ToggleGroupControl
                                 label={__('Columns', 'orbitools')}
                                 value={gridColumns}
@@ -766,8 +787,212 @@ export default function QueryLoopControls({ attributes, setAttributes }: QueryLo
                                     label="5"
                                 />
                             </ToggleGroupControl>
-                        </ToolsPanelItem>
-                    )}
+                        )}
+                    </ToolsPanelItem>
+
+                    {/* Sorting Controls */}
+                    <ToolsPanelItem
+                        hasValue={() => 
+                            hasNonDefaultValue('sortBy', []) ||
+                            hasNonDefaultValue('sortOrder', 'date-newest')
+                        }
+                        isShownByDefault={false}
+                        label={__('Sorting Controls', 'orbitools')}
+                        onDeselect={() => {
+                            updateAttribute('sortBy', []);
+                            updateAttribute('sortOrder', 'date-newest');
+                        }}
+                        panelId="results-settings-panel"
+                    >
+                        <FormTokenDropdown
+                            label={__('Sort By Fields', 'orbitools')}
+                            help={__('Select which fields to sort by (in order of priority)', 'orbitools')}
+                            value={attributes.sortBy || []}
+                            suggestions={[
+                                'title',
+                                'date',
+                                'modified',
+                                'menu_order',
+                                'author',
+                                'name',
+                                'comment_count',
+                                'relevance',
+                                'rand'
+                            ]}
+                            onChange={(tokens) => updateAttribute('sortBy', tokens)}
+                            placeholder={__('Select sort fields...', 'orbitools')}
+                        />
+                        <SelectControl
+                            label={__('Sort Order', 'orbitools')}
+                            value={attributes.sortOrder || 'date-newest'}
+                            options={[
+                                { label: __('Alphabetical (A-Z)', 'orbitools'), value: 'alphabetical-asc' },
+                                { label: __('Alphabetical (Z-A)', 'orbitools'), value: 'alphabetical-desc' },
+                                { label: __('Date (Newest First)', 'orbitools'), value: 'date-newest' },
+                                { label: __('Date (Oldest First)', 'orbitools'), value: 'date-oldest' },
+                                { label: __('Relevance (Search)', 'orbitools'), value: 'relevance' },
+                                { label: __('Menu Order', 'orbitools'), value: 'menu-order' },
+                                { label: __('Random', 'orbitools'), value: 'random' }
+                            ]}
+                            onChange={(value) => updateAttribute('sortOrder', value)}
+                            __nextHasNoMarginBottom={true}
+                        />
+                    </ToolsPanelItem>
+
+                    {/* Filtering Controls */}
+                    <ToolsPanelItem
+                        hasValue={() => 
+                            hasNonDefaultValue('filterTaxonomies', []) ||
+                            hasNonDefaultValue('filterArchives', []) ||
+                            hasNonDefaultValue('dateFilterType', 'none')
+                        }
+                        isShownByDefault={false}
+                        label={__('Filtering Controls', 'orbitools')}
+                        onDeselect={() => {
+                            updateAttribute('filterTaxonomies', []);
+                            updateAttribute('filterArchives', []);
+                            updateAttribute('dateFilterType', 'none');
+                            updateAttribute('dateFilterYear', '');
+                            updateAttribute('dateFilterMonth', '');
+                            updateAttribute('dateFilterDateRange', {});
+                        }}
+                        panelId="results-settings-panel"
+                    >
+                        <FormTokenDropdown
+                            label={__('Filter by Taxonomies', 'orbitools')}
+                            help={__('Filter by taxonomies attached to the selected post types', 'orbitools')}
+                            value={attributes.filterTaxonomies || []}
+                            suggestions={taxonomyOptions}
+                            onChange={(tokens) => updateAttribute('filterTaxonomies', tokens)}
+                            placeholder={__('Select taxonomies...', 'orbitools')}
+                        />
+                        <FormTokenDropdown
+                            label={__('Filter by Archives', 'orbitools')}
+                            help={__('Filter by available archive types', 'orbitools')}
+                            value={attributes.filterArchives || []}
+                            suggestions={[
+                                'category',
+                                'tag',
+                                'author',
+                                'date',
+                                'custom'
+                            ]}
+                            onChange={(tokens) => updateAttribute('filterArchives', tokens)}
+                            placeholder={__('Select archive filters...', 'orbitools')}
+                        />
+                        
+                        {/* Date Filtering */}
+                        <SelectControl
+                            label={__('Date Filter Type', 'orbitools')}
+                            help={__('Filter posts by date range', 'orbitools')}
+                            value={attributes.dateFilterType || 'none'}
+                            options={[
+                                { label: __('No Date Filter', 'orbitools'), value: 'none' },
+                                { label: __('Specific Year', 'orbitools'), value: 'year' },
+                                { label: __('Specific Month', 'orbitools'), value: 'month' },
+                                { label: __('Date Range', 'orbitools'), value: 'range' },
+                                { label: __('Last 30 Days', 'orbitools'), value: 'last_30_days' },
+                                { label: __('Last 3 Months', 'orbitools'), value: 'last_3_months' },
+                                { label: __('Last 6 Months', 'orbitools'), value: 'last_6_months' },
+                                { label: __('Last Year', 'orbitools'), value: 'last_year' }
+                            ]}
+                            onChange={(value) => updateAttribute('dateFilterType', value)}
+                            __nextHasNoMarginBottom={true}
+                        />
+                        
+                        {/* Year Filter - Show when year is selected */}
+                        {attributes.dateFilterType === 'year' && (
+                            <SelectControl
+                                label={__('Filter by Year', 'orbitools')}
+                                value={attributes.dateFilterYear || ''}
+                                options={[
+                                    { label: __('Select Year...', 'orbitools'), value: '' },
+                                    ...(() => {
+                                        const currentYear = new Date().getFullYear();
+                                        const years = [];
+                                        for (let year = currentYear; year >= currentYear - 10; year--) {
+                                            years.push({ label: year.toString(), value: year.toString() });
+                                        }
+                                        return years;
+                                    })()
+                                ]}
+                                onChange={(value) => updateAttribute('dateFilterYear', value)}
+                                __nextHasNoMarginBottom={true}
+                            />
+                        )}
+                        
+                        {/* Month Filter - Show when month is selected */}
+                        {attributes.dateFilterType === 'month' && (
+                            <>
+                                <SelectControl
+                                    label={__('Filter by Year', 'orbitools')}
+                                    value={attributes.dateFilterYear || ''}
+                                    options={[
+                                        { label: __('Select Year...', 'orbitools'), value: '' },
+                                        ...(() => {
+                                            const currentYear = new Date().getFullYear();
+                                            const years = [];
+                                            for (let year = currentYear; year >= currentYear - 5; year--) {
+                                                years.push({ label: year.toString(), value: year.toString() });
+                                            }
+                                            return years;
+                                        })()
+                                    ]}
+                                    onChange={(value) => updateAttribute('dateFilterYear', value)}
+                                    __nextHasNoMarginBottom={true}
+                                />
+                                <SelectControl
+                                    label={__('Filter by Month', 'orbitools')}
+                                    value={attributes.dateFilterMonth || ''}
+                                    options={[
+                                        { label: __('Select Month...', 'orbitools'), value: '' },
+                                        { label: __('January', 'orbitools'), value: '01' },
+                                        { label: __('February', 'orbitools'), value: '02' },
+                                        { label: __('March', 'orbitools'), value: '03' },
+                                        { label: __('April', 'orbitools'), value: '04' },
+                                        { label: __('May', 'orbitools'), value: '05' },
+                                        { label: __('June', 'orbitools'), value: '06' },
+                                        { label: __('July', 'orbitools'), value: '07' },
+                                        { label: __('August', 'orbitools'), value: '08' },
+                                        { label: __('September', 'orbitools'), value: '09' },
+                                        { label: __('October', 'orbitools'), value: '10' },
+                                        { label: __('November', 'orbitools'), value: '11' },
+                                        { label: __('December', 'orbitools'), value: '12' }
+                                    ]}
+                                    onChange={(value) => updateAttribute('dateFilterMonth', value)}
+                                    __nextHasNoMarginBottom={true}
+                                />
+                            </>
+                        )}
+                        
+                        {/* Date Range Filter - Show when range is selected */}
+                        {attributes.dateFilterType === 'range' && (
+                            <>
+                                <TextControl
+                                    label={__('Start Date', 'orbitools')}
+                                    help={__('Format: YYYY-MM-DD', 'orbitools')}
+                                    value={attributes.dateFilterDateRange?.start || ''}
+                                    onChange={(value) => updateAttribute('dateFilterDateRange', {
+                                        ...attributes.dateFilterDateRange,
+                                        start: value
+                                    })}
+                                    placeholder="2024-01-01"
+                                    __nextHasNoMarginBottom={true}
+                                />
+                                <TextControl
+                                    label={__('End Date', 'orbitools')}
+                                    help={__('Format: YYYY-MM-DD', 'orbitools')}
+                                    value={attributes.dateFilterDateRange?.end || ''}
+                                    onChange={(value) => updateAttribute('dateFilterDateRange', {
+                                        ...attributes.dateFilterDateRange,
+                                        end: value
+                                    })}
+                                    placeholder="2024-12-31"
+                                    __nextHasNoMarginBottom={true}
+                                />
+                            </>
+                        )}
+                    </ToolsPanelItem>
                 </ToolsPanel>
             </InspectorControls>
         </Fragment>
