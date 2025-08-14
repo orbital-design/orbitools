@@ -32,42 +32,57 @@ import { __ } from '@wordpress/i18n';
 import FormTokenDropdown from './components/FormTokenDropdown';
 
 interface QueryLoopAttributes {
-    queryType: string;
-    postTypes: string[];
-    postStatus: string[];
-    orderby: string;
-    order: string;
-    postsPerPage: number;
-    noPaging: boolean;
-    paged: boolean;
-    offset: number;
-    searchKeyword: string;
-    metaQuery: Array<{
-        key: string;
-        value: string;
-        compare: string;
-    }>;
-    metaQueryRelation: string;
-    taxQuery: Array<{
-        taxonomy: string;
-        terms: string[];
-        operator: string;
-    }>;
-    taxQueryRelation: string;
-    includePosts: string[];
-    excludePosts: string[];
-    parentPostsOnly: boolean;
-    childrenOfPosts: string[];
-    layout: string;
-    gridColumns: string;
-    sortBy: string[];
-    sortOrder: string;
-    filterTaxonomies: string[];
-    filterArchives: string[];
-    dateFilterType: string;
-    dateFilterYear: string;
-    dateFilterMonth: string;
-    dateFilterDateRange: Record<string, any>;
+    queryParameters: {
+        type: string;
+        args: {
+            postTypes: string[];
+            postStatus: string[];
+            orderby: string;
+            order: string;
+            postsPerPage: number;
+            noPaging: boolean;
+            paged: boolean;
+            offset: number;
+            searchKeyword: string;
+            specificPost: number;
+            includePosts: string[];
+            excludePosts: string[];
+            parentPostsOnly: boolean;
+            childrenOfPosts: string[];
+            meta_query: {
+                relation: string;
+                queries: Array<{
+                    key: string;
+                    value: string;
+                    compare: string;
+                }>;
+            };
+            tax_query: {
+                relation: string;
+                queries: Array<{
+                    taxonomy: string;
+                    terms: string[];
+                    operator: string;
+                }>;
+            };
+        };
+        display: {
+            layout: {
+                type: string;
+                gridColumns: string;
+            };
+            sorting: {
+                enableSortControls: boolean;
+                availableSortOptions: string[];
+            };
+            filtering: {
+                enableTaxonomyFilters: boolean;
+                enableDateFilter: boolean;
+                enableAuthorFilter: boolean;
+                taxonomyFilterType: string;
+            };
+        };
+    };
 }
 
 interface QueryLoopControlsProps {
@@ -76,12 +91,16 @@ interface QueryLoopControlsProps {
 }
 
 /**
+ * Helper functions to work with nested attribute structure
+ */
+
+/**
  * Default values for query controls
  */
 const QUERY_DEFAULTS = {
-    queryType: 'default',
-    postTypes: [],
-    postStatus: ['publish'],
+    queryType: 'inherit',
+    postTypes: [] as string[],
+    postStatus: ['publish'] as string[],
     orderby: 'date',
     order: 'DESC',
     postsPerPage: 10,
@@ -89,82 +108,178 @@ const QUERY_DEFAULTS = {
     noPaging: false,
     paged: false,
     searchKeyword: '',
-    metaQuery: [],
+    metaQuery: [] as Array<{ key: string; value: string; compare: string; }>,
     metaQueryRelation: 'AND',
-    taxQuery: [],
+    taxQuery: [] as Array<{ taxonomy: string; terms: string[]; operator: string; }>,
     taxQueryRelation: 'AND',
-    includePosts: [],
-    excludePosts: [],
+    includePosts: [] as string[],
+    excludePosts: [] as string[],
     parentPostsOnly: false,
-    childrenOfPosts: [],
+    childrenOfPosts: [] as string[],
     layout: 'grid',
     gridColumns: '3',
-    sortBy: [],
+    sortBy: [] as string[],
     sortOrder: 'date-newest',
-    filterTaxonomies: [],
-    filterArchives: [],
+    filterTaxonomies: [] as string[],
+    filterArchives: [] as string[],
     dateFilterType: 'none',
     dateFilterYear: '',
     dateFilterMonth: '',
-    dateFilterDateRange: {}
-} as const;
+    dateFilterDateRange: {},
+    enableTaxonomyFilters: false,
+    enableDateFilter: false,
+    enableAuthorFilter: false,
+    taxonomyFilterType: 'dropdown'
+};
 
 /**
  * Query Loop Block Controls Component
  */
 export default function QueryLoopControls({ attributes, setAttributes }: QueryLoopControlsProps) {
-    const {
-        queryType = QUERY_DEFAULTS.queryType,
-        postTypes = QUERY_DEFAULTS.postTypes,
-        postStatus = QUERY_DEFAULTS.postStatus,
-        orderby = QUERY_DEFAULTS.orderby,
-        order = QUERY_DEFAULTS.order,
-        postsPerPage = QUERY_DEFAULTS.postsPerPage,
-        offset = QUERY_DEFAULTS.offset,
-        noPaging = QUERY_DEFAULTS.noPaging,
-        paged = QUERY_DEFAULTS.paged,
-        searchKeyword = QUERY_DEFAULTS.searchKeyword,
-        metaQuery = QUERY_DEFAULTS.metaQuery,
-        metaQueryRelation = QUERY_DEFAULTS.metaQueryRelation,
-        taxQuery = QUERY_DEFAULTS.taxQuery,
-        taxQueryRelation = QUERY_DEFAULTS.taxQueryRelation,
-        includePosts = QUERY_DEFAULTS.includePosts,
-        excludePosts = QUERY_DEFAULTS.excludePosts,
-        parentPostsOnly = QUERY_DEFAULTS.parentPostsOnly,
-        childrenOfPosts = QUERY_DEFAULTS.childrenOfPosts,
-        layout = QUERY_DEFAULTS.layout,
-        gridColumns = QUERY_DEFAULTS.gridColumns,
-        sortBy = QUERY_DEFAULTS.sortBy,
-        sortOrder = QUERY_DEFAULTS.sortOrder,
-        filterTaxonomies = QUERY_DEFAULTS.filterTaxonomies,
-        filterArchives = QUERY_DEFAULTS.filterArchives
-    } = attributes;
+    // Extract values from nested structure with fallbacks
+    const params = attributes.queryParameters;
+    const queryType = params?.type || QUERY_DEFAULTS.queryType;
+    
+    
+    const postTypes = params?.args?.postTypes || QUERY_DEFAULTS.postTypes;
+    const postStatus = params?.args?.postStatus || QUERY_DEFAULTS.postStatus;
+    const orderby = params?.args?.orderby || QUERY_DEFAULTS.orderby;
+    const order = params?.args?.order || QUERY_DEFAULTS.order;
+    const postsPerPage = params?.args?.postsPerPage || QUERY_DEFAULTS.postsPerPage;
+    const offset = params?.args?.offset || QUERY_DEFAULTS.offset;
+    const noPaging = params?.args?.noPaging || QUERY_DEFAULTS.noPaging;
+    const paged = params?.args?.paged || QUERY_DEFAULTS.paged;
+    const searchKeyword = params?.args?.searchKeyword || QUERY_DEFAULTS.searchKeyword;
+    const metaQuery = params?.args?.meta_query?.queries || QUERY_DEFAULTS.metaQuery;
+    const metaQueryRelation = params?.args?.meta_query?.relation || QUERY_DEFAULTS.metaQueryRelation;
+    const taxQuery = params?.args?.tax_query?.queries || QUERY_DEFAULTS.taxQuery;
+    const taxQueryRelation = params?.args?.tax_query?.relation || QUERY_DEFAULTS.taxQueryRelation;
+    const includePosts = params?.args?.includePosts || QUERY_DEFAULTS.includePosts;
+    const excludePosts = params?.args?.excludePosts || QUERY_DEFAULTS.excludePosts;
+    const parentPostsOnly = params?.args?.parentPostsOnly || QUERY_DEFAULTS.parentPostsOnly;
+    const childrenOfPosts = params?.args?.childrenOfPosts || QUERY_DEFAULTS.childrenOfPosts;
+    const layout = params?.display?.layout?.type || QUERY_DEFAULTS.layout;
+    const gridColumns = params?.display?.layout?.gridColumns || QUERY_DEFAULTS.gridColumns;
+    const sortBy = params?.display?.sorting?.availableSortOptions || QUERY_DEFAULTS.sortBy;
+    const enableTaxonomyFilters = params?.display?.filtering?.enableTaxonomyFilters || QUERY_DEFAULTS.enableTaxonomyFilters;
+    const enableDateFilter = params?.display?.filtering?.enableDateFilter || QUERY_DEFAULTS.enableDateFilter;
+    const enableAuthorFilter = params?.display?.filtering?.enableAuthorFilter || QUERY_DEFAULTS.enableAuthorFilter;
+    const taxonomyFilterType = params?.display?.filtering?.taxonomyFilterType || QUERY_DEFAULTS.taxonomyFilterType;
 
     // Get available post types and taxonomies
-    const { availablePostTypes, availableTaxonomies, currentTemplate } = useSelect((select) => {
+    const { availablePostTypes, availableTaxonomies, currentTemplate } = useSelect((select: any) => {
         const coreSelect = select('core');
         const editorSelect = select('core/editor');
 
         return {
-            availablePostTypes: coreSelect.getPostTypes({ per_page: -1 }) || [],
-            availableTaxonomies: coreSelect.getTaxonomies({ per_page: -1 }) || [],
-            currentTemplate: editorSelect.getEditedPostAttribute?.('template') || null
+            availablePostTypes: coreSelect?.getPostTypes?.({ per_page: -1 }) || [],
+            availableTaxonomies: coreSelect?.getTaxonomies?.({ per_page: -1 }) || [],
+            currentTemplate: editorSelect?.getEditedPostAttribute?.('template') || null
         };
     }, []);
 
     /**
-     * Helper to update a single attribute
+     * Update query type
      */
-    const updateAttribute = (key: keyof QueryLoopAttributes, value: any) => {
-        setAttributes({ [key]: value });
+    const updateQueryType = (value: string) => {
+        const currentParams = attributes.queryParameters || {};
+        
+        // Only preserve non-default values from existing params
+        const cleanedParams: any = { type: value };
+        
+        if (currentParams.args) {
+            const cleanedArgs: any = {};
+            Object.entries(currentParams.args).forEach(([key, val]) => {
+                const defaultMap: Record<string, any> = {
+                    postTypes: QUERY_DEFAULTS.postTypes,
+                    postStatus: QUERY_DEFAULTS.postStatus,
+                    orderby: QUERY_DEFAULTS.orderby,
+                    order: QUERY_DEFAULTS.order,
+                    postsPerPage: QUERY_DEFAULTS.postsPerPage,
+                    offset: QUERY_DEFAULTS.offset,
+                    noPaging: QUERY_DEFAULTS.noPaging,
+                    paged: QUERY_DEFAULTS.paged,
+                    searchKeyword: QUERY_DEFAULTS.searchKeyword,
+                    specificPost: 0, // Add this missing default
+                    includePosts: QUERY_DEFAULTS.includePosts,
+                    excludePosts: QUERY_DEFAULTS.excludePosts,
+                    parentPostsOnly: QUERY_DEFAULTS.parentPostsOnly,
+                    childrenOfPosts: QUERY_DEFAULTS.childrenOfPosts,
+                    meta_query: { relation: 'AND', queries: [] },
+                    tax_query: { relation: 'AND', queries: [] }
+                };
+                
+                const defaultVal = defaultMap[key];
+                let isDefault = false;
+                
+                if (key === 'meta_query' || key === 'tax_query') {
+                    // Special handling for meta_query and tax_query
+                    isDefault = val && 
+                        val.relation === 'AND' && 
+                        Array.isArray(val.queries) && 
+                        val.queries.length === 0;
+                } else if (Array.isArray(defaultVal)) {
+                    isDefault = JSON.stringify(val) === JSON.stringify(defaultVal);
+                } else {
+                    isDefault = val === defaultVal;
+                }
+                    
+                if (!isDefault) {
+                    cleanedArgs[key] = val;
+                }
+            });
+            
+            if (Object.keys(cleanedArgs).length > 0) {
+                cleanedParams.args = cleanedArgs;
+            }
+        }
+        
+        if (currentParams.display) {
+            const cleanedDisplay: any = {};
+            Object.entries(currentParams.display).forEach(([section, sectionData]) => {
+                const cleanedSection: any = {};
+                Object.entries(sectionData as any).forEach(([key, val]) => {
+                    const defaultMap: Record<string, Record<string, any>> = {
+                        layout: { type: QUERY_DEFAULTS.layout, gridColumns: QUERY_DEFAULTS.gridColumns },
+                        sorting: { enableSortControls: false, availableSortOptions: QUERY_DEFAULTS.sortBy },
+                        filtering: {
+                            enableTaxonomyFilters: QUERY_DEFAULTS.enableTaxonomyFilters,
+                            enableDateFilter: QUERY_DEFAULTS.enableDateFilter,
+                            enableAuthorFilter: QUERY_DEFAULTS.enableAuthorFilter,
+                            taxonomyFilterType: QUERY_DEFAULTS.taxonomyFilterType
+                        }
+                    };
+                    
+                    const defaultVal = defaultMap[section]?.[key];
+                    const isDefault = Array.isArray(defaultVal)
+                        ? JSON.stringify(val) === JSON.stringify(defaultVal)
+                        : val === defaultVal;
+                        
+                    if (!isDefault) {
+                        cleanedSection[key] = val;
+                    }
+                });
+                
+                if (Object.keys(cleanedSection).length > 0) {
+                    cleanedDisplay[section] = cleanedSection;
+                }
+            });
+            
+            if (Object.keys(cleanedDisplay).length > 0) {
+                cleanedParams.display = cleanedDisplay;
+            }
+        }
+        
+        setAttributes({
+            queryParameters: cleanedParams
+        });
     };
 
     /**
-     * Reset query attributes to defaults
+     * Update a query argument (only if different from default)
      */
-    const resetQueryAttributes = () => {
-        setAttributes({
-            queryType: QUERY_DEFAULTS.queryType,
+    const updateQueryArg = (key: string, value: any) => {
+        const defaultMap: Record<string, any> = {
             postTypes: QUERY_DEFAULTS.postTypes,
             postStatus: QUERY_DEFAULTS.postStatus,
             orderby: QUERY_DEFAULTS.orderby,
@@ -174,22 +289,298 @@ export default function QueryLoopControls({ attributes, setAttributes }: QueryLo
             noPaging: QUERY_DEFAULTS.noPaging,
             paged: QUERY_DEFAULTS.paged,
             searchKeyword: QUERY_DEFAULTS.searchKeyword,
-            metaQuery: QUERY_DEFAULTS.metaQuery,
-            metaQueryRelation: QUERY_DEFAULTS.metaQueryRelation,
-            taxQuery: QUERY_DEFAULTS.taxQuery,
-            taxQueryRelation: QUERY_DEFAULTS.taxQueryRelation,
+            specificPost: 0, // Add this missing default
             includePosts: QUERY_DEFAULTS.includePosts,
             excludePosts: QUERY_DEFAULTS.excludePosts,
             parentPostsOnly: QUERY_DEFAULTS.parentPostsOnly,
             childrenOfPosts: QUERY_DEFAULTS.childrenOfPosts
+        };
+
+        const defaultValue = defaultMap[key];
+        const isDefault = Array.isArray(defaultValue) 
+            ? JSON.stringify(value) === JSON.stringify(defaultValue)
+            : value === defaultValue;
+
+        const currentParams = attributes.queryParameters || { type: 'inherit' };
+        const currentArgs = { ...currentParams.args };
+
+        if (!isDefault) {
+            currentArgs[key] = value;
+        } else {
+            delete currentArgs[key];
+        }
+
+        setAttributes({
+            queryParameters: {
+                ...currentParams,
+                args: Object.keys(currentArgs).length > 0 ? currentArgs : undefined
+            }
         });
+    };
+
+    /**
+     * Update meta query
+     */
+    const updateMetaQuery = (queries: any[], relation?: string) => {
+        const currentParams = attributes.queryParameters || { type: 'inherit' };
+        const currentArgs = { ...currentParams.args };
+
+        // Only save if there are actual queries or non-default relation
+        if (queries.length > 0) {
+            currentArgs.meta_query = {
+                relation: relation || 'AND',
+                queries
+            };
+        } else {
+            // Delete the entire meta_query if no queries
+            delete currentArgs.meta_query;
+        }
+
+        setAttributes({
+            queryParameters: {
+                ...currentParams,
+                args: Object.keys(currentArgs).length > 0 ? currentArgs : undefined
+            }
+        });
+    };
+
+    /**
+     * Update tax query
+     */
+    const updateTaxQuery = (queries: any[], relation?: string) => {
+        const currentParams = attributes.queryParameters || { type: 'inherit' };
+        const currentArgs = { ...currentParams.args };
+
+        // Only save if there are actual queries
+        if (queries.length > 0) {
+            currentArgs.tax_query = {
+                relation: relation || 'AND',
+                queries
+            };
+        } else {
+            // Delete the entire tax_query if no queries
+            delete currentArgs.tax_query;
+        }
+
+        setAttributes({
+            queryParameters: {
+                ...currentParams,
+                args: Object.keys(currentArgs).length > 0 ? currentArgs : undefined
+            }
+        });
+    };
+
+    /**
+     * Update display settings
+     */
+    const updateDisplay = (section: string, key: string, value: any) => {
+        const currentParams = attributes.queryParameters || { type: 'inherit' };
+        const currentDisplay = { ...currentParams.display };
+        const currentSection = { ...currentDisplay[section] };
+
+        const defaultMap: Record<string, Record<string, any>> = {
+            layout: { type: QUERY_DEFAULTS.layout, gridColumns: QUERY_DEFAULTS.gridColumns },
+            sorting: { availableSortOptions: QUERY_DEFAULTS.sortBy },
+            filtering: {
+                enableTaxonomyFilters: QUERY_DEFAULTS.enableTaxonomyFilters,
+                enableDateFilter: QUERY_DEFAULTS.enableDateFilter,
+                enableAuthorFilter: QUERY_DEFAULTS.enableAuthorFilter,
+                taxonomyFilterType: QUERY_DEFAULTS.taxonomyFilterType
+            }
+        };
+
+        const defaultValue = defaultMap[section]?.[key];
+        const isDefault = Array.isArray(defaultValue)
+            ? JSON.stringify(value) === JSON.stringify(defaultValue)
+            : value === defaultValue;
+
+        if (!isDefault) {
+            currentSection[key] = value;
+        } else {
+            delete currentSection[key];
+        }
+
+        if (Object.keys(currentSection).length > 0) {
+            currentDisplay[section] = currentSection;
+        } else {
+            delete currentDisplay[section];
+        }
+
+        setAttributes({
+            queryParameters: {
+                ...currentParams,
+                display: Object.keys(currentDisplay).length > 0 ? currentDisplay : undefined
+            }
+        });
+    };
+
+    /**
+     * Legacy updateAttribute function for backward compatibility
+     */
+    const updateAttribute = (key: string, value: any) => {
+        switch (key) {
+            case 'queryType':
+                updateQueryType(value);
+                break;
+            case 'postTypes':
+            case 'postStatus':
+            case 'orderby':
+            case 'order':
+            case 'postsPerPage':
+            case 'offset':
+            case 'noPaging':
+            case 'paged':
+            case 'searchKeyword':
+            case 'includePosts':
+            case 'excludePosts':
+            case 'parentPostsOnly':
+            case 'childrenOfPosts':
+                updateQueryArg(key, value);
+                break;
+            case 'metaQuery':
+                updateMetaQuery(value, metaQueryRelation);
+                break;
+            case 'metaQueryRelation':
+                updateMetaQuery(metaQuery, value);
+                break;
+            case 'taxQuery':
+                updateTaxQuery(value, taxQueryRelation);
+                break;
+            case 'taxQueryRelation':
+                updateTaxQuery(taxQuery, value);
+                break;
+            case 'layout':
+            case 'gridColumns':
+                updateDisplay('layout', key === 'layout' ? 'type' : key, value);
+                break;
+            case 'sortBy':
+                updateDisplay('sorting', 'availableSortOptions', value);
+                break;
+            case 'enableTaxonomyFilters':
+            case 'enableDateFilter':
+            case 'enableAuthorFilter':
+            case 'taxonomyFilterType':
+                updateDisplay('filtering', key, value);
+                break;
+            default:
+                console.warn('Unknown key:', key);
+        }
+    };
+
+    /**
+     * Reset query attributes to defaults
+     */
+    const resetQueryAttributes = () => {
+        updateAttribute('queryType', QUERY_DEFAULTS.queryType);
+        updateAttribute('postTypes', QUERY_DEFAULTS.postTypes);
+        updateAttribute('postStatus', QUERY_DEFAULTS.postStatus);
+        updateAttribute('orderby', QUERY_DEFAULTS.orderby);
+        updateAttribute('order', QUERY_DEFAULTS.order);
+        updateAttribute('postsPerPage', QUERY_DEFAULTS.postsPerPage);
+        updateAttribute('offset', QUERY_DEFAULTS.offset);
+        updateAttribute('noPaging', QUERY_DEFAULTS.noPaging);
+        updateAttribute('paged', QUERY_DEFAULTS.paged);
+        updateAttribute('searchKeyword', QUERY_DEFAULTS.searchKeyword);
+        updateAttribute('metaQuery', QUERY_DEFAULTS.metaQuery);
+        updateAttribute('metaQueryRelation', QUERY_DEFAULTS.metaQueryRelation);
+        updateAttribute('taxQuery', QUERY_DEFAULTS.taxQuery);
+        updateAttribute('taxQueryRelation', QUERY_DEFAULTS.taxQueryRelation);
+        updateAttribute('includePosts', QUERY_DEFAULTS.includePosts);
+        updateAttribute('excludePosts', QUERY_DEFAULTS.excludePosts);
+        updateAttribute('parentPostsOnly', QUERY_DEFAULTS.parentPostsOnly);
+        updateAttribute('childrenOfPosts', QUERY_DEFAULTS.childrenOfPosts);
     };
 
     /**
      * Check if an attribute has a non-default value
      */
-    const hasNonDefaultValue = (key: keyof QueryLoopAttributes, defaultValue: any) => {
-        const currentValue = attributes[key];
+    const hasNonDefaultValue = (key: string, defaultValue: any) => {
+        // Get current value based on key
+        let currentValue;
+        const params = attributes.queryParameters;
+        
+        if (!params) return false;
+        
+        switch (key) {
+            case 'queryType':
+                currentValue = params.type;
+                break;
+            case 'postTypes':
+                currentValue = params.args?.postTypes;
+                break;
+            case 'postStatus':
+                currentValue = params.args?.postStatus;
+                break;
+            case 'orderby':
+                currentValue = params.args?.orderby;
+                break;
+            case 'order':
+                currentValue = params.args?.order;
+                break;
+            case 'postsPerPage':
+                currentValue = params.args?.postsPerPage;
+                break;
+            case 'offset':
+                currentValue = params.args?.offset;
+                break;
+            case 'noPaging':
+                currentValue = params.args?.noPaging;
+                break;
+            case 'paged':
+                currentValue = params.args?.paged;
+                break;
+            case 'searchKeyword':
+                currentValue = params.args?.searchKeyword;
+                break;
+            case 'metaQuery':
+                currentValue = params.args?.meta_query?.queries;
+                break;
+            case 'metaQueryRelation':
+                currentValue = params.args?.meta_query?.relation;
+                break;
+            case 'taxQuery':
+                currentValue = params.args?.tax_query?.queries;
+                break;
+            case 'taxQueryRelation':
+                currentValue = params.args?.tax_query?.relation;
+                break;
+            case 'includePosts':
+                currentValue = params.args?.includePosts;
+                break;
+            case 'excludePosts':
+                currentValue = params.args?.excludePosts;
+                break;
+            case 'parentPostsOnly':
+                currentValue = params.args?.parentPostsOnly;
+                break;
+            case 'childrenOfPosts':
+                currentValue = params.args?.childrenOfPosts;
+                break;
+            case 'layout':
+                currentValue = params.display?.layout?.type;
+                break;
+            case 'gridColumns':
+                currentValue = params.display?.layout?.gridColumns;
+                break;
+            case 'sortBy':
+                currentValue = params.display?.sorting?.availableSortOptions;
+                break;
+            case 'enableTaxonomyFilters':
+                currentValue = params.display?.filtering?.enableTaxonomyFilters;
+                break;
+            case 'enableDateFilter':
+                currentValue = params.display?.filtering?.enableDateFilter;
+                break;
+            case 'enableAuthorFilter':
+                currentValue = params.display?.filtering?.enableAuthorFilter;
+                break;
+            case 'taxonomyFilterType':
+                currentValue = params.display?.filtering?.taxonomyFilterType;
+                break;
+            default:
+                return false;
+        }
+        
         if (Array.isArray(defaultValue)) {
             return JSON.stringify(currentValue) !== JSON.stringify(defaultValue);
         }
@@ -198,22 +589,52 @@ export default function QueryLoopControls({ attributes, setAttributes }: QueryLo
 
     // Prepare post type options - only public/viewable ones, excluding default 'post' type
     const postTypeOptions = availablePostTypes
-        .filter(pt => {
+        .filter((pt: any) => {
             // Must be viewable/public
             const isPublic = pt.viewable || (pt.visibility && pt.visibility.publicly_queryable);
             // Exclude the default 'post' type as it's handled by inherit query
             const isNotDefaultPost = pt.name !== 'post';
             return isPublic && isNotDefaultPost;
         })
-        .map(pt => pt.name);
+        .map((pt: any) => pt.name);
 
     // Prepare post status options
     const postStatusOptions = ['publish', 'draft', 'future', 'private', 'trash', 'any'];
 
-    // Prepare taxonomy options
-    const taxonomyOptions = availableTaxonomies
-        .filter(tax => tax.visibility && tax.visibility.publicly_queryable)
-        .map(tax => tax.slug);
+    // Prepare taxonomy options - all available taxonomies
+    const allTaxonomyOptions = availableTaxonomies
+        .filter((tax: any) => tax.visibility && tax.visibility.publicly_queryable)
+        .map((tax: any) => tax.slug);
+
+    // Prepare taxonomy options filtered by selected post types
+    const getFilteredTaxonomyOptions = () => {
+        const selectedPostTypes = postTypes || [];
+
+        if (selectedPostTypes.length === 0) {
+            // No post types selected, show all public taxonomies
+            return allTaxonomyOptions;
+        }
+
+        // Get taxonomies that are attached to the selected post types
+        const filteredTaxonomies = availableTaxonomies
+            .filter((tax: any) => {
+                if (!tax.visibility || !tax.visibility.publicly_queryable) {
+                    return false;
+                }
+
+                // Check if this taxonomy is associated with any of the selected post types
+                return selectedPostTypes.some((postType: string) => {
+                    // Get object types (post types) this taxonomy supports
+                    const objectTypes = tax.types || [];
+                    return objectTypes.includes(postType);
+                });
+            })
+            .map((tax: any) => tax.slug);
+
+        return filteredTaxonomies;
+    };
+
+    const taxonomyOptions = getFilteredTaxonomyOptions();
 
     // Check if we're on a singular template where inherit doesn't make sense
     const isSingularTemplate = currentTemplate && (
@@ -236,7 +657,7 @@ export default function QueryLoopControls({ attributes, setAttributes }: QueryLo
                         __nextHasNoMarginBottom={true}
                     >
                         <ToggleGroupControlOption
-                            value="default"
+                            value="inherit"
                             label={__('Inherit', 'orbitools')}
                         />
                         <ToggleGroupControlOption
@@ -244,14 +665,14 @@ export default function QueryLoopControls({ attributes, setAttributes }: QueryLo
                             label={__('Custom', 'orbitools')}
                         />
                     </ToggleGroupControl>
-                    
-                    <p style={{ 
-                        margin: '12px 0 0 0', 
-                        fontSize: '13px', 
+
+                    <p style={{
+                        margin: '12px 0 0 0',
+                        fontSize: '13px',
                         color: '#757575',
                         lineHeight: '1.4'
                     }}>
-                        {queryType === 'default' 
+                        {queryType === 'inherit'
                             ? __('Shows posts automatically based on the current page (like blog posts on the blog page). Note: This won\'t work on individual pages or single posts.', 'orbitools')
                             : __('Build a custom query with specific parameters to control which posts are displayed.', 'orbitools')
                         }
@@ -509,7 +930,7 @@ export default function QueryLoopControls({ attributes, setAttributes }: QueryLo
                             onDeselect={() => updateAttribute('metaQuery', QUERY_DEFAULTS.metaQuery)}
                             panelId="query-filters-panel"
                         >
-                            {metaQuery.map((rule, index) => (
+                            {metaQuery.map((rule: any, index: number) => (
                                 <div key={index} style={{
                                     padding: '12px',
                                     marginBottom: '12px',
@@ -612,7 +1033,7 @@ export default function QueryLoopControls({ attributes, setAttributes }: QueryLo
                             onDeselect={() => updateAttribute('taxQuery', QUERY_DEFAULTS.taxQuery)}
                             panelId="query-filters-panel"
                         >
-                            {taxQuery.map((rule, index) => (
+                            {taxQuery.map((rule: any, index: number) => (
                                 <div key={index} style={{
                                     padding: '12px',
                                     marginBottom: '12px',
@@ -642,7 +1063,7 @@ export default function QueryLoopControls({ attributes, setAttributes }: QueryLo
                                         value={rule.taxonomy || ''}
                                         options={[
                                             { label: __('-- Select Taxonomy --', 'orbitools'), value: '' },
-                                            ...taxonomyOptions.map(tax => ({ label: tax, value: tax }))
+                                            ...taxonomyOptions.map((tax: string) => ({ label: tax, value: tax }))
                                         ]}
                                         onChange={(value) => {
                                             const newTaxQuery = [...taxQuery];
@@ -733,11 +1154,11 @@ export default function QueryLoopControls({ attributes, setAttributes }: QueryLo
                 >
                     {/* Layout Controls */}
                     <ToolsPanelItem
-                        hasValue={() => 
+                        hasValue={() =>
                             hasNonDefaultValue('layout', QUERY_DEFAULTS.layout) ||
                             hasNonDefaultValue('gridColumns', QUERY_DEFAULTS.gridColumns)
                         }
-                        isShownByDefault={false}
+                        isShownByDefault={true}
                         label={__('Layout', 'orbitools')}
                         onDeselect={() => {
                             updateAttribute('layout', QUERY_DEFAULTS.layout);
@@ -790,24 +1211,22 @@ export default function QueryLoopControls({ attributes, setAttributes }: QueryLo
                         )}
                     </ToolsPanelItem>
 
-                    {/* Sorting Controls */}
+                    {/* Frontend Sorting Controls */}
                     <ToolsPanelItem
-                        hasValue={() => 
-                            hasNonDefaultValue('sortBy', []) ||
-                            hasNonDefaultValue('sortOrder', 'date-newest')
+                        hasValue={() =>
+                            hasNonDefaultValue('sortBy', [])
                         }
                         isShownByDefault={false}
-                        label={__('Sorting Controls', 'orbitools')}
+                        label={__('Frontend Sorting Controls', 'orbitools')}
                         onDeselect={() => {
                             updateAttribute('sortBy', []);
-                            updateAttribute('sortOrder', 'date-newest');
                         }}
                         panelId="results-settings-panel"
                     >
                         <FormTokenDropdown
-                            label={__('Sort By Fields', 'orbitools')}
-                            help={__('Select which fields to sort by (in order of priority)', 'orbitools')}
-                            value={attributes.sortBy || []}
+                            label={__('Available Sort Options', 'orbitools')}
+                            help={__('Which sorting buttons/dropdown options to display on the frontend for users to interact with', 'orbitools')}
+                            value={sortBy || []}
                             suggestions={[
                                 'title',
                                 'date',
@@ -820,178 +1239,69 @@ export default function QueryLoopControls({ attributes, setAttributes }: QueryLo
                                 'rand'
                             ]}
                             onChange={(tokens) => updateAttribute('sortBy', tokens)}
-                            placeholder={__('Select sort fields...', 'orbitools')}
-                        />
-                        <SelectControl
-                            label={__('Sort Order', 'orbitools')}
-                            value={attributes.sortOrder || 'date-newest'}
-                            options={[
-                                { label: __('Alphabetical (A-Z)', 'orbitools'), value: 'alphabetical-asc' },
-                                { label: __('Alphabetical (Z-A)', 'orbitools'), value: 'alphabetical-desc' },
-                                { label: __('Date (Newest First)', 'orbitools'), value: 'date-newest' },
-                                { label: __('Date (Oldest First)', 'orbitools'), value: 'date-oldest' },
-                                { label: __('Relevance (Search)', 'orbitools'), value: 'relevance' },
-                                { label: __('Menu Order', 'orbitools'), value: 'menu-order' },
-                                { label: __('Random', 'orbitools'), value: 'random' }
-                            ]}
-                            onChange={(value) => updateAttribute('sortOrder', value)}
-                            __nextHasNoMarginBottom={true}
+                            placeholder={__('Select frontend sort options...', 'orbitools')}
                         />
                     </ToolsPanelItem>
 
-                    {/* Filtering Controls */}
+                    {/* Frontend Filtering Controls */}
                     <ToolsPanelItem
-                        hasValue={() => 
-                            hasNonDefaultValue('filterTaxonomies', []) ||
-                            hasNonDefaultValue('filterArchives', []) ||
-                            hasNonDefaultValue('dateFilterType', 'none')
+                        hasValue={() =>
+                            hasNonDefaultValue('enableTaxonomyFilters', false) ||
+                            hasNonDefaultValue('enableDateFilter', false) ||
+                            hasNonDefaultValue('enableAuthorFilter', false)
                         }
                         isShownByDefault={false}
-                        label={__('Filtering Controls', 'orbitools')}
+                        label={__('Frontend Filtering Controls', 'orbitools')}
                         onDeselect={() => {
-                            updateAttribute('filterTaxonomies', []);
-                            updateAttribute('filterArchives', []);
-                            updateAttribute('dateFilterType', 'none');
-                            updateAttribute('dateFilterYear', '');
-                            updateAttribute('dateFilterMonth', '');
-                            updateAttribute('dateFilterDateRange', {});
+                            updateAttribute('enableTaxonomyFilters', false);
+                            updateAttribute('enableDateFilter', false);
+                            updateAttribute('enableAuthorFilter', false);
+                            updateAttribute('taxonomyFilterType', 'dropdown');
                         }}
                         panelId="results-settings-panel"
                     >
-                        <FormTokenDropdown
-                            label={__('Filter by Taxonomies', 'orbitools')}
-                            help={__('Filter by taxonomies attached to the selected post types', 'orbitools')}
-                            value={attributes.filterTaxonomies || []}
-                            suggestions={taxonomyOptions}
-                            onChange={(tokens) => updateAttribute('filterTaxonomies', tokens)}
-                            placeholder={__('Select taxonomies...', 'orbitools')}
-                        />
-                        <FormTokenDropdown
-                            label={__('Filter by Archives', 'orbitools')}
-                            help={__('Filter by available archive types', 'orbitools')}
-                            value={attributes.filterArchives || []}
-                            suggestions={[
-                                'category',
-                                'tag',
-                                'author',
-                                'date',
-                                'custom'
-                            ]}
-                            onChange={(tokens) => updateAttribute('filterArchives', tokens)}
-                            placeholder={__('Select archive filters...', 'orbitools')}
-                        />
-                        
-                        {/* Date Filtering */}
-                        <SelectControl
-                            label={__('Date Filter Type', 'orbitools')}
-                            help={__('Filter posts by date range', 'orbitools')}
-                            value={attributes.dateFilterType || 'none'}
-                            options={[
-                                { label: __('No Date Filter', 'orbitools'), value: 'none' },
-                                { label: __('Specific Year', 'orbitools'), value: 'year' },
-                                { label: __('Specific Month', 'orbitools'), value: 'month' },
-                                { label: __('Date Range', 'orbitools'), value: 'range' },
-                                { label: __('Last 30 Days', 'orbitools'), value: 'last_30_days' },
-                                { label: __('Last 3 Months', 'orbitools'), value: 'last_3_months' },
-                                { label: __('Last 6 Months', 'orbitools'), value: 'last_6_months' },
-                                { label: __('Last Year', 'orbitools'), value: 'last_year' }
-                            ]}
-                            onChange={(value) => updateAttribute('dateFilterType', value)}
+                        {/* Enable Taxonomy Filters */}
+                        <ToggleControl
+                            label={__('Enable Taxonomy Filters', 'orbitools')}
+                            help={__('Show taxonomy-based filtering options on the frontend (categories, tags, custom taxonomies)', 'orbitools')}
+                            checked={enableTaxonomyFilters || false}
+                            onChange={(value) => updateAttribute('enableTaxonomyFilters', value)}
                             __nextHasNoMarginBottom={true}
                         />
-                        
-                        {/* Year Filter - Show when year is selected */}
-                        {attributes.dateFilterType === 'year' && (
+
+                        {/* Taxonomy Filter Control Type - Show when enabled */}
+                        {enableTaxonomyFilters && (
                             <SelectControl
-                                label={__('Filter by Year', 'orbitools')}
-                                value={attributes.dateFilterYear || ''}
+                                label={__('Taxonomy Filter Display Type', 'orbitools')}
+                                help={__('How taxonomy filters should be displayed to users', 'orbitools')}
+                                value={taxonomyFilterType || 'dropdown'}
                                 options={[
-                                    { label: __('Select Year...', 'orbitools'), value: '' },
-                                    ...(() => {
-                                        const currentYear = new Date().getFullYear();
-                                        const years = [];
-                                        for (let year = currentYear; year >= currentYear - 10; year--) {
-                                            years.push({ label: year.toString(), value: year.toString() });
-                                        }
-                                        return years;
-                                    })()
+                                    { label: __('Dropdown Select', 'orbitools'), value: 'dropdown' },
+                                    { label: __('Checkboxes', 'orbitools'), value: 'checkboxes' },
+                                    { label: __('Multi-Select', 'orbitools'), value: 'multiselect' }
                                 ]}
-                                onChange={(value) => updateAttribute('dateFilterYear', value)}
+                                onChange={(value) => updateAttribute('taxonomyFilterType', value)}
                                 __nextHasNoMarginBottom={true}
                             />
                         )}
-                        
-                        {/* Month Filter - Show when month is selected */}
-                        {attributes.dateFilterType === 'month' && (
-                            <>
-                                <SelectControl
-                                    label={__('Filter by Year', 'orbitools')}
-                                    value={attributes.dateFilterYear || ''}
-                                    options={[
-                                        { label: __('Select Year...', 'orbitools'), value: '' },
-                                        ...(() => {
-                                            const currentYear = new Date().getFullYear();
-                                            const years = [];
-                                            for (let year = currentYear; year >= currentYear - 5; year--) {
-                                                years.push({ label: year.toString(), value: year.toString() });
-                                            }
-                                            return years;
-                                        })()
-                                    ]}
-                                    onChange={(value) => updateAttribute('dateFilterYear', value)}
-                                    __nextHasNoMarginBottom={true}
-                                />
-                                <SelectControl
-                                    label={__('Filter by Month', 'orbitools')}
-                                    value={attributes.dateFilterMonth || ''}
-                                    options={[
-                                        { label: __('Select Month...', 'orbitools'), value: '' },
-                                        { label: __('January', 'orbitools'), value: '01' },
-                                        { label: __('February', 'orbitools'), value: '02' },
-                                        { label: __('March', 'orbitools'), value: '03' },
-                                        { label: __('April', 'orbitools'), value: '04' },
-                                        { label: __('May', 'orbitools'), value: '05' },
-                                        { label: __('June', 'orbitools'), value: '06' },
-                                        { label: __('July', 'orbitools'), value: '07' },
-                                        { label: __('August', 'orbitools'), value: '08' },
-                                        { label: __('September', 'orbitools'), value: '09' },
-                                        { label: __('October', 'orbitools'), value: '10' },
-                                        { label: __('November', 'orbitools'), value: '11' },
-                                        { label: __('December', 'orbitools'), value: '12' }
-                                    ]}
-                                    onChange={(value) => updateAttribute('dateFilterMonth', value)}
-                                    __nextHasNoMarginBottom={true}
-                                />
-                            </>
-                        )}
-                        
-                        {/* Date Range Filter - Show when range is selected */}
-                        {attributes.dateFilterType === 'range' && (
-                            <>
-                                <TextControl
-                                    label={__('Start Date', 'orbitools')}
-                                    help={__('Format: YYYY-MM-DD', 'orbitools')}
-                                    value={attributes.dateFilterDateRange?.start || ''}
-                                    onChange={(value) => updateAttribute('dateFilterDateRange', {
-                                        ...attributes.dateFilterDateRange,
-                                        start: value
-                                    })}
-                                    placeholder="2024-01-01"
-                                    __nextHasNoMarginBottom={true}
-                                />
-                                <TextControl
-                                    label={__('End Date', 'orbitools')}
-                                    help={__('Format: YYYY-MM-DD', 'orbitools')}
-                                    value={attributes.dateFilterDateRange?.end || ''}
-                                    onChange={(value) => updateAttribute('dateFilterDateRange', {
-                                        ...attributes.dateFilterDateRange,
-                                        end: value
-                                    })}
-                                    placeholder="2024-12-31"
-                                    __nextHasNoMarginBottom={true}
-                                />
-                            </>
-                        )}
+
+                        {/* Enable Date Filter */}
+                        <ToggleControl
+                            label={__('Enable Date Filter', 'orbitools')}
+                            help={__('Show date-based filtering options on the frontend (year, month, date ranges)', 'orbitools')}
+                            checked={enableDateFilter || false}
+                            onChange={(value) => updateAttribute('enableDateFilter', value)}
+                            __nextHasNoMarginBottom={true}
+                        />
+
+                        {/* Enable Author Filter */}
+                        <ToggleControl
+                            label={__('Enable Author Filter', 'orbitools')}
+                            help={__('Show author-based filtering options on the frontend', 'orbitools')}
+                            checked={enableAuthorFilter || false}
+                            onChange={(value) => updateAttribute('enableAuthorFilter', value)}
+                            __nextHasNoMarginBottom={true}
+                        />
                     </ToolsPanelItem>
                 </ToolsPanel>
             </InspectorControls>

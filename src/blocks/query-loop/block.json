@@ -11,132 +11,58 @@
         "align": false
     },
     "keywords": ["posts", "pages", "news", "articles", "query", "dynamic", "latest", "loop"],
-	"attributes": {
-		"queryType": {
-			"type": "string",
-			"default": "default"
-		},
-		"queryParameters": {
-			"type": "array",
-			"default": []
-		},
-		"postTypes": {
-			"type": "array",
-			"default": []
-		},
-		"postStatus": {
-			"type": "array",
-			"default": ["publish"]
-		},
-		"orderby": {
-			"type": "string",
-			"default": "date"
-		},
-		"order": {
-			"type": "string",
-			"default": "DESC"
-		},
-		"postsPerPage": {
-			"type": "number",
-			"default": 10
-		},
-		"noPaging": {
-			"type": "boolean",
-			"default": false
-		},
-		"paged": {
-			"type": "boolean",
-			"default": false
-		},
-		"offset": {
-			"type": "number",
-			"default": 0
-		},
-		"searchKeyword": {
-			"type": "string",
-			"default": ""
-		},
-		"metaQuery": {
-			"type": "array",
-			"default": []
-		},
-		"metaQueryRelation": {
-			"type": "string",
-			"default": "AND"
-		},
-		"taxQuery": {
-			"type": "array",
-			"default": []
-		},
-		"taxQueryRelation": {
-			"type": "string",
-			"default": "AND"
-		},
-		"specificPost": {
-			"type": "number",
-			"default": 0
-		},
-		"includePosts": {
-			"type": "array",
-			"default": []
-		},
-		"excludePosts": {
-			"type": "array",
-			"default": []
-		},
-		"parentPostsOnly": {
-			"type": "boolean",
-			"default": false
-		},
-		"childrenOfPosts": {
-			"type": "array",
-			"default": []
-		},
-		"layout": {
-			"type": "string",
-			"default": "grid"
-		},
-		"gridColumns": {
-			"type": "string",
-			"default": "3"
-		},
-		"sortBy": {
-			"type": "array",
-			"default": []
-		},
-		"sortOrder": {
-			"type": "string",
-			"default": "date-newest"
-		},
-		"filterTaxonomies": {
-			"type": "array",
-			"default": []
-		},
-		"filterArchives": {
-			"type": "array",
-			"default": []
-		},
-		"dateFilterType": {
-			"type": "string",
-			"default": "none"
-		},
-		"dateFilterYear": {
-			"type": "string",
-			"default": ""
-		},
-		"dateFilterMonth": {
-			"type": "string",
-			"default": ""
-		},
-		"dateFilterDateRange": {
-			"type": "object",
-			"default": {}
-		}
-	},
-	"providesContext": {
-		"queryId": "queryId",
-		"query": "query"
-	},
+    "attributes": {
+        "queryParameters": {
+            "type": "object",
+            "default": {
+                "type": "inherit",
+                "args": {
+                    "postTypes": [],
+                    "postStatus": ["publish"],
+                    "orderby": "date",
+                    "order": "DESC",
+                    "postsPerPage": 10,
+                    "noPaging": false,
+                    "paged": false,
+                    "offset": 0,
+                    "searchKeyword": "",
+                    "specificPost": 0,
+                    "includePosts": [],
+                    "excludePosts": [],
+                    "parentPostsOnly": false,
+                    "childrenOfPosts": [],
+                    "meta_query": {
+                        "relation": "AND",
+                        "queries": []
+                    },
+                    "tax_query": {
+                        "relation": "AND",
+                        "queries": []
+                    }
+                },
+                "display": {
+                    "layout": {
+                        "type": "grid",
+                        "gridColumns": "3"
+                    },
+                    "sorting": {
+                        "enableSortControls": false,
+                        "availableSortOptions": []
+                    },
+                    "filtering": {
+                        "enableTaxonomyFilters": false,
+                        "enableDateFilter": false,
+                        "enableAuthorFilter": false,
+                        "taxonomyFilterType": "dropdown"
+                    }
+                }
+            }
+        }
+    },
+    "providesContext": {
+        "queryId": "queryId",
+        "query": "query"
+    },
     "textdomain": "orbitools",
     "editorScript": "file:./index.js",
     "editorStyle": "file:./editor.css",

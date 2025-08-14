@@ -129,66 +129,12 @@ class Query_Loop extends Module_Base
     }
 
     /**
-     * Get available sort fields for the query
-     * 
-     * @return array Array of sort field options
-     */
-    public function get_sort_fields(): array
-    {
-        $default_fields = [
-            'title' => __('Title', 'orbitools'),
-            'date' => __('Date', 'orbitools'),
-            'modified' => __('Modified Date', 'orbitools'),
-            'menu_order' => __('Menu Order', 'orbitools'),
-            'author' => __('Author', 'orbitools'),
-            'name' => __('Slug', 'orbitools'),
-            'comment_count' => __('Comment Count', 'orbitools'),
-            'relevance' => __('Relevance', 'orbitools'),
-            'rand' => __('Random', 'orbitools')
-        ];
-
-        /**
-         * Filter the available sort fields for query loop blocks
-         * 
-         * @param array $fields Array of sort field options
-         * @param array $context Context information (post_types, etc.)
-         */
-        return apply_filters('orbitools_query_loop_sort_fields', $default_fields, []);
-    }
-
-    /**
-     * Get available sort orders for the query
-     * 
-     * @return array Array of sort order options
-     */
-    public function get_sort_orders(): array
-    {
-        $default_orders = [
-            'alphabetical-asc' => __('Alphabetical (A-Z)', 'orbitools'),
-            'alphabetical-desc' => __('Alphabetical (Z-A)', 'orbitools'),
-            'date-newest' => __('Date (Newest First)', 'orbitools'),
-            'date-oldest' => __('Date (Oldest First)', 'orbitools'),
-            'relevance' => __('Relevance (Search)', 'orbitools'),
-            'menu-order' => __('Menu Order', 'orbitools'),
-            'random' => __('Random', 'orbitools')
-        ];
-
-        /**
-         * Filter the available sort orders for query loop blocks
-         * 
-         * @param array $orders Array of sort order options
-         * @param array $context Context information (post_types, etc.)
-         */
-        return apply_filters('orbitools_query_loop_sort_orders', $default_orders, []);
-    }
-
-    /**
-     * Get available filter taxonomies for the query
+     * Get available taxonomies for frontend filtering
      * 
      * @param array $post_types Selected post types
      * @return array Array of taxonomy options
      */
-    public function get_filter_taxonomies(array $post_types = []): array
+    public function get_available_taxonomies_for_filtering(array $post_types = []): array
     {
         $taxonomies = [];
         
@@ -211,223 +157,32 @@ class Query_Loop extends Module_Base
         }
 
         /**
-         * Filter the available filter taxonomies for query loop blocks
+         * Filter the available taxonomies for frontend filtering
          * 
          * @param array $taxonomies Array of taxonomy options
          * @param array $post_types Selected post types
-         * @param array $context Additional context information
          */
-        return apply_filters('orbitools_query_loop_filter_taxonomies', $taxonomies, $post_types, []);
+        return apply_filters('orbitools_query_loop_filter_taxonomies', $taxonomies, $post_types);
     }
-
+    
     /**
-     * Get available archive filters for the query
+     * Get frontend filter control types
      * 
-     * @return array Array of archive filter options
+     * @return array Array of available filter control types
      */
-    public function get_archive_filters(): array
-    {
-        $default_filters = [
-            'category' => __('Category Archives', 'orbitools'),
-            'tag' => __('Tag Archives', 'orbitools'),
-            'author' => __('Author Archives', 'orbitools'),
-            'date' => __('Date Archives', 'orbitools'),
-            'custom' => __('Custom Archives', 'orbitools')
-        ];
-
-        /**
-         * Filter the available archive filters for query loop blocks
-         * 
-         * @param array $filters Array of archive filter options
-         * @param array $context Context information (post_types, etc.)
-         */
-        return apply_filters('orbitools_query_loop_archive_filters', $default_filters, []);
-    }
-
-    /**
-     * Process sort parameters and convert to WP_Query args
-     * 
-     * @param array $sort_by Array of sort fields
-     * @param string $sort_order Sort order preference
-     * @return array WP_Query compatible sort arguments
-     */
-    public function process_sort_parameters(array $sort_by, string $sort_order): array
-    {
-        $query_args = [];
-
-        // Handle sort order first
-        switch ($sort_order) {
-            case 'alphabetical-asc':
-                $query_args['orderby'] = 'title';
-                $query_args['order'] = 'ASC';
-                break;
-            case 'alphabetical-desc':
-                $query_args['orderby'] = 'title';
-                $query_args['order'] = 'DESC';
-                break;
-            case 'date-newest':
-                $query_args['orderby'] = 'date';
-                $query_args['order'] = 'DESC';
-                break;
-            case 'date-oldest':
-                $query_args['orderby'] = 'date';
-                $query_args['order'] = 'ASC';
-                break;
-            case 'relevance':
-                $query_args['orderby'] = 'relevance';
-                $query_args['order'] = 'DESC';
-                break;
-            case 'menu-order':
-                $query_args['orderby'] = 'menu_order';
-                $query_args['order'] = 'ASC';
-                break;
-            case 'random':
-                $query_args['orderby'] = 'rand';
-                break;
-        }
-
-        // Handle multiple sort fields
-        if (!empty($sort_by) && count($sort_by) > 1) {
-            $orderby_array = [];
-            foreach ($sort_by as $field) {
-                $orderby_array[$field] = $query_args['order'] ?? 'DESC';
-            }
-            $query_args['orderby'] = $orderby_array;
-        } elseif (!empty($sort_by)) {
-            $query_args['orderby'] = $sort_by[0];
-        }
-
-        /**
-         * Filter the processed sort parameters
-         * 
-         * @param array $query_args WP_Query compatible arguments
-         * @param array $sort_by Original sort fields
-         * @param string $sort_order Original sort order
-         */
-        return apply_filters('orbitools_query_loop_sort_args', $query_args, $sort_by, $sort_order);
-    }
-
-    /**
-     * Process date filter parameters and convert to WP_Query date_query args
-     * 
-     * @param string $date_filter_type Type of date filter
-     * @param string $date_filter_year Selected year (if applicable)
-     * @param string $date_filter_month Selected month (if applicable)
-     * @param array $date_filter_range Date range object with start/end dates
-     * @return array WP_Query compatible date_query arguments
-     */
-    public function process_date_filter_parameters(string $date_filter_type, string $date_filter_year = '', string $date_filter_month = '', array $date_filter_range = []): array
-    {
-        $date_query = [];
-
-        switch ($date_filter_type) {
-            case 'year':
-                if (!empty($date_filter_year)) {
-                    $date_query = [
-                        [
-                            'year' => (int) $date_filter_year
-                        ]
-                    ];
-                }
-                break;
-
-            case 'month':
-                if (!empty($date_filter_year) && !empty($date_filter_month)) {
-                    $date_query = [
-                        [
-                            'year' => (int) $date_filter_year,
-                            'month' => (int) $date_filter_month
-                        ]
-                    ];
-                }
-                break;
-
-            case 'range':
-                if (!empty($date_filter_range['start']) || !empty($date_filter_range['end'])) {
-                    $range_query = [];
-                    
-                    if (!empty($date_filter_range['start'])) {
-                        $range_query['after'] = $date_filter_range['start'];
-                    }
-                    
-                    if (!empty($date_filter_range['end'])) {
-                        $range_query['before'] = $date_filter_range['end'];
-                    }
-                    
-                    $range_query['inclusive'] = true;
-                    $date_query = [$range_query];
-                }
-                break;
-
-            case 'last_30_days':
-                $date_query = [
-                    [
-                        'after' => '30 days ago'
-                    ]
-                ];
-                break;
-
-            case 'last_3_months':
-                $date_query = [
-                    [
-                        'after' => '3 months ago'
-                    ]
-                ];
-                break;
-
-            case 'last_6_months':
-                $date_query = [
-                    [
-                        'after' => '6 months ago'
-                    ]
-                ];
-                break;
-
-            case 'last_year':
-                $date_query = [
-                    [
-                        'after' => '1 year ago'
-                    ]
-                ];
-                break;
-        }
-
-        /**
-         * Filter the processed date filter parameters
-         * 
-         * @param array $date_query WP_Query compatible date_query arguments
-         * @param string $date_filter_type Original date filter type
-         * @param string $date_filter_year Original year filter
-         * @param string $date_filter_month Original month filter
-         * @param array $date_filter_range Original date range filter
-         */
-        return apply_filters('orbitools_query_loop_date_filter_args', $date_query, $date_filter_type, $date_filter_year, $date_filter_month, $date_filter_range);
-    }
-
-    /**
-     * Get available date filter types
-     * 
-     * @return array Array of date filter type options
-     */
-    public function get_date_filter_types(): array
+    public function get_frontend_filter_types(): array
     {
         $default_types = [
-            'none' => __('No Date Filter', 'orbitools'),
-            'year' => __('Specific Year', 'orbitools'),
-            'month' => __('Specific Month', 'orbitools'),
-            'range' => __('Date Range', 'orbitools'),
-            'last_30_days' => __('Last 30 Days', 'orbitools'),
-            'last_3_months' => __('Last 3 Months', 'orbitools'),
-            'last_6_months' => __('Last 6 Months', 'orbitools'),
-            'last_year' => __('Last Year', 'orbitools')
+            'dropdown' => __('Dropdown Select', 'orbitools'),
+            'checkboxes' => __('Checkboxes', 'orbitools'),
+            'multiselect' => __('Multi-Select', 'orbitools')
         ];
-
+        
         /**
-         * Filter the available date filter types for query loop blocks
+         * Filter the available frontend filter control types
          * 
-         * @param array $types Array of date filter type options
-         * @param array $context Context information (post_types, etc.)
+         * @param array $types Array of filter control type options
          */
-        return apply_filters('orbitools_query_loop_date_filter_types', $default_types, []);
+        return apply_filters('orbitools_query_loop_frontend_filter_types', $default_types);
     }
 }
