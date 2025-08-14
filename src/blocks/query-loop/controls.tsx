@@ -587,16 +587,19 @@ export default function QueryLoopControls({ attributes, setAttributes }: QueryLo
         return currentValue !== undefined && currentValue !== defaultValue;
     };
 
-    // Prepare post type options - only public/viewable ones, excluding default 'post' type
+    // Prepare post type options - only public/viewable ones, excluding 'post' type
     const postTypeOptions = availablePostTypes
         .filter((pt: any) => {
             // Must be viewable/public
             const isPublic = pt.viewable || (pt.visibility && pt.visibility.publicly_queryable);
-            // Exclude the default 'post' type as it's handled by inherit query
-            const isNotDefaultPost = pt.name !== 'post';
-            return isPublic && isNotDefaultPost;
+            // Exclude 'post' type completely - we don't use it
+            const isNotPost = pt.slug !== 'post';
+            return isPublic && isNotPost;
         })
-        .map((pt: any) => pt.name);
+        .map((pt: any) => {
+            // Use slug for the actual post type value, not name or label  
+            return pt.slug;
+        });
 
     // Prepare post status options
     const postStatusOptions = ['publish', 'draft', 'future', 'private', 'trash', 'any'];
