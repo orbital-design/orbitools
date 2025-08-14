@@ -1,0 +1,112 @@
+{
+    "apiVersion": 3,
+    "name": "orb/query-loop",
+    "version": "1.0.0",
+    "title": "Query Loop",
+    "category": "layout",
+    "icon": "loop",
+    "description": "An advanced block that allows displaying post types based on different query parameters and visual configurations.",
+    "supports": {
+        "html": false,
+        "align": false
+    },
+    "keywords": ["posts", "pages", "news", "articles", "query", "dynamic", "latest", "loop"],
+	"attributes": {
+		"queryType": {
+			"type": "string",
+			"default": "default"
+		},
+		"queryParameters": {
+			"type": "array",
+			"default": []
+		},
+		"postTypes": {
+			"type": "array",
+			"default": []
+		},
+		"postStatus": {
+			"type": "array",
+			"default": ["publish"]
+		},
+		"orderby": {
+			"type": "string",
+			"default": "date"
+		},
+		"order": {
+			"type": "string",
+			"default": "DESC"
+		},
+		"postsPerPage": {
+			"type": "number",
+			"default": 10
+		},
+		"noPaging": {
+			"type": "boolean",
+			"default": false
+		},
+		"paged": {
+			"type": "boolean",
+			"default": false
+		},
+		"offset": {
+			"type": "number",
+			"default": 0
+		},
+		"searchKeyword": {
+			"type": "string",
+			"default": ""
+		},
+		"metaQuery": {
+			"type": "array",
+			"default": []
+		},
+		"metaQueryRelation": {
+			"type": "string",
+			"default": "AND"
+		},
+		"taxQuery": {
+			"type": "array",
+			"default": []
+		},
+		"taxQueryRelation": {
+			"type": "string",
+			"default": "AND"
+		},
+		"specificPost": {
+			"type": "number",
+			"default": 0
+		},
+		"includePosts": {
+			"type": "array",
+			"default": []
+		},
+		"excludePosts": {
+			"type": "array",
+			"default": []
+		},
+		"parentPostsOnly": {
+			"type": "boolean",
+			"default": false
+		},
+		"childrenOfPosts": {
+			"type": "array",
+			"default": []
+		},
+		"layout": {
+			"type": "string",
+			"default": "grid"
+		},
+		"gridColumns": {
+			"type": "string",
+			"default": "4"
+		}
+	},
+	"providesContext": {
+		"queryId": "queryId",
+		"query": "query"
+	},
+    "textdomain": "orbitools",
+    "editorScript": "file:./index.js",
+    "editorStyle": "file:./editor.css",
+    "style": "file:./index.css"
+}
