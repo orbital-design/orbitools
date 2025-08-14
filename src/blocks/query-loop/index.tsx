@@ -5,21 +5,52 @@ import { SVG, Path } from '@wordpress/components';
 import Edit from './edit';
 import Save from './save';
 import metadata from './block.json';
-import type { LayoutAttributes } from '../types';
 
 import './index.scss';
 
-const CollectionIcon = () => (
-    <SVG xmlns="http://www.w3.org/2000/svg" fillRule="evenodd" strokeLinejoin="round" strokeMiterlimit="2" clipRule="evenodd" viewBox="0 0 576 576">
-        <Path fill="#1d303a" fillRule="nonzero" d="M81.6 288c-6.1-10.6-9.6-22.9-9.6-36V126c0-39.8 32.2-72 72-72h90c21.5 0 40.8 9.4 54 24.4C301.2 63.5 320.5 54 342 54h90c39.8 0 72 32.2 72 72v126c0 13.1-3.5 25.4-9.6 36 6.1 10.6 9.6 22.9 9.6 36v126c0 39.8-32.2 72-72 72h-90c-21.5 0-40.8-9.4-54-24.4-13.2 14.9-32.5 24.4-54 24.4h-90c-39.8 0-72-32.2-72-72V324c0-13.1 3.5-25.4 9.6-36ZM108 414c0 19.9 16.1 36 36 36h90c19.9 0 36-16.1 36-36v-90c0-19.9-16.1-36-36-36h-90c-19.9 0-36 16.1-36 36v90Zm360 0v-90c0-19.9-16.1-36-36-36h-90c-19.9 0-36 16.1-36 36v90c0 19.9 16.1 36 36 36h90c19.9 0 36-16.1 36-36Zm-126.12-54.202c0-19.9 16.1-36 36-36h17.018c19.9 0 36 16.1 36 36v17.694c0 19.9-16.1 36-36 36H377.88c-19.9 0-36-16.1-36-36v-17.694Zm-179.459 17.694c-9.9 0-18 8.1-18 18s8.1 18 18 18h5.948c9.9 0 18-8.1 18-18s-8.1-18-18-18h-5.948Zm232.477-17.694H377.88v17.694h17.018v-17.694Zm-232.477-36.306c-9.9 0-18 8.1-18 18s8.1 18 18 18h53.518c9.9 0 18-8.1 18-18s-8.1-18-18-18h-53.518ZM270 184.655c-27.081 25.713-69.786 25.318-96.285-1.181-12.8-12.9-33.6-12.9-46.5 0L108 202.689V216c0 19.9 16.1 36 36 36h90c19.9 0 36-16.1 36-36v-31.345ZM468 216v-90c0-19.9-16.1-36-36-36h-90c-19.9 0-36 16.1-36 36v90c0 19.9 16.1 36 36 36h90c19.9 0 36-16.1 36-36Zm-108.12-35.968c-9.9 0-18 8.1-18 18s8.1 18 18 18h53.518c9.9 0 18-8.1 18-18s-8.1-18-18-18H359.88ZM270 133.923V126c0-19.9-16.1-36-36-36h-90c-19.9 0-36 16.1-36 36v26.419c27.11-21.196 66.316-19.343 91.215 5.555 12.8 12.9 33.6 12.9 46.5 0A7023.93 7023.93 0 0 0 270 133.923Zm89.88-7.891c-9.9 0-18 8.1-18 18s8.1 18 18 18h53.518c9.9 0 18-8.1 18-18s-8.1-18-18-18H359.88Z" />
+const QueryLoopIcon = () => (
+    <SVG xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+        <Path d="M18 12h-2.5l1.5-1.5L15.5 9L12 12.5L8.5 9L7 10.5L8.5 12H6v1.5h2.5L7 15l1.5 1.5L12 13l3.5 3.5L17 15l-1.5-1.5H18V12z"/>
+        <Path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/>
     </SVG>
 );
 
-const blockConfig: BlockConfiguration<LayoutAttributes> = {
+interface QueryLoopAttributes {
+    queryType: string;
+    postTypes: string[];
+    postStatus: string[];
+    orderby: string;
+    order: string;
+    postsPerPage: number;
+    noPaging: boolean;
+    paged: boolean;
+    offset: number;
+    searchKeyword: string;
+    metaQuery: Array<{
+        key: string;
+        value: string;
+        compare: string;
+    }>;
+    metaQueryRelation: string;
+    taxQuery: Array<{
+        taxonomy: string;
+        terms: string[];
+        operator: string;
+    }>;
+    taxQueryRelation: string;
+    includePosts: string[];
+    excludePosts: string[];
+    parentPostsOnly: boolean;
+    childrenOfPosts: string[];
+    layout: string;
+    gridColumns: string;
+}
+
+const blockConfig: BlockConfiguration<QueryLoopAttributes> = {
     ...metadata,
-    icon: CollectionIcon,
+    icon: QueryLoopIcon,
     edit: Edit,
     save: Save,
 };
 
-registerBlockType('orb/collection', blockConfig);
+registerBlockType(metadata.name as string, blockConfig);

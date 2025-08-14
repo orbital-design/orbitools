@@ -98,7 +98,7 @@
 		},
 		"gridColumns": {
 			"type": "string",
-			"default": "4"
+			"default": "3"
 		}
 	},
 	"providesContext": {

@@ -14,6 +14,7 @@ use Orbitools\Modules\Menu_Dividers\Menu_Dividers;
 use Orbitools\Modules\Analytics\Analytics;
 use Orbitools\Blocks\Collection\Collection;
 use Orbitools\Blocks\Entry\Entry;
+use Orbitools\Blocks\Query_Loop\Query_Loop;
 use Orbitools\Blocks\Spacer\Spacer;
 use Orbitools\Modules\User_Avatars\User_Avatars;
 use Orbitools\Controls\Spacings_Controls\Spacings_Controls;
@@ -80,6 +81,7 @@ class Loader
         // Initialize individual blocks
         $this->modules[] = new Collection();
         $this->modules[] = new Entry();
+        $this->modules[] = new Query_Loop();
         $this->modules[] = new Spacer();
         $this->modules[] = new Spacings_Controls();
         $this->modules[] = new User_Avatars();

@@ -1,11 +1,9 @@
-import { InnerBlocks } from '@wordpress/block-editor';
-
 /**
- * Collection block save function
+ * Query Loop block save function
  *
- * For dynamic blocks with inner blocks, we still need to save the inner blocks content
- * while using server-side rendering for the wrapper element.
+ * This is a dynamic block rendered server-side, so we return null
+ * to indicate all rendering is handled by PHP.
  */
 export default function save() {
-    return <InnerBlocks.Content />;
+    return null;
 }
