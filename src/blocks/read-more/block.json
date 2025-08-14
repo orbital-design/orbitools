@@ -1,0 +1,50 @@
+{
+    "apiVersion": 3,
+    "name": "orb/read-more",
+    "version": "1.0.0",
+    "title": "Read More",
+    "icon": "arrow-down-alt2",
+    "category": "layout",
+    "description": "Collapsible container with toggle button to show/hide content",
+    "supports": {
+        "html": false,
+        "typography": {
+            "textAlign": true
+        },
+        "orbitools": {
+            "spacings": {
+                "breakpoints": true,
+                "gap": true,
+                "margin": false,
+                "padding": true
+            }
+        }
+    },
+    "attributes": {
+        "openText": {
+            "type": "string",
+            "default": "Read More"
+        },
+        "closeText": {
+            "type": "string",
+            "default": "Read Less"
+        },
+        "iconType": {
+            "type": "string",
+            "default": "chevron",
+            "enum": [
+                "none",
+                "chevron",
+                "arrow",
+                "plus"
+            ]
+        }
+    },
+    "providesContext": {},
+    "usesContext": [],
+    "textdomain": "orbitools",
+    "editorScript": "file:./index.js",
+    "editorStyle": "file:./editor.css",
+    "style": "file:./index.css",
+    "script": "file:./frontend.js"
+}

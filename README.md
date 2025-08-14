@@ -8,6 +8,7 @@ A comprehensive WordPress plugin providing advanced layout blocks, responsive co
 - **Collection Block**: Container for organizing content layouts
 - **Entry Block**: Individual content items with flexible sizing
 - **Spacer Block**: Responsive spacing control with breakpoint support
+- **Read More Block**: Collapsible content container with customizable toggle button
 
 ### Responsive Design System
 - Breakpoint-based controls (sm: 810px, md: 1080px, lg: 1360px, xl: 1600px)
@@ -33,6 +34,7 @@ orbitools/
 │   ├── collection/               # Collection container block
 │   ├── entry/                   # Entry item block  
 │   ├── spacer/                  # Responsive spacer block
+│   ├── read-more/               # Collapsible content block
 │   └── utils/                   # Shared utilities
 │       ├── responsive-controls.tsx  # Responsive control system
 │       └── config-reader.ts        # Configuration management
@@ -96,6 +98,14 @@ Responsive spacing with theme integration:
 - **Special Values**: Default, None, [Theme Sizes], Fill
 - **Output**: Single `<div>` with height CSS classes
 
+### Read More Block
+Collapsible content container with smooth animations:
+- **Button Text**: Customizable open/close text states
+- **Icon Options**: None, Chevron, Arrow, or Plus icons
+- **Animations**: Smooth slide transitions with proper accessibility
+- **Spacing Controls**: Orbitools padding and gap controls on inner content
+- **Accessibility**: Full ARIA support with proper attributes
+
 ## 🔧 Technical Details
 
 ### WordPress Integration
@@ -114,6 +124,34 @@ Responsive spacing with theme integration:
 - **Capability Checks**: Proper permission validation
 - **Input Sanitization**: All user input cleaned
 - **Package Verification**: SHA256 integrity checks for updates
+
+### Customization Hooks
+
+#### Read More Block Icon Customization
+Filter to customize or add new icon types for the Read More block:
+
+```php
+// In your theme's functions.php or plugin
+add_filter('orbitools/read_more/icons', function($icons) {
+    // Override existing icons
+    $icons['chevron'] = '<span class="custom-chevron">→</span>';
+    
+    // Add new icon types
+    $icons['heart'] = '<span class="custom-heart">♥</span>';
+    $icons['star'] = '<span class="custom-star">★</span>';
+    
+    // Use Font Awesome or other icon fonts
+    $icons['arrow'] = '<i class="fas fa-arrow-down"></i>';
+    
+    return $icons;
+});
+```
+
+**Icon Requirements:**
+- Icons should be wrapped in a `<span>` with appropriate classes
+- Use `currentColor` for SVG stroke/fill to inherit theme colors
+- Icons will automatically rotate on toggle (add CSS transitions as needed)
+- All HTML will be properly escaped for security
 
 ## 📚 Development Notes
 
