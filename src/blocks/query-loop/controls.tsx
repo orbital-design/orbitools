@@ -20,12 +20,14 @@ import {
     __experimentalToolsPanelItem as ToolsPanelItem,
     __experimentalToggleGroupControl as ToggleGroupControl,
     __experimentalToggleGroupControlOption as ToggleGroupControlOption,
+    __experimentalVStack as VStack,
     Notice,
     SelectControl,
     RangeControl,
     ToggleControl,
     TextControl,
-    Button
+    Button,
+    PanelBody
 } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 
@@ -101,13 +103,13 @@ interface QueryLoopControlsProps {
  * Default values for query controls
  */
 const QUERY_DEFAULTS = {
-    queryType: 'inherit',
-    postTypes: [] as string[],
-    postStatus: ['publish'] as string[],
-    orderby: 'date',
-    order: 'DESC',
-    postsPerPage: 10,
-    offset: 0,
+    queryType: 'custom',
+    postTypes: [] as string[], // Empty - only set when user selects
+    postStatus: [] as string[], // Empty - only set when user selects
+    orderby: '', // Empty - only set when user changes from WP default
+    order: '', // Empty - only set when user changes from WP default  
+    postsPerPage: undefined, // Undefined - only set when user changes
+    offset: 0, // Keep 0 as it's a meaningful "no offset"
     noPaging: false,
     paged: false,
     searchKeyword: '',
@@ -145,11 +147,11 @@ export default function QueryLoopControls({ attributes, setAttributes }: QueryLo
     const queryType = params?.type || QUERY_DEFAULTS.queryType;
     
     
-    const postTypes = params?.args?.postTypes || QUERY_DEFAULTS.postTypes;
-    const postStatus = params?.args?.postStatus || QUERY_DEFAULTS.postStatus;
+    const postTypes = params?.args?.postTypes ?? QUERY_DEFAULTS.postTypes;
+    const postStatus = params?.args?.postStatus ?? QUERY_DEFAULTS.postStatus;
     const orderby = params?.args?.orderby || QUERY_DEFAULTS.orderby;
     const order = params?.args?.order || QUERY_DEFAULTS.order;
-    const postsPerPage = params?.args?.postsPerPage || QUERY_DEFAULTS.postsPerPage;
+    const postsPerPage = params?.args?.postsPerPage ?? QUERY_DEFAULTS.postsPerPage;
     const offset = params?.args?.offset || QUERY_DEFAULTS.offset;
     const noPaging = params?.args?.noPaging || QUERY_DEFAULTS.noPaging;
     const paged = params?.args?.paged || QUERY_DEFAULTS.paged;
@@ -188,6 +190,14 @@ export default function QueryLoopControls({ attributes, setAttributes }: QueryLo
      */
     const updateQueryType = (value: string) => {
         const currentParams = attributes.queryParameters || {};
+        
+        // When switching to custom, start completely fresh - don't preserve any values
+        if (value === 'custom') {
+            setAttributes({
+                queryParameters: { type: 'custom' }
+            });
+            return;
+        }
         
         // Only preserve non-default values from existing params
         const cleanedParams: any = { type: value };
@@ -608,10 +618,19 @@ export default function QueryLoopControls({ attributes, setAttributes }: QueryLo
         }
         
         if (Array.isArray(defaultValue)) {
+            // If currentValue is undefined, treat it as the default
+            if (currentValue === undefined) {
+                return false;
+            }
             return JSON.stringify(currentValue) !== JSON.stringify(defaultValue);
         }
-        return currentValue !== undefined && currentValue !== defaultValue;
+        // If currentValue is undefined, treat it as the default
+        if (currentValue === undefined) {
+            return false;
+        }
+        return currentValue !== defaultValue;
     };
+
 
     // Prepare post type options - only public/viewable ones, excluding 'post' type
     const postTypeOptions = availablePostTypes
@@ -712,24 +731,29 @@ export default function QueryLoopControls({ attributes, setAttributes }: QueryLo
             {/* Query Builder Panel - Only for custom queries */}
             {queryType === 'custom' && (
                 <InspectorControls group="settings">
-                    <ToolsPanel
-                        label={__('Query Builder', 'orbitools')}
-                        resetAll={() => {
-                            updateAttribute('postTypes', QUERY_DEFAULTS.postTypes);
-                            updateAttribute('postStatus', QUERY_DEFAULTS.postStatus);
-                            updateAttribute('orderby', QUERY_DEFAULTS.orderby);
-                            updateAttribute('order', QUERY_DEFAULTS.order);
-                            updateAttribute('postsPerPage', QUERY_DEFAULTS.postsPerPage);
-                            updateAttribute('offset', QUERY_DEFAULTS.offset);
-                            updateAttribute('noPaging', QUERY_DEFAULTS.noPaging);
-                            updateAttribute('paged', QUERY_DEFAULTS.paged);
-                            updateAttribute('includePosts', QUERY_DEFAULTS.includePosts);
-                            updateAttribute('excludePosts', QUERY_DEFAULTS.excludePosts);
-                            updateAttribute('parentPostsOnly', QUERY_DEFAULTS.parentPostsOnly);
-                            updateAttribute('childrenOfPosts', QUERY_DEFAULTS.childrenOfPosts);
-                        }}
-                        panelId="query-loop-panel"
+                    <PanelBody
+                        title={__('Query builder', 'orbitools')}
+                        initialOpen={true}
                     >
+                        <ToolsPanel
+                            id="query-parameters-tools-panel"
+                            label={__('Add parameters', 'orbitools')}
+                            resetAll={() => {
+                                updateAttribute('postTypes', QUERY_DEFAULTS.postTypes);
+                                updateAttribute('postStatus', QUERY_DEFAULTS.postStatus);
+                                updateAttribute('orderby', QUERY_DEFAULTS.orderby);
+                                updateAttribute('order', QUERY_DEFAULTS.order);
+                                updateAttribute('postsPerPage', QUERY_DEFAULTS.postsPerPage);
+                                updateAttribute('offset', QUERY_DEFAULTS.offset);
+                                updateAttribute('noPaging', QUERY_DEFAULTS.noPaging);
+                                updateAttribute('paged', QUERY_DEFAULTS.paged);
+                                updateAttribute('includePosts', QUERY_DEFAULTS.includePosts);
+                                updateAttribute('excludePosts', QUERY_DEFAULTS.excludePosts);
+                                updateAttribute('parentPostsOnly', QUERY_DEFAULTS.parentPostsOnly);
+                                updateAttribute('childrenOfPosts', QUERY_DEFAULTS.childrenOfPosts);
+                            }}
+                            panelId="query-loop-panel"
+                        >
 
                         {/* Post Type & Status */}
                         <ToolsPanelItem
@@ -743,23 +767,26 @@ export default function QueryLoopControls({ attributes, setAttributes }: QueryLo
                                 updateAttribute('postStatus', QUERY_DEFAULTS.postStatus);
                             }}
                             panelId="query-loop-panel"
+                            isShownByDefault={false}
                         >
-                            <FormTokenDropdown
-                                label={__('Post Types', 'orbitools')}
-                                help={__('Select which post types to query', 'orbitools')}
-                                value={postTypes}
-                                suggestions={postTypeOptions}
-                                onChange={(tokens) => updateAttribute('postTypes', tokens)}
-                                placeholder={__('Select post types...', 'orbitools')}
-                            />
-                            <FormTokenDropdown
-                                label={__('Post Status', 'orbitools')}
-                                help={__('Filter by post status', 'orbitools')}
-                                value={postStatus}
-                                suggestions={postStatusOptions}
-                                onChange={(tokens) => updateAttribute('postStatus', tokens)}
-                                placeholder={__('Select status...', 'orbitools')}
-                            />
+                            <VStack spacing={4}>
+                                <FormTokenDropdown
+                                    label={__('Post Types', 'orbitools')}
+                                    help={__('Select which post types to query', 'orbitools')}
+                                    value={postTypes}
+                                    suggestions={postTypeOptions}
+                                    onChange={(tokens) => updateAttribute('postTypes', tokens)}
+                                    placeholder={__('Select post types...', 'orbitools')}
+                                />
+                                <FormTokenDropdown
+                                    label={__('Post Status', 'orbitools')}
+                                    help={__('Filter by post status', 'orbitools')}
+                                    value={postStatus}
+                                    suggestions={postStatusOptions}
+                                    onChange={(tokens) => updateAttribute('postStatus', tokens)}
+                                    placeholder={__('Select status...', 'orbitools')}
+                                />
+                            </VStack>
                         </ToolsPanelItem>
 
                         {/* Ordering */}
@@ -774,32 +801,35 @@ export default function QueryLoopControls({ attributes, setAttributes }: QueryLo
                                 updateAttribute('order', QUERY_DEFAULTS.order);
                             }}
                             panelId="query-loop-panel"
+                            isShownByDefault={false}
                         >
-                            <SelectControl
-                                label={__('Order By', 'orbitools')}
-                                value={orderby}
-                                options={[
-                                    { label: __('Date', 'orbitools'), value: 'date' },
-                                    { label: __('Title', 'orbitools'), value: 'title' },
-                                    { label: __('Menu Order', 'orbitools'), value: 'menu_order' },
-                                    { label: __('Random', 'orbitools'), value: 'rand' },
-                                    { label: __('Modified', 'orbitools'), value: 'modified' },
-                                    { label: __('Author', 'orbitools'), value: 'author' },
-                                    { label: __('Comment Count', 'orbitools'), value: 'comment_count' }
-                                ]}
-                                onChange={(value) => updateAttribute('orderby', value)}
-                                __nextHasNoMarginBottom={true}
-                            />
-                            <SelectControl
-                                label={__('Order', 'orbitools')}
-                                value={order}
-                                options={[
-                                    { label: __('Descending', 'orbitools'), value: 'DESC' },
-                                    { label: __('Ascending', 'orbitools'), value: 'ASC' }
-                                ]}
-                                onChange={(value) => updateAttribute('order', value)}
-                                __nextHasNoMarginBottom={true}
-                            />
+                            <VStack spacing={4}>
+                                <SelectControl
+                                    label={__('Order By', 'orbitools')}
+                                    value={orderby}
+                                    options={[
+                                        { label: __('Date', 'orbitools'), value: 'date' },
+                                        { label: __('Title', 'orbitools'), value: 'title' },
+                                        { label: __('Menu Order', 'orbitools'), value: 'menu_order' },
+                                        { label: __('Random', 'orbitools'), value: 'rand' },
+                                        { label: __('Modified', 'orbitools'), value: 'modified' },
+                                        { label: __('Author', 'orbitools'), value: 'author' },
+                                        { label: __('Comment Count', 'orbitools'), value: 'comment_count' }
+                                    ]}
+                                    onChange={(value) => updateAttribute('orderby', value)}
+                                    __nextHasNoMarginBottom={true}
+                                />
+                                <SelectControl
+                                    label={__('Order', 'orbitools')}
+                                    value={order}
+                                    options={[
+                                        { label: __('Descending', 'orbitools'), value: 'DESC' },
+                                        { label: __('Ascending', 'orbitools'), value: 'ASC' }
+                                    ]}
+                                    onChange={(value) => updateAttribute('order', value)}
+                                    __nextHasNoMarginBottom={true}
+                                />
+                            </VStack>
                         </ToolsPanelItem>
 
                         {/* Pagination */}
@@ -818,45 +848,48 @@ export default function QueryLoopControls({ attributes, setAttributes }: QueryLo
                                 updateAttribute('offset', QUERY_DEFAULTS.offset);
                             }}
                             panelId="query-loop-panel"
+                            isShownByDefault={false}
                         >
-                            <ToggleControl
-                                label={__('Display all posts', 'orbitools')}
-                                help={__('Show all posts without pagination', 'orbitools')}
-                                checked={noPaging}
-                                onChange={(value) => updateAttribute('noPaging', value)}
-                                __nextHasNoMarginBottom={true}
-                            />
-                            {!noPaging && (
-                                <>
-                                    <RangeControl
-                                        label={__('Posts Per Page', 'orbitools')}
-                                        help={__('Number of posts to display (-1 for all)', 'orbitools')}
-                                        value={postsPerPage}
-                                        onChange={(value) => updateAttribute('postsPerPage', value)}
-                                        min={-1}
-                                        max={100}
-                                        step={1}
-                                        __nextHasNoMarginBottom={true}
-                                    />
-                                    <ToggleControl
-                                        label={__('Enable pagination', 'orbitools')}
-                                        help={__('Add pagination/load more support', 'orbitools')}
-                                        checked={paged}
-                                        onChange={(value) => updateAttribute('paged', value)}
-                                        __nextHasNoMarginBottom={true}
-                                    />
-                                    <RangeControl
-                                        label={__('Offset', 'orbitools')}
-                                        help={__('Number of posts to skip', 'orbitools')}
-                                        value={offset}
-                                        onChange={(value) => updateAttribute('offset', value)}
-                                        min={0}
-                                        max={50}
-                                        step={1}
-                                        __nextHasNoMarginBottom={true}
-                                    />
-                                </>
-                            )}
+                            <VStack spacing={4}>
+                                <ToggleControl
+                                    label={__('Display all posts', 'orbitools')}
+                                    help={__('Show all posts without pagination', 'orbitools')}
+                                    checked={noPaging}
+                                    onChange={(value) => updateAttribute('noPaging', value)}
+                                    __nextHasNoMarginBottom={true}
+                                />
+                                {!noPaging && (
+                                    <>
+                                        <RangeControl
+                                            label={__('Posts Per Page', 'orbitools')}
+                                            help={__('Number of posts to display (-1 for all)', 'orbitools')}
+                                            value={postsPerPage}
+                                            onChange={(value) => updateAttribute('postsPerPage', value)}
+                                            min={-1}
+                                            max={100}
+                                            step={1}
+                                            __nextHasNoMarginBottom={true}
+                                        />
+                                        <ToggleControl
+                                            label={__('Enable pagination', 'orbitools')}
+                                            help={__('Add pagination/load more support', 'orbitools')}
+                                            checked={paged}
+                                            onChange={(value) => updateAttribute('paged', value)}
+                                            __nextHasNoMarginBottom={true}
+                                        />
+                                        <RangeControl
+                                            label={__('Offset', 'orbitools')}
+                                            help={__('Number of posts to skip', 'orbitools')}
+                                            value={offset}
+                                            onChange={(value) => updateAttribute('offset', value)}
+                                            min={0}
+                                            max={50}
+                                            step={1}
+                                            __nextHasNoMarginBottom={true}
+                                        />
+                                    </>
+                                )}
+                            </VStack>
                         </ToolsPanelItem>
 
                         {/* Post & Page Filters */}
@@ -875,57 +908,66 @@ export default function QueryLoopControls({ attributes, setAttributes }: QueryLo
                                 updateAttribute('childrenOfPosts', QUERY_DEFAULTS.childrenOfPosts);
                             }}
                             panelId="query-loop-panel"
+                            isShownByDefault={false}
                         >
-                            <PostSelector
-                                label={__('Include Posts', 'orbitools')}
-                                help={__('Select specific posts to include in the query', 'orbitools')}
-                                value={includePosts}
-                                onChange={(ids) => updateAttribute('includePosts', ids)}
-                                placeholder={__('Search and select posts to include...', 'orbitools')}
-                                postTypes={postTypes}
-                            />
-                            <PostSelector
-                                label={__('Exclude Posts', 'orbitools')}
-                                help={__('Select specific posts to exclude from the query', 'orbitools')}
-                                value={excludePosts}
-                                onChange={(ids) => updateAttribute('excludePosts', ids)}
-                                placeholder={__('Search and select posts to exclude...', 'orbitools')}
-                                postTypes={postTypes}
-                            />
-                            <ToggleControl
-                                label={__('Parent posts only', 'orbitools')}
-                                help={__('Only show top-level posts', 'orbitools')}
-                                checked={parentPostsOnly}
-                                onChange={(value) => updateAttribute('parentPostsOnly', value)}
-                                __nextHasNoMarginBottom={true}
-                            />
-                            <PostSelector
-                                label={__('Children of Posts', 'orbitools')}
-                                help={__('Select posts to show children/sub-pages of', 'orbitools')}
-                                value={childrenOfPosts}
-                                onChange={(ids) => updateAttribute('childrenOfPosts', ids)}
-                                placeholder={__('Search and select parent posts...', 'orbitools')}
-                                postTypes={postTypes}
-                            />
+                            <VStack spacing={4}>
+                                <PostSelector
+                                    label={__('Include Posts', 'orbitools')}
+                                    help={__('Select specific posts to include in the query', 'orbitools')}
+                                    value={includePosts}
+                                    onChange={(ids) => updateAttribute('includePosts', ids)}
+                                    placeholder={__('Search and select posts to include...', 'orbitools')}
+                                    postTypes={postTypes}
+                                />
+                                <PostSelector
+                                    label={__('Exclude Posts', 'orbitools')}
+                                    help={__('Select specific posts to exclude from the query', 'orbitools')}
+                                    value={excludePosts}
+                                    onChange={(ids) => updateAttribute('excludePosts', ids)}
+                                    placeholder={__('Search and select posts to exclude...', 'orbitools')}
+                                    postTypes={postTypes}
+                                />
+                                <ToggleControl
+                                    label={__('Parent posts only', 'orbitools')}
+                                    help={__('Only show top-level posts', 'orbitools')}
+                                    checked={parentPostsOnly}
+                                    onChange={(value) => updateAttribute('parentPostsOnly', value)}
+                                    __nextHasNoMarginBottom={true}
+                                />
+                                <PostSelector
+                                    label={__('Children of Posts', 'orbitools')}
+                                    help={__('Select posts to show children/sub-pages of', 'orbitools')}
+                                    value={childrenOfPosts}
+                                    onChange={(ids) => updateAttribute('childrenOfPosts', ids)}
+                                    placeholder={__('Search and select parent posts...', 'orbitools')}
+                                    postTypes={postTypes}
+                                />
+                            </VStack>
                         </ToolsPanelItem>
-                    </ToolsPanel>
+                        </ToolsPanel>
+                    </PanelBody>
                 </InspectorControls>
             )}
 
             {/* Query Filters - Separate panel for advanced filtering */}
             {queryType === 'custom' && (
                 <InspectorControls group="settings">
-                    <ToolsPanel
-                        label={__('Query Filters', 'orbitools')}
-                        resetAll={() => {
-                            updateAttribute('searchKeyword', QUERY_DEFAULTS.searchKeyword);
-                            updateAttribute('metaQuery', QUERY_DEFAULTS.metaQuery);
-                            updateAttribute('metaQueryRelation', QUERY_DEFAULTS.metaQueryRelation);
-                            updateAttribute('taxQuery', QUERY_DEFAULTS.taxQuery);
-                            updateAttribute('taxQueryRelation', QUERY_DEFAULTS.taxQueryRelation);
-                        }}
-                        panelId="query-filters-panel"
+                    <PanelBody
+                        title={__('Query filters', 'orbitools')}
+                        initialOpen={false}
                     >
+                        <ToolsPanel
+                            id="advanced-filters-tools-panel"
+                            label={__('Add filters', 'orbitools')}
+                            resetAll={() => {
+                                updateAttribute('searchKeyword', QUERY_DEFAULTS.searchKeyword);
+                                updateAttribute('metaQuery', QUERY_DEFAULTS.metaQuery);
+                                updateAttribute('metaQueryRelation', QUERY_DEFAULTS.metaQueryRelation);
+                                updateAttribute('taxQuery', QUERY_DEFAULTS.taxQuery);
+                                updateAttribute('taxQueryRelation', QUERY_DEFAULTS.taxQueryRelation);
+                            }}
+                            panelId="query-filters-panel"
+                        >
                         {/* Search */}
                         <ToolsPanelItem
                             hasValue={() => hasNonDefaultValue('searchKeyword', QUERY_DEFAULTS.searchKeyword)}
@@ -933,14 +975,16 @@ export default function QueryLoopControls({ attributes, setAttributes }: QueryLo
                             onDeselect={() => updateAttribute('searchKeyword', QUERY_DEFAULTS.searchKeyword)}
                             panelId="query-filters-panel"
                         >
-                            <TextControl
-                                label={__('Search Keyword', 'orbitools')}
-                                help={__('Filter posts by keyword search', 'orbitools')}
-                                value={searchKeyword}
-                                onChange={(value) => updateAttribute('searchKeyword', value)}
-                                placeholder={__('Enter search term...', 'orbitools')}
-                                __nextHasNoMarginBottom={true}
-                            />
+                            <VStack spacing={4}>
+                                <TextControl
+                                    label={__('Search Keyword', 'orbitools')}
+                                    help={__('Filter posts by keyword search', 'orbitools')}
+                                    value={searchKeyword}
+                                    onChange={(value) => updateAttribute('searchKeyword', value)}
+                                    placeholder={__('Enter search term...', 'orbitools')}
+                                    __nextHasNoMarginBottom={true}
+                                />
+                            </VStack>
                         </ToolsPanelItem>
 
                         {/* Meta Query (Advanced) */}
@@ -950,7 +994,8 @@ export default function QueryLoopControls({ attributes, setAttributes }: QueryLo
                             onDeselect={() => updateAttribute('metaQuery', QUERY_DEFAULTS.metaQuery)}
                             panelId="query-filters-panel"
                         >
-                            {metaQuery.map((rule: any, index: number) => (
+                            <VStack spacing={4}>
+                                {metaQuery.map((rule: any, index: number) => (
                                 <div key={index} style={{
                                     padding: '12px',
                                     marginBottom: '12px',
@@ -1032,18 +1077,19 @@ export default function QueryLoopControls({ attributes, setAttributes }: QueryLo
                                 {__('Add Meta Query Rule', 'orbitools')}
                             </Button>
 
-                            {metaQuery.length > 1 && (
-                                <SelectControl
-                                    label={__('Relation', 'orbitools')}
-                                    value={metaQueryRelation}
-                                    options={[
-                                        { label: 'AND', value: 'AND' },
-                                        { label: 'OR', value: 'OR' }
-                                    ]}
-                                    onChange={(value) => updateAttribute('metaQueryRelation', value)}
-                                    __nextHasNoMarginBottom={true}
-                                />
-                            )}
+                                {metaQuery.length > 1 && (
+                                    <SelectControl
+                                        label={__('Relation', 'orbitools')}
+                                        value={metaQueryRelation}
+                                        options={[
+                                            { label: 'AND', value: 'AND' },
+                                            { label: 'OR', value: 'OR' }
+                                        ]}
+                                        onChange={(value) => updateAttribute('metaQueryRelation', value)}
+                                        __nextHasNoMarginBottom={true}
+                                    />
+                                )}
+                            </VStack>
                         </ToolsPanelItem>
 
                         {/* Tax Query (Advanced) */}
@@ -1053,7 +1099,8 @@ export default function QueryLoopControls({ attributes, setAttributes }: QueryLo
                             onDeselect={() => updateAttribute('taxQuery', QUERY_DEFAULTS.taxQuery)}
                             panelId="query-filters-panel"
                         >
-                            {taxQuery.map((rule: any, index: number) => (
+                            <VStack spacing={4}>
+                                {taxQuery.map((rule: any, index: number) => (
                                 <div key={index} style={{
                                     padding: '12px',
                                     marginBottom: '12px',
@@ -1141,38 +1188,45 @@ export default function QueryLoopControls({ attributes, setAttributes }: QueryLo
                                 {__('Add Tax Query Rule', 'orbitools')}
                             </Button>
 
-                            {taxQuery.length > 1 && (
-                                <SelectControl
-                                    label={__('Relation', 'orbitools')}
-                                    value={taxQueryRelation}
-                                    options={[
-                                        { label: 'AND', value: 'AND' },
-                                        { label: 'OR', value: 'OR' }
-                                    ]}
-                                    onChange={(value) => updateAttribute('taxQueryRelation', value)}
-                                    __nextHasNoMarginBottom={true}
-                                />
-                            )}
+                                {taxQuery.length > 1 && (
+                                    <SelectControl
+                                        label={__('Relation', 'orbitools')}
+                                        value={taxQueryRelation}
+                                        options={[
+                                            { label: 'AND', value: 'AND' },
+                                            { label: 'OR', value: 'OR' }
+                                        ]}
+                                        onChange={(value) => updateAttribute('taxQueryRelation', value)}
+                                        __nextHasNoMarginBottom={true}
+                                    />
+                                )}
+                            </VStack>
                         </ToolsPanelItem>
-                    </ToolsPanel>
+                        </ToolsPanel>
+                    </PanelBody>
                 </InspectorControls>
             )}
 
             {/* Results Settings - Multiple panels */}
             <InspectorControls group="settings">
-                <ToolsPanel
-                    label={__('Results Settings', 'orbitools')}
-                    resetAll={() => {
-                        updateAttribute('layout', QUERY_DEFAULTS.layout);
-                        updateAttribute('gridColumns', QUERY_DEFAULTS.gridColumns);
-                        updateAttribute('template', QUERY_DEFAULTS.template);
-                        updateAttribute('sortBy', QUERY_DEFAULTS.sortBy);
-                        updateAttribute('sortOrder', QUERY_DEFAULTS.sortOrder);
-                        updateAttribute('filterTaxonomies', QUERY_DEFAULTS.filterTaxonomies);
-                        updateAttribute('filterArchives', QUERY_DEFAULTS.filterArchives);
-                    }}
-                    panelId="results-settings-panel"
+                <PanelBody
+                    title={__('Query results', 'orbitools')}
+                    initialOpen={false}
                 >
+                    <ToolsPanel
+                        id="display-template-tools-panel"
+                        label={__('Display & Template Options', 'orbitools')}
+                        resetAll={() => {
+                            updateAttribute('layout', QUERY_DEFAULTS.layout);
+                            updateAttribute('gridColumns', QUERY_DEFAULTS.gridColumns);
+                            updateAttribute('template', QUERY_DEFAULTS.template);
+                            updateAttribute('sortBy', QUERY_DEFAULTS.sortBy);
+                            updateAttribute('sortOrder', QUERY_DEFAULTS.sortOrder);
+                            updateAttribute('filterTaxonomies', QUERY_DEFAULTS.filterTaxonomies);
+                            updateAttribute('filterArchives', QUERY_DEFAULTS.filterArchives);
+                        }}
+                        panelId="results-settings-panel"
+                    >
                     {/* Layout Controls */}
                     <ToolsPanelItem
                         hasValue={() =>
@@ -1180,7 +1234,7 @@ export default function QueryLoopControls({ attributes, setAttributes }: QueryLo
                             hasNonDefaultValue('gridColumns', QUERY_DEFAULTS.gridColumns) ||
                             hasNonDefaultValue('template', QUERY_DEFAULTS.template)
                         }
-                        isShownByDefault={true}
+                        isShownByDefault={false}
                         label={__('Layout', 'orbitools')}
                         onDeselect={() => {
                             updateAttribute('layout', QUERY_DEFAULTS.layout);
@@ -1189,49 +1243,51 @@ export default function QueryLoopControls({ attributes, setAttributes }: QueryLo
                         }}
                         panelId="results-settings-panel"
                     >
-                        <ToggleGroupControl
-                            label={__('Display Type', 'orbitools')}
-                            value={layout}
-                            onChange={(value) => updateAttribute('layout', value)}
-                            isBlock
-                            __nextHasNoMarginBottom={true}
-                        >
-                            <ToggleGroupControlOption
-                                value="grid"
-                                label={__('Grid', 'orbitools')}
-                            />
-                            <ToggleGroupControlOption
-                                value="list"
-                                label={__('List', 'orbitools')}
-                            />
-                        </ToggleGroupControl>
-
-                        {layout === 'grid' && (
+                        <VStack spacing={4}>
                             <ToggleGroupControl
-                                label={__('Columns', 'orbitools')}
-                                value={gridColumns}
-                                onChange={(value) => updateAttribute('gridColumns', value)}
+                                label={__('Display Type', 'orbitools')}
+                                value={layout}
+                                onChange={(value) => updateAttribute('layout', value)}
                                 isBlock
                                 __nextHasNoMarginBottom={true}
                             >
                                 <ToggleGroupControlOption
-                                    value="2"
-                                    label="2"
+                                    value="grid"
+                                    label={__('Grid', 'orbitools')}
                                 />
                                 <ToggleGroupControlOption
-                                    value="3"
-                                    label="3"
-                                />
-                                <ToggleGroupControlOption
-                                    value="4"
-                                    label="4"
-                                />
-                                <ToggleGroupControlOption
-                                    value="5"
-                                    label="5"
+                                    value="list"
+                                    label={__('List', 'orbitools')}
                                 />
                             </ToggleGroupControl>
-                        )}
+
+                            {layout === 'grid' && (
+                                <ToggleGroupControl
+                                    label={__('Columns', 'orbitools')}
+                                    value={gridColumns}
+                                    onChange={(value) => updateAttribute('gridColumns', value)}
+                                    isBlock
+                                    __nextHasNoMarginBottom={true}
+                                >
+                                    <ToggleGroupControlOption
+                                        value="2"
+                                        label="2"
+                                    />
+                                    <ToggleGroupControlOption
+                                        value="3"
+                                        label="3"
+                                    />
+                                    <ToggleGroupControlOption
+                                        value="4"
+                                        label="4"
+                                    />
+                                    <ToggleGroupControlOption
+                                        value="5"
+                                        label="5"
+                                    />
+                                </ToggleGroupControl>
+                            )}
+                        </VStack>
                     </ToolsPanelItem>
 
                     {/* Template Control */}
@@ -1239,18 +1295,20 @@ export default function QueryLoopControls({ attributes, setAttributes }: QueryLo
                         hasValue={() =>
                             hasNonDefaultValue('template', QUERY_DEFAULTS.template)
                         }
-                        isShownByDefault={true}
+                        isShownByDefault={false}
                         label={__('Template', 'orbitools')}
                         onDeselect={() => {
                             updateAttribute('template', QUERY_DEFAULTS.template);
                         }}
                         panelId="results-settings-panel"
                     >
-                        <QueryTemplateControl
-                            layout={layout}
-                            template={template}
-                            onChange={(value) => updateAttribute('template', value)}
-                        />
+                        <VStack spacing={4}>
+                            <QueryTemplateControl
+                                layout={layout}
+                                template={template}
+                                onChange={(value) => updateAttribute('template', value)}
+                            />
+                        </VStack>
                     </ToolsPanelItem>
 
                     {/* Frontend Sorting Controls */}
@@ -1265,24 +1323,26 @@ export default function QueryLoopControls({ attributes, setAttributes }: QueryLo
                         }}
                         panelId="results-settings-panel"
                     >
-                        <FormTokenDropdown
-                            label={__('Available Sort Options', 'orbitools')}
-                            help={__('Which sorting buttons/dropdown options to display on the frontend for users to interact with', 'orbitools')}
-                            value={sortBy || []}
-                            suggestions={[
-                                'title',
-                                'date',
-                                'modified',
-                                'menu_order',
-                                'author',
-                                'name',
-                                'comment_count',
-                                'relevance',
-                                'rand'
-                            ]}
-                            onChange={(tokens) => updateAttribute('sortBy', tokens)}
-                            placeholder={__('Select frontend sort options...', 'orbitools')}
-                        />
+                        <VStack spacing={4}>
+                            <FormTokenDropdown
+                                label={__('Available Sort Options', 'orbitools')}
+                                help={__('Which sorting buttons/dropdown options to display on the frontend for users to interact with', 'orbitools')}
+                                value={sortBy || []}
+                                suggestions={[
+                                    'title',
+                                    'date',
+                                    'modified',
+                                    'menu_order',
+                                    'author',
+                                    'name',
+                                    'comment_count',
+                                    'relevance',
+                                    'rand'
+                                ]}
+                                onChange={(tokens) => updateAttribute('sortBy', tokens)}
+                                placeholder={__('Select frontend sort options...', 'orbitools')}
+                            />
+                        </VStack>
                     </ToolsPanelItem>
 
                     {/* Frontend Filtering Controls */}
@@ -1302,50 +1362,53 @@ export default function QueryLoopControls({ attributes, setAttributes }: QueryLo
                         }}
                         panelId="results-settings-panel"
                     >
-                        {/* Enable Taxonomy Filters */}
-                        <ToggleControl
-                            label={__('Enable Taxonomy Filters', 'orbitools')}
-                            help={__('Show taxonomy-based filtering options on the frontend (categories, tags, custom taxonomies)', 'orbitools')}
-                            checked={enableTaxonomyFilters || false}
-                            onChange={(value) => updateAttribute('enableTaxonomyFilters', value)}
-                            __nextHasNoMarginBottom={true}
-                        />
-
-                        {/* Taxonomy Filter Control Type - Show when enabled */}
-                        {enableTaxonomyFilters && (
-                            <SelectControl
-                                label={__('Taxonomy Filter Display Type', 'orbitools')}
-                                help={__('How taxonomy filters should be displayed to users', 'orbitools')}
-                                value={taxonomyFilterType || 'dropdown'}
-                                options={[
-                                    { label: __('Dropdown Select', 'orbitools'), value: 'dropdown' },
-                                    { label: __('Checkboxes', 'orbitools'), value: 'checkboxes' },
-                                    { label: __('Multi-Select', 'orbitools'), value: 'multiselect' }
-                                ]}
-                                onChange={(value) => updateAttribute('taxonomyFilterType', value)}
+                        <VStack spacing={4}>
+                            {/* Enable Taxonomy Filters */}
+                            <ToggleControl
+                                label={__('Enable Taxonomy Filters', 'orbitools')}
+                                help={__('Show taxonomy-based filtering options on the frontend (categories, tags, custom taxonomies)', 'orbitools')}
+                                checked={enableTaxonomyFilters || false}
+                                onChange={(value) => updateAttribute('enableTaxonomyFilters', value)}
                                 __nextHasNoMarginBottom={true}
                             />
-                        )}
 
-                        {/* Enable Date Filter */}
-                        <ToggleControl
-                            label={__('Enable Date Filter', 'orbitools')}
-                            help={__('Show date-based filtering options on the frontend (year, month, date ranges)', 'orbitools')}
-                            checked={enableDateFilter || false}
-                            onChange={(value) => updateAttribute('enableDateFilter', value)}
-                            __nextHasNoMarginBottom={true}
-                        />
+                            {/* Taxonomy Filter Control Type - Show when enabled */}
+                            {enableTaxonomyFilters && (
+                                <SelectControl
+                                    label={__('Taxonomy Filter Display Type', 'orbitools')}
+                                    help={__('How taxonomy filters should be displayed to users', 'orbitools')}
+                                    value={taxonomyFilterType || 'dropdown'}
+                                    options={[
+                                        { label: __('Dropdown Select', 'orbitools'), value: 'dropdown' },
+                                        { label: __('Checkboxes', 'orbitools'), value: 'checkboxes' },
+                                        { label: __('Multi-Select', 'orbitools'), value: 'multiselect' }
+                                    ]}
+                                    onChange={(value) => updateAttribute('taxonomyFilterType', value)}
+                                    __nextHasNoMarginBottom={true}
+                                />
+                            )}
 
-                        {/* Enable Author Filter */}
-                        <ToggleControl
-                            label={__('Enable Author Filter', 'orbitools')}
-                            help={__('Show author-based filtering options on the frontend', 'orbitools')}
-                            checked={enableAuthorFilter || false}
-                            onChange={(value) => updateAttribute('enableAuthorFilter', value)}
-                            __nextHasNoMarginBottom={true}
-                        />
+                            {/* Enable Date Filter */}
+                            <ToggleControl
+                                label={__('Enable Date Filter', 'orbitools')}
+                                help={__('Show date-based filtering options on the frontend (year, month, date ranges)', 'orbitools')}
+                                checked={enableDateFilter || false}
+                                onChange={(value) => updateAttribute('enableDateFilter', value)}
+                                __nextHasNoMarginBottom={true}
+                            />
+
+                            {/* Enable Author Filter */}
+                            <ToggleControl
+                                label={__('Enable Author Filter', 'orbitools')}
+                                help={__('Show author-based filtering options on the frontend', 'orbitools')}
+                                checked={enableAuthorFilter || false}
+                                onChange={(value) => updateAttribute('enableAuthorFilter', value)}
+                                __nextHasNoMarginBottom={true}
+                            />
+                        </VStack>
                     </ToolsPanelItem>
-                </ToolsPanel>
+                    </ToolsPanel>
+                </PanelBody>
             </InspectorControls>
         </Fragment>
     );

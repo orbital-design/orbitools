@@ -1,113 +1,167 @@
 /**
- * Block: Collection - Editor Styles
+ * Block: Query Loop - Editor Styles
  *
- * Block editor specific styles for the Collection block. Handles editor-only styling,
- * preview states, and block editor interface integration that specifically overwrites fronted styles.
+ * Editor-specific styles for the Query Loop block inspector controls.
+ * Reduces excessive padding and margin to create a cleaner interface.
  *
- * @file        blocks/collection
- * @package     Logger Theme
+ * @file        blocks/query-loop/editor.scss
+ * @package     OrbiTools
  * @subpackage  orbitools/blocks
- * @author      Adam Cullen, Orbital Tech Team
  * @since       1.0.0
- * @version     1.2.0
  *
- * @see         blocks/collection/index.scss - Frontend styles
+ * @see         blocks/query-loop/index.scss - Frontend styles
  */
-
- %before {
-    content: '';
-    position: absolute;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    left: 0;
-    background: rgba(0, 124, 186, 0);
-    border: 0px dashed #32a3e2;
-    border-radius: 6px;
-    transition: all 0.25s ease;
+#query-parameters-tools-panel,  // Query Parameters ToolsPanel
+#advanced-filters-tools-panel,  // Advanced Filters ToolsPanel
+#display-template-tools-panel   // Display & Template Options ToolsPanel
+{
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    padding-bottom: 0 !important;
+    border-top: none !important;
 }
+// Query Loop Inspector Controls Styling
+[data-type="orb/query-loop"] {
 
-.orb-collection {
-    position: relative;
+    // Clean up PanelBody padding
+    .components-panel__body {
+        // Reduce top/bottom padding on panel bodies
+        padding-top: 12px;
+        padding-bottom: 12px;
 
-    // UI Cues
-    &::before {
-        @extend %before;
-    }
-
-    > .block-editor-inner-blocks {
-        display: contents;
-        > .block-editor-block-list__layout {
-            display: contents;
+        // Reduce padding on panel body content
+        .components-panel__body-content {
+            padding: 8px 0;
         }
-    }
 
-    &:not([data-constrain="true"]) {
-        &:hover {
-            // UI Cues
-            &:before {
-                background: rgba(0, 124, 186, 0.05);
-                top: -10px;
-                right: -10px;
-                bottom: -10px;
-                left: -10px;
-                border-width: 1px;
+        // Tighten up panel headers
+        .components-panel__body-title {
+            margin-bottom: 8px;
+
+            .components-panel__body-toggle {
+                padding: 8px 16px;
             }
         }
     }
 
+    // Clean up ToolsPanel styling
+    .components-tools-panel {
+        margin: 0;
 
-    &.is-selected,
-    &.has-child-selected {
-        // UI Cues
-        &:before {
-            background: rgba(0, 124, 186, 0.05);
-            top: -10px;
-            right: -10px;
-            bottom: -10px;
-            left: -10px;
-            border-width: 1px;
-            border-style: solid;
+        // Reduce ToolsPanel header padding
+        .components-tools-panel-header {
+            padding: 8px 0;
+            margin-bottom: 8px;
+
+            .components-tools-panel-header__title {
+                font-size: 13px;
+                font-weight: 500;
+                margin: 0;
+            }
+
+            .components-tools-panel-header__dropdown-menu {
+                margin-left: auto;
+            }
+        }
+    }
+
+    // Clean up ToolsPanelItem spacing
+    .components-tools-panel-item {
+        margin-bottom: 16px;
+
+        &:last-child {
+            margin-bottom: 0;
+        }
+
+        // Reduce control spacing within items
+        .components-base-control {
+            margin-bottom: 8px;
+
+            &:last-child {
+                margin-bottom: 0;
+            }
+        }
+
+        // Tighter form control spacing
+        .components-select-control,
+        .components-range-control,
+        .components-toggle-control,
+        .components-text-control {
+            margin-bottom: 8px;
+
+            &:last-child {
+                margin-bottom: 0;
+            }
+        }
+    }
+
+    // Special handling for nested controls
+    .components-toggle-group-control {
+        margin-bottom: 8px;
+
+        &:last-child {
+            margin-bottom: 0;
+        }
+    }
+
+    // Clean up the Query Type section (outside panels)
+    .components-toggle-group-control {
+        .components-toggle-group-control-option {
+            min-height: 36px;
+        }
+    }
+
+    // PostSelector debug cleanup (if any remain)
+    .post-selector-debug {
+        display: none;
+    }
+
+    // Tighten up meta query and tax query builder sections
+    .meta-query-rule,
+    .tax-query-rule {
+        margin-bottom: 12px;
+        padding: 12px;
+
+        .components-base-control {
+            margin-bottom: 8px;
+
+            &:last-child {
+                margin-bottom: 0;
+            }
+        }
+    }
+
+    // Clean up button spacing in query builders
+    .components-button {
+        &.is-secondary {
+            margin-top: 8px;
+        }
+
+        &.is-destructive {
+            margin-left: auto;
         }
     }
 }
 
-.alignfull[data-type="orb/collection"] {
+// Global inspector panel improvements for all OrbiTools blocks
+.block-editor-block-inspector {
 
-    &.is-selected,
-    &.has-child-selected {
-        // UI Cues
-        &:before {
-            right: 0;
-            left: 0;
-        }
-    }
+    // Reduce overall inspector padding for OrbiTools blocks
+    [data-type^="orb/"] {
+        .components-panel {
 
-    &:not(.orb-collection) {
-        // UI Cues
-        &::before {
-            @extend %before;
-        }
-
-        // UI Cues
-        &.is-selected,
-        &.has-child-selected,
-        &:hover {
-            // UI Cues
-            &:before {
-                background: rgba(0, 124, 186, 0.05);
-                border-width: 1px;
-                top: -10px;
-                bottom: -10px;
-                right: 0;
-                left: 0;
+            // Tighter panel spacing
+            .components-panel__body + .components-panel__body {
+                border-top: 1px solid #e0e0e0;
+                margin-top: 0;
             }
-        }
 
-        &.is-selected,
-        &.has-child-selected {
-            &:before {
-                border-style: solid;
+            // Reduce help text spacing
+            .components-base-control__help {
+                margin-top: 4px;
+                margin-bottom: 0;
+                font-size: 12px;
+                line-height: 1.4;
             }
         }
     }

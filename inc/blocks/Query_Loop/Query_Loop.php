@@ -445,6 +445,12 @@ class Query_Loop extends Module_Base
 
         // Get selected template
         $selected_template = $query_parameters['display']['template'] ?? 'default';
+        
+        // Ensure template is a string for array key usage
+        if (!is_string($selected_template) && !is_numeric($selected_template)) {
+            $selected_template = 'default';
+        }
+        
         $available_templates = $this->get_available_templates($layout_type);
         
         // Ensure selected template exists, fallback to default
