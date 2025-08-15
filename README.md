@@ -167,10 +167,10 @@ Create template functions in your theme's `functions.php` or plugin:
  * 
  * @param WP_Post $post The post object to render
  * @param string $layout_type Layout type ('grid', 'list', etc.)
- * @param array $template_data Template metadata and configuration
+ * @param string $columns Number of columns (for grid layouts)
  * @return string Rendered HTML for the post item
  */
-function orbitools_query_loop_template_my_custom($post, $layout_type, $template_data) {
+function orbitools_query_loop_template_my_custom($post, $layout_type, $columns) {
     $html = '<article class="my-custom-template" data-post-id="' . $post->ID . '" data-template="my-custom">';
     
     // Featured image
@@ -203,18 +203,12 @@ Use the filter hook to make templates available in the editor:
 add_filter('orbitools/query_loop/available_templates', function($templates, $layout_type) {
     
     // Register template for grid layout only
-    if (function_exists('orbitools_query_loop_template_my_custom') && $layout_type === 'grid') {
+    if (function_exists('orbitools_query_loop_template_my_custom')) {
         $templates['my-custom'] = [
             'label' => 'My Custom Template',
             'description' => 'Custom template with special styling',
-            'type' => 'function',
-            'metadata' => [
-                'Template Name' => 'My Custom Template',
-                'Description' => 'Custom template with special styling',
-                'Author' => 'Your Name',
-                'Version' => '1.0.0',
-                'Supports' => ['featured-images', 'excerpts', 'titles']
-            ]
+            'callback' => 'orbitools_query_loop_template_my_custom',
+            'layouts' => ['grid'] // Only available for grid layout
         ];
     }
     
@@ -223,14 +217,8 @@ add_filter('orbitools/query_loop/available_templates', function($templates, $lay
         $templates['universal'] = [
             'label' => 'Universal Template',
             'description' => 'Works with any layout type',
-            'type' => 'function',
-            'metadata' => [
-                'Template Name' => 'Universal Template',
-                'Description' => 'Adaptive template for all layouts',
-                'Author' => 'Your Name',
-                'Version' => '1.0.0',
-                'Supports' => ['responsive', 'adaptive']
-            ]
+            'callback' => 'orbitools_query_loop_template_universal',
+            'layouts' => ['grid', 'list'] // Available for both layouts
         ];
     }
     
@@ -238,27 +226,48 @@ add_filter('orbitools/query_loop/available_templates', function($templates, $lay
 }, 10, 2);
 ```
 
-##### Function Naming Convention
+##### Template Registration Parameters
 
-Template function names follow a strict pattern:
-- **Pattern**: `orbitools_query_loop_template_{template_key}`
-- **Template key**: Use lowercase letters, numbers, and hyphens only
-- **Function name**: Hyphens in template keys become underscores in function names
+**Required Parameters:**
+- **`label`**: Display name shown in the editor dropdown
+- **`description`**: Brief description of the template's purpose
+- **`callback`**: Function name or callable that renders the template
+
+**Optional Parameters:**
+- **`layouts`**: Array of layout types this template supports (`['grid', 'list']`). If omitted, assumes all layouts are supported.
 
 **Examples:**
-- Template key: `my-magazine` → Function: `orbitools_query_loop_template_my_magazine`
-- Template key: `blog-card` → Function: `orbitools_query_loop_template_blog_card`
-- Template key: `simple` → Function: `orbitools_query_loop_template_simple`
+```php
+$templates['my-template'] = [
+    'label' => 'My Template',
+    'description' => 'Custom template description',
+    'callback' => 'my_template_function_name',
+    'layouts' => ['grid'] // Only show for grid layouts
+];
+
+// Function can be any name - no naming restrictions!
+function my_template_function_name($post, $layout_type) {
+    // Template implementation
+}
+```
+
+##### Layout Filtering
+
+Templates are automatically filtered based on the current layout type:
+- Templates with `'layouts' => ['grid']` only appear in grid layout dropdowns
+- Templates with `'layouts' => ['list']` only appear in list layout dropdowns  
+- Templates with `'layouts' => ['grid', 'list']` appear in both
+- Templates without `layouts` parameter appear in all layouts
 
 ##### Template Function Parameters
 
 All template functions receive three parameters:
 
 ```php
-function orbitools_query_loop_template_example($post, $layout_type, $template_data) {
+function orbitools_query_loop_template_example($post, $layout_type, $columns) {
     // $post: WP_Post object - the current post being rendered
     // $layout_type: string - 'grid', 'list', etc.
-    // $template_data: array - template metadata and configuration
+    // $columns: string - number of columns for grid layouts ('2', '3', '4', '5')
 }
 ```
 
@@ -272,16 +281,10 @@ function orbitools_query_loop_template_example($post, $layout_type, $template_da
 - `'list'` - List layout (single column)
 - Custom layout types from theme/plugin extensions
 
-**$template_data Array:**
-Contains the template metadata from registration:
-```php
-$template_data = [
-    'label' => 'Template Label',
-    'description' => 'Template description',
-    'type' => 'function',
-    'metadata' => [...] // Your metadata array
-];
-```
+**$columns String:**
+- `'2'`, `'3'`, `'4'`, `'5'` - Number of columns for grid layouts
+- Always provided, even for list layouts (defaults to '3')
+- Use for responsive styling or conditional layout logic
 
 ##### Layout-Specific Templates
 

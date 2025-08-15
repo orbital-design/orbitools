@@ -456,7 +456,7 @@ class Query_Loop extends Module_Base
         // Loop through posts
         while ($query->have_posts()) {
             $query->the_post();
-            $html .= $this->render_post_item(get_post(), $layout_type, $selected_template);
+            $html .= $this->render_post_item(get_post(), $layout_type, $selected_template, $grid_columns);
         }
         
         // Reset post data
@@ -484,14 +484,15 @@ class Query_Loop extends Module_Base
      *
      * @param \WP_Post $post Post object
      * @param string $layout_type Layout type (grid/list)
-     * @param array|null $template_data Template data with path and metadata
+     * @param string $template_key Template key
+     * @param string $columns Number of columns (for grid layouts)
      * @return string Rendered post HTML
      */
-    private function render_post_item(\WP_Post $post, string $layout_type, string $template_key): string
+    private function render_post_item(\WP_Post $post, string $layout_type, string $template_key, string $columns = '3'): string
     {
         
         // Use template function if available
-        return $this->render_with_template($post, $layout_type, $template_key);
+        return $this->render_with_template($post, $layout_type, $template_key, $columns);
     }
 
     /**
@@ -499,9 +500,10 @@ class Query_Loop extends Module_Base
      *
      * @param \WP_Post $post Post object
      * @param string $layout_type Layout type
+     * @param string $columns Number of columns (for grid layouts)
      * @return string Rendered HTML
      */
-    private function render_default_template(\WP_Post $post, string $layout_type): string
+    private function render_default_template(\WP_Post $post, string $layout_type, string $columns = '3'): string
     {
         $html = '<article class="orb-query-loop__item orb-query-loop__item--' . esc_attr($layout_type) . '" data-post-id="' . $post->ID . '" data-template="default">';
         
@@ -581,28 +583,26 @@ class Query_Loop extends Module_Base
      * @param \WP_Post $post Post object
      * @param string $layout_type Layout type
      * @param string $template_key Template key
+     * @param string $columns Number of columns (for grid layouts)
      * @return string Rendered HTML
      */
-    private function render_with_template(\WP_Post $post, string $layout_type, string $template_key): string
+    private function render_with_template(\WP_Post $post, string $layout_type, string $template_key, string $columns = '3'): string
     {
-        // Handle built-in default template
-        if ($template_key === 'default') {
-            return $this->render_default_template($post, $layout_type);
-        }
+        // Get available templates for this layout
+        $available_templates = $this->get_available_templates($layout_type);
         
-        // Generate function name from template key (replace hyphens with underscores)
-        $template_function = "orbitools_query_loop_template_" . str_replace('-', '_', $template_key);
-        
-        // Check if template function exists
-        if (\function_exists($template_function)) {
+        // Check if template exists and has a callback
+        if (isset($available_templates[$template_key]) && isset($available_templates[$template_key]['callback'])) {
+            $callback = $available_templates[$template_key]['callback'];
             
-            $template_data = $this->get_available_templates($layout_type)[$template_key] ?? [];
-            return \call_user_func($template_function, $post, $layout_type, $template_data);
+            // Call the template callback
+            if (is_callable($callback)) {
+                return \call_user_func($callback, $post, $layout_type, $columns);
+            }
         }
         
-        // Template function doesn't exist, fallback to built-in default
-        
-        return $this->render_default_template($post, $layout_type);
+        // Template not found or callback not callable, fallback to built-in default
+        return $this->render_default_template($post, $layout_type, $columns);
     }
 
     /**
@@ -751,18 +751,12 @@ class Query_Loop extends Module_Base
     {
         $templates = [];
         
-        // Add built-in default template (function-based)
+        // Add built-in default template
         $templates['default'] = [
             'label' => 'Default',
             'description' => 'Built-in default template',
-            'type' => 'function',
-            'metadata' => [
-                'Template Name' => 'Default',
-                'Description' => 'Built-in default template',
-                'Author' => 'OrbiTools',
-                'Version' => '1.0.0',
-                'Supports' => ['featured-images', 'excerpts', 'dates', 'categories', 'tags']
-            ]
+            'callback' => [$this, 'render_default_template'],
+            'layouts' => ['grid', 'list'] // Default template works with all layouts
         ];
         
         /**
@@ -774,18 +768,33 @@ class Query_Loop extends Module_Base
          *     $templates['my-template'] = [
          *         'label' => 'My Custom Template',
          *         'description' => 'Description of my template',
-         *         'type' => 'function',
-         *         'metadata' => [...]
+         *         'callback' => 'my_template_function_name',
+         *         'layouts' => ['grid', 'list'] // Optional: specify supported layouts
          *     ];
          *     return $templates;
          * }, 10, 2);
          * 
-         * Then create the function: orbitools_query_loop_template_my_template($post, $layout_type, $template_data)
+         * function my_template_function_name($post, $layout_type, $columns) {
+         *     // Template implementation with access to post, layout, and columns
+         * }
          * 
          * @param array $templates Array of template data
          * @param string $layout_type Layout type being requested
          */
-        return \apply_filters('orbitools/query_loop/available_templates', $templates, $layout_type);
+        $all_templates = \apply_filters('orbitools/query_loop/available_templates', $templates, $layout_type);
+        
+        // Filter templates by layout support
+        $filtered_templates = [];
+        foreach ($all_templates as $key => $template) {
+            // If no layouts specified, assume it supports all layouts
+            $supported_layouts = $template['layouts'] ?? ['grid', 'list'];
+            
+            if (in_array($layout_type, $supported_layouts)) {
+                $filtered_templates[$key] = $template;
+            }
+        }
+        
+        return $filtered_templates;
     }
 
 
