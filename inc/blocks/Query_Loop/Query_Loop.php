@@ -465,8 +465,11 @@ class Query_Loop extends Module_Base
         // Close results container
         $html .= '</div>';
         
-        // Add pagination if needed
-        if (!isset($query_parameters['args']['noPaging']) || !$query_parameters['args']['noPaging']) {
+        // Add pagination if needed - check both noPaging and paged settings
+        $noPaging = $query_parameters['args']['noPaging'] ?? false;
+        $paged = $query_parameters['args']['paged'] ?? false;
+        
+        if (!$noPaging && $paged) {
             $html .= $this->render_pagination($query);
         }
         
