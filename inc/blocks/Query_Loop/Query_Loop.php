@@ -219,16 +219,9 @@ class Query_Loop extends Module_Base
      */
     private function build_custom_query(array $args): array
     {
-        // If no args provided, create a basic page query
+        // If no args provided, return special flag to show "no parameters" message
         if (empty($args)) {
-            return [
-                'post_type' => 'page',
-                'posts_per_page' => 10,
-                'post_status' => 'publish',
-                'no_found_rows' => false,
-                'orderby' => 'date',
-                'order' => 'DESC'
-            ];
+            return ['__no_parameters_set__' => true];
         }
         
         // Start with basic query structure
@@ -364,9 +357,13 @@ class Query_Loop extends Module_Base
      */
     private function execute_query(array $query_args): ?\WP_Query
     {
+        // Check for special "no parameters" flag
+        if (isset($query_args['__no_parameters_set__'])) {
+            return null;
+        }
+        
         try {
             $query = new \WP_Query($query_args);
-            
             
             return $query;
         } catch (\Exception $e) {
@@ -409,16 +406,54 @@ class Query_Loop extends Module_Base
             $wrapper_attributes .= ' data-query-id="' . \esc_attr($query_id) . '"';
         }
 
-        // Handle query errors
+        // Handle different empty states
         if (!$query || !$query->have_posts()) {
-            $debug_info = '';
+            // Check if this is a "no parameters set" situation (custom query with no args)
+            $query_type = $query_parameters['type'] ?? 'inherit';
+            $query_args = $query_parameters['args'] ?? [];
+            $is_no_parameters = ($query_type === 'custom' && empty($query_args));
             
-            return sprintf(
-                '<div %s><p class="orb-query-loop__no-results">%s</p>%s</div>',
-                $wrapper_attributes,
-                \esc_html__('No posts found.', 'orbitools'),
-                $debug_info
-            );
+            if ($is_no_parameters) {
+                // No parameters set - show friendly setup message
+                $default_message = '<div class="orb-query-loop__no-parameters">' .
+                    '<h3>' . \esc_html__('Ready to build your query!', 'orbitools') . '</h3>' .
+                    '<p>' . \esc_html__('No query parameters have been set yet. Use the Query Builder panel in the editor to configure what content you\'d like to display.', 'orbitools') . '</p>' .
+                    '</div>';
+                
+                /**
+                 * Filter the "no parameters set" message for Query Loop block
+                 * 
+                 * @param string $message HTML message to display
+                 * @param array $query_parameters The query parameters (empty in this case)
+                 * @param string $query_id Unique query ID for this block instance
+                 */
+                $message = \apply_filters('orbitools/query_loop/no_parameters_message', $default_message, $query_parameters, $query_id);
+                
+                // Try template-based message system
+                $message = $this->render_with_message_template('no_parameters', $message, $query_parameters, $query_id);
+                
+                return sprintf('<div %s>%s</div>', $wrapper_attributes, $message);
+            } else {
+                // Query ran but no posts found
+                $default_message = '<p class="orb-query-loop__no-results">' . 
+                    \esc_html__('No posts found matching your query parameters.', 'orbitools') . 
+                    '</p>';
+                
+                /**
+                 * Filter the "no posts found" message for Query Loop block
+                 * 
+                 * @param string $message HTML message to display  
+                 * @param array $query_parameters The query parameters that were used
+                 * @param string $query_id Unique query ID for this block instance
+                 * @param \WP_Query|null $query The executed query object
+                 */
+                $message = \apply_filters('orbitools/query_loop/no_results_message', $default_message, $query_parameters, $query_id, $query);
+                
+                // Try template-based message system
+                $message = $this->render_with_message_template('no_results', $message, $query_parameters, $query_id, $query);
+                
+                return sprintf('<div %s>%s</div>', $wrapper_attributes, $message);
+            }
         }
 
         // Start building HTML
@@ -844,6 +879,21 @@ class Query_Loop extends Module_Base
                 ]
             ]
         ]);
+
+        \register_rest_route('orbitools/v1', '/query-loop/message-templates', [
+            'methods' => 'GET',
+            'callback' => [$this, 'get_message_template_options_rest'],
+            'permission_callback' => function() {
+                return \current_user_can('edit_posts');
+            },
+            'args' => [
+                'message_type' => [
+                    'required' => false,
+                    'default' => 'no_parameters',
+                    'sanitize_callback' => 'sanitize_text_field'
+                ]
+            ]
+        ]);
     }
 
     /**
@@ -858,5 +908,151 @@ class Query_Loop extends Module_Base
         $templates = $this->get_template_options($layout_type);
         
         return new \WP_REST_Response($templates, 200);
+    }
+
+    /**
+     * Get message template options for frontend dropdown
+     *
+     * @param string $message_type Message type
+     * @return array Simple array for select options
+     */
+    public function get_message_template_options(string $message_type = 'no_parameters'): array
+    {
+        $templates = $this->get_available_message_templates($message_type);
+        $options = [];
+        
+        foreach ($templates as $key => $template) {
+            $options[] = [
+                'label' => $template['label'],
+                'value' => $key
+            ];
+        }
+        
+        return $options;
+    }
+
+    /**
+     * REST API callback to get message template options
+     *
+     * @param \WP_REST_Request $request
+     * @return \WP_REST_Response
+     */
+    public function get_message_template_options_rest(\WP_REST_Request $request): \WP_REST_Response
+    {
+        $message_type = $request->get_param('message_type') ?? 'no_parameters';
+        $templates = $this->get_message_template_options($message_type);
+        
+        return new \WP_REST_Response($templates, 200);
+    }
+
+    /**
+     * Get available message templates for Query Loop empty states
+     *
+     * @param string $message_type Type of message ('no_parameters' or 'no_results')
+     * @return array Array of message template data
+     */
+    public function get_available_message_templates(string $message_type = 'no_parameters'): array
+    {
+        $templates = [];
+        
+        // Add built-in default template
+        $templates['default'] = [
+            'label' => 'Default',
+            'description' => 'Built-in default message',
+            'callback' => [$this, 'render_default_message_template'],
+            'message_types' => ['no_parameters', 'no_results'] // Default works for both types
+        ];
+        
+        /**
+         * Filter available Query Loop message templates
+         * 
+         * Register your message templates using this hook:
+         * 
+         * add_filter('orbitools/query_loop/available_message_templates', function($templates, $message_type) {
+         *     $templates['my-message'] = [
+         *         'label' => 'My Custom Message',
+         *         'description' => 'Description of my message template',
+         *         'callback' => 'my_message_function_name',
+         *         'message_types' => ['no_parameters'] // Optional: specify supported types
+         *     ];
+         *     return $templates;
+         * }, 10, 2);
+         * 
+         * function my_message_function_name($message_type, $query_parameters, $query_id, $query = null) {
+         *     // Message template implementation
+         * }
+         * 
+         * @param array $templates Array of message template data
+         * @param string $message_type Message type being requested
+         */
+        $all_templates = \apply_filters('orbitools/query_loop/available_message_templates', $templates, $message_type);
+        
+        // Filter templates by message type support
+        $filtered_templates = [];
+        foreach ($all_templates as $key => $template) {
+            // If no message_types specified, assume it supports all types
+            $supported_types = $template['message_types'] ?? ['no_parameters', 'no_results'];
+            
+            if (in_array($message_type, $supported_types)) {
+                $filtered_templates[$key] = $template;
+            }
+        }
+        
+        return $filtered_templates;
+    }
+
+    /**
+     * Render message using template function
+     *
+     * @param string $message_type Type of message ('no_parameters' or 'no_results')
+     * @param string $fallback_message Fallback message if no template found
+     * @param array $query_parameters Query parameters
+     * @param string $query_id Unique query ID
+     * @param \WP_Query|null $query Query object (for no_results type)
+     * @return string Rendered message HTML
+     */
+    private function render_with_message_template(string $message_type, string $fallback_message, array $query_parameters, string $query_id, ?\WP_Query $query = null): string
+    {
+        // Get available templates for this message type
+        $available_templates = $this->get_available_message_templates($message_type);
+        
+        // Get selected message template from query parameters
+        $selected_template = $query_parameters['display']['messageTemplate'] ?? 'default';
+        
+        // Check if template exists and has a callback
+        if (isset($available_templates[$selected_template]) && isset($available_templates[$selected_template]['callback'])) {
+            $callback = $available_templates[$selected_template]['callback'];
+            
+            // Call the template callback
+            if (is_callable($callback)) {
+                return \call_user_func($callback, $message_type, $query_parameters, $query_id, $query);
+            }
+        }
+        
+        // Template not found or callback not callable, return fallback
+        return $fallback_message;
+    }
+
+    /**
+     * Built-in default message template function
+     *
+     * @param string $message_type Type of message ('no_parameters' or 'no_results')
+     * @param array $query_parameters Query parameters
+     * @param string $query_id Unique query ID
+     * @param \WP_Query|null $query Query object (for no_results type)
+     * @return string Rendered HTML
+     */
+    private function render_default_message_template(string $message_type, array $query_parameters, string $query_id, ?\WP_Query $query = null): string
+    {
+        if ($message_type === 'no_parameters') {
+            return '<div class="orb-query-loop__no-parameters">' .
+                '<h3>' . \esc_html__('Ready to build your query!', 'orbitools') . '</h3>' .
+                '<p>' . \esc_html__('No query parameters have been set yet. Use the Query Builder panel in the editor to configure what content you\'d like to display.', 'orbitools') . '</p>' .
+                '</div>';
+        } else {
+            return '<p class="orb-query-loop__no-results">' . 
+                \esc_html__('No posts found matching your query parameters.', 'orbitools') . 
+                '</p>';
+        }
     }
 }
