@@ -20,6 +20,8 @@ const blockEntries = {
     'blocks/read-more/frontend': path.resolve(process.cwd(), 'src', 'blocks', 'read-more', 'frontend.js'),
     'blocks/spacer/index': path.resolve(process.cwd(), 'src', 'blocks', 'spacer', 'index.tsx'),
     'blocks/spacer/editor': path.resolve(process.cwd(), 'src', 'blocks', 'spacer', 'editor.scss'),
+    'blocks/marquee/index': path.resolve(process.cwd(), 'src', 'blocks', 'marquee', 'index.tsx'),
+    'blocks/marquee/editor': path.resolve(process.cwd(), 'src', 'blocks', 'marquee', 'editor.scss'),
 };
 
 module.exports = {
@@ -48,6 +50,10 @@ module.exports = {
                 {
                     from: 'src/blocks/spacer/block.json',
                     to: 'blocks/spacer/block.json',
+                },
+                {
+                    from: 'src/blocks/marquee/block.json',
+                    to: 'blocks/marquee/block.json',
                 },
             ],
         }),

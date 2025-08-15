@@ -1,0 +1,72 @@
+{
+    "apiVersion": 3,
+    "name": "orb/marquee",
+    "version": "1.0.0",
+    "title": "Marquee",
+    "icon": "arrow-down-alt2",
+    "category": "layout",
+    "description": "Displays scrolling content(text, images etc) both horizontally and vertically.",
+    "supports": {
+		"html": false,
+		"align": [
+			"wide",
+			"full"
+		],
+        "orbitools": {
+            "spacings": {
+                "breakpoints": true,
+                "gap": true,
+                "margin": false,
+                "padding": true
+            }
+        }
+    },
+    "attributes": {
+		"orientation": {
+			"type": "string",
+			"default": "x"
+		},
+		"animationDirection": {
+			"type": "string",
+			"enum": [
+				"normal",
+				"reverse"
+			],
+			"default": "normal"
+		},
+		"hoverAnimationState": {
+			"type": "string",
+			"enum": [
+				"paused",
+				"running"
+			],
+			"default": "paused"
+		},
+		"animationSpeed": {
+			"type": "string",
+			"default": "10s"
+		},
+		"gap": {
+			"type": "string",
+			"default": "40px"
+		},
+		"whiteSpace": {
+			"type": "string",
+			"enum": [
+				"wrap",
+				"nowrap"
+			],
+			"default": "wrap"
+		},
+		"overlayColor": {
+			"type": "string"
+		}
+	},
+    "providesContext": {},
+    "usesContext": [],
+    "textdomain": "orbitools",
+    "editorScript": "file:./index.js",
+    "editorStyle": "file:./editor.css",
+    "style": "file:./index.css",
+    "script": "file:./frontend.js"
+}

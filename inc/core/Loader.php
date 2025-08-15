@@ -17,6 +17,7 @@ use Orbitools\Blocks\Entry\Entry;
 use Orbitools\Blocks\Query_Loop\Query_Loop;
 use Orbitools\Blocks\Spacer\Spacer;
 use Orbitools\Blocks\Read_More\Read_More;
+use Orbitools\Blocks\Marquee\Marquee;
 use Orbitools\Modules\User_Avatars\User_Avatars;
 use Orbitools\Controls\Spacings_Controls\Spacings_Controls;
 
@@ -85,6 +86,7 @@ class Loader
         $this->modules[] = new Query_Loop();
         $this->modules[] = new Spacer();
         $this->modules[] = new Read_More();
+        $this->modules[] = new Marquee();
         $this->modules[] = new Spacings_Controls();
         $this->modules[] = new User_Avatars();
     }

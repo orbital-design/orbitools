@@ -1,0 +1,350 @@
+/**
+ * Block: Marquee - Frontend Styles
+ *
+ * Frontend specific styles for the Marquee block. Handles scrolling animations,
+ * responsive behavior, and visual effects for continuously moving content.
+ *
+ * @file        blocks/marquee/index.scss
+ * @package     OrbiTools
+ * @subpackage  orbitools/blocks
+ * @author      OrbiTools Team
+ * @since       1.0.0
+ * @version     1.0.0
+ *
+ * @see         blocks/marquee/editor.scss - Editor styles
+ */
+
+// Base class for Marquee block
+$elem_base: 'orb-marquee';
+
+.#{$elem_base} {
+    position: relative;
+    width: 100%;
+    overflow: hidden;
+    box-sizing: border-box;
+
+    // =======================
+    // Core Animation Setup
+    // =======================
+
+    // Wrapper contains the scrolling content
+    &__wrapper {
+        display: flex;
+        width: max-content;
+        min-width: 100%;
+        
+        // Animation applied here
+        animation-duration: var(--marquee-speed, 10s);
+        animation-timing-function: linear;
+        animation-iteration-count: infinite;
+        animation-fill-mode: both;
+        
+        // Will be set dynamically via CSS custom properties
+        animation-name: var(--marquee-animation-name);
+        animation-direction: var(--marquee-animation-direction, normal);
+    }
+
+    // Content container - holds the actual inner blocks
+    &__content {
+        display: flex;
+        align-items: center;
+        gap: var(--marquee-gap, 40px);
+        white-space: var(--marquee-white-space, wrap);
+        flex-shrink: 0;
+    }
+
+    // =======================
+    // Orientation Classes
+    // =======================
+
+    // Horizontal scrolling (default)
+    &--x {
+        .#{$elem_base}__wrapper {
+            flex-direction: row;
+            --marquee-animation-name: orb-marquee-scroll-x;
+        }
+
+        .#{$elem_base}__content {
+            flex-direction: row;
+        }
+    }
+
+    // Vertical scrolling
+    &--y {
+        height: 400px; // Default height for vertical marquees
+        
+        .#{$elem_base}__wrapper {
+            flex-direction: column;
+            width: 100%;
+            min-width: auto;
+            height: max-content;
+            min-height: 100%;
+            --marquee-animation-name: orb-marquee-scroll-y;
+        }
+
+        .#{$elem_base}__content {
+            flex-direction: column;
+            width: 100%;
+        }
+    }
+
+    // =======================
+    // Animation Direction
+    // =======================
+
+    &--normal {
+        .#{$elem_base}__wrapper {
+            --marquee-animation-direction: normal;
+        }
+    }
+
+    &--reverse {
+        .#{$elem_base}__wrapper {
+            --marquee-animation-direction: reverse;
+        }
+    }
+
+    // =======================
+    // Hover Behavior
+    // =======================
+
+    &--hover-paused {
+        &:hover .#{$elem_base}__wrapper {
+            animation-play-state: paused;
+        }
+    }
+
+    &--hover-running {
+        &:hover .#{$elem_base}__wrapper {
+            animation-play-state: running;
+        }
+    }
+
+    // =======================
+    // Overlay Effects
+    // =======================
+
+    &__overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        pointer-events: none;
+        z-index: 1;
+    }
+
+    &.has-overlay-color {
+        .#{$elem_base}__overlay {
+            background: linear-gradient(
+                90deg,
+                var(--marquee-overlay-color, transparent) 0%,
+                transparent 10%,
+                transparent 90%,
+                var(--marquee-overlay-color, transparent) 100%
+            );
+        }
+
+        // Vertical overlay gradient
+        &.#{$elem_base}--y .#{$elem_base}__overlay {
+            background: linear-gradient(
+                180deg,
+                var(--marquee-overlay-color, transparent) 0%,
+                transparent 10%,
+                transparent 90%,
+                var(--marquee-overlay-color, transparent) 100%
+            );
+        }
+    }
+
+    // =======================
+    // Content Duplication for Seamless Loop
+    // =======================
+
+    // Duplicate content for seamless scrolling
+    &__content::after {
+        content: '';
+        display: block;
+        width: var(--marquee-gap, 40px);
+        flex-shrink: 0;
+    }
+
+    // For horizontal, duplicate the content
+    &--x .#{$elem_base}__content {
+        // Pseudo-element to create space between loops
+        &::after {
+            height: 1px;
+        }
+    }
+
+    // For vertical, duplicate the content
+    &--y .#{$elem_base}__content {
+        &::after {
+            width: 1px;
+            height: var(--marquee-gap, 40px);
+        }
+    }
+
+    // =======================
+    // Animation Keyframes
+    // =======================
+
+    // Note: We use CSS custom properties to inject keyframes
+    // This is done via JavaScript to ensure seamless looping
+}
+
+// =======================
+// Keyframe Animations
+// =======================
+
+@keyframes orb-marquee-scroll-x {
+    0% {
+        transform: translateX(0);
+    }
+    100% {
+        transform: translateX(-50%);
+    }
+}
+
+@keyframes orb-marquee-scroll-y {
+    0% {
+        transform: translateY(0);
+    }
+    100% {
+        transform: translateY(-50%);
+    }
+}
+
+// =======================
+// Responsive Behavior
+// =======================
+
+@media (max-width: 768px) {
+    .#{$elem_base} {
+        // Slower animation on mobile for better readability
+        &__wrapper {
+            animation-duration: calc(var(--marquee-speed, 10s) * 1.5);
+        }
+
+        // Smaller gaps on mobile
+        &__content {
+            gap: calc(var(--marquee-gap, 40px) * 0.75);
+        }
+    }
+}
+
+@media (max-width: 480px) {
+    .#{$elem_base} {
+        // Even slower on very small screens
+        &__wrapper {
+            animation-duration: calc(var(--marquee-speed, 10s) * 2);
+        }
+
+        // Minimum gap on small screens
+        &__content {
+            gap: calc(var(--marquee-gap, 40px) * 0.5);
+        }
+    }
+}
+
+// =======================
+// Accessibility
+// =======================
+
+// Respect user's motion preferences
+@media (prefers-reduced-motion: reduce) {
+    .#{$elem_base} {
+        &__wrapper {
+            animation-duration: 60s !important; // Very slow
+        }
+    }
+}
+
+// High contrast mode support
+@media (prefers-contrast: high) {
+    .#{$elem_base} {
+        &.has-overlay-color .#{$elem_base}__overlay {
+            display: none; // Remove overlay in high contrast
+        }
+    }
+}
+
+// =======================
+// Print Styles
+// =======================
+
+@media print {
+    .#{$elem_base} {
+        &__wrapper {
+            animation: none !important;
+            position: static;
+        }
+
+        &__overlay {
+            display: none;
+        }
+    }
+}
+
+// =======================
+// Editor-specific Overrides
+// =======================
+
+.block-editor-block-preview__content {
+    .#{$elem_base} {
+        // Slower animation in editor preview
+        &__wrapper {
+            animation-duration: calc(var(--marquee-speed, 10s) * 2);
+        }
+    }
+}
+
+// =======================
+// Theme Integration
+// =======================
+
+// Support for WordPress block spacing
+.#{$elem_base} {
+    // Inherit block gap from theme
+    &__content {
+        gap: var(--marquee-gap, var(--wp--style--block-gap, 40px));
+    }
+}
+
+// Support for theme colors
+.has-text-color .#{$elem_base} {
+    &__content {
+        color: inherit;
+    }
+}
+
+.has-background .#{$elem_base} {
+    background: inherit;
+}
+
+// =======================
+// Performance Optimizations
+// =======================
+
+.#{$elem_base} {
+    // Contain layout shifts
+    contain: layout style;
+
+    // Hardware acceleration
+    &__wrapper {
+        will-change: transform;
+        transform: translateZ(0); // Force GPU acceleration
+    }
+}
+
+// =======================
+// Error States
+// =======================
+
+// When content is too short for proper marquee effect
+.#{$elem_base}--insufficient-content {
+    .#{$elem_base}__wrapper {
+        animation: none;
+        justify-content: center;
+    }
+}
