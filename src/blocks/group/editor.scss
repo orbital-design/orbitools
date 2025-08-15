@@ -1,0 +1,269 @@
+/**
+ * Block: Group - Editor Styles
+ *
+ * Block editor specific styles for the Group block. Handles editor-only styling,
+ * preview states, and block editor interface integration.
+ *
+ * @file        blocks/group/editor.scss
+ * @package     OrbiTools
+ * @subpackage  orbitools/blocks
+ * @author      OrbiTools Team
+ * @since       1.0.0
+ * @version     1.0.0
+ *
+ * @see         blocks/group/index.scss - Frontend styles
+ */
+
+// Base class for Group block in editor
+$elem_base: 'orb-group';
+
+// .#{$elem_base} {
+//     // =======================
+//     // Editor-specific Styling
+//     // =======================
+
+//     // Minimum height in editor for empty groups
+//     min-height: 50px;
+
+//     // Visual indication that this is a group block
+//     position: relative;
+
+//     // Inner content container in editor
+//     .#{$elem_base}__inner {
+//         // Ensure proper spacing in editor
+//         .block-editor-inner-blocks {
+//             > .block-editor-block-list__layout {
+//                 margin: 0;
+//                 padding: 0;
+//             }
+//         }
+
+//         // Show placeholder when empty
+//         .block-editor-default-block-appender {
+//             margin: 0;
+//         }
+
+//         // Style the add block button
+//         .block-editor-button-block-appender {
+//             padding: 1rem;
+//             border: 2px dashed #ddd;
+//             border-radius: 4px;
+//             background: transparent;
+//             color: #757575;
+
+//             &:hover {
+//                 border-color: var(--wp-admin-theme-color, #007cba);
+//                 color: var(--wp-admin-theme-color, #007cba);
+//             }
+//         }
+//     }
+
+//     // =======================
+//     // Selection States
+//     // =======================
+
+//     // When group is selected
+//     &.is-selected {
+//         // Add subtle outline to show selection
+//         outline: 1px solid var(--wp-admin-theme-color, #007cba);
+//         outline-offset: 1px;
+
+//         .#{$elem_base}__inner {
+//             // Slightly fade inner blocks to emphasize container
+//             opacity: 0.8;
+//         }
+//     }
+
+//     // When child blocks are selected
+//     &.has-child-selected {
+//         // Subtle indication that parent is active
+//         box-shadow: inset 0 0 0 1px rgba(0, 124, 186, 0.2);
+
+//         .#{$elem_base}__inner {
+//             opacity: 1;
+//         }
+//     }
+
+//     // =======================
+//     // Layout Previews
+//     // =======================
+
+//     // Flex layout preview styles
+//     &.is-layout-flex {
+//         .#{$elem_base}__inner {
+//             // Visual indicator for flex layout in editor
+//             &::before {
+//                 content: '';
+//                 position: absolute;
+//                 top: -2px;
+//                 left: -2px;
+//                 right: -2px;
+//                 bottom: -2px;
+//                 border: 1px dashed rgba(0, 124, 186, 0.3);
+//                 pointer-events: none;
+//                 border-radius: 2px;
+//             }
+//         }
+
+//         // Row layout indicator
+//         &[data-layout-orientation="horizontal"] .#{$elem_base}__inner::before {
+//             border-style: solid;
+//             border-width: 1px 0;
+//             border-left: none;
+//             border-right: none;
+//         }
+
+//         // Stack layout indicator
+//         &[data-layout-orientation="vertical"] .#{$elem_base}__inner::before {
+//             border-style: solid;
+//             border-width: 0 1px;
+//             border-top: none;
+//             border-bottom: none;
+//         }
+//     }
+
+
+//     // =======================
+//     // Variation Picker
+//     // =======================
+
+//     // Style the variation picker when no content exists
+//     .block-editor-block-variation-picker {
+//         padding: 2rem;
+
+//         .block-editor-block-variation-picker__variations {
+//             gap: 1rem;
+//         }
+
+//         .block-editor-block-variation-picker__variation {
+//             border: 2px solid #ddd;
+//             border-radius: 8px;
+//             padding: 1rem;
+//             transition: all 0.2s ease;
+
+//             &:hover {
+//                 border-color: var(--wp-admin-theme-color, #007cba);
+//                 box-shadow: 0 2px 8px rgba(0, 124, 186, 0.2);
+//             }
+
+//             .block-editor-block-variation-picker__variation-label {
+//                 font-weight: 600;
+//                 margin-top: 0.5rem;
+//             }
+//         }
+//     }
+
+//     // =======================
+//     // Inspector Controls
+//     // =======================
+
+//     // No specific inspector control styles needed
+//     // Using default WordPress and OrbiTools control styling
+
+//     // =======================
+//     // Responsive Preview
+//     // =======================
+
+//     // Mobile preview adjustments
+//     .is-mobile-preview & {
+//         // Ensure mobile layout changes are visible
+//         &.is-layout-flex .#{$elem_base}__inner {
+//             flex-direction: column;
+//         }
+//     }
+
+//     // =======================
+//     // Block Preview
+//     // =======================
+
+//     // Style adjustments for block preview in inserter
+//     .block-editor-block-preview__content & {
+//         min-height: auto;
+
+//         .#{$elem_base}__inner {
+//             .block-editor-button-block-appender {
+//                 display: none;
+//             }
+//         }
+//     }
+
+//     // =======================
+//     // Dark Mode Support
+//     // =======================
+
+//     @media (prefers-color-scheme: dark) {
+//         &.is-selected {
+//             outline-color: #fff;
+//         }
+
+//         .#{$elem_base}__inner .block-editor-button-block-appender {
+//             border-color: #555;
+//             color: #ccc;
+
+//             &:hover {
+//                 border-color: #0073aa;
+//                 color: #0073aa;
+//             }
+//         }
+//     }
+// }
+
+
+
+/**
+ * Group: All Alignment Settings
+ */
+.#{$elem_base} {
+	// Ensure not rendering outside the element
+	// as -1px causes overflow-x scrollbars
+	.block-editor-block-list__insertion-point {
+		left: 0;
+		right: 0;
+	}
+}
+
+// Place block list appender in the same place content will appear.
+[data-type="orb/group"].is-selected {
+	.block-list-appender {
+		margin-left: 0;
+		margin-right: 0;
+	}
+
+	.has-background .block-list-appender {
+		// margin-top: $block-padding + $grid-unit-05;
+		// margin-bottom: $block-padding + $grid-unit-05;
+	}
+}
+
+$button-height: 40px;
+$border-width: 1px;
+
+// Affect the appender of the Row and Stack variants.
+.#{$elem_base}.is-layout-flex.block-editor-block-list__block > .block-list-appender:only-child {
+	gap: inherit;
+
+	&,
+	.block-editor-default-block-appender__content,
+	.block-editor-inserter {
+		display: inherit;
+		width: 100%;
+		flex-direction: inherit;
+		flex: 1;
+	}
+
+	&::after {
+		content: "";
+		display: flex;
+		flex: 1 0 $button-height;
+		pointer-events: none;
+		min-height: $button-height - calc$border-width - $border-width;
+		border: $border-width dashed currentColor;
+	}
+
+	// Let the parent be selectable in the placeholder area.
+	pointer-events: none;
+	.block-editor-inserter,
+	.block-editor-button-block-appender {
+		pointer-events: all;
+	}
+}

@@ -1,0 +1,28 @@
+/**
+ * Block: Group - Frontend Styles
+ *
+ * Frontend specific styles for the Group block. Provides base styling
+ * for the flexible container layout system.
+ *
+ * @file        blocks/group/index.scss
+ * @package     OrbiTools
+ * @subpackage  orbitools/blocks
+ * @author      OrbiTools Team
+ * @since       1.0.0
+ * @version     1.0.0
+ *
+ * @see         blocks/group/editor.scss - Editor styles
+ */
+
+// Base class for Group block
+$elem_base: 'orb-group';
+
+.wp-block-group {
+	// This block has customizable padding, border-box makes that more predictable.
+	box-sizing: border-box;
+}
+
+// We need this so groups with negative margins overlap as expected.
+:where(.wp-block-group.wp-block-group-is-layout-constrained) {
+	position: relative;
+}

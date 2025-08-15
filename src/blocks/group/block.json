@@ -1,0 +1,70 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "orb/group",
+	"title": "Group",
+	"category": "design",
+	"description": "Gather blocks in a layout container.",
+	"keywords": [ "container", "wrapper", "row", "section" ],
+	"textdomain": "default",
+	"attributes": {
+		"templateLock": {
+			"type": [ "string", "boolean" ],
+			"enum": [ "all", "insert", "contentOnly", false ]
+		},
+		"allowedBlocks": {
+			"type": "array"
+		},
+		"layout": {
+			"type": "object"
+		}
+	},
+	"supports": {
+		"__experimentalOnEnter": true,
+		"__experimentalOnMerge": true,
+		"__experimentalSettings": true,
+		"align": [ "wide", "full" ],
+		"anchor": true,
+		"ariaLabel": true,
+		"html": false,
+		"background": {
+			"backgroundImage": true,
+			"backgroundSize": true,
+			"__experimentalDefaultControls": {
+				"backgroundImage": true
+			}
+		},
+		"color": {
+            "background": true,
+            "text": true
+		},
+		"shadow": true,
+		"dimensions": {
+			"minHeight": true
+		},
+		"__experimentalBorder": {
+			"color": true,
+			"radius": true,
+			"style": true,
+			"width": true,
+			"__experimentalDefaultControls": {
+				"color": true,
+				"radius": true,
+				"style": true,
+				"width": true
+			}
+		},
+		"position": {
+			"sticky": true
+		},
+		"layout": {
+			"allowSizingOnChildren": true
+		},
+		"interactivity": {
+			"clientNavigation": true
+		}
+	},
+    "editorScript": "file:./index.js",
+	"editorStyle": "wp-block-group-editor",
+	"style": "wp-block-group"
+}
