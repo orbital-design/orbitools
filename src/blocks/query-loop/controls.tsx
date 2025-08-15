@@ -33,110 +33,15 @@ import { __ } from '@wordpress/i18n';
 
 import FormTokenDropdown from './components/FormTokenDropdown';
 import QueryTemplateControl from './components/QueryTemplateControl';
+import MessageTemplateControl from './components/MessageTemplateControl';
 import PostSelector from './components/PostSelector';
-
-interface QueryLoopAttributes {
-    queryParameters: {
-        type: string;
-        args: {
-            postTypes: string[];
-            postStatus: string[];
-            orderby: string;
-            order: string;
-            postsPerPage: number;
-            noPaging: boolean;
-            paged: boolean;
-            offset: number;
-            searchKeyword: string;
-            specificPost: number;
-            includePosts: string[];
-            excludePosts: string[];
-            parentPostsOnly: boolean;
-            childrenOfPosts: string[];
-            meta_query: {
-                relation: string;
-                queries: Array<{
-                    key: string;
-                    value: string;
-                    compare: string;
-                }>;
-            };
-            tax_query: {
-                relation: string;
-                queries: Array<{
-                    taxonomy: string;
-                    terms: string[];
-                    operator: string;
-                }>;
-            };
-        };
-        display: {
-            layout: {
-                type: string;
-                gridColumns: string;
-            };
-            template: string;
-            sorting: {
-                enableSortControls: boolean;
-                availableSortOptions: string[];
-            };
-            filtering: {
-                enableTaxonomyFilters: boolean;
-                enableDateFilter: boolean;
-                enableAuthorFilter: boolean;
-                taxonomyFilterType: string;
-            };
-        };
-    };
-}
-
-interface QueryLoopControlsProps {
-    attributes: QueryLoopAttributes;
-    setAttributes: (attributes: Partial<QueryLoopAttributes>) => void;
-}
+import type { QueryLoopAttributes, QueryLoopControlsProps } from './types';
+import { QUERY_DEFAULTS } from './types';
 
 /**
  * Helper functions to work with nested attribute structure
  */
 
-/**
- * Default values for query controls
- */
-const QUERY_DEFAULTS = {
-    queryType: 'custom',
-    postTypes: [] as string[], // Empty - only set when user selects
-    postStatus: [] as string[], // Empty - only set when user selects
-    orderby: '', // Empty - only set when user changes from WP default
-    order: '', // Empty - only set when user changes from WP default  
-    postsPerPage: undefined, // Undefined - only set when user changes
-    offset: 0, // Keep 0 as it's a meaningful "no offset"
-    noPaging: false,
-    paged: false,
-    searchKeyword: '',
-    metaQuery: [] as Array<{ key: string; value: string; compare: string; }>,
-    metaQueryRelation: 'AND',
-    taxQuery: [] as Array<{ taxonomy: string; terms: string[]; operator: string; }>,
-    taxQueryRelation: 'AND',
-    includePosts: [] as string[],
-    excludePosts: [] as string[],
-    parentPostsOnly: false,
-    childrenOfPosts: [] as string[],
-    layout: 'grid',
-    gridColumns: '3',
-    template: 'default',
-    sortBy: [] as string[],
-    sortOrder: 'date-newest',
-    filterTaxonomies: [] as string[],
-    filterArchives: [] as string[],
-    dateFilterType: 'none',
-    dateFilterYear: '',
-    dateFilterMonth: '',
-    dateFilterDateRange: {},
-    enableTaxonomyFilters: false,
-    enableDateFilter: false,
-    enableAuthorFilter: false,
-    taxonomyFilterType: 'dropdown'
-};
 
 /**
  * Query Loop Block Controls Component
@@ -167,6 +72,7 @@ export default function QueryLoopControls({ attributes, setAttributes }: QueryLo
     const layout = params?.display?.layout?.type || QUERY_DEFAULTS.layout;
     const gridColumns = params?.display?.layout?.gridColumns || QUERY_DEFAULTS.gridColumns;
     const template = params?.display?.template || QUERY_DEFAULTS.template;
+    const messageTemplate = params?.display?.messageTemplate || QUERY_DEFAULTS.messageTemplate;
     const sortBy = params?.display?.sorting?.availableSortOptions || QUERY_DEFAULTS.sortBy;
     const enableTaxonomyFilters = params?.display?.filtering?.enableTaxonomyFilters || QUERY_DEFAULTS.enableTaxonomyFilters;
     const enableDateFilter = params?.display?.filtering?.enableDateFilter || QUERY_DEFAULTS.enableDateFilter;
@@ -486,6 +392,24 @@ export default function QueryLoopControls({ attributes, setAttributes }: QueryLo
                     }
                 });
                 break;
+            case 'messageTemplate':
+                // Message template is stored directly in display, not in a subsection
+                const currentParamsMsg = attributes.queryParameters || { type: 'inherit' };
+                const currentDisplayMsg = { ...currentParamsMsg.display };
+                
+                if (value !== QUERY_DEFAULTS.messageTemplate) {
+                    currentDisplayMsg.messageTemplate = value;
+                } else {
+                    delete currentDisplayMsg.messageTemplate;
+                }
+                
+                setAttributes({
+                    queryParameters: {
+                        ...currentParamsMsg,
+                        display: Object.keys(currentDisplayMsg).length > 0 ? currentDisplayMsg : undefined
+                    }
+                });
+                break;
             case 'sortBy':
                 updateDisplay('sorting', 'availableSortOptions', value);
                 break;
@@ -597,6 +521,9 @@ export default function QueryLoopControls({ attributes, setAttributes }: QueryLo
                 break;
             case 'template':
                 currentValue = params.display?.template;
+                break;
+            case 'messageTemplate':
+                currentValue = params.display?.messageTemplate;
                 break;
             case 'sortBy':
                 currentValue = params.display?.sorting?.availableSortOptions;
@@ -1220,6 +1147,7 @@ export default function QueryLoopControls({ attributes, setAttributes }: QueryLo
                             updateAttribute('layout', QUERY_DEFAULTS.layout);
                             updateAttribute('gridColumns', QUERY_DEFAULTS.gridColumns);
                             updateAttribute('template', QUERY_DEFAULTS.template);
+                            updateAttribute('messageTemplate', QUERY_DEFAULTS.messageTemplate);
                             updateAttribute('sortBy', QUERY_DEFAULTS.sortBy);
                             updateAttribute('sortOrder', QUERY_DEFAULTS.sortOrder);
                             updateAttribute('filterTaxonomies', QUERY_DEFAULTS.filterTaxonomies);
@@ -1307,6 +1235,26 @@ export default function QueryLoopControls({ attributes, setAttributes }: QueryLo
                                 layout={layout}
                                 template={template}
                                 onChange={(value) => updateAttribute('template', value)}
+                            />
+                        </VStack>
+                    </ToolsPanelItem>
+
+                    {/* Message Template Control */}
+                    <ToolsPanelItem
+                        hasValue={() =>
+                            hasNonDefaultValue('messageTemplate', QUERY_DEFAULTS.messageTemplate)
+                        }
+                        isShownByDefault={false}
+                        label={__('Message Template', 'orbitools')}
+                        onDeselect={() => {
+                            updateAttribute('messageTemplate', QUERY_DEFAULTS.messageTemplate);
+                        }}
+                        panelId="results-settings-panel"
+                    >
+                        <VStack spacing={4}>
+                            <MessageTemplateControl
+                                messageTemplate={messageTemplate}
+                                onChange={(value) => updateAttribute('messageTemplate', value)}
                             />
                         </VStack>
                     </ToolsPanelItem>

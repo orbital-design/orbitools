@@ -1,134 +1,327 @@
 /**
- * Block: Collection - Frontend Styles
+ * Block: Query Loop - Frontend Styles
  *
- * Frontend specific styles for the Collection block. Handles frontend/editor styling,
- * preview states.
+ * Frontend specific styles for the Query Loop block. Handles layout rendering,
+ * template styling, and responsive behavior for dynamically generated content.
  *
- * @file        blocks/collection
- * @package     Logger Theme
+ * @file        blocks/query-loop/index.scss
+ * @package     OrbiTools
  * @subpackage  orbitools/blocks
- * @author      Adam Cullen, Orbital Tech Team
+ * @author      OrbiTools Team
  * @since       1.0.0
- * @version     1.2.0
+ * @version     1.0.0
  *
- * @see         blocks/collection/editor.scss - Editor styles
+ * @see         blocks/query-loop/editor.scss - Editor styles
  */
 
-$elem_base: 'orb-collection';
+// Base class for Query Loop block
+$elem_base: 'orb-query-loop';
 
 .#{$elem_base} {
-    &.#{$elem_base}--row {
+    width: 100%;
+    box-sizing: border-box;
 
-        display: flex;
-        flex-flow: row nowrap;
-        align-items: stretch;
-        justify-content: flex-start;
-        align-content: stretch;
-        width: 100%;
-        box-sizing: border-box;
+    // =======================
+    // Layout Types
+    // =======================
 
-        // Set a default gap.
-        gap: var(--gutter, var(--wp--style--block-gap, 20px));
+    // Grid Layout
+    &.#{$elem_base}--grid {
+        display: grid;
+        gap: var(--wp--style--block-gap, 1.5rem);
 
-        // Responsive Gap Classes - Base (mobile first)
-        &.gap-0 { gap: 0; }
-        &.gap-small { gap: var(--wp--preset--spacing--small, 1rem); }
-        &.gap-medium { gap: var(--wp--preset--spacing--medium, 2rem); }
-        &.gap-large { gap: var(--wp--preset--spacing--large, 3rem); }
-        &.gap-x-large { gap: var(--wp--preset--spacing--x-large, 4rem); }
-        &.gap-2-x-large { gap: var(--wp--preset--spacing--2-x-large, 5rem); }
-        
-        // Small breakpoint gap classes (810px and up)
-        @media (min-width: 810px) {
-            &.sm\\:gap-0 { gap: 0; }
-            &.sm\\:gap-small { gap: var(--wp--preset--spacing--small, 1rem); }
-            &.sm\\:gap-medium { gap: var(--wp--preset--spacing--medium, 2rem); }
-            &.sm\\:gap-large { gap: var(--wp--preset--spacing--large, 3rem); }
-            &.sm\\:gap-x-large { gap: var(--wp--preset--spacing--x-large, 4rem); }
-            &.sm\\:gap-2-x-large { gap: var(--wp--preset--spacing--2-x-large, 5rem); }
-        }
-        
-        // Medium breakpoint gap classes (1080px and up)
-        @media (min-width: 1080px) {
-            &.md\\:gap-0 { gap: 0; }
-            &.md\\:gap-small { gap: var(--wp--preset--spacing--small, 1rem); }
-            &.md\\:gap-medium { gap: var(--wp--preset--spacing--medium, 2rem); }
-            &.md\\:gap-large { gap: var(--wp--preset--spacing--large, 3rem); }
-            &.md\\:gap-x-large { gap: var(--wp--preset--spacing--x-large, 4rem); }
-            &.md\\:gap-2-x-large { gap: var(--wp--preset--spacing--2-x-large, 5rem); }
-        }
-        
-        // Large breakpoint gap classes (1360px and up)
-        @media (min-width: 1360px) {
-            &.lg\\:gap-0 { gap: 0; }
-            &.lg\\:gap-small { gap: var(--wp--preset--spacing--small, 1rem); }
-            &.lg\\:gap-medium { gap: var(--wp--preset--spacing--medium, 2rem); }
-            &.lg\\:gap-large { gap: var(--wp--preset--spacing--large, 3rem); }
-            &.lg\\:gap-x-large { gap: var(--wp--preset--spacing--x-large, 4rem); }
-            &.lg\\:gap-2-x-large { gap: var(--wp--preset--spacing--2-x-large, 5rem); }
-        }
-        
-        // Extra large breakpoint gap classes (1600px and up)
-        @media (min-width: 1600px) {
-            &.xl\\:gap-0 { gap: 0; }
-            &.xl\\:gap-small { gap: var(--wp--preset--spacing--small, 1rem); }
-            &.xl\\:gap-medium { gap: var(--wp--preset--spacing--medium, 2rem); }
-            &.xl\\:gap-large { gap: var(--wp--preset--spacing--large, 3rem); }
-            &.xl\\:gap-x-large { gap: var(--wp--preset--spacing--x-large, 4rem); }
-            &.xl\\:gap-2-x-large { gap: var(--wp--preset--spacing--2-x-large, 5rem); }
-        }
+        // Grid columns based on data attribute
+        &[data-columns="2"] { grid-template-columns: repeat(2, 1fr); }
+        &[data-columns="3"] { grid-template-columns: repeat(3, 1fr); }
+        &[data-columns="4"] { grid-template-columns: repeat(4, 1fr); }
+        &[data-columns="5"] { grid-template-columns: repeat(5, 1fr); }
 
-        // Constrain Content Class
-        // Active when Align is set to full and constrain is checked
-        &[data-constrain="true"] {
-            max-width: var(--wp--style--global--content-size, 1200px);
-            margin-left: auto;
-            margin-right: auto;
-        }
-
-        // Flex Flow Classes - Combined Dir and Wrap attrs
-        // Only output when NOT default value 'row nowrap'
-        &[data-flow="row wrap"]             { flex-flow: row wrap; }
-        &[data-flow="row wrap-reverse"]     { flex-flow: row wrap-reverse; }
-        &[data-flow="column nowrap"]        { flex-flow: column nowrap; }
-        &[data-flow="column wrap"]          { flex-flow: column wrap; }
-        &[data-flow="column wrap-reverse"]  { flex-flow: column wrap-reverse; }
-
-        // Align Items Classes
-        // Only output when NOT default value 'stretch'
-        &[data-align="center"]  { align-items: center;}
-        &[data-align="start"]   { align-items: flex-start;}
-        &[data-align="end"]     { align-items: flex-end;}
-
-        // Justify Content Classes
-        // Only output when NOT default value 'flex-start'
-        &[data-justify="center"]    { justify-content: center; }
-        &[data-justify="end"]       { justify-content: flex-end; }
-        &[data-justify="between"]   { justify-content: space-between; }
-        &[data-justify="around"]    { justify-content: space-around; }
-        &[data-justify="evenly"]    { justify-content: space-evenly; }
-
-        // Stacked Mobile Classes - Controls whether children automatically stack on smaller screens
-        // Only output when NOT 'false', default value is always true 'fit'
-        &[data-stacked="true"]  {
-            @media (max-width: 50.6875rem) {
-                flex-wrap: wrap !important;
-
-                &[data-layout="equal"],
-                &[data-layout=dodeca],
-                &[data-layout=penta] {
-                    > .orb-entry {
-                        max-width: 100% !important;
-                        flex: 1 1 100%;
-                    }
-                }
+        // Responsive grid behavior
+        @media (max-width: 768px) {
+            &[data-columns="3"],
+            &[data-columns="4"],
+            &[data-columns="5"] {
+                grid-template-columns: repeat(2, 1fr);
             }
         }
 
-        // Layout Classes - Controls classes on children, fit | equal/grow | 5 col grid | 12 col grid
-        // Only output when NOT default value 'fit'
-        &[data-layout="equal"]  { /* Currently no class required but keeping here for record. */}
-        &[data-layout="penta"]  { /* 5-column grid system base styles */ }
-        &[data-layout="dodeca"] { /* 12-column grid system base styles */ }
+        @media (max-width: 480px) {
+            &[data-columns="2"],
+            &[data-columns="3"],
+            &[data-columns="4"],
+            &[data-columns="5"] {
+                grid-template-columns: 1fr;
+            }
+        }
+    }
+
+    // List Layout
+    &.#{$elem_base}--list {
+        display: flex;
+        flex-direction: column;
+        gap: var(--wp--style--block-gap, 1.5rem);
+    }
+
+    // =======================
+    // Template Support
+    // =======================
+
+    // Individual post/item containers
+    .#{$elem_base}__item {
+        width: 100%;
+        box-sizing: border-box;
+        
+        // Ensure consistent height in grid layouts
+        .#{$elem_base}--grid & {
+            height: 100%;
+        }
+    }
+
+    // Template-specific styling
+    .#{$elem_base}__template {
+        &--default {
+            // Default template styling
+            .#{$elem_base}__title {
+                margin: 0 0 0.5rem 0;
+                font-size: 1.25rem;
+                line-height: 1.4;
+
+                a {
+                    color: inherit;
+                    text-decoration: none;
+
+                    &:hover {
+                        text-decoration: underline;
+                    }
+                }
+            }
+
+            .#{$elem_base}__excerpt {
+                margin: 0;
+                color: #666;
+                line-height: 1.6;
+            }
+
+            .#{$elem_base}__meta {
+                margin-top: 1rem;
+                font-size: 0.875rem;
+                color: #999;
+            }
+        }
+
+        // Theme templates can override these styles
+        // by using more specific selectors
+    }
+
+    // =======================
+    // Empty States
+    // =======================
+
+    .#{$elem_base}__empty {
+        padding: 2rem;
+        text-align: center;
+        color: #666;
+        background: #f8f9fa;
+        border: 2px dashed #ddd;
+        border-radius: 8px;
+
+        .#{$elem_base}__empty-icon {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            opacity: 0.6;
+        }
+
+        .#{$elem_base}__empty-title {
+            margin: 0 0 0.5rem 0;
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .#{$elem_base}__empty-description {
+            margin: 0 0 1rem 0;
+            line-height: 1.6;
+        }
+
+        .#{$elem_base}__empty-hint {
+            font-size: 0.875rem;
+            color: #999;
+            font-style: italic;
+        }
+
+        // Theme-specific empty state classes
+        &.ilkari-query-empty {
+            // Custom theme styling can be applied here
+            
+            &--setup {
+                border-color: #007cba;
+                background: #f0f6fc;
+            }
+
+            &--no-results {
+                border-color: #d63638;
+                background: #fcf0f1;
+            }
+
+            &--minimal {
+                background: #fff;
+                border-style: solid;
+                border-width: 1px;
+                padding: 1.5rem;
+            }
+        }
+    }
+
+    // =======================
+    // Pagination Support
+    // =======================
+
+    .#{$elem_base}__pagination {
+        margin-top: 2rem;
+        display: flex;
+        justify-content: center;
+        gap: 0.5rem;
+
+        .page-numbers {
+            padding: 0.5rem 0.75rem;
+            border: 1px solid #ddd;
+            background: #fff;
+            color: #333;
+            text-decoration: none;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+
+            &:hover {
+                background: #f5f5f5;
+                border-color: #999;
+            }
+
+            &.current {
+                background: #007cba;
+                color: #fff;
+                border-color: #007cba;
+            }
+
+            &.prev,
+            &.next {
+                font-weight: 600;
+            }
+        }
+    }
+
+    // =======================
+    // Frontend Filters & Sorting
+    // =======================
+
+    .#{$elem_base}__controls {
+        margin-bottom: 1.5rem;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+        align-items: center;
+
+        .#{$elem_base}__sort,
+        .#{$elem_base}__filter {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+
+            label {
+                font-weight: 600;
+                font-size: 0.875rem;
+                color: #333;
+            }
+
+            select {
+                padding: 0.375rem 0.75rem;
+                border: 1px solid #ddd;
+                border-radius: 4px;
+                background: #fff;
+                font-size: 0.875rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            flex-direction: column;
+            align-items: stretch;
+
+            .#{$elem_base}__sort,
+            .#{$elem_base}__filter {
+                justify-content: space-between;
+            }
+        }
+    }
+
+    // =======================
+    // Loading States
+    // =======================
+
+    &.#{$elem_base}--loading {
+        opacity: 0.6;
+        pointer-events: none;
+
+        .#{$elem_base}__item {
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+    }
+
+    @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.7; }
+    }
+
+    // =======================
+    // Accessibility
+    // =======================
+
+    // Ensure proper focus styles for interactive elements
+    a, button, select {
+        &:focus {
+            outline: 2px solid #007cba;
+            outline-offset: 2px;
+        }
+    }
+
+    // Screen reader text for accessibility
+    .screen-reader-text {
+        clip: rect(1px, 1px, 1px, 1px);
+        position: absolute !important;
+        height: 1px;
+        width: 1px;
+        overflow: hidden;
+    }
+}
+
+// =======================
+// Editor-specific Styles
+// =======================
+
+.block-editor-block-preview__content {
+    .#{$elem_base}__empty {
+        // Make empty states more visible in editor
+        border-color: #007cba;
+        background: #f0f6fc;
+    }
+}
+
+// Editor placeholder styling
+.#{$elem_base}-editor {
+    &__icon {
+        font-size: 2rem;
+        margin-bottom: 0.5rem;
+        opacity: 0.7;
+    }
+
+    &__text {
+        margin: 0 0 0.5rem 0;
+        font-weight: 600;
+        color: #333;
+    }
+
+    &__help {
+        margin: 0;
+        font-size: 0.875rem;
+        color: #666;
+        line-height: 1.4;
     }
 }
