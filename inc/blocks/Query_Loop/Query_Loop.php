@@ -130,11 +130,6 @@ class Query_Loop extends Module_Base
             $query_args = $this->build_custom_query($query_parameters['args'] ?? []);
         }
         
-        // Debug logging
-        if (\defined('WP_DEBUG') && WP_DEBUG) {
-            \error_log('Orbitools Query Loop - Type: ' . $query_type);
-            \error_log('Orbitools Query Loop - Args: ' . print_r($query_args, true));
-        }
         
         // Execute the query
         $query_result = $this->execute_query($query_args);
@@ -250,7 +245,8 @@ class Query_Loop extends Module_Base
             }, $args['postTypes']);
             $query_args['post_type'] = $post_types;
         } else {
-            $query_args['post_type'] = 'page';
+            // If no post types specified, use 'any' to avoid WordPress defaulting to 'post'
+            $query_args['post_type'] = 'any';
         }
 
         // Handle posts per page and pagination
@@ -371,10 +367,6 @@ class Query_Loop extends Module_Base
         try {
             $query = new \WP_Query($query_args);
             
-            // Log query for debugging if WP_DEBUG is enabled
-            if (\defined('WP_DEBUG') && WP_DEBUG) {
-                \error_log('Orbitools Query Loop SQL: ' . $query->request);
-            }
             
             return $query;
         } catch (\Exception $e) {
@@ -420,13 +412,6 @@ class Query_Loop extends Module_Base
         // Handle query errors
         if (!$query || !$query->have_posts()) {
             $debug_info = '';
-            if (\defined('WP_DEBUG') && WP_DEBUG && $query) {
-                $debug_info = sprintf(
-                    '<div style="background: #f0f0f0; padding: 10px; margin: 10px 0; font-family: monospace; font-size: 12px;"><strong>Debug Info:</strong><br>Found Posts: %d<br>SQL: %s</div>',
-                    $query->found_posts,
-                    \esc_html($query->request)
-                );
-            }
             
             return sprintf(
                 '<div %s><p class="orb-query-loop__no-results">%s</p>%s</div>',
@@ -467,11 +452,6 @@ class Query_Loop extends Module_Base
             $selected_template = 'default';
         }
         
-        // Debug logging
-        if (\defined('WP_DEBUG') && WP_DEBUG) {
-            \error_log('Orbitools Query Loop - Selected Template: ' . $selected_template);
-            \error_log('Orbitools Query Loop - Available Templates: ' . print_r(array_keys($available_templates), true));
-        }
 
         // Loop through posts
         while ($query->have_posts()) {
@@ -506,10 +486,6 @@ class Query_Loop extends Module_Base
      */
     private function render_post_item(\WP_Post $post, string $layout_type, string $template_key): string
     {
-        // Debug logging
-        if (\defined('WP_DEBUG') && WP_DEBUG) {
-            \error_log('Orbitools Query Loop - render_post_item called with template_key: ' . $template_key);
-        }
         
         // Use template function if available
         return $this->render_with_template($post, $layout_type, $template_key);
@@ -608,9 +584,6 @@ class Query_Loop extends Module_Base
     {
         // Handle built-in default template
         if ($template_key === 'default') {
-            if (\defined('WP_DEBUG') && WP_DEBUG) {
-                \error_log('Orbitools Query Loop - Using built-in default template');
-            }
             return $this->render_default_template($post, $layout_type);
         }
         
@@ -619,18 +592,12 @@ class Query_Loop extends Module_Base
         
         // Check if template function exists
         if (\function_exists($template_function)) {
-            if (\defined('WP_DEBUG') && WP_DEBUG) {
-                \error_log('Orbitools Query Loop - Using function: ' . $template_function);
-            }
             
             $template_data = $this->get_available_templates($layout_type)[$template_key] ?? [];
             return \call_user_func($template_function, $post, $layout_type, $template_data);
         }
         
         // Template function doesn't exist, fallback to built-in default
-        if (\defined('WP_DEBUG') && WP_DEBUG) {
-            \error_log('Orbitools Query Loop - Template function not found: ' . $template_function . ', using built-in default');
-        }
         
         return $this->render_default_template($post, $layout_type);
     }
