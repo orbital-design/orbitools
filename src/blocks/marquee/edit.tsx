@@ -23,6 +23,8 @@ import {
 	__experimentalToggleGroupControl as ToggleGroupControl,
 	__experimentalToggleGroupControlOption as ToggleGroupControlOption,
 	SelectControl,
+	ToggleControl,
+	RangeControl,
 } from '@wordpress/components';
 import {
 	Icon,
@@ -90,7 +92,9 @@ const Edit: React.FC<BlockEditProps<MarqueeAttributes>> = ({
 		animationSpeed = MARQUEE_DEFAULTS.animationSpeed,
 		gap = MARQUEE_DEFAULTS.gap,
 		overlayColor,
-		whiteSpace = MARQUEE_DEFAULTS.whiteSpace
+		whiteSpace = MARQUEE_DEFAULTS.whiteSpace,
+		autoFill = MARQUEE_DEFAULTS.autoFill,
+		minDuplicates = MARQUEE_DEFAULTS.minDuplicates
     } = attributes;
 
     // Generate CSS custom properties for styling
@@ -149,6 +153,14 @@ const Edit: React.FC<BlockEditProps<MarqueeAttributes>> = ({
 		setAttributes({ gap: newValue });
 	};
 
+	const setAutoFill = (newValue: boolean) => {
+		setAttributes({ autoFill: newValue });
+	};
+
+	const setMinDuplicates = (newValue: number) => {
+		setAttributes({ minDuplicates: newValue });
+	};
+
 	// Helper to check if attribute has non-default value
 	const hasNonDefaultValue = (key: keyof MarqueeAttributes, defaultValue: any) => {
 		return attributes[key] !== undefined && attributes[key] !== defaultValue;
@@ -166,7 +178,9 @@ const Edit: React.FC<BlockEditProps<MarqueeAttributes>> = ({
 							hoverAnimationState: MARQUEE_DEFAULTS.hoverAnimationState,
 							animationSpeed: MARQUEE_DEFAULTS.animationSpeed,
 							gap: MARQUEE_DEFAULTS.gap,
-							whiteSpace: MARQUEE_DEFAULTS.whiteSpace
+							whiteSpace: MARQUEE_DEFAULTS.whiteSpace,
+							autoFill: MARQUEE_DEFAULTS.autoFill,
+							minDuplicates: MARQUEE_DEFAULTS.minDuplicates
 						});
 					}}
 					panelId="marquee-settings-panel"
@@ -225,7 +239,7 @@ const Edit: React.FC<BlockEditProps<MarqueeAttributes>> = ({
 						hasValue={() => hasNonDefaultValue('animationDirection', MARQUEE_DEFAULTS.animationDirection)}
 						label={__('Animation Direction', 'orbitools')}
 						onDeselect={() => setAnimationDirection(MARQUEE_DEFAULTS.animationDirection)}
-						isShownByDefault={false}
+						isShownByDefault={true}
 						panelId="marquee-settings-panel"
 					>
 						<ToggleGroupControl
@@ -309,6 +323,44 @@ const Edit: React.FC<BlockEditProps<MarqueeAttributes>> = ({
 							__nextHasNoMarginBottom={true}
 						/>
 					</ToolsPanelItem>
+
+					{/* Auto-Fill Control */}
+					<ToolsPanelItem
+						hasValue={() => hasNonDefaultValue('autoFill', MARQUEE_DEFAULTS.autoFill)}
+						label={__('Auto-Duplicate Content', 'orbitools')}
+						onDeselect={() => setAutoFill(MARQUEE_DEFAULTS.autoFill)}
+						isShownByDefault={true}
+						panelId="marquee-settings-panel"
+					>
+						<ToggleControl
+							label={__('Auto-Duplicate to Fill Width', 'orbitools')}
+							checked={autoFill}
+							onChange={setAutoFill}
+							help={__('Automatically duplicate content to create a seamless loop effect', 'orbitools')}
+						/>
+					</ToolsPanelItem>
+
+					{/* Minimum Duplicates Control - only show when autoFill is enabled */}
+					{autoFill && (
+						<ToolsPanelItem
+							hasValue={() => hasNonDefaultValue('minDuplicates', MARQUEE_DEFAULTS.minDuplicates)}
+							label={__('Minimum Duplicates', 'orbitools')}
+							onDeselect={() => setMinDuplicates(MARQUEE_DEFAULTS.minDuplicates)}
+							isShownByDefault={false}
+							panelId="marquee-settings-panel"
+						>
+							<RangeControl
+								label={__('Minimum Duplicates', 'orbitools')}
+								value={minDuplicates}
+								onChange={setMinDuplicates}
+								min={1}
+								max={10}
+								step={1}
+								help={__('Minimum number of content duplicates to ensure smooth scrolling', 'orbitools')}
+								__nextHasNoMarginBottom={true}
+							/>
+						</ToolsPanelItem>
+					)}
 				</ToolsPanel>
 
 				<ToolsPanel

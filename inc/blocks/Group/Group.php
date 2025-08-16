@@ -81,6 +81,10 @@ class Group extends Module_Base
         } else {
             \add_action('init', [$this, 'register_block']);
         }
+        
+        // Filter out the default wp-block-orb-group class
+        \add_filter('wp_get_block_css_selector', [$this, 'filter_block_css_selector'], 10, 3);
+        \add_filter('render_block', [$this, 'filter_block_classes'], 10, 2);
     }
 
     /**
@@ -93,6 +97,60 @@ class Group extends Module_Base
         if (file_exists($block_dir . 'block.json')) {
             \register_block_type($block_dir);
         }
+    }
+
+    /**
+     * Filter block CSS selector to remove WordPress core classes
+     */
+    public function filter_block_css_selector($selector, $feature, $block_type): string
+    {
+        // Remove WordPress core classes from selectors for our block
+        if ($block_type && $block_type->name === 'orb/group') {
+            // Replace wp-block-orb-group with orb-group
+            $selector = str_replace('.wp-block-orb-group', '.orb-group', $selector);
+            
+            // Remove other wp- classes from selectors
+            $selector = preg_replace('/\.wp-[a-zA-Z0-9\-_]+/', '', $selector);
+            
+            // Remove is- classes from selectors  
+            $selector = preg_replace('/\.is-[a-zA-Z0-9\-_]+/', '', $selector);
+            
+            // Clean up any double dots or spaces
+            $selector = preg_replace('/\.+/', '.', $selector);
+            $selector = preg_replace('/\s+/', ' ', $selector);
+            $selector = trim($selector);
+        }
+        
+        return $selector;
+    }
+
+    /**
+     * Filter block HTML to remove WordPress core classes
+     */
+    public function filter_block_classes($block_content, $block): string
+    {
+        // Only process our group block
+        if ($block['blockName'] === 'orb/group') {
+            // Remove all WordPress core classes that begin with "wp-"
+            $block_content = preg_replace('/\s+wp-[a-zA-Z0-9\-_]+/', '', $block_content);
+            $block_content = preg_replace('/^wp-[a-zA-Z0-9\-_]+\s+/', '', $block_content);
+            $block_content = preg_replace('/class="wp-[a-zA-Z0-9\-_]+(\s+[^"]*)?"/','class="$1"', $block_content);
+            $block_content = preg_replace('/class="([^"]*\s+)?wp-[a-zA-Z0-9\-_]+(\s+[^"]*)?"/','class="$1$2"', $block_content);
+            
+            // Remove all WordPress core classes that begin with "is-"
+            $block_content = preg_replace('/\s+is-[a-zA-Z0-9\-_]+/', '', $block_content);
+            $block_content = preg_replace('/^is-[a-zA-Z0-9\-_]+\s+/', '', $block_content);
+            $block_content = preg_replace('/class="is-[a-zA-Z0-9\-_]+(\s+[^"]*)?"/','class="$1"', $block_content);
+            $block_content = preg_replace('/class="([^"]*\s+)?is-[a-zA-Z0-9\-_]+(\s+[^"]*)?"/','class="$1$2"', $block_content);
+            
+            // Clean up any empty class attributes or double spaces
+            $block_content = preg_replace('/class="\s*"/', '', $block_content);
+            $block_content = preg_replace('/class="(\s+)"/', 'class="$1"', $block_content);
+            $block_content = preg_replace('/\s+/', ' ', $block_content);
+            $block_content = trim($block_content);
+        }
+        
+        return $block_content;
     }
 
     /**
@@ -119,19 +177,26 @@ class Group extends Module_Base
             $tagName = 'div';
         }
 
+        // Get layout type and corresponding class
+        $layout = $attributes['layout'] ?? null;
+        $layoutType = $layout['type'] ?? 'group';
+        $variationClass = $this->getVariationClass($layoutType);
+
         // Build base classes
         $group_block_classes = [
-            'orb-group'
+            $variationClass
         ];
 
         // Build base classes and add OrbiTools spacing controls
         $base_classes = $this->get_css_classes($group_block_classes);
         $classes_with_spacings = SpacingsRenderer::add_spacings($base_classes, $attributes);
+        
+        // Clean up any extra whitespace and build class attribute manually
+        $clean_classes = trim(preg_replace('/\s+/', ' ', $classes_with_spacings));
 
-        // Get wrapper attributes from WordPress
-        $wrapper_attributes = \get_block_wrapper_attributes([
-            'class' => $classes_with_spacings
-        ]);
+        // Get wrapper attributes from WordPress without class, then add our clean class
+        $wrapper_attributes = \get_block_wrapper_attributes();
+        $wrapper_attributes .= sprintf(' class="%s"', \esc_attr($clean_classes));
 
         $allowed_html = $this->get_kses_allowed_html();
 
@@ -143,7 +208,7 @@ class Group extends Module_Base
         );
 
         // Add inner wrapper for content
-        $html .= '<div class="orb-group__inner">';
+        $html .= '<div class="' . $variationClass . '__inner">';
         
         // Add inner blocks content
         $html .= \wp_kses($content, $allowed_html);
@@ -153,6 +218,21 @@ class Group extends Module_Base
         $html .= sprintf('</%s>', \esc_attr($tagName));
 
         return $html;
+    }
+
+    /**
+     * Get variation-specific class name based on layout type
+     */
+    private function getVariationClass(string $layoutType): string
+    {
+        switch ($layoutType) {
+            case 'group-row':
+                return 'orb-row';
+            case 'group-stack':
+                return 'orb-stack';
+            default:
+                return 'orb-group';
+        }
     }
 
     /**

@@ -47,16 +47,6 @@ const getGroupPlaceholderIcons = ( name = 'group' ) => {
 				<Path d="M0 10a2 2 0 0 1 2-2h44a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V10Zm0 17a2 2 0 0 1 2-2h44a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V27Z" />
 			</SVG>
 		),
-		'group-grid': (
-			<SVG
-				xmlns="http://www.w3.org/2000/svg"
-				width="48"
-				height="48"
-				viewBox="0 0 48 48"
-			>
-				<Path d="M0 10a2 2 0 0 1 2-2h19a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V10Zm25 0a2 2 0 0 1 2-2h19a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H27a2 2 0 0 1-2-2V10ZM0 27a2 2 0 0 1 2-2h19a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V27Zm25 0a2 2 0 0 1 2-2h19a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H27a2 2 0 0 1-2-2V27Z" />
-			</SVG>
-		),
 	};
 	return icons?.[ name ];
 };
@@ -66,7 +56,6 @@ const getGroupPlaceholderIcons = ( name = 'group' ) => {
  *
  * @param {Object}  props                  Arguments to pass to hook.
  * @param {Object}  [props.attributes]     The block's attributes.
- * @param {string}  [props.usedLayoutType] The block's current layout type.
  * @param {boolean} [props.hasInnerBlocks] Whether the block has inner blocks.
  *
  * @return {[boolean, Function]} A state value and setter function.
@@ -78,7 +67,6 @@ export function useShouldShowPlaceHolder( {
 		textColor: undefined,
 		fontSize: undefined,
 	},
-	usedLayoutType = '',
 	hasInnerBlocks = false,
 } ) {
 	const { style, backgroundColor, textColor, fontSize } = attributes;
@@ -94,9 +82,7 @@ export function useShouldShowPlaceHolder( {
 			! backgroundColor &&
 			! fontSize &&
 			! textColor &&
-			! style &&
-			usedLayoutType !== 'flex' &&
-			usedLayoutType !== 'grid'
+			! style
 	);
 
 	useEffect( () => {
@@ -105,8 +91,7 @@ export function useShouldShowPlaceHolder( {
 			!! backgroundColor ||
 			!! fontSize ||
 			!! textColor ||
-			!! style ||
-			usedLayoutType === 'flex'
+			!! style
 		) {
 			setShowPlaceholder( false );
 		}
@@ -115,7 +100,6 @@ export function useShouldShowPlaceHolder( {
 		fontSize,
 		textColor,
 		style,
-		usedLayoutType,
 		hasInnerBlocks,
 	] );
 

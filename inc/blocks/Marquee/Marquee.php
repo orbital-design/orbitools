@@ -118,6 +118,8 @@ class Marquee extends Module_Base
         $gap = \sanitize_text_field($attributes['gap'] ?? '40px');
         $whiteSpace = \sanitize_text_field($attributes['whiteSpace'] ?? 'wrap');
         $overlayColor = isset($attributes['overlayColor']) ? \sanitize_hex_color($attributes['overlayColor']) : null;
+        $autoFill = isset($attributes['autoFill']) ? (bool) $attributes['autoFill'] : true;
+        $minDuplicates = isset($attributes['minDuplicates']) ? (int) $attributes['minDuplicates'] : 2;
 
         $marquee_block_classes = array(
             'orb-marquee',
@@ -141,6 +143,8 @@ class Marquee extends Module_Base
         $marquee_block_wrapper_attrs = array(
             'class' => \esc_attr($classes_with_spacings),
             'style' => \esc_attr($this->get_inline_styles($marquee_block_styles)),
+            'data-auto-fill' => $autoFill ? 'true' : 'false',
+            'data-min-duplicates' => $minDuplicates,
         );
 
         $marquee_block_allowed_html = $this->get_kses_allowed_html();

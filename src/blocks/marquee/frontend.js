@@ -16,12 +16,19 @@
      */
     document.addEventListener('DOMContentLoaded', function() {
         initializeMarquees();
+        
+        // Set up mutation observer after DOM is ready
+        setupMutationObserver();
     });
 
     /**
-     * Re-initialize marquees when content changes (for dynamic content)
+     * Set up MutationObserver to watch for dynamically added marquees
      */
-    if (window.MutationObserver) {
+    function setupMutationObserver() {
+        if (!window.MutationObserver || !document.body) {
+            return;
+        }
+
         const observer = new MutationObserver(function(mutations) {
             mutations.forEach(function(mutation) {
                 if (mutation.type === 'childList') {
@@ -109,7 +116,9 @@
             speed: style.getPropertyValue('--marquee-speed') || '10s',
             gap: style.getPropertyValue('--marquee-gap') || '40px',
             overlayColor: style.getPropertyValue('--marquee-overlay-color'),
-            whiteSpace: style.getPropertyValue('--marquee-white-space') || 'wrap'
+            whiteSpace: style.getPropertyValue('--marquee-white-space') || 'wrap',
+            autoFill: marquee.dataset.autoFill === 'true' || marquee.dataset.autoFill === '1',
+            minDuplicates: parseInt(marquee.dataset.minDuplicates) || 2
         };
     }
 
@@ -121,42 +130,88 @@
      * @param {Object} config Configuration object
      */
     function setupContentDuplication(wrapper, content, config) {
-        // Clone the content for seamless looping
-        const contentClone = content.cloneNode(true);
-        contentClone.setAttribute('aria-hidden', 'true'); // Hide from screen readers
-        contentClone.classList.add('orb-marquee__content--clone');
-        
-        // Append the clone
-        wrapper.appendChild(contentClone);
+        // Remove any existing clones first
+        const existingClones = wrapper.querySelectorAll('.orb-marquee__content--clone');
+        existingClones.forEach(clone => clone.remove());
 
-        // Check if content is sufficient for marquee effect
-        const isContentSufficient = checkContentSufficiency(wrapper, content, config);
-        
-        if (!isContentSufficient) {
-            wrapper.parentElement.classList.add('orb-marquee--insufficient-content');
+        // Skip duplication if autoFill is disabled
+        if (!config.autoFill) {
+            // Still create at least one clone for basic marquee effect
+            const clone = content.cloneNode(true);
+            clone.setAttribute('aria-hidden', 'true');
+            clone.classList.add('orb-marquee__content--clone');
+            wrapper.appendChild(clone);
+            return;
         }
+
+        // Calculate how many duplicates we need
+        const duplicatesNeeded = calculateDuplicatesNeeded(wrapper, content, config);
+        
+        // Create the calculated number of clones
+        for (let i = 0; i < duplicatesNeeded; i++) {
+            const clone = content.cloneNode(true);
+            clone.setAttribute('aria-hidden', 'true');
+            clone.classList.add('orb-marquee__content--clone');
+            clone.dataset.cloneIndex = i + 1; // For debugging
+            wrapper.appendChild(clone);
+        }
+
+        // Add data attribute to track the number of duplicates created
+        wrapper.dataset.duplicateCount = duplicatesNeeded;
     }
 
     /**
-     * Check if there's enough content for effective marquee scrolling
+     * Calculate how many content duplicates are needed for seamless scrolling
      *
      * @param {HTMLElement} wrapper The wrapper element
      * @param {HTMLElement} content The content element
      * @param {Object} config Configuration object
-     * @returns {boolean} Whether content is sufficient
+     * @returns {number} Number of duplicates needed
      */
-    function checkContentSufficiency(wrapper, content, config) {
+    function calculateDuplicatesNeeded(wrapper, content, config) {
         const wrapperRect = wrapper.getBoundingClientRect();
         const contentRect = content.getBoundingClientRect();
         
-        if (config.orientation === 'x') {
-            // For horizontal, content should be wider than container
-            return contentRect.width > wrapperRect.width * 1.2;
+        let containerSize, contentSize, gapValue;
+        
+        // Parse gap value to pixels
+        const gapMatch = config.gap.match(/^(\d+(?:\.\d+)?)(px|rem|em)?$/);
+        if (gapMatch) {
+            const value = parseFloat(gapMatch[1]);
+            const unit = gapMatch[2] || 'px';
+            
+            if (unit === 'rem') {
+                gapValue = value * parseFloat(getComputedStyle(document.documentElement).fontSize);
+            } else if (unit === 'em') {
+                gapValue = value * parseFloat(getComputedStyle(content).fontSize);
+            } else {
+                gapValue = value;
+            }
         } else {
-            // For vertical, content should be taller than container
-            return contentRect.height > wrapperRect.height * 1.2;
+            gapValue = 40; // Default gap
         }
+        
+        if (config.orientation === 'x') {
+            containerSize = wrapperRect.width;
+            contentSize = contentRect.width + gapValue;
+        } else {
+            containerSize = wrapperRect.height;
+            contentSize = contentRect.height + gapValue;
+        }
+        
+        // Calculate how many copies we need to fill the container
+        // We need at least enough to fill the viewport + 1 extra for smooth scrolling
+        let duplicatesNeeded = Math.ceil(containerSize / contentSize) + 1;
+        
+        // Ensure we meet the minimum duplicates requirement
+        duplicatesNeeded = Math.max(duplicatesNeeded, config.minDuplicates);
+        
+        // Cap at a reasonable maximum to prevent performance issues
+        duplicatesNeeded = Math.min(duplicatesNeeded, 20);
+        
+        return duplicatesNeeded;
     }
+
 
     /**
      * Set up dynamic animation properties
@@ -232,10 +287,8 @@
         marquee.setAttribute('role', 'marquee');
         marquee.setAttribute('aria-live', 'off'); // Don't announce changes
         
-        // Add pause button for accessibility if animation is active
-        if (!marquee.classList.contains('orb-marquee--insufficient-content')) {
-            addPauseButton(marquee);
-        }
+        // Add pause button for accessibility
+        addPauseButton(marquee);
         
         // Respect reduced motion preferences
         if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
@@ -326,20 +379,22 @@
             observer.observe(wrapper);
         }
         
-        // Clean up clones on resize to prevent memory leaks
+        // Recalculate duplicates on resize
         let resizeTimeout;
         window.addEventListener('resize', function() {
             clearTimeout(resizeTimeout);
             resizeTimeout = setTimeout(function() {
-                const clones = wrapper.querySelectorAll('.orb-marquee__content--clone');
-                clones.forEach(clone => clone.remove());
-                
-                // Re-setup content duplication with new dimensions
+                // Find the original content (not a clone)
                 const originalContent = wrapper.querySelector('.orb-marquee__content:not(.orb-marquee__content--clone)');
                 if (originalContent) {
                     const marquee = wrapper.closest('.orb-marquee');
                     const config = getMarqueeConfig(marquee);
-                    setupContentDuplication(wrapper, originalContent, config);
+                    
+                    // Only recalculate if autoFill is enabled
+                    if (config.autoFill) {
+                        // Re-setup content duplication with new dimensions
+                        setupContentDuplication(wrapper, originalContent, config);
+                    }
                 }
             }, 250);
         });

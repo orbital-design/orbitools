@@ -19,13 +19,12 @@ import GroupPlaceHolder, { useShouldShowPlaceHolder } from './placeholder';
 
 
 function GroupEdit( { attributes, name, setAttributes, clientId } ) {
-	const { hasInnerBlocks, themeSupportsLayout } = useSelect(
+	const { hasInnerBlocks } = useSelect(
 		( select ) => {
 			const { getBlock, getSettings } = select( blockEditorStore );
 			const block = getBlock( clientId );
 			return {
-				hasInnerBlocks: !! ( block && block.innerBlocks.length ),
-				themeSupportsLayout: getSettings()?.supportsLayout,
+				hasInnerBlocks: !! ( block && block.innerBlocks.length )
 			};
 		},
 		[ clientId ]
@@ -34,21 +33,34 @@ function GroupEdit( { attributes, name, setAttributes, clientId } ) {
 	const {
 		templateLock,
 		allowedBlocks,
-		layout = {},
+		layout
 	} = attributes;
+	
+	const layoutType = layout?.type || 'group';
 
-	// Layout settings.
-	const { type = 'default' } = layout;
-	const layoutSupportEnabled =
-		themeSupportsLayout || type === 'flex' || type === 'grid';
+	// Get variation-specific class name
+	const getVariationClass = (type: string) => {
+		switch (type) {
+			case 'group-row':
+				return 'orb-row';
+			case 'group-stack':
+				return 'orb-stack';
+			default:
+				return 'orb-group';
+		}
+	};
+
+	const className = getVariationClass(layoutType);
 
 	// Hooks.
 	const ref = useRef();
-	const blockProps = useBlockProps( { ref } );
+	const blockProps = useBlockProps( {
+		ref,
+		className
+	} );
 
 	const [ showPlaceholder, setShowPlaceholder ] = useShouldShowPlaceHolder( {
 		attributes,
-		usedLayoutType: type,
 		hasInnerBlocks,
 	} );
 
@@ -67,9 +79,7 @@ function GroupEdit( { attributes, name, setAttributes, clientId } ) {
 	}
 
 	const innerBlocksProps = useInnerBlocksProps(
-		layoutSupportEnabled
-			? blockProps
-			: { className: 'wp-block-group__inner-container' },
+		blockProps,
 		{
 			dropZoneElement: ref.current,
 			templateLock,
@@ -97,15 +107,8 @@ function GroupEdit( { attributes, name, setAttributes, clientId } ) {
 					/>
 				</View>
 			) }
-			{ layoutSupportEnabled && ! showPlaceholder && (
+			{ ! showPlaceholder && (
 				<div { ...innerBlocksProps } />
-			) }
-			{ /* Ideally this is not needed but it's there for backward compatibility reason
-				to keep this div for themes that might rely on its presence */ }
-			{ ! layoutSupportEnabled && ! showPlaceholder && (
-				<div { ...blockProps }>
-					<div { ...innerBlocksProps } />
-				</div>
 			) }
 		</>
 	);

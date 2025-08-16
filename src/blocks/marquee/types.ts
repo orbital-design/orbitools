@@ -52,6 +52,16 @@ export interface MarqueeAttributes {
      * Overlay color for fade effects at edges
      */
     overlayColor?: string;
+    
+    /**
+     * Auto-fill: Automatically duplicate content to fill the width/height
+     */
+    autoFill?: boolean;
+    
+    /**
+     * Minimum number of duplicates to create for seamless loop
+     */
+    minDuplicates?: number;
 }
 
 /**
@@ -76,7 +86,9 @@ export const MARQUEE_DEFAULTS = {
     animationSpeed: '10s',
     gap: '40px',
     whiteSpace: 'wrap' as const,
-    overlayColor: undefined
+    overlayColor: undefined,
+    autoFill: true,
+    minDuplicates: 2
 } as const;
 
 /**

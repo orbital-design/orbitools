@@ -1,9 +1,9 @@
 /**
  * Group Block Registration
- * 
+ *
  * Registers the Group block with WordPress, providing a flexible container
  * for organizing other blocks with various layout options.
- * 
+ *
  * @file blocks/group/index.tsx
  * @since 1.0.0
  */
@@ -19,7 +19,6 @@ import metadata from './block.json';
 
 // Styles
 import './index.scss';
-import './editor.scss';
 
 /**
  * Register the Group block

@@ -2,7 +2,7 @@
  * WordPress dependencies
  */
 import { __, _x } from '@wordpress/i18n';
-import { group, row, stack, grid } from '@wordpress/icons';
+import { group, row, stack } from '@wordpress/icons';
 
 const example = {
 	innerBlocks: [
@@ -62,26 +62,23 @@ const variations = [
 		name: 'group',
 		title: __( 'Group' ),
 		description: __( 'Gather blocks in a container.' ),
-		attributes: { layout: { type: 'constrained' } },
+		attributes: { layout: { type: 'group' } },
 		isDefault: true,
 		scope: [ 'block', 'inserter', 'transform' ],
 		isActive: ( blockAttributes: any ) =>
 			! blockAttributes.layout ||
 			! blockAttributes.layout?.type ||
-			blockAttributes.layout?.type === 'default' ||
-			blockAttributes.layout?.type === 'constrained',
+			blockAttributes.layout?.type === 'group',
 		icon: group,
 	},
 	{
 		name: 'group-row',
 		title: _x( 'Row', 'single horizontal line' ),
 		description: __( 'Arrange blocks horizontally.' ),
-		attributes: { layout: { type: 'flex', flexWrap: 'nowrap' } },
+		attributes: { layout: { type: 'group-row' } },
 		scope: [ 'block', 'inserter', 'transform' ],
 		isActive: ( blockAttributes: any ) =>
-			blockAttributes.layout?.type === 'flex' &&
-			( ! blockAttributes.layout?.orientation ||
-				blockAttributes.layout?.orientation === 'horizontal' ),
+			blockAttributes.layout?.type === 'group-row',
 		icon: row,
 		example,
 	},
@@ -89,23 +86,11 @@ const variations = [
 		name: 'group-stack',
 		title: __( 'Stack' ),
 		description: __( 'Arrange blocks vertically.' ),
-		attributes: { layout: { type: 'flex', orientation: 'vertical' } },
+		attributes: { layout: { type: 'group-stack' } },
 		scope: [ 'block', 'inserter', 'transform' ],
 		isActive: ( blockAttributes: any ) =>
-			blockAttributes.layout?.type === 'flex' &&
-			blockAttributes.layout?.orientation === 'vertical',
+			blockAttributes.layout?.type === 'group-stack',
 		icon: stack,
-		example,
-	},
-	{
-		name: 'group-grid',
-		title: __( 'Grid' ),
-		description: __( 'Arrange blocks in a grid.' ),
-		attributes: { layout: { type: 'grid' } },
-		scope: [ 'block', 'inserter', 'transform' ],
-		isActive: ( blockAttributes: any ) =>
-			blockAttributes.layout?.type === 'grid',
-		icon: grid,
 		example,
 	},
 ];

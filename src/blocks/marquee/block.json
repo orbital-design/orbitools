@@ -60,6 +60,14 @@
 		},
 		"overlayColor": {
 			"type": "string"
+		},
+		"autoFill": {
+			"type": "boolean",
+			"default": true
+		},
+		"minDuplicates": {
+			"type": "number",
+			"default": 2
 		}
 	},
     "providesContext": {},

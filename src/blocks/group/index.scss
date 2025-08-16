@@ -14,15 +14,28 @@
  * @see         blocks/group/editor.scss - Editor styles
  */
 
-// Base class for Group block
-$elem_base: 'orb-group';
-
-.wp-block-group {
+// Base classes for Group block variations
+.orb-group,
+.orb-row,
+.orb-stack {
 	// This block has customizable padding, border-box makes that more predictable.
 	box-sizing: border-box;
 }
 
 // We need this so groups with negative margins overlap as expected.
-:where(.wp-block-group.wp-block-group-is-layout-constrained) {
+:where(.orb-group) {
 	position: relative;
+}
+
+// Variation-specific styles
+.orb-row {
+	display: flex;
+	flex-direction: row;
+	gap: 1rem;
+}
+
+.orb-stack {
+	display: flex;
+	flex-direction: column;
+	gap: 1rem;
 }
