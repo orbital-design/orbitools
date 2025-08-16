@@ -36,10 +36,10 @@ function extractSpacingClasses(className: string = ''): { spacing: string; remai
     const classes = className.split(' ').filter(Boolean);
     const spacingClasses: string[] = [];
     const remainingClasses: string[] = [];
-    
+
     classes.forEach(cls => {
         // Check if class is a spacing class (has-spacing, has-gap-, p-, px-, py-, pt-, pr-, pb-, pl-, m-, mx-, my-, mt-, mr-, mb-, ml-, or responsive variants)
-        if (cls === 'has-spacing' || 
+        if (cls === 'has-spacing' ||
             cls.match(/^(has-gap|p|px|py|pt|pr|pb|pl|m|mx|my|mt|mr|mb|ml)(-|$)/) ||
             cls.match(/^(sm|md|lg|xl):(has-gap|p|px|py|pt|pr|pb|pl|m|mx|my|mt|mr|mb|ml)(-|$)/)) {
             spacingClasses.push(cls);
@@ -47,7 +47,7 @@ function extractSpacingClasses(className: string = ''): { spacing: string; remai
             remainingClasses.push(cls);
         }
     });
-    
+
     return {
         spacing: spacingClasses.join(' '),
         remaining: remainingClasses.join(' ')
@@ -59,15 +59,15 @@ const Edit: React.FC<BlockEditProps<ReadMoreAttributes>> = ({
     setAttributes
 }) => {
     const { openText, closeText, iconType } = attributes;
-    
+
     // Get block props with automatic spacing classes
     const blockProps = useBlockProps({
-        className: 'orb-read-more-block'
+        className: 'orb-read-more'
     });
 
     // Extract spacing classes from blockProps and remove them
     const { spacing: spacingClasses, remaining: nonSpacingClasses } = extractSpacingClasses(blockProps.className);
-    
+
     // Create clean block props without spacing classes
     const cleanBlockProps = {
         ...blockProps,
@@ -87,7 +87,7 @@ const Edit: React.FC<BlockEditProps<ReadMoreAttributes>> = ({
 
     const getIcon = (type: string, isOpen: boolean = false) => {
         if (type === 'none') return null;
-        
+
         const icon = iconMap[type as keyof typeof iconMap] || iconMap.chevron;
         return <span className={`orb-read-more__icon ${isOpen ? 'orb-read-more__icon--is-rotated' : ''}`}>{icon}</span>;
     };
@@ -131,7 +131,7 @@ const Edit: React.FC<BlockEditProps<ReadMoreAttributes>> = ({
         <div {...cleanBlockProps}>
             <div className="orb-read-more-button-settings">
                 <div className="orb-read-more-button-field">
-                    <label>{__('Open Button Text:', 'orb')}</label>
+                    <label>{__('Open text', 'orb')}</label>
                     <div className="orb-read-more-button-preview">
                         <RichText
                             tagName="span"
@@ -144,7 +144,7 @@ const Edit: React.FC<BlockEditProps<ReadMoreAttributes>> = ({
                     </div>
                 </div>
                 <div className="orb-read-more-button-field">
-                    <label>{__('Close Button Text:', 'orb')}</label>
+                    <label>{__('Close test', 'orb')}</label>
                     <div className="orb-read-more-button-preview">
                         <RichText
                             tagName="span"
