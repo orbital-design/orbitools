@@ -17,6 +17,14 @@
 		},
         "layout": {
 			"type": "object"
+		},
+		"orbGap": {
+			"type": "object",
+			"default": {}
+		},
+		"orbPadding": {
+			"type": "object", 
+			"default": {}
 		}
 	},
 	"supports": {
@@ -35,7 +43,15 @@
             "background": true,
             "text": true
 		},
-		"shadow": true
+		"shadow": true,
+		"orbitools": {
+			"spacings": {
+				"enabled": true,
+				"breakpoints": true,
+				"gap": true,
+				"padding": true
+			}
+		}
 	},
     "editorScript": "file:./index.js",
 	"editorStyle": "file:./editor.css",
