@@ -741,7 +741,8 @@ export default function QueryLoopControls({ attributes, setAttributes }: QueryLo
                                         { label: __('Random', 'orbitools'), value: 'rand' },
                                         { label: __('Modified', 'orbitools'), value: 'modified' },
                                         { label: __('Author', 'orbitools'), value: 'author' },
-                                        { label: __('Comment Count', 'orbitools'), value: 'comment_count' }
+                                        { label: __('Comment Count', 'orbitools'), value: 'comment_count' },
+                                        { label: __('Post In Order', 'orbitools'), value: 'post__in' }
                                     ]}
                                     onChange={(value) => updateAttribute('orderby', value)}
                                     __nextHasNoMarginBottom={true}
@@ -1285,7 +1286,8 @@ export default function QueryLoopControls({ attributes, setAttributes }: QueryLo
                                     'name',
                                     'comment_count',
                                     'relevance',
-                                    'rand'
+                                    'rand',
+                                    'post__in'
                                 ]}
                                 onChange={(tokens) => updateAttribute('sortBy', tokens)}
                                 placeholder={__('Select frontend sort options...', 'orbitools')}
