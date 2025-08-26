@@ -115,6 +115,45 @@
                 wrapper.isResuming = true;
             });
         }
+
+        // Set up Intersection Observer for performance optimization
+        // Pause animation when marquee is not in view
+        if (window.IntersectionObserver) {
+            const observer = new IntersectionObserver(
+                (entries) => {
+                    entries.forEach((entry) => {
+                        if (entry.isIntersecting) {
+                            // Marquee is visible - ensure animation is running
+                            if (wrapper.animationPaused) {
+                                wrapper.animationPaused = false;
+                                // Resume animation if it was paused
+                                if (!wrapper.animationID) {
+                                    rotateMarquee(wrapper);
+                                }
+                            }
+                        } else {
+                            // Marquee is not visible - pause animation
+                            wrapper.animationPaused = true;
+                            // Cancel animation frame to save resources
+                            if (wrapper.animationID) {
+                                cancelAnimationFrame(wrapper.animationID);
+                                wrapper.animationID = null;
+                            }
+                        }
+                    });
+                },
+                {
+                    // Start animation slightly before element comes into view
+                    rootMargin: '50px',
+                    threshold: 0
+                }
+            );
+
+            observer.observe(marquee);
+            
+            // Store observer reference for cleanup if needed
+            wrapper.intersectionObserver = observer;
+        }
     }
 
 
@@ -226,7 +265,7 @@
         wrapper.items = Array.from(wrapper.children);
 
         // Position each content block based on orientation and direction
-        wrapper.items.forEach((item) => {
+        wrapper.items.forEach((item, i) => {
             // Set static properties once
             item.style.position = 'absolute';
             item.style.width = contentSize.width + "px";
@@ -279,6 +318,12 @@
 
     function rotateMarquee(wrapper) {
         if (!wrapper || !wrapper.items || wrapper.items.length === 0) return;
+        
+        // Stop animation if marquee is not in view (for performance)
+        if (wrapper.animationPaused) {
+            wrapper.animationID = null;
+            return;
+        }
 
         const config = wrapper.marqueeConfig || {
             speed: 1,
