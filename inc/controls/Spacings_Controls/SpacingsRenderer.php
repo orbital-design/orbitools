@@ -271,4 +271,58 @@ class SpacingsRenderer
     {
         return self::apply_spacings_classes($base_classes, $attributes);
     }
+
+    /**
+     * Helper function for blocks to add only padding classes
+     * 
+     * @param string $base_classes Your block's base CSS classes
+     * @param array $attributes Block attributes from render callback
+     * @return string Classes with padding added
+     */
+    public static function add_padding($base_classes, $attributes): string
+    {
+        $padding_classes = self::get_padding_classes($attributes['orbPadding'] ?? []);
+        
+        if (empty($padding_classes)) {
+            return $base_classes;
+        }
+        
+        return trim($base_classes . ' ' . $padding_classes);
+    }
+
+    /**
+     * Helper function for blocks to add only margin classes
+     * 
+     * @param string $base_classes Your block's base CSS classes
+     * @param array $attributes Block attributes from render callback
+     * @return string Classes with margin added
+     */
+    public static function add_margin($base_classes, $attributes): string
+    {
+        $margin_classes = self::get_margin_classes($attributes['orbMargin'] ?? []);
+        
+        if (empty($margin_classes)) {
+            return $base_classes;
+        }
+        
+        return trim($base_classes . ' ' . $margin_classes);
+    }
+
+    /**
+     * Helper function for blocks to add only gap classes
+     * 
+     * @param string $base_classes Your block's base CSS classes
+     * @param array $attributes Block attributes from render callback
+     * @return string Classes with gap added
+     */
+    public static function add_gap($base_classes, $attributes): string
+    {
+        $gap_classes = self::get_gap_classes($attributes['orbGap'] ?? []);
+        
+        if (empty($gap_classes)) {
+            return $base_classes;
+        }
+        
+        return trim($base_classes . ' ' . $gap_classes);
+    }
 }
