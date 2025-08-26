@@ -16,8 +16,42 @@
      */
     document.addEventListener('DOMContentLoaded', function() {
         initializeMarquees();
+
+        // Set up mutation observer after DOM is ready
+        setupMutationObserver();
     });
 
+    /**
+     * Set up MutationObserver to watch for dynamically added marquees
+     */
+    function setupMutationObserver() {
+        if (!window.MutationObserver || !document.body) {
+            return;
+        }
+
+        const observer = new MutationObserver(function(mutations) {
+            mutations.forEach(function(mutation) {
+                if (mutation.type === 'childList') {
+                    // Check if any new marquee blocks were added
+                    const addedNodes = Array.from(mutation.addedNodes);
+                    const hasMarqueeBlocks = addedNodes.some(node =>
+                        node.nodeType === Node.ELEMENT_NODE &&
+                        (node.classList?.contains('orb-marquee') ||
+                         node.querySelector?.('.orb-marquee'))
+                    );
+
+                    if (hasMarqueeBlocks) {
+                        initializeMarquees();
+                    }
+                }
+            });
+        });
+
+        observer.observe(document.body, {
+            childList: true,
+            subtree: true
+        });
+    }
 
     /**
      * Find and initialize all marquee blocks on the page
@@ -42,11 +76,10 @@
      * @param {HTMLElement} marquee The marquee block element
      */
     function initializeMarquee(marquee) {
-
         const wrapper = marquee.querySelector('.orb-marquee__wrapper');
         const content = marquee.querySelector('.orb-marquee__content');
 
-        if ( !content) {
+        if (!wrapper || !content) {
             console.warn('Marquee block missing required elements');
             return;
         }
@@ -54,106 +87,17 @@
         // Extract configuration from CSS custom properties and classes
         const config = getMarqueeConfig(marquee);
 
-        const contentRect = content.getBoundingClientRect()
-        const contentSize = {
-            width: contentRect.width,
-            height: contentRect.height,
-            gap: 20 // gap in pixels
-        }
         // Set up content duplication for seamless scrolling
         setupContentDuplication(wrapper, content, config);
 
         // Set up dynamic animation properties
-        setupAnimation(wrapper, contentSize, config);
+        setupAnimation(marquee, wrapper, config);
 
         // Set up accessibility features
-        // setupAccessibility(marquee, config);
+        setupAccessibility(marquee, config);
 
-        // // Set up performance optimizations
-        // setupPerformanceOptimizations(wrapper);
-
-        // Calculate speed in pixels per frame based on duration
-        const wrapperWidth = wrapper.getBoundingClientRect().width;
-        
-        // Parse speed from config (e.g., "10s" for 10 seconds)
-        let durationInSeconds = 20; // Default 20 seconds
-        
-        if (config.speed) {
-            // Extract numeric value from "10s" format
-            const speedMatch = config.speed.match(/^(\d+(?:\.\d+)?)s$/);
-            if (speedMatch) {
-                durationInSeconds = parseFloat(speedMatch[1]);
-            }
-        }
-        
-        // The speed should be for one content item to travel its own width
-        // This makes the speed consistent regardless of viewport size
-        const pixelsPerSecond = contentSize.width / durationInSeconds;
-        const pixelsPerFrame = pixelsPerSecond / 60; // 60 FPS
-        
-        // Store config on wrapper for use in rotateMarquee
-        wrapper.marqueeConfig = {
-            speed: pixelsPerFrame,
-            gap: contentSize.gap,
-            duration: durationInSeconds,
-            contentWidth: contentSize.width
-        };
-
-        // Start the rotation animation
-        rotateMarquee(wrapper);
-
-        // Add hover pause functionality if configured
-        if (config.hover === 'paused') {
-            marquee.addEventListener('mouseenter', () => {
-                if (wrapper.animationID) {
-                    cancelAnimationFrame(wrapper.animationID);
-                }
-            });
-
-            marquee.addEventListener('mouseleave', () => {
-                rotateMarquee(wrapper);
-            });
-        }
-
-        // const marqueeWidth = getObjectWidth(marquee);
-        // const marqueeHeight = container.style.height;
-        // const marqueeContent = marquee.querySelector('.orb-marquee__content')
-        // const marqueeContentWidth = getObjectWidth(marqueeContent);
-        // const contentBlock = marqueeContent.innerHTML
-
-        // marqueeContent.innerHTML = "";
-
-        // container.onmouseout = () => rotateMarquee(marqueeContainers);
-
-        // container.onmouseover = () => cancelAnimationFrame(marqueeContainers[0].animationID);
-
-        // container.items = [];
-        // const maxItems = Math.ceil(contentWidth / itemWidth) + 1;
-
-        // for (let i = 0; i < maxItems; i++) {
-        //     container.items[i] = document.createElement("div");
-        //     container.items[i].innerHTML = textContent;
-        //     container.items[i].style.position = "absolute";
-        //     container.items[i].style.left = itemWidth * i + "px";
-        //     container.items[i].style.width = itemWidth + "px";
-        //     container.items[i].style.height = height;
-        //     container.appendChild(container.items[i]);
-        // }
-
-        // marqueeContainers.push(container);
-
-
-
-
-
-
-
-    }
-
-    function getObjectWidth(obj) {
-        if (obj.offsetWidth) return obj.offsetWidth;
-        if (obj.clip) return obj.clip.width;
-        return 0;
+        // Set up performance optimizations
+        setupPerformanceOptimizations(wrapper);
     }
 
     /**
@@ -166,11 +110,12 @@
         const style = getComputedStyle(marquee);
 
         return {
-            orientation: marquee.dataset.orientation,
-            direction: marquee.dataset.direction,
-            hover: marquee.dataset.hover,
-            speed: marquee.dataset.speed,
-            overlayColor: style.getPropertyValue('--marquee-overlay-color')
+            orientation: marquee.classList.contains('orb-marquee--y') ? 'y' : 'x',
+            direction: marquee.classList.contains('orb-marquee--reverse') ? 'reverse' : 'normal',
+            hoverBehavior: marquee.classList.contains('orb-marquee--hover-running') ? 'running' : 'paused',
+            speed: style.getPropertyValue('--marquee-speed') || '10s',
+            overlayColor: style.getPropertyValue('--marquee-overlay-color'),
+            autoFill: marquee.dataset.autoFill === 'true' || marquee.dataset.autoFill === '1',
         };
     }
 
@@ -182,6 +127,19 @@
      * @param {Object} config Configuration object
      */
     function setupContentDuplication(wrapper, content, config) {
+        // Remove any existing clones first
+        const existingClones = wrapper.querySelectorAll('.orb-marquee__content--clone');
+        existingClones.forEach(clone => clone.remove());
+
+        // Skip duplication if autoFill is disabled
+        if (!config.autoFill) {
+            // Still create at least one clone for basic marquee effect
+            const clone = content.cloneNode(true);
+            clone.setAttribute('aria-hidden', 'true');
+            clone.classList.add('orb-marquee__content--clone');
+            wrapper.appendChild(clone);
+            return;
+        }
 
         // Calculate how many duplicates we need
         const duplicatesNeeded = calculateDuplicatesNeeded(wrapper, content, config);
@@ -235,68 +193,23 @@
     /**
      * Set up dynamic animation properties
      *
+     * @param {HTMLElement} marquee The marquee element
      * @param {HTMLElement} wrapper The wrapper element
-     * @param {Object} contentSize The sizes of content element
      * @param {Object} config Configuration object
      */
-    function setupAnimation(wrapper, contentSize, config) {
+    function setupAnimation(marquee, wrapper, config) {
+        // Set animation name based on orientation
+        const animationName = config.orientation === 'x' ?
+            'orb-marquee-scroll-x' : 'orb-marquee-scroll-y';
 
-        wrapper.style.height = contentSize.height + "px";
-        wrapper.style.position = 'relative';
-        wrapper.style.overflow = 'hidden';
+        wrapper.style.setProperty('--marquee-animation-name', animationName);
+        wrapper.style.setProperty('--marquee-animation-direction', config.direction);
 
-        // Set up items array for the wrapper (treating wrapper as the container)
-        wrapper.items = Array.from(wrapper.children);
-
-        // Position each content block
-        wrapper.items.forEach((item, i) => {
-            item.style.position = 'absolute';
-            item.style.left = (contentSize.width + contentSize.gap) * i + "px";
-            item.style.width = contentSize.width + "px";
-            item.style.height = contentSize.height + "px";
-        });
-    }
-
-    function rotateMarquee(wrapper) {
-        if (!wrapper || !wrapper.items || wrapper.items.length === 0) return;
-
-        const config = wrapper.marqueeConfig || { speed: 1, gap: 20, contentWidth: 200 };
-
-        // Move all items to the left by speed pixels
-        for (let i = 0; i < wrapper.items.length; i++) {
-            const item = wrapper.items[i];
-            const currentLeft = parseFloat(item.style.left) || 0;
-            item.style.left = (currentLeft - config.speed) + "px";
+        // Calculate optimal speed based on content size
+        const calculatedSpeed = calculateOptimalSpeed(wrapper, config);
+        if (calculatedSpeed) {
+            wrapper.style.animationDuration = calculatedSpeed;
         }
-
-        // Check if the first item has scrolled completely out of view
-        const firstItem = wrapper.items[0];
-        const firstItemLeft = parseFloat(firstItem.style.left) || 0;
-        const firstItemWidth = config.contentWidth; // Use consistent width from config
-        
-        if (firstItemLeft + firstItemWidth < 0) {
-            // Remove first item from array
-            const shiftedItem = wrapper.items.shift();
-            
-            // Find the rightmost position
-            let rightmostPosition = 0;
-            wrapper.items.forEach(item => {
-                const itemLeft = parseFloat(item.style.left) || 0;
-                const itemRight = itemLeft + config.contentWidth;
-                if (itemRight > rightmostPosition) {
-                    rightmostPosition = itemRight;
-                }
-            });
-            
-            // Position the shifted item after the rightmost item with gap
-            shiftedItem.style.left = (rightmostPosition + config.gap) + "px";
-            
-            // Add it back to the end of the array
-            wrapper.items.push(shiftedItem);
-        }
-
-        // Continue the animation
-        wrapper.animationID = requestAnimationFrame(() => rotateMarquee(wrapper));
     }
 
     /**

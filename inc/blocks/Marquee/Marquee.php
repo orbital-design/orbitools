@@ -112,28 +112,20 @@ class Marquee extends Module_Base
 
         // Sanitize and default attributes
         $orientation = \sanitize_text_field($attributes['orientation'] ?? 'x');
-        $animationDirection = \sanitize_text_field($attributes['animationDirection'] ?? 'normal');
-        $hoverAnimationState = \sanitize_text_field($attributes['hoverAnimationState'] ?? 'paused');
-        $animationSpeed = \sanitize_text_field($attributes['animationSpeed'] ?? '10s');
+        $direction = \sanitize_text_field($attributes['direction'] ?? 'normal');
+        $hoverState = \sanitize_text_field($attributes['hoverState'] ?? 'paused');
+        $speed = \sanitize_text_field($attributes['speed'] ?? '10s');
         $gap = \sanitize_text_field($attributes['gap'] ?? '40px');
-        $whiteSpace = \sanitize_text_field($attributes['whiteSpace'] ?? 'wrap');
         $overlayColor = isset($attributes['overlayColor']) ? \sanitize_hex_color($attributes['overlayColor']) : null;
-        $autoFill = isset($attributes['autoFill']) ? (bool) $attributes['autoFill'] : true;
-        $minDuplicates = isset($attributes['minDuplicates']) ? (int) $attributes['minDuplicates'] : 2;
 
         $marquee_block_classes = array(
             'orb-marquee',
-            "orb-marquee--{$orientation}",
-            "orb-marquee--{$animationDirection}",
-            "orb-marquee--hover-{$hoverAnimationState}",
+            "orb-marquee--hover-{$hoverState}",
             'has-overlay-color' => !empty($overlayColor),
         );
 
         $marquee_block_styles = array(
-            '--marquee-speed' => $animationSpeed,
-            '--marquee-gap' => $gap,
             '--marquee-overlay-color' => $overlayColor ?: 'transparent',
-            '--marquee-white-space' => $whiteSpace,
         );
 
         // Build base classes and add OrbiTools spacing controls
@@ -143,12 +135,14 @@ class Marquee extends Module_Base
         $marquee_block_wrapper_attrs = array(
             'class' => \esc_attr($classes_with_spacings),
             'style' => \esc_attr($this->get_inline_styles($marquee_block_styles)),
-            'data-auto-fill' => $autoFill ? 'true' : 'false',
-            'data-min-duplicates' => $minDuplicates,
+            'data-orientation' => $orientation,
+            'data-direction' => $direction,
+            'data-hover' => $hoverState,
+            'data-speed' => $speed,
         );
 
         $marquee_block_allowed_html = $this->get_kses_allowed_html();
-        
+
         // Start building the HTML structure
         $html = sprintf(
             '<div %s>',
@@ -157,7 +151,7 @@ class Marquee extends Module_Base
 
         // Add wrapper for scrolling content
         $html .= '<div class="orb-marquee__wrapper">';
-        
+
         // Add main content
         $html .= sprintf(
             '<div class="%s">%s</div>',

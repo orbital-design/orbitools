@@ -26,7 +26,7 @@
 			"type": "string",
 			"default": "x"
 		},
-		"animationDirection": {
+		"direction": {
 			"type": "string",
 			"enum": [
 				"normal",
@@ -34,7 +34,7 @@
 			],
 			"default": "normal"
 		},
-		"hoverAnimationState": {
+		"hoverState": {
 			"type": "string",
 			"enum": [
 				"paused",
@@ -42,32 +42,12 @@
 			],
 			"default": "paused"
 		},
-		"animationSpeed": {
+		"speed": {
 			"type": "string",
 			"default": "10s"
 		},
-		"gap": {
-			"type": "string",
-			"default": "40px"
-		},
-		"whiteSpace": {
-			"type": "string",
-			"enum": [
-				"wrap",
-				"nowrap"
-			],
-			"default": "wrap"
-		},
 		"overlayColor": {
 			"type": "string"
-		},
-		"autoFill": {
-			"type": "boolean",
-			"default": true
-		},
-		"minDuplicates": {
-			"type": "number",
-			"default": 2
 		}
 	},
     "providesContext": {},

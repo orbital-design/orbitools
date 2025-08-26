@@ -32,13 +32,13 @@ $elem_base: 'orb-marquee';
         display: flex;
         width: max-content;
         min-width: 100%;
-        
+
         // Animation applied here
         animation-duration: var(--marquee-speed, 10s);
         animation-timing-function: linear;
         animation-iteration-count: infinite;
         animation-fill-mode: both;
-        
+
         // Will be set dynamically via CSS custom properties
         animation-name: var(--marquee-animation-name);
         animation-direction: var(--marquee-animation-direction, normal);
@@ -72,7 +72,7 @@ $elem_base: 'orb-marquee';
     // Vertical scrolling
     &--y {
         height: 400px; // Default height for vertical marquees
-        
+
         .#{$elem_base}__wrapper {
             flex-direction: column;
             width: 100%;
@@ -202,7 +202,7 @@ $elem_base: 'orb-marquee';
         transform: translateX(0);
     }
     100% {
-        transform: translateX(-50%);
+        transform: translateX(100%);
     }
 }
 

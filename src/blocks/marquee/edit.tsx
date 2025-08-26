@@ -1,10 +1,10 @@
 /**
  * Marquee Block Edit Component
- * 
+ *
  * This component provides the editor interface for the Marquee block.
  * The block creates animated scrolling content with customizable direction,
  * speed, and behavior settings.
- * 
+ *
  * @file blocks/marquee/edit.tsx
  * @since 1.0.0
  */
@@ -36,11 +36,10 @@ import {
 import { __ } from '@wordpress/i18n';
 import type { BlockEditProps } from '@wordpress/blocks';
 import type { MarqueeAttributes } from './types';
-import { 
-	MARQUEE_DEFAULTS, 
+import {
+	MARQUEE_DEFAULTS,
 	ANIMATION_SPEED_OPTIONS,
-	GAP_SIZE_OPTIONS,
-	getMarqueeStyles 
+	getMarqueeStyles
 } from './types';
 
 /**
@@ -74,10 +73,10 @@ const TEMPLATE: [string, any][] = [
 
 /**
  * Marquee Block Edit Component
- * 
+ *
  * Renders the editor interface for the Marquee block.
  * Provides controls for animation settings and content management.
- * 
+ *
  * @param props Block edit props containing attributes and setAttributes
  * @returns JSX element with controls and editor preview
  */
@@ -85,29 +84,25 @@ const Edit: React.FC<BlockEditProps<MarqueeAttributes>> = ({
     attributes, setAttributes, clientId
 }) => {
     // Extract attributes with fallbacks to defaults
-    const { 
+    const {
         orientation = MARQUEE_DEFAULTS.orientation,
-		animationDirection = MARQUEE_DEFAULTS.animationDirection,
-		hoverAnimationState = MARQUEE_DEFAULTS.hoverAnimationState,
-		animationSpeed = MARQUEE_DEFAULTS.animationSpeed,
-		gap = MARQUEE_DEFAULTS.gap,
+		direction = MARQUEE_DEFAULTS.direction,
+		hoverState = MARQUEE_DEFAULTS.hoverState,
+		speed = MARQUEE_DEFAULTS.speed,
 		overlayColor,
-		whiteSpace = MARQUEE_DEFAULTS.whiteSpace,
-		autoFill = MARQUEE_DEFAULTS.autoFill,
-		minDuplicates = MARQUEE_DEFAULTS.minDuplicates
     } = attributes;
 
     // Generate CSS custom properties for styling
     const marqueeStyles = getMarqueeStyles(attributes);
-    
+
     const blockProps = useBlockProps({
         className: [
             'orb-marquee',
-            `orb-marquee--${orientation}`,
-            `orb-marquee--${animationDirection}`,
-            `orb-marquee--hover-${hoverAnimationState}`,
             overlayColor && 'has-overlay-color'
         ].filter(Boolean).join(' '),
+        'data-orientation': orientation,
+        'data-direction': direction,
+        'data-hover': hoverState,
         style: marqueeStyles
     });
 
@@ -133,32 +128,16 @@ const Edit: React.FC<BlockEditProps<MarqueeAttributes>> = ({
 		setAttributes({ orientation: newValue });
 	};
 
-	const setAnimationDirection = (newValue: 'normal' | 'reverse') => {
-		setAttributes({ animationDirection: newValue });
+	const setDirection = (newValue: 'normal' | 'reverse') => {
+		setAttributes({ direction: newValue });
 	};
 
-	const setHoverAnimationState = (newValue: 'paused' | 'running') => {
-		setAttributes({ hoverAnimationState: newValue });
+	const setHoverState = (newValue: 'paused' | 'running') => {
+		setAttributes({ hoverState: newValue });
 	};
 
-	const setAnimationSpeed = (newValue: string) => {
-		setAttributes({ animationSpeed: newValue });
-	};
-
-	const setWhiteSpace = (newValue: 'wrap' | 'nowrap') => {
-		setAttributes({ whiteSpace: newValue });
-	};
-
-	const setGap = (newValue: string) => {
-		setAttributes({ gap: newValue });
-	};
-
-	const setAutoFill = (newValue: boolean) => {
-		setAttributes({ autoFill: newValue });
-	};
-
-	const setMinDuplicates = (newValue: number) => {
-		setAttributes({ minDuplicates: newValue });
+	const setSpeed = (newValue: string) => {
+		setAttributes({ speed: newValue });
 	};
 
 	// Helper to check if attribute has non-default value
@@ -174,13 +153,9 @@ const Edit: React.FC<BlockEditProps<MarqueeAttributes>> = ({
 					resetAll={() => {
 						setAttributes({
 							orientation: MARQUEE_DEFAULTS.orientation,
-							animationDirection: MARQUEE_DEFAULTS.animationDirection,
-							hoverAnimationState: MARQUEE_DEFAULTS.hoverAnimationState,
-							animationSpeed: MARQUEE_DEFAULTS.animationSpeed,
-							gap: MARQUEE_DEFAULTS.gap,
-							whiteSpace: MARQUEE_DEFAULTS.whiteSpace,
-							autoFill: MARQUEE_DEFAULTS.autoFill,
-							minDuplicates: MARQUEE_DEFAULTS.minDuplicates
+							direction: MARQUEE_DEFAULTS.direction,
+							hoverState: MARQUEE_DEFAULTS.hoverState,
+							speed: MARQUEE_DEFAULTS.speed,
 						});
 					}}
 					panelId="marquee-settings-panel"
@@ -190,7 +165,7 @@ const Edit: React.FC<BlockEditProps<MarqueeAttributes>> = ({
 						hasValue={() => hasNonDefaultValue('orientation', MARQUEE_DEFAULTS.orientation)}
 						label={__('Orientation', 'orbitools')}
 						onDeselect={() => setOrientation(MARQUEE_DEFAULTS.orientation)}
-						isShownByDefault={true}
+						isShownByDefault={false}
 						panelId="marquee-settings-panel"
 					>
 						<ToggleGroupControl
@@ -236,16 +211,16 @@ const Edit: React.FC<BlockEditProps<MarqueeAttributes>> = ({
 
 					{/* Animation Direction Control */}
 					<ToolsPanelItem
-						hasValue={() => hasNonDefaultValue('animationDirection', MARQUEE_DEFAULTS.animationDirection)}
+						hasValue={() => hasNonDefaultValue('direction', MARQUEE_DEFAULTS.direction)}
 						label={__('Animation Direction', 'orbitools')}
-						onDeselect={() => setAnimationDirection(MARQUEE_DEFAULTS.animationDirection)}
-						isShownByDefault={true}
+						onDeselect={() => setDirection(MARQUEE_DEFAULTS.direction)}
+						isShownByDefault={false}
 						panelId="marquee-settings-panel"
 					>
 						<ToggleGroupControl
 							label={__('Animation Direction', 'orbitools')}
-							value={animationDirection}
-							onChange={setAnimationDirection}
+							value={direction}
+							onChange={setDirection}
 							isBlock
 							help={__('Control the direction of the scrolling animation', 'orbitools')}
 							__nextHasNoMarginBottom={true}
@@ -281,16 +256,16 @@ const Edit: React.FC<BlockEditProps<MarqueeAttributes>> = ({
 
 					{/* Hover Animation State Control */}
 					<ToolsPanelItem
-						hasValue={() => hasNonDefaultValue('hoverAnimationState', MARQUEE_DEFAULTS.hoverAnimationState)}
+						hasValue={() => hasNonDefaultValue('hoverState', MARQUEE_DEFAULTS.hoverState)}
 						label={__('Hover Behavior', 'orbitools')}
-						onDeselect={() => setHoverAnimationState(MARQUEE_DEFAULTS.hoverAnimationState)}
+						onDeselect={() => setHoverState(MARQUEE_DEFAULTS.hoverState)}
 						isShownByDefault={false}
 						panelId="marquee-settings-panel"
 					>
 						<ToggleGroupControl
 							label={__('Hover Behavior', 'orbitools')}
-							value={hoverAnimationState}
-							onChange={setHoverAnimationState}
+							value={hoverState}
+							onChange={setHoverState}
 							isBlock
 							help={__('Choose what happens to the animation when users hover', 'orbitools')}
 							__nextHasNoMarginBottom={true}
@@ -308,112 +283,18 @@ const Edit: React.FC<BlockEditProps<MarqueeAttributes>> = ({
 
 					{/* Animation Speed Control */}
 					<ToolsPanelItem
-						hasValue={() => hasNonDefaultValue('animationSpeed', MARQUEE_DEFAULTS.animationSpeed)}
+						hasValue={() => hasNonDefaultValue('speed', MARQUEE_DEFAULTS.speed)}
 						label={__('Animation Speed', 'orbitools')}
-						onDeselect={() => setAnimationSpeed(MARQUEE_DEFAULTS.animationSpeed)}
+						onDeselect={() => setSpeed(MARQUEE_DEFAULTS.speed)}
 						isShownByDefault={false}
 						panelId="marquee-settings-panel"
 					>
 						<SelectControl
 							label={__('Animation Speed', 'orbitools')}
-							value={animationSpeed}
-							onChange={setAnimationSpeed}
+							value={speed}
+							onChange={setSpeed}
 							options={ANIMATION_SPEED_OPTIONS}
 							help={__('Control how fast the content scrolls', 'orbitools')}
-							__nextHasNoMarginBottom={true}
-						/>
-					</ToolsPanelItem>
-
-					{/* Auto-Fill Control */}
-					<ToolsPanelItem
-						hasValue={() => hasNonDefaultValue('autoFill', MARQUEE_DEFAULTS.autoFill)}
-						label={__('Auto-Duplicate Content', 'orbitools')}
-						onDeselect={() => setAutoFill(MARQUEE_DEFAULTS.autoFill)}
-						isShownByDefault={true}
-						panelId="marquee-settings-panel"
-					>
-						<ToggleControl
-							label={__('Auto-Duplicate to Fill Width', 'orbitools')}
-							checked={autoFill}
-							onChange={setAutoFill}
-							help={__('Automatically duplicate content to create a seamless loop effect', 'orbitools')}
-						/>
-					</ToolsPanelItem>
-
-					{/* Minimum Duplicates Control - only show when autoFill is enabled */}
-					{autoFill && (
-						<ToolsPanelItem
-							hasValue={() => hasNonDefaultValue('minDuplicates', MARQUEE_DEFAULTS.minDuplicates)}
-							label={__('Minimum Duplicates', 'orbitools')}
-							onDeselect={() => setMinDuplicates(MARQUEE_DEFAULTS.minDuplicates)}
-							isShownByDefault={false}
-							panelId="marquee-settings-panel"
-						>
-							<RangeControl
-								label={__('Minimum Duplicates', 'orbitools')}
-								value={minDuplicates}
-								onChange={setMinDuplicates}
-								min={1}
-								max={10}
-								step={1}
-								help={__('Minimum number of content duplicates to ensure smooth scrolling', 'orbitools')}
-								__nextHasNoMarginBottom={true}
-							/>
-						</ToolsPanelItem>
-					)}
-				</ToolsPanel>
-
-				<ToolsPanel
-					label={__('Style Settings', 'orbitools')}
-					resetAll={() => {
-						setAttributes({
-							whiteSpace: MARQUEE_DEFAULTS.whiteSpace,
-							gap: MARQUEE_DEFAULTS.gap
-						});
-					}}
-					panelId="marquee-style-panel"
-				>
-					{/* White Space Control */}
-					<ToolsPanelItem
-						hasValue={() => hasNonDefaultValue('whiteSpace', MARQUEE_DEFAULTS.whiteSpace)}
-						label={__('Text Wrapping', 'orbitools')}
-						onDeselect={() => setWhiteSpace(MARQUEE_DEFAULTS.whiteSpace)}
-						isShownByDefault={false}
-						panelId="marquee-style-panel"
-					>
-						<ToggleGroupControl
-							label={__('Text Wrapping', 'orbitools')}
-							value={whiteSpace}
-							onChange={setWhiteSpace}
-							isBlock
-							help={__('Control how text content wraps within the marquee', 'orbitools')}
-							__nextHasNoMarginBottom={true}
-						>
-						<ToggleGroupControlOption
-							value="wrap"
-							label={__('Wrap', 'orbitools')}
-						/>
-						<ToggleGroupControlOption
-							value="nowrap"
-							label={__('No Wrap', 'orbitools')}
-						/>
-					</ToggleGroupControl>
-					</ToolsPanelItem>
-
-					{/* Gap Control */}
-					<ToolsPanelItem
-						hasValue={() => hasNonDefaultValue('gap', MARQUEE_DEFAULTS.gap)}
-						label={__('Content Gap', 'orbitools')}
-						onDeselect={() => setGap(MARQUEE_DEFAULTS.gap)}
-						isShownByDefault={false}
-						panelId="marquee-style-panel"
-					>
-						<SelectControl
-							label={__('Content Gap', 'orbitools')}
-							value={gap}
-							onChange={setGap}
-							options={GAP_SIZE_OPTIONS}
-							help={__('Space between repeated content items', 'orbitools')}
 							__nextHasNoMarginBottom={true}
 						/>
 					</ToolsPanelItem>
