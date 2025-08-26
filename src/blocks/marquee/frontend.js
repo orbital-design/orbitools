@@ -46,7 +46,7 @@
         const wrapper = marquee.querySelector('.orb-marquee__wrapper');
         const content = marquee.querySelector('.orb-marquee__content');
 
-        if ( !content) {
+        if (!wrapper || !content) {
             console.warn('Marquee block missing required elements');
             return;
         }
@@ -54,11 +54,11 @@
         // Extract configuration from CSS custom properties and classes
         const config = getMarqueeConfig(marquee);
 
-        const contentRect = content.getBoundingClientRect()
+        const contentRect = content.getBoundingClientRect();
         const contentSize = {
             width: contentRect.width,
             height: contentRect.height
-        }
+        };
         // Set up content duplication for seamless scrolling
         setupContentDuplication(wrapper, content, config);
 
@@ -76,7 +76,10 @@
             // Extract numeric value from "10s" format
             const speedMatch = config.speed.match(/^(\d+(?:\.\d+)?)s$/);
             if (speedMatch) {
-                durationInSeconds = parseFloat(speedMatch[1]);
+                const parsedDuration = parseFloat(speedMatch[1]);
+                if (parsedDuration > 0) {
+                    durationInSeconds = parsedDuration;
+                }
             }
         }
 
@@ -154,6 +157,15 @@
             // Store observer reference for cleanup if needed
             wrapper.intersectionObserver = observer;
         }
+
+        // Add resize listener to invalidate cached dimensions
+        const resizeHandler = () => {
+            wrapper.cachedDimensions = null;
+        };
+        window.addEventListener('resize', resizeHandler);
+        
+        // Store resize handler reference for cleanup if needed
+        wrapper.resizeHandler = resizeHandler;
     }
 
 
@@ -164,14 +176,11 @@
      * @returns {Object} Configuration object
      */
     function getMarqueeConfig(marquee) {
-        const style = getComputedStyle(marquee);
-
         return {
             orientation: marquee.dataset.orientation,
             direction: marquee.dataset.direction,
             hover: marquee.dataset.hover,
-            speed: marquee.dataset.speed,
-            overlayColor: style.getPropertyValue('--marquee-overlay-color')
+            speed: marquee.dataset.speed
         };
     }
 
@@ -192,8 +201,14 @@
             const clone = content.cloneNode(true);
             clone.setAttribute('aria-hidden', 'true');
             clone.classList.add('orb-marquee__content--clone');
-            clone.dataset.cloneIndex = i + 1; // For debugging
-            wrapper.appendChild(clone);
+            
+            // For reverse direction, insert clones BEFORE the original content
+            // For normal direction, append clones AFTER the original content
+            if (config.direction === 'reverse') {
+                wrapper.insertBefore(clone, content);
+            } else {
+                wrapper.appendChild(clone);
+            }
         }
 
         // Add data attribute to track the number of duplicates created
@@ -211,20 +226,27 @@
     function calculateDuplicatesNeeded(wrapper, content, config) {
         const wrapperRect = wrapper.getBoundingClientRect();
         const contentRect = content.getBoundingClientRect();
+        
+        // Account for wrapper padding
+        const wrapperStyles = getComputedStyle(wrapper);
+        const paddingLeft = parseFloat(wrapperStyles.paddingLeft) || 0;
+        const paddingRight = parseFloat(wrapperStyles.paddingRight) || 0;
+        const paddingTop = parseFloat(wrapperStyles.paddingTop) || 0;
+        const paddingBottom = parseFloat(wrapperStyles.paddingBottom) || 0;
 
         let containerSize, contentSize;
 
         if (config.orientation === 'x') {
-            containerSize = wrapperRect.width;
+            containerSize = wrapperRect.width - paddingLeft - paddingRight;
             contentSize = contentRect.width;
         } else {
-            containerSize = wrapperRect.height;
+            containerSize = wrapperRect.height - paddingTop - paddingBottom;
             contentSize = contentRect.height;
         }
 
-        // Calculate how many copies we need to fill the container
-        // We need at least enough to fill the viewport + 1 extra for smooth scrolling
-        let duplicatesNeeded = Math.ceil(containerSize / contentSize) + 1;
+        // Calculate how many copies we need to fill the content area
+        // We need at least enough to fill the viewport + 2 extra for smooth scrolling
+        let duplicatesNeeded = Math.ceil(containerSize / contentSize) + 2;
 
         // Cap at a reasonable maximum to prevent performance issues
         duplicatesNeeded = Math.min(duplicatesNeeded, 20);
@@ -261,6 +283,11 @@
             }
         }
 
+        // Get wrapper padding to properly position content within the padded area
+        const wrapperStyles = getComputedStyle(wrapper);
+        const paddingLeft = parseFloat(wrapperStyles.paddingLeft) || 0;
+        const paddingTop = parseFloat(wrapperStyles.paddingTop) || 0;
+
         // Set up items array for the wrapper (treating wrapper as the container)
         wrapper.items = Array.from(wrapper.children);
 
@@ -272,48 +299,36 @@
             item.style.height = contentSize.height + "px";
 
             if (isHorizontal) {
-                // Set vertical position once
-                item.style.top = "0";
+                // Set vertical position once (accounting for padding)
+                item.style.top = paddingTop + "px";
                 
-                // Only set the animated property (left)
                 if (config.direction === 'reverse') {
-                    // For reverse: align items to the right edge of container
-                    const wrapperWidth = wrapper.getBoundingClientRect().width;
-                    const totalContentWidth = wrapper.items.length * contentSize.width;
-                    const startOffset = wrapperWidth - totalContentWidth;
-                    item.style.left = (startOffset + contentSize.width * i) + "px";
+                    // For reverse: original content at padding offset, clones at negative positions (to the left)
+                    const originalIndex = wrapper.items.length - 1; // Last item is original content
+                    const relativeIndex = originalIndex - i; // Distance from original
+                    item.style.left = (paddingLeft + (-contentSize.width * relativeIndex)) + "px";
                 } else {
-                    // For normal: align items to the left edge (start from 0)
-                    item.style.left = contentSize.width * i + "px";
+                    // For normal: position items normally from left (starting at padding offset)
+                    item.style.left = (paddingLeft + (contentSize.width * i)) + "px";
                 }
             } else {
-                // Set horizontal position once
-                item.style.left = "0";
+                // Set horizontal position once (accounting for padding)
+                item.style.left = paddingLeft + "px";
                 
                 // Only set the animated property (top)
                 if (config.direction === 'reverse') {
-                    // For reverse vertical: align items to the bottom edge of container
-                    const wrapperHeight = wrapper.getBoundingClientRect().height;
-                    const totalContentHeight = wrapper.items.length * contentSize.height;
-                    const startOffset = wrapperHeight - totalContentHeight;
-                    item.style.top = (startOffset + contentSize.height * i) + "px";
+                    // For reverse vertical: original content at padding offset, clones at negative positions
+                    const originalIndex = wrapper.items.length - 1;
+                    const relativeIndex = originalIndex - i;
+                    item.style.top = (paddingTop + (-contentSize.height * relativeIndex)) + "px";
                 } else {
-                    // For normal: align items to the top edge (start from 0)
-                    item.style.top = (contentSize.height * i) + "px";
+                    // For normal: align items to the top edge (starting at padding offset)
+                    item.style.top = (paddingTop + (contentSize.height * i)) + "px";
                 }
             }
         });
 
-        // Fade in items smoothly after positioning
-        setTimeout(() => {
-
-            // Remove transition override after fade completes
-            setTimeout(() => {
-                wrapper.items.forEach(item => {
-                    item.style.transition = '';
-                });
-            }, 500);
-        }, 50);
+        // Items are positioned and ready to animate
     }
 
     function rotateMarquee(wrapper) {
@@ -379,7 +394,24 @@
 
         // Check ALL items for repositioning (not just the first one)
         const itemsToReposition = [];
-        const wrapperRect = wrapper.getBoundingClientRect();
+        
+        // Use cached dimensions or calculate once per animation cycle
+        if (!wrapper.cachedDimensions) {
+            const wrapperStyles = getComputedStyle(wrapper);
+            const wrapperRect = wrapper.getBoundingClientRect();
+            const paddingLeft = parseFloat(wrapperStyles.paddingLeft) || 0;
+            const paddingRight = parseFloat(wrapperStyles.paddingRight) || 0;
+            const paddingTop = parseFloat(wrapperStyles.paddingTop) || 0;
+            const paddingBottom = parseFloat(wrapperStyles.paddingBottom) || 0;
+            
+            wrapper.cachedDimensions = {
+                contentWidth: wrapperRect.width - paddingLeft - paddingRight,
+                contentHeight: wrapperRect.height - paddingTop - paddingBottom,
+                lastUpdate: Date.now()
+            };
+        }
+        
+        const { contentWidth, contentHeight } = wrapper.cachedDimensions;
         
         wrapper.items.forEach((item, index) => {
             const itemPos = wrapper.itemPositions.get(item) || 0;
@@ -387,18 +419,18 @@
             
             if (isHorizontal) {
                 if (isReverse) {
-                    // For reverse, check if item has moved past right edge
-                    needsReposition = itemPos > wrapperRect.width;
+                    // For reverse, check if item has moved past right content edge
+                    needsReposition = itemPos > contentWidth;
                 } else {
-                    // For normal, check if item has moved past left edge
+                    // For normal, check if item has moved past left content edge
                     needsReposition = itemPos + config.contentWidth < 0;
                 }
             } else {
                 if (isReverse) {
-                    // For reverse, check if item has moved past bottom edge
-                    needsReposition = itemPos > wrapperRect.height;
+                    // For reverse, check if item has moved past bottom content edge
+                    needsReposition = itemPos > contentHeight;
                 } else {
-                    // For normal, check if item has moved past top edge
+                    // For normal, check if item has moved past top content edge
                     needsReposition = itemPos + config.contentHeight < 0;
                 }
             }
@@ -498,7 +530,11 @@
         pauseAll: function() {
             const wrappers = document.querySelectorAll('.orb-marquee__wrapper');
             wrappers.forEach(wrapper => {
-                wrapper.style.animationPlayState = 'paused';
+                wrapper.animationPaused = true;
+                if (wrapper.animationID) {
+                    cancelAnimationFrame(wrapper.animationID);
+                    wrapper.animationID = null;
+                }
             });
         },
 
@@ -508,7 +544,12 @@
         resumeAll: function() {
             const wrappers = document.querySelectorAll('.orb-marquee__wrapper');
             wrappers.forEach(wrapper => {
-                wrapper.style.animationPlayState = 'running';
+                if (wrapper.animationPaused) {
+                    wrapper.animationPaused = false;
+                    if (!wrapper.animationID) {
+                        rotateMarquee(wrapper);
+                    }
+                }
             });
         }
     };
