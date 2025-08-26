@@ -1,8 +1,19 @@
 <?php
+/**
+ * Marquee Block
+ * 
+ * Registers and manages the Marquee block for creating scrolling content containers.
+ * Supports horizontal and vertical scrolling with customizable speed, direction, and hover behavior.
+ * 
+ * @package Orbitools
+ * @subpackage Blocks
+ * @since 1.0.0
+ */
 
 namespace Orbitools\Blocks\Marquee;
 
 use Orbitools\Core\Abstracts\Module_Base;
+use Orbitools\Core\Traits\Block_Utilities;
 use Orbitools\Controls\Spacings_Controls\SpacingsRenderer;
 
 // Prevent direct access
@@ -11,19 +22,54 @@ if (!defined('ABSPATH')) {
 }
 
 /**
- * Marquee Block
- *
- * Registers and manages the Marquee block for creating scrolling content containers
+ * Marquee Block Class
+ * 
+ * @since 1.0.0
  */
 class Marquee extends Module_Base
 {
+    use Block_Utilities;
+
     /**
      * Module version
+     * 
+     * @var string
      */
     protected const VERSION = '1.0.0';
 
     /**
+     * Valid orientation values
+     * 
+     * @var array
+     */
+    private const VALID_ORIENTATIONS = ['x', 'y'];
+
+    /**
+     * Valid direction values
+     * 
+     * @var array
+     */
+    private const VALID_DIRECTIONS = ['normal', 'reverse'];
+
+    /**
+     * Valid hover state values
+     * 
+     * @var array
+     */
+    private const VALID_HOVER_STATES = ['paused', 'running'];
+
+    /**
+     * Default animation speed
+     * 
+     * @var string
+     */
+    private const DEFAULT_SPEED = '10s';
+
+    /**
      * Get the module's unique slug identifier
+     * 
+     * @return string Module slug
+     * @since 1.0.0
      */
     public function get_slug(): string
     {
@@ -32,6 +78,9 @@ class Marquee extends Module_Base
 
     /**
      * Get the module's display name
+     * 
+     * @return string Module name
+     * @since 1.0.0
      */
     public function get_name(): string
     {
@@ -40,6 +89,9 @@ class Marquee extends Module_Base
 
     /**
      * Get the module's description
+     * 
+     * @return string Module description
+     * @since 1.0.0
      */
     public function get_description(): string
     {
@@ -48,6 +100,9 @@ class Marquee extends Module_Base
 
     /**
      * Get the module's version
+     * 
+     * @return string Module version
+     * @since 1.0.0
      */
     public function get_version(): string
     {
@@ -56,6 +111,9 @@ class Marquee extends Module_Base
 
     /**
      * Check if the module is currently enabled
+     * 
+     * @return bool True if enabled
+     * @since 1.0.0
      */
     public function is_enabled(): bool
     {
@@ -64,6 +122,9 @@ class Marquee extends Module_Base
 
     /**
      * Initialize the Marquee block
+     * 
+     * @return void
+     * @since 1.0.0
      */
     public function init(): void
     {
@@ -84,6 +145,9 @@ class Marquee extends Module_Base
 
     /**
      * Register the Marquee block
+     * 
+     * @return void
+     * @since 1.0.0
      */
     public function register_block(): void
     {
@@ -100,73 +164,150 @@ class Marquee extends Module_Base
      * Render callback for Marquee block
      *
      * Creates scrolling content with customizable orientation, speed, and behavior.
-     * Uses proper CSS class names and generates inline styles for animation.
      *
      * @param array    $attributes Block attributes containing marquee settings
      * @param string   $content    Block inner content from editor
-     * @param \WP_Block $block      Block instance
+     * @param \WP_Block $block     Block instance
      * @return string  Rendered HTML with proper marquee structure and styles
+     * @since 1.0.0
      */
     public function render_callback(array $attributes, string $content, \WP_Block $block): string
     {
+        // Validate and sanitize attributes
+        $validated_attrs = $this->validate_attributes($attributes);
+        
+        // Build wrapper attributes
+        $wrapper_attrs = $this->build_wrapper_attributes($validated_attrs, $attributes);
+        
+        // Generate and return HTML
+        return $this->generate_marquee_html($wrapper_attrs, $content, $validated_attrs, $attributes);
+    }
 
-        // Sanitize and default attributes
-        $orientation = \sanitize_text_field($attributes['orientation'] ?? 'x');
-        $direction = \sanitize_text_field($attributes['direction'] ?? 'normal');
-        $hoverState = \sanitize_text_field($attributes['hoverState'] ?? 'paused');
-        $speed = \sanitize_text_field($attributes['speed'] ?? '10s');
-        $overlayColor = isset($attributes['overlayColor']) ? \sanitize_hex_color($attributes['overlayColor']) : null;
+    /**
+     * Validate and sanitize block attributes
+     * 
+     * @param array $attributes Raw block attributes
+     * @return array Validated and sanitized attributes
+     * @since 1.0.0
+     */
+    private function validate_attributes(array $attributes): array
+    {
+        // Sanitize overlay color - handle null return from sanitize_hex_color
+        $overlay_color = '';
+        if (!empty($attributes['overlayColor'])) {
+            $sanitized_color = \sanitize_hex_color($attributes['overlayColor']);
+            $overlay_color = $sanitized_color !== null ? $sanitized_color : '';
+        }
 
-        $marquee_block_classes = array(
+        return [
+            'orientation' => $this->validate_enum(
+                \sanitize_text_field($attributes['orientation'] ?? 'x'),
+                self::VALID_ORIENTATIONS,
+                'x'
+            ),
+            'direction' => $this->validate_enum(
+                \sanitize_text_field($attributes['direction'] ?? 'normal'),
+                self::VALID_DIRECTIONS,
+                'normal'
+            ),
+            'hoverState' => $this->validate_enum(
+                \sanitize_text_field($attributes['hoverState'] ?? 'paused'),
+                self::VALID_HOVER_STATES,
+                'paused'
+            ),
+            'speed' => $this->validate_speed(
+                \sanitize_text_field($attributes['speed'] ?? self::DEFAULT_SPEED),
+                self::DEFAULT_SPEED
+            ),
+            'overlayColor' => $overlay_color
+        ];
+    }
+
+    /**
+     * Build wrapper attributes for the marquee block
+     * 
+     * @param array $validated_attrs Validated attributes
+     * @param array $original_attrs Original attributes (for spacing data)
+     * @return array Wrapper attributes array
+     * @since 1.0.0
+     */
+    private function build_wrapper_attributes(array $validated_attrs, array $original_attrs): array
+    {
+        // Build CSS classes
+        $marquee_classes = [
             'orb-marquee',
-            'has-overlay-color' => !empty($overlayColor),
-        );
+            'has-overlay-color' => !empty($validated_attrs['overlayColor']),
+        ];
 
-        $marquee_block_styles = array(
-            '--marquee-overlay-color' => $overlayColor ?: 'transparent',
-        );
+        // Build inline styles
+        $marquee_styles = [
+            '--marquee-overlay-color' => $validated_attrs['overlayColor'] ?: 'transparent',
+        ];
 
-        // Build base classes and add OrbiTools spacing controls
-        $base_classes = $this->get_css_classes($marquee_block_classes);
-        $classes_with_spacings = SpacingsRenderer::add_padding($base_classes, $attributes);
+        // Get base classes and add spacing controls
+        $base_classes = $this->get_css_classes($marquee_classes);
+        $classes_with_spacings = SpacingsRenderer::add_padding($base_classes, $original_attrs);
 
-        $marquee_block_wrapper_attrs = array(
+        return [
             'class' => \esc_attr($classes_with_spacings),
-            'style' => \esc_attr($this->get_inline_styles($marquee_block_styles)),
-            'data-orientation' => $orientation,
-            'data-direction' => $direction,
-            'data-hover' => $hoverState,
-            'data-speed' => $speed,
-        );
+            'style' => \esc_attr($this->get_inline_styles($marquee_styles)),
+            'data-orientation' => \esc_attr($validated_attrs['orientation']),
+            'data-direction' => \esc_attr($validated_attrs['direction']),
+            'data-hover' => \esc_attr($validated_attrs['hoverState']),
+            'data-speed' => \esc_attr($validated_attrs['speed']),
+        ];
+    }
 
-        $marquee_block_allowed_html = $this->get_kses_allowed_html();
+    /**
+     * Generate the complete marquee HTML structure
+     * 
+     * @param array $wrapper_attrs Wrapper attributes
+     * @param string $content Inner content
+     * @param array $validated_attrs Validated attributes
+     * @param array $original_attrs Original attributes (for spacing data)
+     * @return string Complete HTML markup
+     * @since 1.0.0
+     */
+    private function generate_marquee_html(
+        array $wrapper_attrs, 
+        string $content, 
+        array $validated_attrs,
+        array $original_attrs
+    ): string {
+        // Get allowed HTML for content filtering
+        $allowed_html = $this->get_kses_allowed_html();
 
-        // Build content classes and add gap controls
+        // Build content classes with gap spacing
         $content_base_classes = 'orb-marquee__content';
-        $content_classes_with_spacings = SpacingsRenderer::add_gap($content_base_classes, $attributes);
+        $content_classes = SpacingsRenderer::add_gap($content_base_classes, $original_attrs);
 
-        // Start building the HTML structure
+        // Get block wrapper attributes and filter out wp-block-orb-marquee class
+        $block_wrapper = \get_block_wrapper_attributes($wrapper_attrs);
+        // Remove the wp-block-orb-marquee class that WordPress automatically adds
+        $block_wrapper = preg_replace('/\bwp-block-orb-marquee\s*/', '', $block_wrapper);
+        
+        // Start building HTML
         $html = sprintf(
             '<div %s>',
-            \wp_kses_post(\get_block_wrapper_attributes($marquee_block_wrapper_attrs))
+            $block_wrapper
         );
 
         // Add wrapper for scrolling content
         $html .= '<div class="orb-marquee__wrapper">';
 
         // Add main content
-        // Empty span adds a phantom flex gap so we're always using the right gap between duplicates without any js trickery
+        // Empty span creates a phantom flex gap for proper spacing between duplicates
         $html .= sprintf(
-            '<div class="%s">%s<span></span></div>',
-            \esc_attr($content_classes_with_spacings),
-            \wp_kses($content, $marquee_block_allowed_html)
+            '<div class="%s">%s<span aria-hidden="true"></span></div>',
+            \esc_attr($content_classes),
+            \wp_kses($content, $allowed_html)
         );
 
         // Close wrapper
         $html .= '</div>';
 
-        // Add overlay if overlay color is set
-        if (!empty($overlayColor)) {
+        // Add overlay if color is set
+        if (!empty($validated_attrs['overlayColor'])) {
             $html .= '<div class="orb-marquee__overlay" aria-hidden="true"></div>';
         }
 
@@ -176,199 +317,14 @@ class Marquee extends Module_Base
         return $html;
     }
 
-
     /**
-     * Get default settings
+     * Get default settings for the module
+     * 
+     * @return array Empty array as no default settings needed
+     * @since 1.0.0
      */
     public function get_default_settings(): array
     {
         return [];
-    }
-
-    /**
-     * Array to css class.
-     *
-     * @param array<int|string, ?mixed> $classes_array css classes array.
-     *
-     * @return string
-     * @since  1.0.0
-     * @example
-     * <code>
-     *   ['class-a', 'class-b']
-     *   // or
-     *   ['class-a'=>true, 'class-b'=>false, 'class-c'=>'', 'class-e'=>null, 'class-d'=>'hello']
-     * </code>
-     */
-    public function get_css_classes(array $classes_array = array()): string
-    {
-        $classes = array();
-        foreach ($classes_array as $class_name => $should_include) {
-            // Is class assign by numeric array. Like: ['class-a', 'class-b'].
-            if (is_int($class_name)) {
-                if (! is_string($should_include)) {
-                    continue;
-                }
-
-                if ($this->is_empty_string($should_include)) {
-                    continue;
-                }
-
-                $classes[] = $should_include;
-                continue;
-            }
-
-            if (false === $should_include) {
-                continue;
-            }
-
-            if (is_string($should_include) && $this->is_empty_string($should_include)) {
-                continue;
-            }
-
-            if (is_null($should_include)) {
-                continue;
-            }
-
-            if (is_array($should_include) && $this->is_empty_array($should_include)) {
-                continue;
-            }
-
-            // Is class assign by associative array.
-            // Like: ['class-a'=>true, 'class-b'=>false, class-c'=>'', 'class-d'=>'hello', 'class-x'=>null, 'class-y'=>array()].
-            $classes[] = $class_name;
-        }
-
-        return implode(' ', array_unique($classes));
-    }
-
-    /**
-     * Returns an array of allowed HTML tags and attributes for a given context.
-     *
-     * @param array<string, mixed> $args extra argument.
-     *
-     * @return array<string, mixed>
-     * @since 1.0.0
-     */
-    public function get_kses_allowed_html(array $args = array()): array
-    {
-        $defaults = \wp_kses_allowed_html('post');
-
-        $tags = array(
-            'svg'   => array(
-                'class',
-                'aria-hidden',
-                'aria-labelledby',
-                'role',
-                'xmlns',
-                'width',
-                'height',
-                'viewbox',
-                'height',
-            ),
-            'g'     => array('fill'),
-            'title' => array('title'),
-            'path'  => array('d', 'fill'),
-        );
-
-        $allowed_args = array_reduce(
-            array_keys($tags),
-            function (array $carry, string $tag) use ($tags) {
-                $carry[$tag] = array_fill_keys($tags[$tag], true);
-
-                return $carry;
-            },
-            array()
-        );
-
-        return array_merge($defaults, $allowed_args, $args);
-    }
-
-    /**
-     * Generate Inline Style from array
-     *
-     * @param array<string, mixed> $inline_styles_array Inline style as array.
-     *
-     * @return string
-     * @since  1.0.0
-     */
-    public function get_inline_styles(array $inline_styles_array = array()): string
-    {
-        $styles = array();
-
-        foreach ($inline_styles_array as $property => $value) {
-            if (is_null($value)) {
-                continue;
-            }
-            if (is_bool($value)) {
-                continue;
-            }
-
-            if (is_array($value)) {
-                continue;
-            }
-
-            if (is_string($value) && $this->is_empty_string($value)) {
-                continue;
-            }
-
-            $styles[] = sprintf('%s: %s;', \esc_attr($property), \esc_attr($value));
-        }
-
-        return implode(' ', array_unique($styles));
-    }
-
-    /**
-     * Check is string is empty.
-     *
-     * @param string $check_value Check value.
-     *
-     * @return bool
-     */
-    public function is_empty_string(string $check_value = ''): bool
-    {
-        return 0 === strlen(trim($check_value));
-    }
-
-    /**
-     * Check is array is all empty values.
-     *
-     * @param array<int|string, ?mixed> $items Check array.
-     *
-     * @return bool
-     */
-    public function is_array_each_empty_value(array $items = array()): bool
-    {
-        $checked = array_map(
-            function ($value) {
-                if (is_array($value) && ! $this->is_array_each_empty_value($value)) {
-                    return true;
-                }
-
-                if (is_string($value) && ! $this->is_empty_string($value)) {
-                    return true;
-                }
-
-                if (true === $value) {
-                    return true;
-                }
-
-                return false;
-            },
-            $items
-        );
-
-        return ! in_array(true, array_unique($checked), true);
-    }
-
-    /**
-     * Check numeric array is empty.
-     *
-     * @param array<int|string, ?mixed> $items Check array.
-     *
-     * @return bool
-     */
-    public function is_empty_array(array $items = array()): bool
-    {
-        return 0 === count($items);
     }
 }
