@@ -115,12 +115,10 @@ class Marquee extends Module_Base
         $direction = \sanitize_text_field($attributes['direction'] ?? 'normal');
         $hoverState = \sanitize_text_field($attributes['hoverState'] ?? 'paused');
         $speed = \sanitize_text_field($attributes['speed'] ?? '10s');
-        $gap = \sanitize_text_field($attributes['gap'] ?? '40px');
         $overlayColor = isset($attributes['overlayColor']) ? \sanitize_hex_color($attributes['overlayColor']) : null;
 
         $marquee_block_classes = array(
             'orb-marquee',
-            "orb-marquee--hover-{$hoverState}",
             'has-overlay-color' => !empty($overlayColor),
         );
 
@@ -130,7 +128,7 @@ class Marquee extends Module_Base
 
         // Build base classes and add OrbiTools spacing controls
         $base_classes = $this->get_css_classes($marquee_block_classes);
-        $classes_with_spacings = SpacingsRenderer::add_spacings($base_classes, $attributes);
+        $classes_with_spacings = SpacingsRenderer::add_padding($base_classes, $attributes);
 
         $marquee_block_wrapper_attrs = array(
             'class' => \esc_attr($classes_with_spacings),
@@ -143,6 +141,10 @@ class Marquee extends Module_Base
 
         $marquee_block_allowed_html = $this->get_kses_allowed_html();
 
+        // Build content classes and add gap controls
+        $content_base_classes = 'orb-marquee__content';
+        $content_classes_with_spacings = SpacingsRenderer::add_gap($content_base_classes, $attributes);
+
         // Start building the HTML structure
         $html = sprintf(
             '<div %s>',
@@ -153,9 +155,10 @@ class Marquee extends Module_Base
         $html .= '<div class="orb-marquee__wrapper">';
 
         // Add main content
+        // Empty span adds a phantom flex gap so we're always using the right gap between duplicates without any js trickery
         $html .= sprintf(
-            '<div class="%s">%s</div>',
-            \esc_attr('orb-marquee__content'),
+            '<div class="%s">%s<span></span></div>',
+            \esc_attr($content_classes_with_spacings),
             \wp_kses($content, $marquee_block_allowed_html)
         );
 

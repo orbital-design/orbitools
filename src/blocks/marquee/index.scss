@@ -22,7 +22,21 @@ $elem_base: 'orb-marquee';
     width: 100%;
     overflow: hidden;
     box-sizing: border-box;
+    padding: 0;
 
+    &[data-marquee-initialized="true"] {
+        .#{$elem_base}__content {
+            opacity: 1;
+        }
+    }
+
+    &.alignfull:not(.has-spacing) {
+        .#{$elem_base}__wrapper {
+            margin-left: calc(var(--gutter-page) * -1);
+            margin-right: calc(var(--gutter-page) * -1);
+            min-width: calc(100% + calc(var(--gutter-page) * 2));
+        }
+    }
     // =======================
     // Core Animation Setup
     // =======================
@@ -30,18 +44,9 @@ $elem_base: 'orb-marquee';
     // Wrapper contains the scrolling content
     &__wrapper {
         display: flex;
+
         width: max-content;
         min-width: 100%;
-
-        // Animation applied here
-        animation-duration: var(--marquee-speed, 10s);
-        animation-timing-function: linear;
-        animation-iteration-count: infinite;
-        animation-fill-mode: both;
-
-        // Will be set dynamically via CSS custom properties
-        animation-name: var(--marquee-animation-name);
-        animation-direction: var(--marquee-animation-direction, normal);
     }
 
     // Content container - holds the actual inner blocks
@@ -49,75 +54,8 @@ $elem_base: 'orb-marquee';
         display: flex;
         align-items: center;
         gap: var(--marquee-gap, 40px);
-        white-space: var(--marquee-white-space, wrap);
         flex-shrink: 0;
-    }
-
-    // =======================
-    // Orientation Classes
-    // =======================
-
-    // Horizontal scrolling (default)
-    &--x {
-        .#{$elem_base}__wrapper {
-            flex-direction: row;
-            --marquee-animation-name: orb-marquee-scroll-x;
-        }
-
-        .#{$elem_base}__content {
-            flex-direction: row;
-        }
-    }
-
-    // Vertical scrolling
-    &--y {
-        height: 400px; // Default height for vertical marquees
-
-        .#{$elem_base}__wrapper {
-            flex-direction: column;
-            width: 100%;
-            min-width: auto;
-            height: max-content;
-            min-height: 100%;
-            --marquee-animation-name: orb-marquee-scroll-y;
-        }
-
-        .#{$elem_base}__content {
-            flex-direction: column;
-            width: 100%;
-        }
-    }
-
-    // =======================
-    // Animation Direction
-    // =======================
-
-    &--normal {
-        .#{$elem_base}__wrapper {
-            --marquee-animation-direction: normal;
-        }
-    }
-
-    &--reverse {
-        .#{$elem_base}__wrapper {
-            --marquee-animation-direction: reverse;
-        }
-    }
-
-    // =======================
-    // Hover Behavior
-    // =======================
-
-    &--hover-paused {
-        &:hover .#{$elem_base}__wrapper {
-            animation-play-state: paused;
-        }
-    }
-
-    &--hover-running {
-        &:hover .#{$elem_base}__wrapper {
-            animation-play-state: running;
-        }
+        opacity: 0;
     }
 
     // =======================
@@ -156,132 +94,17 @@ $elem_base: 'orb-marquee';
             );
         }
     }
-
-    // =======================
-    // Content Duplication for Seamless Loop
-    // =======================
-
-    // Duplicate content for seamless scrolling
-    &__content::after {
-        content: '';
-        display: block;
-        width: var(--marquee-gap, 40px);
-        flex-shrink: 0;
-    }
-
-    // For horizontal, duplicate the content
-    &--x .#{$elem_base}__content {
-        // Pseudo-element to create space between loops
-        &::after {
-            height: 1px;
-        }
-    }
-
-    // For vertical, duplicate the content
-    &--y .#{$elem_base}__content {
-        &::after {
-            width: 1px;
-            height: var(--marquee-gap, 40px);
-        }
-    }
-
-    // =======================
-    // Animation Keyframes
-    // =======================
-
-    // Note: We use CSS custom properties to inject keyframes
-    // This is done via JavaScript to ensure seamless looping
-}
-
-// =======================
-// Keyframe Animations
-// =======================
-
-@keyframes orb-marquee-scroll-x {
-    0% {
-        transform: translateX(0);
-    }
-    100% {
-        transform: translateX(100%);
-    }
-}
-
-@keyframes orb-marquee-scroll-y {
-    0% {
-        transform: translateY(0);
-    }
-    100% {
-        transform: translateY(-50%);
-    }
-}
-
-// =======================
-// Responsive Behavior
-// =======================
-
-@media (max-width: 768px) {
-    .#{$elem_base} {
-        // Slower animation on mobile for better readability
-        &__wrapper {
-            animation-duration: calc(var(--marquee-speed, 10s) * 1.5);
-        }
-
-        // Smaller gaps on mobile
-        &__content {
-            gap: calc(var(--marquee-gap, 40px) * 0.75);
-        }
-    }
-}
-
-@media (max-width: 480px) {
-    .#{$elem_base} {
-        // Even slower on very small screens
-        &__wrapper {
-            animation-duration: calc(var(--marquee-speed, 10s) * 2);
-        }
-
-        // Minimum gap on small screens
-        &__content {
-            gap: calc(var(--marquee-gap, 40px) * 0.5);
-        }
-    }
 }
 
 // =======================
 // Accessibility
 // =======================
 
-// Respect user's motion preferences
-@media (prefers-reduced-motion: reduce) {
-    .#{$elem_base} {
-        &__wrapper {
-            animation-duration: 60s !important; // Very slow
-        }
-    }
-}
-
 // High contrast mode support
 @media (prefers-contrast: high) {
     .#{$elem_base} {
         &.has-overlay-color .#{$elem_base}__overlay {
             display: none; // Remove overlay in high contrast
-        }
-    }
-}
-
-// =======================
-// Print Styles
-// =======================
-
-@media print {
-    .#{$elem_base} {
-        &__wrapper {
-            animation: none !important;
-            position: static;
-        }
-
-        &__overlay {
-            display: none;
         }
     }
 }
@@ -302,14 +125,6 @@ $elem_base: 'orb-marquee';
 // =======================
 // Theme Integration
 // =======================
-
-// Support for WordPress block spacing
-.#{$elem_base} {
-    // Inherit block gap from theme
-    &__content {
-        gap: var(--marquee-gap, var(--wp--style--block-gap, 40px));
-    }
-}
 
 // Support for theme colors
 .has-text-color .#{$elem_base} {

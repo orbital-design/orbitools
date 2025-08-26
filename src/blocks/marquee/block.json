@@ -12,6 +12,10 @@
 			"wide",
 			"full"
 		],
+        "color": {
+            "background": true,
+            "text": true
+        },
         "orbitools": {
             "spacings": {
                 "breakpoints": true,
