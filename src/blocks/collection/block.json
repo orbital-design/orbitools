@@ -12,6 +12,13 @@
             "wide",
             "full"
         ],
+        "background": {
+			"backgroundImage": true,
+			"backgroundSize": true,
+			"__experimentalDefaultControls": {
+				"backgroundImage": true
+			}
+		},
         "color": {
             "background": true,
             "text": true
