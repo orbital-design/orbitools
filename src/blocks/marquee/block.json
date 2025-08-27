@@ -3,7 +3,7 @@
     "name": "orb/marquee",
     "version": "1.0.0",
     "title": "Marquee",
-    "icon": "arrow-down-alt2",
+    "icon": "controls-forward",
     "category": "layout",
     "description": "Displays scrolling content(text, images etc) both horizontally and vertically.",
     "supports": {

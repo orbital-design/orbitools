@@ -67,19 +67,21 @@ export const MARQUEE_DEFAULTS = {
     overlayColor: undefined,
 } as const;
 
-/**
- * Animation duration options for the speed control
- */
-export const ANIMATION_SPEED_OPTIONS = [
-    { label: '5 seconds', value: '5s' },
-    { label: '10 seconds', value: '10s' },
-    { label: '15 seconds', value: '15s' },
-    { label: '20 seconds', value: '20s' },
-    { label: '30 seconds', value: '30s' }
-] as const;
 
 /**
  * Type guard to check if orientation is valid
+ * 
+ * @param orientation - Value to check
+ * @returns True if orientation is 'x' or 'y'
+ * 
+ * @example
+ * ```typescript
+ * const userInput = 'x';
+ * if (isValidOrientation(userInput)) {
+ *   // userInput is now typed as 'x' | 'y'
+ *   console.log('Valid orientation:', userInput);
+ * }
+ * ```
  */
 export function isValidOrientation(orientation: any): orientation is 'x' | 'y' {
     return orientation === 'x' || orientation === 'y';
@@ -87,6 +89,18 @@ export function isValidOrientation(orientation: any): orientation is 'x' | 'y' {
 
 /**
  * Type guard to check if animation direction is valid
+ * 
+ * @param direction - Value to check
+ * @returns True if direction is 'normal' or 'reverse'
+ * 
+ * @example
+ * ```typescript
+ * const userDirection = 'reverse';
+ * if (isValidAnimationDirection(userDirection)) {
+ *   // userDirection is now typed as 'normal' | 'reverse'
+ *   console.log('Valid direction:', userDirection);
+ * }
+ * ```
  */
 export function isValidAnimationDirection(direction: any): direction is 'normal' | 'reverse' {
     return direction === 'normal' || direction === 'reverse';
@@ -94,6 +108,18 @@ export function isValidAnimationDirection(direction: any): direction is 'normal'
 
 /**
  * Type guard to check if hover state is valid
+ * 
+ * @param state - Value to check
+ * @returns True if state is 'paused' or 'running'
+ * 
+ * @example
+ * ```typescript
+ * const hoverBehavior = 'paused';
+ * if (isValidHoverState(hoverBehavior)) {
+ *   // hoverBehavior is now typed as 'paused' | 'running'
+ *   console.log('Valid hover state:', hoverBehavior);
+ * }
+ * ```
  */
 export function isValidHoverState(state: any): state is 'paused' | 'running' {
     return state === 'paused' || state === 'running';
@@ -101,6 +127,15 @@ export function isValidHoverState(state: any): state is 'paused' | 'running' {
 
 /**
  * Utility function to safely get orientation with fallback
+ * 
+ * @param attributes - Marquee block attributes
+ * @returns Valid orientation value with fallback to default
+ * 
+ * @example
+ * ```typescript
+ * const orientation = getOrientation({ orientation: 'invalid' });
+ * console.log(orientation); // 'x' (default fallback)
+ * ```
  */
 export function getOrientation(attributes: MarqueeAttributes): 'x' | 'y' {
     return isValidOrientation(attributes.orientation)
@@ -110,6 +145,15 @@ export function getOrientation(attributes: MarqueeAttributes): 'x' | 'y' {
 
 /**
  * Utility function to safely get animation direction with fallback
+ * 
+ * @param attributes - Marquee block attributes
+ * @returns Valid direction value with fallback to default
+ * 
+ * @example
+ * ```typescript
+ * const direction = getAnimationDirection({ direction: undefined });
+ * console.log(direction); // 'normal' (default fallback)
+ * ```
  */
 export function getAnimationDirection(attributes: MarqueeAttributes): 'normal' | 'reverse' {
     return isValidAnimationDirection(attributes.direction)
@@ -119,6 +163,15 @@ export function getAnimationDirection(attributes: MarqueeAttributes): 'normal' |
 
 /**
  * Utility function to safely get hover state with fallback
+ * 
+ * @param attributes - Marquee block attributes
+ * @returns Valid hover state value with fallback to default
+ * 
+ * @example
+ * ```typescript
+ * const hoverState = getHoverAnimationState({ hoverState: 'running' });
+ * console.log(hoverState); // 'running'
+ * ```
  */
 export function getHoverAnimationState(attributes: MarqueeAttributes): 'paused' | 'running' {
     return isValidHoverState(attributes.hoverState)
@@ -128,6 +181,18 @@ export function getHoverAnimationState(attributes: MarqueeAttributes): 'paused' 
 
 /**
  * Utility function to safely get animation speed with fallback
+ * 
+ * @param attributes - Marquee block attributes
+ * @returns Animation speed string (e.g., "10s") with fallback to default
+ * 
+ * @example
+ * ```typescript
+ * const speed = getAnimationSpeed({ speed: '15s' });
+ * console.log(speed); // '15s'
+ * 
+ * const speedWithFallback = getAnimationSpeed({ speed: undefined });
+ * console.log(speedWithFallback); // '10s' (default)
+ * ```
  */
 export function getAnimationSpeed(attributes: MarqueeAttributes): string {
     return attributes.speed || MARQUEE_DEFAULTS.speed;
@@ -135,17 +200,24 @@ export function getAnimationSpeed(attributes: MarqueeAttributes): string {
 
 /**
  * Utility function to generate CSS custom properties for the marquee
+ * 
+ * @param attributes - Marquee block attributes
+ * @returns Object containing CSS custom properties for styling
+ * 
+ * @example
+ * ```typescript
+ * const styles = getMarqueeStyles({ overlayColor: '#ff0000' });
+ * console.log(styles); // { '--marquee-overlay-color': '#ff0000' }
+ * 
+ * // Apply to element
+ * const element = document.querySelector('.orb-marquee');
+ * Object.assign(element.style, styles);
+ * ```
  */
 export function getMarqueeStyles(attributes: MarqueeAttributes): Record<string, string> {
-    const orientation = getOrientation(attributes);
-    const direction = getAnimationDirection(attributes);
-    const speed = getAnimationSpeed(attributes);
     const overlayColor = attributes.overlayColor;
 
     return {
-        '--marquee-orientation': orientation,
-        '--marquee-direction': direction,
-        '--marquee-speed': speed,
         '--marquee-overlay-color': overlayColor || 'transparent',
     };
 }

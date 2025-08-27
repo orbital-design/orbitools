@@ -9,12 +9,14 @@
  * @since 1.0.0
  */
 
-import React from 'react';
+import React, { useMemo } from 'react';
 import {
 	InspectorControls,
 	useBlockProps,
 	useInnerBlocksProps,
+	// @ts-ignore - WordPress experimental API
 	__experimentalColorGradientSettingsDropdown as ColorGradientSettingsDropdown,
+	// @ts-ignore - WordPress experimental API
 	__experimentalUseMultipleOriginColorsAndGradients as useMultipleOriginColorsAndGradients,
 } from '@wordpress/block-editor';
 import {
@@ -22,8 +24,6 @@ import {
 	__experimentalToolsPanelItem as ToolsPanelItem,
 	__experimentalToggleGroupControl as ToggleGroupControl,
 	__experimentalToggleGroupControlOption as ToggleGroupControlOption,
-	SelectControl,
-	ToggleControl,
 	RangeControl,
 } from '@wordpress/components';
 import {
@@ -38,9 +38,16 @@ import type { BlockEditProps } from '@wordpress/blocks';
 import type { MarqueeAttributes } from './types';
 import {
 	MARQUEE_DEFAULTS,
-	ANIMATION_SPEED_OPTIONS,
 	getMarqueeStyles
 } from './types';
+
+/**
+ * Constants for marquee configuration
+ */
+const SPEED_MIN = 1;
+const SPEED_MAX = 30;
+const SPEED_STEP = 0.25;
+const DEFAULT_SPEED_VALUE = 10;
 
 /**
  * Allowed blocks that can be used inside the marquee
@@ -54,7 +61,8 @@ const ALLOWED_BLOCKS = [
     'core/image',
     'orb/spacer',
     'orb/collection',
-    'orb/button'
+    'orb/button',
+    'orb/group'
 ];
 
 /**
@@ -97,12 +105,12 @@ const Edit: React.FC<BlockEditProps<MarqueeAttributes>> = ({
 
     const blockProps = useBlockProps({
         className: [
-            'orb-marquee',
             overlayColor && 'has-overlay-color'
         ].filter(Boolean).join(' '),
         'data-orientation': orientation,
         'data-direction': direction,
         'data-hover': hoverState,
+        'data-speed': speed,
         style: marqueeStyles
     });
 
@@ -136,9 +144,20 @@ const Edit: React.FC<BlockEditProps<MarqueeAttributes>> = ({
 		setAttributes({ hoverState: newValue });
 	};
 
-	const setSpeed = (newValue: string) => {
-		setAttributes({ speed: newValue });
+	const setSpeed = (newValue: number | undefined) => {
+		if (newValue === undefined) {
+			setAttributes({ speed: MARQUEE_DEFAULTS.speed });
+		} else {
+			setAttributes({ speed: `${newValue}s` });
+		}
 	};
+
+	// Memoize current speed value for RangeControl
+	const currentSpeedValue = useMemo(() => {
+		if (!speed) return DEFAULT_SPEED_VALUE;
+		const match = speed.match(/^(\d+(?:\.\d+)?)s$/);
+		return match ? parseFloat(match[1]) : DEFAULT_SPEED_VALUE;
+	}, [speed]);
 
 	// Helper to check if attribute has non-default value
 	const hasNonDefaultValue = (key: keyof MarqueeAttributes, defaultValue: any) => {
@@ -285,16 +304,27 @@ const Edit: React.FC<BlockEditProps<MarqueeAttributes>> = ({
 					<ToolsPanelItem
 						hasValue={() => hasNonDefaultValue('speed', MARQUEE_DEFAULTS.speed)}
 						label={__('Animation Speed', 'orbitools')}
-						onDeselect={() => setSpeed(MARQUEE_DEFAULTS.speed)}
+						onDeselect={() => setSpeed(undefined)}
 						isShownByDefault={false}
 						panelId="marquee-settings-panel"
 					>
-						<SelectControl
-							label={__('Animation Speed', 'orbitools')}
-							value={speed}
+						<div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+							<span style={{ fontSize: '11px', fontWeight: 500, textTransform: 'uppercase', color: '#1e1e1e' }}>
+								{__('Animation Speed', 'orbitools')}
+							</span>
+							<span style={{ fontSize: '11px', color: '#757575' }}>
+								{currentSpeedValue}s
+							</span>
+						</div>
+						<RangeControl
+							value={currentSpeedValue}
 							onChange={setSpeed}
-							options={ANIMATION_SPEED_OPTIONS}
-							help={__('Control how fast the content scrolls', 'orbitools')}
+							min={SPEED_MIN}
+							max={SPEED_MAX}
+							step={SPEED_STEP}
+							help={__('Control how fast the content scrolls (in seconds)', 'orbitools')}
+							hideLabelFromVision={true}
+							withInputField={false}
 							__nextHasNoMarginBottom={true}
 						/>
 					</ToolsPanelItem>

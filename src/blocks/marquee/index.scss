@@ -18,6 +18,7 @@
 $elem_base: 'orb-marquee';
 
 .#{$elem_base} {
+
     position: relative;
     width: 100%;
     overflow: hidden;
@@ -42,27 +43,31 @@ $elem_base: 'orb-marquee';
     // =======================
 
     // Wrapper contains the scrolling content
-    &__wrapper {
+    .#{$elem_base}__wrapper {
         display: flex;
-
         width: max-content;
         min-width: 100%;
+        overflow: hidden;
+        // RTL support
+        [dir="rtl"] & {
+            direction: ltr; // Keep marquee direction independent of text direction
+        }
     }
 
     // Content container - holds the actual inner blocks
-    &__content {
+    .#{$elem_base}__content {
         display: flex;
         align-items: center;
-        gap: var(--marquee-gap, 40px);
         flex-shrink: 0;
         opacity: 0;
+        gap: var(--gutter, var(--wp--style--block-gap, 20px));
     }
 
     // =======================
     // Overlay Effects
     // =======================
 
-    &__overlay {
+    .#{$elem_base}__overlay {
         position: absolute;
         top: 0;
         left: 0;
@@ -74,24 +79,92 @@ $elem_base: 'orb-marquee';
 
     &.has-overlay-color {
         .#{$elem_base}__overlay {
-            background: linear-gradient(
+            background: var(--marquee-overlay-color, transparent);
+
+            // Use mask for better performance - reveal color at edges, hide in center
+            mask-image: linear-gradient(
                 90deg,
-                var(--marquee-overlay-color, transparent) 0%,
+                black 0%,
                 transparent 10%,
                 transparent 90%,
-                var(--marquee-overlay-color, transparent) 100%
+                black 100%
             );
+            -webkit-mask-image: linear-gradient(
+                90deg,
+                black 0%,
+                transparent 10%,
+                transparent 90%,
+                black 100%
+            );
+
+            // RTL support for horizontal overlays
+            [dir="rtl"] & {
+                mask-image: linear-gradient(
+                    270deg,
+                    black 0%,
+                    transparent 10%,
+                    transparent 90%,
+                    black 100%
+                );
+                -webkit-mask-image: linear-gradient(
+                    270deg,
+                    black 0%,
+                    transparent 10%,
+                    transparent 90%,
+                    black 100%
+                );
+            }
         }
 
         // Vertical overlay gradient
         &.#{$elem_base}--y .#{$elem_base}__overlay {
-            background: linear-gradient(
+            mask-image: linear-gradient(
                 180deg,
-                var(--marquee-overlay-color, transparent) 0%,
+                black 0%,
                 transparent 10%,
                 transparent 90%,
-                var(--marquee-overlay-color, transparent) 100%
+                black 100%
             );
+            -webkit-mask-image: linear-gradient(
+                180deg,
+                black 0%,
+                transparent 10%,
+                transparent 90%,
+                black 100%
+            );
+        }
+
+        // Fallback for browsers that don't support mask-image
+        @supports not (mask-image: linear-gradient(90deg, transparent, black)) {
+            .#{$elem_base}__overlay {
+                background: linear-gradient(
+                    90deg,
+                    var(--marquee-overlay-color, transparent) 0%,
+                    transparent 10%,
+                    transparent 90%,
+                    var(--marquee-overlay-color, transparent) 100%
+                );
+
+                [dir="rtl"] & {
+                    background: linear-gradient(
+                        270deg,
+                        var(--marquee-overlay-color, transparent) 0%,
+                        transparent 10%,
+                        transparent 90%,
+                        var(--marquee-overlay-color, transparent) 100%
+                    );
+                }
+            }
+
+            &.#{$elem_base}--y .#{$elem_base}__overlay {
+                background: linear-gradient(
+                    180deg,
+                    var(--marquee-overlay-color, transparent) 0%,
+                    transparent 10%,
+                    transparent 90%,
+                    var(--marquee-overlay-color, transparent) 100%
+                );
+            }
         }
     }
 }

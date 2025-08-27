@@ -1,9 +1,13 @@
 /**
- * Marquee Block Frontend JavaScript
- *
- * Handles marquee animation functionality including content duplication for seamless
- * scrolling, dynamic speed calculation, and proper initialization for accessibility.
- *
+ * Marquee Block Frontend Animation
+ * 
+ * Provides smooth, performant marquee animations with support for:
+ * - Horizontal and vertical scrolling
+ * - Normal and reverse directions  
+ * - Pause on hover functionality
+ * - Automatic content duplication for seamless looping
+ * - Intersection Observer for performance optimization
+ * 
  * @file blocks/marquee/frontend.js
  * @since 1.0.0
  */
@@ -12,546 +16,670 @@
     'use strict';
 
     /**
-     * Initialize marquee functionality when DOM is ready
+     * Default configuration values
      */
-    document.addEventListener('DOMContentLoaded', function() {
-        initializeMarquees();
-    });
-
+    const DEFAULT_CONFIG = {
+        speed: '10s',
+        orientation: 'x',
+        direction: 'normal',
+        hoverState: 'paused',
+        duplicatesNeeded: 1,
+        easeSpeed: 0.02,
+        defaultDuration: 20
+    };
 
     /**
-     * Find and initialize all marquee blocks on the page
+     * MarqueeAnimation Class
+     * Handles all marquee animation logic for a single element
      */
-    function initializeMarquees() {
-        const marquees = document.querySelectorAll('.orb-marquee');
-
-        marquees.forEach(function(marquee) {
-            // Skip if already initialized
-            if (marquee.hasAttribute('data-marquee-initialized')) {
-                return;
-            }
-
-            initializeMarquee(marquee);
-            marquee.setAttribute('data-marquee-initialized', 'true');
-        });
-    }
-
-    /**
-     * Initialize a single marquee block
-     *
-     * @param {HTMLElement} marquee The marquee block element
-     */
-    function initializeMarquee(marquee) {
-
-        const wrapper = marquee.querySelector('.orb-marquee__wrapper');
-        const content = marquee.querySelector('.orb-marquee__content');
-
-        if (!wrapper || !content) {
-            console.warn('Marquee block missing required elements');
-            return;
+    class MarqueeAnimation {
+        /**
+         * Creates a new MarqueeAnimation instance
+         * 
+         * @param {HTMLElement} element - The marquee element to animate
+         */
+        constructor(element) {
+            this.element = element;
+            this.wrapper = null;
+            this.content = null;
+            this.config = {};
+            this.animationID = null;
+            this.isVisible = false;
+            this.isPaused = false;
+            this.currentSpeed = 1;
+            this.lastTime = null;
+            this.itemPositions = new Map();
+            this.items = [];
+            this.cleanupFunctions = [];
+            this.cachedDimensions = null;
+            
+            this.init();
         }
 
-        // Extract configuration from CSS custom properties and classes
-        const config = getMarqueeConfig(marquee);
+        /**
+         * Initialize the marquee animation
+         */
+        init() {
+            try {
+                // Find required elements
+                this.wrapper = this.element.querySelector('.orb-marquee__wrapper');
+                this.content = this.element.querySelector('.orb-marquee__content');
 
-        const contentRect = content.getBoundingClientRect();
-        const contentSize = {
-            width: contentRect.width,
-            height: contentRect.height
-        };
-        // Set up content duplication for seamless scrolling
-        setupContentDuplication(wrapper, content, config);
-
-        // Set up dynamic animation properties
-        setupAnimation(wrapper, contentSize, config);
-
-
-        // Calculate speed in pixels per frame based on duration
-        const isHorizontal = config.orientation === 'x';
-
-        // Parse speed from config (e.g., "10s" for 10 seconds)
-        let durationInSeconds = 20; // Default 20 seconds
-
-        if (config.speed) {
-            // Extract numeric value from "10s" format
-            const speedMatch = config.speed.match(/^(\d+(?:\.\d+)?)s$/);
-            if (speedMatch) {
-                const parsedDuration = parseFloat(speedMatch[1]);
-                if (parsedDuration > 0) {
-                    durationInSeconds = parsedDuration;
+                if (!this.wrapper || !this.content) {
+                    console.warn('Marquee: Missing required elements', this.element);
+                    return;
                 }
-            }
-        }
 
-        // The speed should be for one content item to travel its own dimension
-        // This makes the speed consistent regardless of viewport size
-        const travelDistance = isHorizontal ? contentSize.width : contentSize.height;
-        const pixelsPerSecond = travelDistance / durationInSeconds;
-        const pixelsPerFrame = pixelsPerSecond / 60; // 60 FPS
-
-        // Store config on wrapper for use in rotateMarquee
-        wrapper.marqueeConfig = {
-            speed: pixelsPerFrame,
-            duration: durationInSeconds,
-            contentWidth: contentSize.width,
-            contentHeight: contentSize.height,
-            orientation: config.orientation || 'x',
-            direction: config.direction || 'normal'
-        };
-
-        // Start the rotation animation
-        rotateMarquee(wrapper);
-
-        // Add hover pause functionality if configured
-        if (config.hover === 'paused') {
-            wrapper.isPausing = false;
-            wrapper.isResuming = false;
-            wrapper.currentSpeed = 1; // Speed multiplier (1 = normal, 0 = stopped)
-            
-            marquee.addEventListener('mouseenter', () => {
-                wrapper.isPausing = true;
-                wrapper.isResuming = false;
-            });
-
-            marquee.addEventListener('mouseleave', () => {
-                wrapper.isPausing = false;
-                wrapper.isResuming = true;
-            });
-        }
-
-        // Set up Intersection Observer for performance optimization
-        // Pause animation when marquee is not in view
-        if (window.IntersectionObserver) {
-            const observer = new IntersectionObserver(
-                (entries) => {
-                    entries.forEach((entry) => {
-                        if (entry.isIntersecting) {
-                            // Marquee is visible - ensure animation is running
-                            if (wrapper.animationPaused) {
-                                wrapper.animationPaused = false;
-                                // Resume animation if it was paused
-                                if (!wrapper.animationID) {
-                                    rotateMarquee(wrapper);
-                                }
-                            }
-                        } else {
-                            // Marquee is not visible - pause animation
-                            wrapper.animationPaused = true;
-                            // Cancel animation frame to save resources
-                            if (wrapper.animationID) {
-                                cancelAnimationFrame(wrapper.animationID);
-                                wrapper.animationID = null;
-                            }
-                        }
-                    });
-                },
-                {
-                    // Start animation slightly before element comes into view
-                    rootMargin: '50px',
-                    threshold: 0
-                }
-            );
-
-            observer.observe(marquee);
-            
-            // Store observer reference for cleanup if needed
-            wrapper.intersectionObserver = observer;
-        }
-
-        // Add resize listener to invalidate cached dimensions
-        const resizeHandler = () => {
-            wrapper.cachedDimensions = null;
-        };
-        window.addEventListener('resize', resizeHandler);
-        
-        // Store resize handler reference for cleanup if needed
-        wrapper.resizeHandler = resizeHandler;
-    }
-
-
-    /**
-     * Extract marquee configuration from element
-     *
-     * @param {HTMLElement} marquee The marquee element
-     * @returns {Object} Configuration object
-     */
-    function getMarqueeConfig(marquee) {
-        return {
-            orientation: marquee.dataset.orientation,
-            direction: marquee.dataset.direction,
-            hover: marquee.dataset.hover,
-            speed: marquee.dataset.speed
-        };
-    }
-
-    /**
-     * Set up content duplication for seamless scrolling
-     *
-     * @param {HTMLElement} wrapper The wrapper element
-     * @param {HTMLElement} content The content element
-     * @param {Object} config Configuration object
-     */
-    function setupContentDuplication(wrapper, content, config) {
-
-        // Calculate how many duplicates we need
-        const duplicatesNeeded = calculateDuplicatesNeeded(wrapper, content, config);
-
-        // Create the calculated number of clones
-        for (let i = 0; i < duplicatesNeeded; i++) {
-            const clone = content.cloneNode(true);
-            clone.setAttribute('aria-hidden', 'true');
-            clone.classList.add('orb-marquee__content--clone');
-            
-            // For reverse direction, insert clones BEFORE the original content
-            // For normal direction, append clones AFTER the original content
-            if (config.direction === 'reverse') {
-                wrapper.insertBefore(clone, content);
-            } else {
-                wrapper.appendChild(clone);
-            }
-        }
-
-        // Add data attribute to track the number of duplicates created
-        wrapper.dataset.duplicateCount = duplicatesNeeded;
-    }
-
-    /**
-     * Calculate how many content duplicates are needed for seamless scrolling
-     *
-     * @param {HTMLElement} wrapper The wrapper element
-     * @param {HTMLElement} content The content element
-     * @param {Object} config Configuration object
-     * @returns {number} Number of duplicates needed
-     */
-    function calculateDuplicatesNeeded(wrapper, content, config) {
-        const wrapperRect = wrapper.getBoundingClientRect();
-        const contentRect = content.getBoundingClientRect();
-        
-        // Account for wrapper padding
-        const wrapperStyles = getComputedStyle(wrapper);
-        const paddingLeft = parseFloat(wrapperStyles.paddingLeft) || 0;
-        const paddingRight = parseFloat(wrapperStyles.paddingRight) || 0;
-        const paddingTop = parseFloat(wrapperStyles.paddingTop) || 0;
-        const paddingBottom = parseFloat(wrapperStyles.paddingBottom) || 0;
-
-        let containerSize, contentSize;
-
-        if (config.orientation === 'x') {
-            containerSize = wrapperRect.width - paddingLeft - paddingRight;
-            contentSize = contentRect.width;
-        } else {
-            containerSize = wrapperRect.height - paddingTop - paddingBottom;
-            contentSize = contentRect.height;
-        }
-
-        // Calculate how many copies we need to fill the content area
-        // We need at least enough to fill the viewport + 2 extra for smooth scrolling
-        let duplicatesNeeded = Math.ceil(containerSize / contentSize) + 2;
-
-        // Cap at a reasonable maximum to prevent performance issues
-        duplicatesNeeded = Math.min(duplicatesNeeded, 20);
-
-        return duplicatesNeeded;
-    }
-
-
-    /**
-     * Set up dynamic animation properties
-     *
-     * @param {HTMLElement} wrapper The wrapper element
-     * @param {Object} contentSize The sizes of content element
-     * @param {Object} config Configuration object
-     */
-    function setupAnimation(wrapper, contentSize, config) {
-
-        wrapper.style.position = 'relative';
-        wrapper.style.overflow = 'hidden';
-
-        const isHorizontal = config.orientation === 'x';
-
-        if (isHorizontal) {
-            // For horizontal scrolling, set the height
-            wrapper.style.height = contentSize.height + "px";
-        } else {
-            // For vertical scrolling, set both width and height
-            wrapper.style.width = contentSize.width + "px";
-            // Height should be based on viewport or a reasonable default
-            const wrapperRect = wrapper.getBoundingClientRect();
-            if (!wrapper.style.height || wrapperRect.height === 0) {
-                // Set a default height if not already set
-                wrapper.style.height = "400px"; // Default height for vertical marquee
-            }
-        }
-
-        // Get wrapper padding to properly position content within the padded area
-        const wrapperStyles = getComputedStyle(wrapper);
-        const paddingLeft = parseFloat(wrapperStyles.paddingLeft) || 0;
-        const paddingTop = parseFloat(wrapperStyles.paddingTop) || 0;
-
-        // Set up items array for the wrapper (treating wrapper as the container)
-        wrapper.items = Array.from(wrapper.children);
-
-        // Position each content block based on orientation and direction
-        wrapper.items.forEach((item, i) => {
-            // Set static properties once
-            item.style.position = 'absolute';
-            item.style.width = contentSize.width + "px";
-            item.style.height = contentSize.height + "px";
-
-            if (isHorizontal) {
-                // Set vertical position once (accounting for padding)
-                item.style.top = paddingTop + "px";
+                // Extract configuration
+                this.config = this.getConfig();
                 
-                if (config.direction === 'reverse') {
-                    // For reverse: original content at padding offset, clones at negative positions (to the left)
-                    const originalIndex = wrapper.items.length - 1; // Last item is original content
-                    const relativeIndex = originalIndex - i; // Distance from original
-                    item.style.left = (paddingLeft + (-contentSize.width * relativeIndex)) + "px";
-                } else {
-                    // For normal: position items normally from left (starting at padding offset)
-                    item.style.left = (paddingLeft + (contentSize.width * i)) + "px";
+                // Get content dimensions
+                const contentRect = this.content.getBoundingClientRect();
+                const contentSize = {
+                    width: contentRect.width,
+                    height: contentRect.height
+                };
+
+                // Set up content duplication
+                this.setupContentDuplication(contentSize);
+
+                // Calculate animation speed
+                this.setupAnimationSpeed(contentSize);
+
+                // Set up hover behavior
+                if (this.config.hoverState === 'paused') {
+                    this.setupHoverBehavior();
                 }
-            } else {
-                // Set horizontal position once (accounting for padding)
-                item.style.left = paddingLeft + "px";
+
+                // Set up intersection observer for performance
+                this.setupIntersectionObserver();
+
+                // Set up resize handler
+                this.setupResizeHandler();
+
+                // Initialize positioning
+                this.setupInitialPositioning(contentSize);
+
+                // Mark as initialized
+                this.element.dataset.marqueeInitialized = 'true';
+
+                // Start animation
+                this.start();
+
+            } catch (error) {
+                console.error('Marquee initialization failed:', error);
+            }
+        }
+
+        /**
+         * Extract configuration from element
+         * 
+         * @returns {Object} Configuration object
+         */
+        getConfig() {
+            const dataset = this.element.dataset;
+            
+            return {
+                orientation: dataset.orientation || DEFAULT_CONFIG.orientation,
+                direction: dataset.direction || DEFAULT_CONFIG.direction,
+                hoverState: dataset.hover || DEFAULT_CONFIG.hoverState,
+                speed: dataset.speed || DEFAULT_CONFIG.speed
+            };
+        }
+
+        /**
+         * Set up content duplication for seamless scrolling
+         * 
+         * @param {Object} contentSize - Content dimensions
+         */
+        setupContentDuplication(contentSize) {
+            const duplicatesNeeded = this.calculateDuplicatesNeeded(contentSize);
+
+            for (let i = 0; i < duplicatesNeeded; i++) {
+                const clone = this.content.cloneNode(true);
+                clone.setAttribute('aria-hidden', 'true');
+                clone.classList.add('orb-marquee__content--clone');
                 
-                // Only set the animated property (top)
-                if (config.direction === 'reverse') {
-                    // For reverse vertical: original content at padding offset, clones at negative positions
-                    const originalIndex = wrapper.items.length - 1;
-                    const relativeIndex = originalIndex - i;
-                    item.style.top = (paddingTop + (-contentSize.height * relativeIndex)) + "px";
+                if (this.config.direction === 'reverse') {
+                    this.wrapper.insertBefore(clone, this.content);
                 } else {
-                    // For normal: align items to the top edge (starting at padding offset)
-                    item.style.top = (paddingTop + (contentSize.height * i)) + "px";
+                    this.wrapper.appendChild(clone);
                 }
             }
-        });
 
-        // Items are positioned and ready to animate
-    }
-
-    function rotateMarquee(wrapper) {
-        if (!wrapper || !wrapper.items || wrapper.items.length === 0) return;
-        
-        // Stop animation if marquee is not in view (for performance)
-        if (wrapper.animationPaused) {
-            wrapper.animationID = null;
-            return;
+            this.wrapper.dataset.duplicateCount = duplicatesNeeded;
         }
 
-        const config = wrapper.marqueeConfig || {
-            speed: 1,
-            contentWidth: 200,
-            contentHeight: 100,
-            orientation: 'x',
-            direction: 'normal'
-        };
-
-        const isHorizontal = config.orientation === 'x';
-        const isReverse = config.direction === 'reverse';
-
-        // Initialize transform positions if not set
-        if (!wrapper.itemPositions) {
-            wrapper.itemPositions = new Map();
-            wrapper.items.forEach((item) => {
-                // Get initial position from style.left/top
-                const initialPos = isHorizontal 
-                    ? parseFloat(item.style.left) || 0
-                    : parseFloat(item.style.top) || 0;
-                wrapper.itemPositions.set(item, initialPos);
-            });
-        }
-        
-        // Handle smooth speed transitions for pause/resume
-        if (wrapper.isPausing && wrapper.currentSpeed > 0) {
-            // Gradually slow down
-            wrapper.currentSpeed = Math.max(0, wrapper.currentSpeed - 0.05);
-        } else if (wrapper.isResuming && wrapper.currentSpeed < 1) {
-            // Gradually speed up
-            wrapper.currentSpeed = Math.min(1, wrapper.currentSpeed + 0.02);
-        }
-        
-        // Calculate actual speed with easing
-        const actualSpeed = config.speed * (wrapper.currentSpeed !== undefined ? wrapper.currentSpeed : 1);
-
-        // Move all items using transforms (more performant than left/top)
-        for (let i = 0; i < wrapper.items.length; i++) {
-            const item = wrapper.items[i];
-            let currentPos = wrapper.itemPositions.get(item) || 0;
+        /**
+         * Calculate how many duplicates are needed
+         * 
+         * @param {Object} contentSize - Content dimensions
+         * @returns {number} Number of duplicates needed
+         */
+        calculateDuplicatesNeeded(contentSize) {
+            const wrapperRect = this.wrapper.getBoundingClientRect();
+            const wrapperStyles = getComputedStyle(this.wrapper);
             
-            // Update position with eased speed
-            currentPos += isReverse ? actualSpeed : -actualSpeed;
-            wrapper.itemPositions.set(item, currentPos);
-            
-            // Apply transform
-            if (isHorizontal) {
-                item.style.transform = `translateX(${currentPos - (parseFloat(item.style.left) || 0)}px)`;
-            } else {
-                item.style.transform = `translateY(${currentPos - (parseFloat(item.style.top) || 0)}px)`;
-            }
-        }
-
-        // Check ALL items for repositioning (not just the first one)
-        const itemsToReposition = [];
-        
-        // Use cached dimensions or calculate once per animation cycle
-        if (!wrapper.cachedDimensions) {
-            const wrapperStyles = getComputedStyle(wrapper);
-            const wrapperRect = wrapper.getBoundingClientRect();
             const paddingLeft = parseFloat(wrapperStyles.paddingLeft) || 0;
             const paddingRight = parseFloat(wrapperStyles.paddingRight) || 0;
             const paddingTop = parseFloat(wrapperStyles.paddingTop) || 0;
             const paddingBottom = parseFloat(wrapperStyles.paddingBottom) || 0;
+
+            const isHorizontal = this.config.orientation === 'x';
+            const containerSize = isHorizontal 
+                ? wrapperRect.width - paddingLeft - paddingRight
+                : wrapperRect.height - paddingTop - paddingBottom;
             
-            wrapper.cachedDimensions = {
-                contentWidth: wrapperRect.width - paddingLeft - paddingRight,
-                contentHeight: wrapperRect.height - paddingTop - paddingBottom,
-                lastUpdate: Date.now()
+            const contentDimension = isHorizontal ? contentSize.width : contentSize.height;
+
+            if (contentDimension >= containerSize) {
+                return 1; // Content larger than container, only need 1 duplicate
+            } else {
+                return Math.ceil(containerSize / contentDimension) + 1;
+            }
+        }
+
+        /**
+         * Set up animation speed
+         * 
+         * @param {Object} contentSize - Content dimensions
+         */
+        setupAnimationSpeed(contentSize) {
+            const isHorizontal = this.config.orientation === 'x';
+            
+            // Parse duration from config
+            let durationInSeconds = DEFAULT_CONFIG.defaultDuration;
+            if (this.config.speed) {
+                const speedMatch = this.config.speed.match(/^(\d+(?:\.\d+)?)s$/);
+                if (speedMatch) {
+                    const parsedDuration = parseFloat(speedMatch[1]);
+                    if (parsedDuration > 0) {
+                        durationInSeconds = parsedDuration;
+                    }
+                }
+            }
+
+            // Calculate speed based on viewport
+            const viewportSize = isHorizontal ? window.innerWidth : window.innerHeight;
+            const pixelsPerSecond = viewportSize / durationInSeconds;
+
+            // Store configuration
+            this.marqueeConfig = {
+                speed: pixelsPerSecond,
+                duration: durationInSeconds,
+                contentWidth: contentSize.width,
+                contentHeight: contentSize.height,
+                orientation: this.config.orientation,
+                direction: this.config.direction
             };
         }
-        
-        const { contentWidth, contentHeight } = wrapper.cachedDimensions;
-        
-        wrapper.items.forEach((item, index) => {
-            const itemPos = wrapper.itemPositions.get(item) || 0;
-            let needsReposition = false;
-            
-            if (isHorizontal) {
-                if (isReverse) {
-                    // For reverse, check if item has moved past right content edge
-                    needsReposition = itemPos > contentWidth;
-                } else {
-                    // For normal, check if item has moved past left content edge
-                    needsReposition = itemPos + config.contentWidth < 0;
-                }
-            } else {
-                if (isReverse) {
-                    // For reverse, check if item has moved past bottom content edge
-                    needsReposition = itemPos > contentHeight;
-                } else {
-                    // For normal, check if item has moved past top content edge
-                    needsReposition = itemPos + config.contentHeight < 0;
-                }
-            }
-            
-            if (needsReposition) {
-                itemsToReposition.push({ item, index });
-            }
-        });
-        
-        // Reposition all items that need it
-        itemsToReposition.forEach(({ item }) => {
-            // Remove item from its current position in the array
-            const itemIndex = wrapper.items.indexOf(item);
-            if (itemIndex > -1) {
-                wrapper.items.splice(itemIndex, 1);
+
+        /**
+         * Set up hover pause behavior
+         */
+        setupHoverBehavior() {
+            const handleMouseEnter = () => {
+                this.isPaused = true;
+                this.isResuming = false;
+            };
+
+            const handleMouseLeave = () => {
+                this.isPaused = false;
+                this.isResuming = true;
+            };
+
+            this.wrapper.addEventListener('mouseenter', handleMouseEnter);
+            this.wrapper.addEventListener('mouseleave', handleMouseLeave);
+
+            // Store cleanup functions
+            this.cleanupFunctions.push(() => {
+                this.wrapper.removeEventListener('mouseenter', handleMouseEnter);
+                this.wrapper.removeEventListener('mouseleave', handleMouseLeave);
+            });
+        }
+
+        /**
+         * Set up intersection observer for performance
+         */
+        setupIntersectionObserver() {
+            if (!('IntersectionObserver' in window)) {
+                this.isVisible = true;
+                return;
             }
 
-            // Find the edge position based on orientation and direction
+            const observer = new IntersectionObserver(
+                (entries) => {
+                    entries.forEach(entry => {
+                        this.isVisible = entry.isIntersecting;
+                        
+                        if (this.isVisible && !this.animationID) {
+                            this.start();
+                        } else if (!this.isVisible && this.animationID) {
+                            this.pause();
+                        }
+                    });
+                },
+                { rootMargin: '50px' }
+            );
+
+            observer.observe(this.element);
+            
+            this.cleanupFunctions.push(() => {
+                observer.disconnect();
+            });
+        }
+
+        /**
+         * Set up resize handler to invalidate cached dimensions
+         */
+        setupResizeHandler() {
+            let resizeTimeout;
+            
+            const handleResize = () => {
+                clearTimeout(resizeTimeout);
+                resizeTimeout = setTimeout(() => {
+                    this.cachedDimensions = null;
+                }, 150);
+            };
+
+            window.addEventListener('resize', handleResize);
+            
+            this.cleanupFunctions.push(() => {
+                window.removeEventListener('resize', handleResize);
+                clearTimeout(resizeTimeout);
+            });
+        }
+
+        /**
+         * Set up initial positioning
+         * 
+         * @param {Object} contentSize - Content dimensions
+         */
+        setupInitialPositioning(contentSize) {
+            const isHorizontal = this.config.orientation === 'x';
+            
+            // Get wrapper padding
+            const wrapperStyles = getComputedStyle(this.wrapper);
+            const paddingLeft = parseFloat(wrapperStyles.paddingLeft) || 0;
+            const paddingTop = parseFloat(wrapperStyles.paddingTop) || 0;
+
+            // Set wrapper positioning and dimensions for absolute positioning context
+            this.wrapper.style.position = 'relative';
+            this.wrapper.style.height = contentSize.height + 'px';
+            this.wrapper.style.overflow = 'hidden';
+
+            // Set up items array
+            this.items = Array.from(this.wrapper.children);
+
+            // Position each content block
+            this.items.forEach((item, i) => {
+                item.style.position = 'absolute';
+                item.style.width = contentSize.width + 'px';
+                item.style.height = contentSize.height + 'px';
+
+                if (isHorizontal) {
+                    item.style.top = paddingTop + 'px';
+                    
+                    if (this.config.direction === 'reverse') {
+                        const originalIndex = this.items.length - 1;
+                        const relativeIndex = originalIndex - i;
+                        item.style.left = (paddingLeft + (-contentSize.width * relativeIndex)) + 'px';
+                    } else {
+                        item.style.left = (paddingLeft + (contentSize.width * i)) + 'px';
+                    }
+                } else {
+                    item.style.left = paddingLeft + 'px';
+                    
+                    if (this.config.direction === 'reverse') {
+                        const originalIndex = this.items.length - 1;
+                        const relativeIndex = originalIndex - i;
+                        item.style.top = (paddingTop + (-contentSize.height * relativeIndex)) + 'px';
+                    } else {
+                        item.style.top = (paddingTop + (contentSize.height * i)) + 'px';
+                    }
+                }
+                
+                // Initialize position tracking
+                this.itemPositions.set(item, 0);
+            });
+        }
+
+        /**
+         * Start the animation
+         */
+        start() {
+            if (this.animationID) return;
+            
+            this.animate();
+        }
+
+        /**
+         * Pause the animation
+         */
+        pause() {
+            if (this.animationID) {
+                cancelAnimationFrame(this.animationID);
+                this.animationID = null;
+            }
+        }
+
+        /**
+         * Main animation loop
+         */
+        animate() {
+            if (!this.isVisible || !this.marqueeConfig) {
+                this.animationID = null;
+                return;
+            }
+
+            // Calculate time delta
+            const currentTime = Date.now();
+            if (!this.lastTime) {
+                this.lastTime = currentTime;
+            }
+            const deltaTime = (currentTime - this.lastTime) / 1000;
+            this.lastTime = currentTime;
+
+            const config = this.marqueeConfig;
+            const isHorizontal = config.orientation === 'x';
+            const isReverse = config.direction === 'reverse';
+
+            // Handle pause/resume with smooth speed transitions
+            if (this.isPaused && this.currentSpeed > 0) {
+                this.currentSpeed = Math.max(0, this.currentSpeed - DEFAULT_CONFIG.easeSpeed);
+            } else if (this.isResuming && this.currentSpeed < 1) {
+                this.currentSpeed = Math.min(1, this.currentSpeed + DEFAULT_CONFIG.easeSpeed);
+            }
+
+            // Calculate movement
+            const baseSpeed = config.speed * deltaTime;
+            const actualSpeed = baseSpeed * this.currentSpeed;
+
+            // Move all items
+            this.items.forEach(item => {
+                let currentPos = this.itemPositions.get(item) || 0;
+                currentPos += isReverse ? actualSpeed : -actualSpeed;
+                this.itemPositions.set(item, currentPos);
+
+                // Apply transform
+                if (isHorizontal) {
+                    item.style.transform = `translateX(${currentPos - (parseFloat(item.style.left) || 0)}px)`;
+                } else {
+                    item.style.transform = `translateY(${currentPos - (parseFloat(item.style.top) || 0)}px)`;
+                }
+            });
+
+            // Check for repositioning
+            this.checkRepositioning(isHorizontal, isReverse, config);
+
+            // Continue animation
+            this.animationID = requestAnimationFrame(() => this.animate());
+        }
+
+        /**
+         * Check and handle item repositioning for seamless loop
+         */
+        checkRepositioning(isHorizontal, isReverse, config) {
+            // Get cached dimensions
+            if (!this.cachedDimensions) {
+                const wrapperStyles = getComputedStyle(this.wrapper);
+                const wrapperRect = this.wrapper.getBoundingClientRect();
+                const paddingLeft = parseFloat(wrapperStyles.paddingLeft) || 0;
+                const paddingRight = parseFloat(wrapperStyles.paddingRight) || 0;
+                const paddingTop = parseFloat(wrapperStyles.paddingTop) || 0;
+                const paddingBottom = parseFloat(wrapperStyles.paddingBottom) || 0;
+                
+                this.cachedDimensions = {
+                    contentWidth: wrapperRect.width - paddingLeft - paddingRight,
+                    contentHeight: wrapperRect.height - paddingTop - paddingBottom,
+                    lastUpdate: Date.now()
+                };
+            }
+            
+            const { contentWidth, contentHeight } = this.cachedDimensions;
+
+            // Check each item for repositioning
+            this.items.forEach((item) => {
+                const itemPos = this.itemPositions.get(item) || 0;
+                let needsReposition = false;
+
+                if (isHorizontal) {
+                    const itemLeft = itemPos + (parseFloat(item.style.left) || 0);
+                    if (isReverse) {
+                        needsReposition = itemLeft > contentWidth;
+                    } else {
+                        needsReposition = (itemLeft + config.contentWidth) < 0;
+                    }
+                } else {
+                    const itemTop = itemPos + (parseFloat(item.style.top) || 0);
+                    if (isReverse) {
+                        needsReposition = itemTop > contentHeight;
+                    } else {
+                        needsReposition = (itemTop + config.contentHeight) < 0;
+                    }
+                }
+
+                if (needsReposition) {
+                    this.repositionItem(item, isHorizontal, isReverse, config);
+                }
+            });
+        }
+
+        /**
+         * Reposition an item to maintain seamless loop
+         */
+        repositionItem(item, isHorizontal, isReverse, config) {
             if (isHorizontal) {
                 if (isReverse) {
-                    // Find leftmost position for reverse horizontal
+                    // Find leftmost position
                     let leftmostPosition = Infinity;
-                    wrapper.items.forEach(otherItem => {
-                        const itemPos = wrapper.itemPositions.get(otherItem) || 0;
-                        if (itemPos < leftmostPosition) {
-                            leftmostPosition = itemPos;
+                    this.items.forEach(otherItem => {
+                        const pos = this.itemPositions.get(otherItem) || 0;
+                        if (pos < leftmostPosition) {
+                            leftmostPosition = pos;
                         }
                     });
-                    const newPos = leftmostPosition - config.contentWidth;
-                    wrapper.itemPositions.set(item, newPos);
-                    item.style.transform = `translateX(${newPos - (parseFloat(item.style.left) || 0)}px)`;
+                    this.itemPositions.set(item, leftmostPosition - config.contentWidth);
                 } else {
-                    // Find rightmost position for normal horizontal
+                    // Find rightmost position
                     let rightmostPosition = -Infinity;
-                    wrapper.items.forEach(otherItem => {
-                        const itemPos = wrapper.itemPositions.get(otherItem) || 0;
-                        const itemRight = itemPos + config.contentWidth;
-                        if (itemRight > rightmostPosition) {
-                            rightmostPosition = itemRight;
+                    this.items.forEach(otherItem => {
+                        const pos = this.itemPositions.get(otherItem) || 0;
+                        const right = pos + config.contentWidth;
+                        if (right > rightmostPosition) {
+                            rightmostPosition = right;
                         }
                     });
-                    const newPos = rightmostPosition;
-                    wrapper.itemPositions.set(item, newPos);
-                    item.style.transform = `translateX(${newPos - (parseFloat(item.style.left) || 0)}px)`;
+                    this.itemPositions.set(item, rightmostPosition);
                 }
+                
+                const newPos = this.itemPositions.get(item);
+                item.style.transform = `translateX(${newPos - (parseFloat(item.style.left) || 0)}px)`;
+                
             } else {
                 if (isReverse) {
-                    // Find topmost position for reverse vertical
+                    // Find topmost position
                     let topmostPosition = Infinity;
-                    wrapper.items.forEach(otherItem => {
-                        const itemPos = wrapper.itemPositions.get(otherItem) || 0;
-                        if (itemPos < topmostPosition) {
-                            topmostPosition = itemPos;
+                    this.items.forEach(otherItem => {
+                        const pos = this.itemPositions.get(otherItem) || 0;
+                        if (pos < topmostPosition) {
+                            topmostPosition = pos;
                         }
                     });
-                    const newPos = topmostPosition - config.contentHeight;
-                    wrapper.itemPositions.set(item, newPos);
-                    item.style.transform = `translateY(${newPos - (parseFloat(item.style.top) || 0)}px)`;
+                    this.itemPositions.set(item, topmostPosition - config.contentHeight);
                 } else {
-                    // Find bottommost position for normal vertical
+                    // Find bottommost position
                     let bottommostPosition = -Infinity;
-                    wrapper.items.forEach(otherItem => {
-                        const itemPos = wrapper.itemPositions.get(otherItem) || 0;
-                        const itemBottom = itemPos + config.contentHeight;
-                        if (itemBottom > bottommostPosition) {
-                            bottommostPosition = itemBottom;
+                    this.items.forEach(otherItem => {
+                        const pos = this.itemPositions.get(otherItem) || 0;
+                        const bottom = pos + config.contentHeight;
+                        if (bottom > bottommostPosition) {
+                            bottommostPosition = bottom;
                         }
                     });
-                    const newPos = bottommostPosition;
-                    wrapper.itemPositions.set(item, newPos);
-                    item.style.transform = `translateY(${newPos - (parseFloat(item.style.top) || 0)}px)`;
+                    this.itemPositions.set(item, bottommostPosition);
                 }
+                
+                const newPos = this.itemPositions.get(item);
+                item.style.transform = `translateY(${newPos - (parseFloat(item.style.top) || 0)}px)`;
             }
 
-            // Add it back to the end of the array
-            wrapper.items.push(item);
-        });
+            // Move item to end of array for proper layering
+            const itemIndex = this.items.indexOf(item);
+            if (itemIndex > -1) {
+                this.items.splice(itemIndex, 1);
+                this.items.push(item);
+            }
+        }
 
-        // Continue the animation
-        wrapper.animationID = requestAnimationFrame(() => rotateMarquee(wrapper));
+        /**
+         * Destroy the marquee animation and clean up
+         */
+        destroy() {
+            // Stop animation
+            this.pause();
+
+            // Run all cleanup functions
+            this.cleanupFunctions.forEach(cleanup => cleanup());
+            
+            // Clear references
+            this.element = null;
+            this.wrapper = null;
+            this.content = null;
+            this.items = [];
+            this.itemPositions.clear();
+            this.cleanupFunctions = [];
+            this.cachedDimensions = null;
+        }
     }
 
-
-
     /**
-     * Public API for external control
+     * Marquee Manager - Handles all marquee instances on the page
      */
-    window.OrbMarquee = {
+    class MarqueeManager {
+        constructor() {
+            this.instances = new Map();
+            this.init();
+        }
+
         /**
-         * Initialize or re-initialize all marquees
+         * Initialize all marquees on the page
          */
-        init: initializeMarquees,
+        init() {
+            // Wait for DOM ready
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', () => this.initializeAll());
+            } else {
+                this.initializeAll();
+            }
+        }
+
+        /**
+         * Initialize all marquee elements
+         */
+        initializeAll() {
+            const marquees = document.querySelectorAll('.orb-marquee');
+            marquees.forEach(marquee => this.initializeOne(marquee));
+        }
+
+        /**
+         * Initialize a single marquee element
+         * 
+         * @param {HTMLElement} element - The marquee element
+         */
+        initializeOne(element) {
+            // Skip if already initialized
+            if (this.instances.has(element)) {
+                return;
+            }
+
+            try {
+                const instance = new MarqueeAnimation(element);
+                this.instances.set(element, instance);
+            } catch (error) {
+                console.error('Failed to initialize marquee:', error, element);
+            }
+        }
+
+        /**
+         * Destroy a marquee instance
+         * 
+         * @param {HTMLElement} element - The marquee element
+         */
+        destroy(element) {
+            const instance = this.instances.get(element);
+            if (instance) {
+                instance.destroy();
+                this.instances.delete(element);
+            }
+        }
+
+        /**
+         * Destroy all marquee instances
+         */
+        destroyAll() {
+            this.instances.forEach(instance => instance.destroy());
+            this.instances.clear();
+        }
 
         /**
          * Pause all marquee animations
          */
-        pauseAll: function() {
-            const wrappers = document.querySelectorAll('.orb-marquee__wrapper');
-            wrappers.forEach(wrapper => {
-                wrapper.animationPaused = true;
-                if (wrapper.animationID) {
-                    cancelAnimationFrame(wrapper.animationID);
-                    wrapper.animationID = null;
-                }
-            });
-        },
+        pauseAll() {
+            this.instances.forEach(instance => instance.pause());
+        }
 
         /**
          * Resume all marquee animations
          */
-        resumeAll: function() {
-            const wrappers = document.querySelectorAll('.orb-marquee__wrapper');
-            wrappers.forEach(wrapper => {
-                if (wrapper.animationPaused) {
-                    wrapper.animationPaused = false;
-                    if (!wrapper.animationID) {
-                        rotateMarquee(wrapper);
-                    }
-                }
-            });
+        resumeAll() {
+            this.instances.forEach(instance => instance.start());
         }
+    }
+
+    // Create global manager instance
+    const marqueeManager = new MarqueeManager();
+
+    // Public API
+    window.OrbMarquee = {
+        /**
+         * Initialize or re-initialize all marquees
+         */
+        init: () => marqueeManager.initializeAll(),
+
+        /**
+         * Initialize a specific marquee element
+         * 
+         * @param {HTMLElement} element - The marquee element
+         */
+        initOne: (element) => marqueeManager.initializeOne(element),
+
+        /**
+         * Destroy a specific marquee instance
+         * 
+         * @param {HTMLElement} element - The marquee element
+         */
+        destroy: (element) => marqueeManager.destroy(element),
+
+        /**
+         * Destroy all marquee instances
+         */
+        destroyAll: () => marqueeManager.destroyAll(),
+
+        /**
+         * Pause all marquee animations
+         */
+        pauseAll: () => marqueeManager.pauseAll(),
+
+        /**
+         * Resume all marquee animations
+         */
+        resumeAll: () => marqueeManager.resumeAll(),
+
+        /**
+         * Get the manager instance (for advanced usage)
+         */
+        getManager: () => marqueeManager
     };
 
 })();
