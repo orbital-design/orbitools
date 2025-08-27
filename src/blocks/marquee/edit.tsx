@@ -45,7 +45,7 @@ import {
  * Constants for marquee configuration
  */
 const SPEED_MIN = 1;
-const SPEED_MAX = 30;
+const SPEED_MAX = 60;
 const SPEED_STEP = 0.25;
 const DEFAULT_SPEED_VALUE = 10;
 

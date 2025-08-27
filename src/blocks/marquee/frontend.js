@@ -311,36 +311,37 @@
             // Set up items array
             this.items = Array.from(this.wrapper.children);
 
-            // Position each content block
+            // Position each content block using transforms only
             this.items.forEach((item, i) => {
                 item.style.position = 'absolute';
                 item.style.width = contentSize.width + 'px';
                 item.style.height = contentSize.height + 'px';
+                item.style.left = paddingLeft + 'px';
+                item.style.top = paddingTop + 'px';
 
+                let initialPosition;
                 if (isHorizontal) {
-                    item.style.top = paddingTop + 'px';
-                    
                     if (this.config.direction === 'reverse') {
                         const originalIndex = this.items.length - 1;
                         const relativeIndex = originalIndex - i;
-                        item.style.left = (paddingLeft + (-contentSize.width * relativeIndex)) + 'px';
+                        initialPosition = -contentSize.width * relativeIndex;
                     } else {
-                        item.style.left = (paddingLeft + (contentSize.width * i)) + 'px';
+                        initialPosition = contentSize.width * i;
                     }
+                    item.style.transform = `translateX(${initialPosition}px)`;
                 } else {
-                    item.style.left = paddingLeft + 'px';
-                    
                     if (this.config.direction === 'reverse') {
                         const originalIndex = this.items.length - 1;
                         const relativeIndex = originalIndex - i;
-                        item.style.top = (paddingTop + (-contentSize.height * relativeIndex)) + 'px';
+                        initialPosition = -contentSize.height * relativeIndex;
                     } else {
-                        item.style.top = (paddingTop + (contentSize.height * i)) + 'px';
+                        initialPosition = contentSize.height * i;
                     }
+                    item.style.transform = `translateY(${initialPosition}px)`;
                 }
                 
-                // Initialize position tracking
-                this.itemPositions.set(item, 0);
+                // Initialize position tracking with actual starting position
+                this.itemPositions.set(item, initialPosition);
             });
         }
 
@@ -401,11 +402,11 @@
                 currentPos += isReverse ? actualSpeed : -actualSpeed;
                 this.itemPositions.set(item, currentPos);
 
-                // Apply transform
+                // Apply transform directly
                 if (isHorizontal) {
-                    item.style.transform = `translateX(${currentPos - (parseFloat(item.style.left) || 0)}px)`;
+                    item.style.transform = `translateX(${currentPos}px)`;
                 } else {
-                    item.style.transform = `translateY(${currentPos - (parseFloat(item.style.top) || 0)}px)`;
+                    item.style.transform = `translateY(${currentPos}px)`;
                 }
             });
 
@@ -444,18 +445,16 @@
                 let needsReposition = false;
 
                 if (isHorizontal) {
-                    const itemLeft = itemPos + (parseFloat(item.style.left) || 0);
                     if (isReverse) {
-                        needsReposition = itemLeft > contentWidth;
+                        needsReposition = itemPos > contentWidth;
                     } else {
-                        needsReposition = (itemLeft + config.contentWidth) < 0;
+                        needsReposition = (itemPos + config.contentWidth) < 0;
                     }
                 } else {
-                    const itemTop = itemPos + (parseFloat(item.style.top) || 0);
                     if (isReverse) {
-                        needsReposition = itemTop > contentHeight;
+                        needsReposition = itemPos > contentHeight;
                     } else {
-                        needsReposition = (itemTop + config.contentHeight) < 0;
+                        needsReposition = (itemPos + config.contentHeight) < 0;
                     }
                 }
 
@@ -494,7 +493,7 @@
                 }
                 
                 const newPos = this.itemPositions.get(item);
-                item.style.transform = `translateX(${newPos - (parseFloat(item.style.left) || 0)}px)`;
+                item.style.transform = `translateX(${newPos}px)`;
                 
             } else {
                 if (isReverse) {
@@ -521,7 +520,7 @@
                 }
                 
                 const newPos = this.itemPositions.get(item);
-                item.style.transform = `translateY(${newPos - (parseFloat(item.style.top) || 0)}px)`;
+                item.style.transform = `translateY(${newPos}px)`;
             }
 
             // Move item to end of array for proper layering

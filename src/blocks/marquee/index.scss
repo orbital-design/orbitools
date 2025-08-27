@@ -31,6 +31,14 @@ $elem_base: 'orb-marquee';
         }
     }
 
+    &.alignfull {
+        padding-left: 0;
+        padding-right: 0;
+        margin-left: calc(var(--gutter-page) * -1);
+        margin-right: calc(var(--gutter-page) * -1);
+        min-width: calc(100% + calc(var(--gutter-page) * 2));
+    }
+
     &.alignfull:not(.has-spacing) {
         .#{$elem_base}__wrapper {
             margin-left: calc(var(--gutter-page) * -1);
