@@ -62,7 +62,8 @@ const ALLOWED_BLOCKS = [
     'orb/spacer',
     'orb/collection',
     'orb/button',
-    'orb/group'
+    'orb/group',
+    'orb/stat'
 ];
 
 /**
