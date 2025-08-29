@@ -44,8 +44,8 @@ import {
 /**
  * Constants for marquee configuration
  */
-const SPEED_MIN = 1;
-const SPEED_MAX = 60;
+const SPEED_MIN = 0.25;
+const SPEED_MAX = 15;
 const SPEED_STEP = 0.25;
 const DEFAULT_SPEED_VALUE = 10;
 
@@ -133,16 +133,22 @@ const Edit: React.FC<BlockEditProps<MarqueeAttributes>> = ({
 		setAttributes({ overlayColor: newValue });
 	};
 
-	const setOrientation = (newValue: 'x' | 'y') => {
-		setAttributes({ orientation: newValue });
+	const setOrientation = (newValue: string | number | undefined) => {
+		if (newValue === 'x' || newValue === 'y') {
+			setAttributes({ orientation: newValue });
+		}
 	};
 
-	const setDirection = (newValue: 'normal' | 'reverse') => {
-		setAttributes({ direction: newValue });
+	const setDirection = (newValue: string | number | undefined) => {
+		if (newValue === 'normal' || newValue === 'reverse') {
+			setAttributes({ direction: newValue });
+		}
 	};
 
-	const setHoverState = (newValue: 'paused' | 'running') => {
-		setAttributes({ hoverState: newValue });
+	const setHoverState = (newValue: string | number | undefined) => {
+		if (newValue === 'paused' || newValue === 'running') {
+			setAttributes({ hoverState: newValue });
+		}
 	};
 
 	const setSpeed = (newValue: number | undefined) => {
@@ -254,7 +260,7 @@ const Edit: React.FC<BlockEditProps<MarqueeAttributes>> = ({
 											? arrowLeft
 											: arrowUp
 									}
-									size="30"
+									size={30}
 								/>
 							}
 						/>
@@ -267,7 +273,7 @@ const Edit: React.FC<BlockEditProps<MarqueeAttributes>> = ({
 											? arrowRight
 											: arrowDown
 									}
-									size="30"
+									size={30}
 								/>
 							}
 						/>
@@ -323,11 +329,41 @@ const Edit: React.FC<BlockEditProps<MarqueeAttributes>> = ({
 							min={SPEED_MIN}
 							max={SPEED_MAX}
 							step={SPEED_STEP}
-							help={__('Control how fast the content scrolls (in seconds)', 'orbitools')}
+							help={__('Time to scroll 50 pixels (in seconds)', 'orbitools')}
 							hideLabelFromVision={true}
 							withInputField={false}
 							__nextHasNoMarginBottom={true}
 						/>
+						
+						{/* Speed Preview Box */}
+						<div style={{ 
+							marginTop: '12px',
+							padding: '12px',
+							backgroundColor: '#f0f0f0',
+							borderRadius: '4px',
+							overflow: 'hidden',
+							position: 'relative',
+							height: '40px'
+						}}>
+							<div style={{
+								position: 'absolute',
+								whiteSpace: 'nowrap',
+								animation: `marqueePreview ${currentSpeedValue}s linear infinite`,
+								fontSize: '13px',
+								lineHeight: '16px',
+								color: '#1e1e1e'
+							}}>
+								Speed preview: {currentSpeedValue}s per 50px • Speed preview: {currentSpeedValue}s per 50px • Speed preview: {currentSpeedValue}s per 50px • Speed preview: {currentSpeedValue}s per 50px • Speed preview: {currentSpeedValue}s per 50px • 
+							</div>
+							<style dangerouslySetInnerHTML={{
+								__html: `
+									@keyframes marqueePreview {
+										0% { transform: translateX(0); }
+										100% { transform: translateX(-50px); }
+									}
+								`
+							}} />
+						</div>
 					</ToolsPanelItem>
 				</ToolsPanel>
 			</InspectorControls>

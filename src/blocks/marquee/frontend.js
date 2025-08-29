@@ -199,9 +199,10 @@
                 }
             }
 
-            // Calculate speed based on viewport
-            const viewportSize = isHorizontal ? window.innerWidth : window.innerHeight;
-            const pixelsPerSecond = viewportSize / durationInSeconds;
+            // Calculate speed based on fixed distance (50px)
+            // The speed value represents time to scroll 50 pixels
+            const FIXED_DISTANCE = 50; // pixels
+            const pixelsPerSecond = FIXED_DISTANCE / durationInSeconds;
 
             // Store configuration
             this.marqueeConfig = {
