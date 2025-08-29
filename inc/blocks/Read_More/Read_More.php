@@ -113,7 +113,7 @@ class Read_More extends Module_Base
         $open_text = $attributes['openText'] ?? __('Read More', 'orbitools');
         $close_text = $attributes['closeText'] ?? __('Read Less', 'orbitools');
         $icon_type = $attributes['iconType'] ?? 'chevron';
-        
+
         // Generate unique IDs to avoid conflicts when multiple blocks exist on same page
         // wp_unique_id() returns incrementing numbers: 1, 2, 3, etc.
         $unique_id = 'read-more-' . \wp_unique_id();
@@ -122,19 +122,19 @@ class Read_More extends Module_Base
 
         // Get WordPress wrapper attributes (includes default classes, alignment, etc.)
         $wrapper_attributes = \get_block_wrapper_attributes();
-        
+
         // Extract class names from the wrapper attributes string
         $existing_classes = '';
         if (preg_match('/class=["\']([^"\']*)["\']/', $wrapper_attributes, $matches)) {
             $existing_classes = $matches[1];
         }
-        
+
         // Remove unwanted WordPress block classes while keeping useful ones (alignment, spacing, etc.)
         $filtered_classes = $this->filter_wordpress_classes($existing_classes, ['wp-block-orb-read-more']);
-        
+
         // Combine our BEM base class with filtered WordPress classes
         $final_classes = trim('orb-read-more ' . $filtered_classes);
-        
+
         // Replace the class attribute in wrapper attributes with our cleaned version
         $wrapper_attributes = preg_replace('/class=["\'][^"\']*["\']/', 'class="' . \esc_attr($final_classes) . '"', $wrapper_attributes);
 
@@ -146,7 +146,7 @@ class Read_More extends Module_Base
 
         // Generate icon HTML based on selected type
         $icon_html = $this->get_icon_html($icon_type);
-        
+
         // Toggle button with comprehensive accessibility attributes
         // - type="button" prevents form submission
         // - aria-expanded="false" indicates collapsed state (JS will toggle this)
@@ -154,12 +154,13 @@ class Read_More extends Module_Base
         // - BEM naming with JS hook class
         // - data attributes store both text states and icon type for JS toggling
         $html .= sprintf(
-            '<button type="button" id="%s" class="orb-read-more__toggle" aria-expanded="false" aria-controls="%s" data-open-text="%s" data-close-text="%s" data-icon-type="%s">%s%s</button>',
+            '<button type="button" id="%s" class="orb-read-more__toggle" aria-expanded="false" aria-controls="%s" data-open-text="%s" data-close-text="%s" data-icon-type="%s"><span class="%s">%s</span>%s</button>',
             \esc_attr($button_id),
             \esc_attr($content_id),
             \esc_attr($open_text),
             \esc_attr($close_text),
             \esc_attr($icon_type),
+            \esc_attr('orb-read-more__text'),
             \esc_html($open_text),
             $icon_html
         );
@@ -187,21 +188,21 @@ class Read_More extends Module_Base
         // Wrap content in inner div for smooth animations and apply spacing classes
         $inner_base_classes = 'orb-read-more__inner';
         $inner_classes_with_spacing = SpacingsRenderer::add_spacings($inner_base_classes, $attributes);
-        
+
         $html .= '<div class="' . \esc_attr($inner_classes_with_spacing) . '">';
-        
+
         if (!empty($inner_blocks_content)) {
             $html .= $inner_blocks_content;
         } else {
             // Show helpful placeholder when no content has been added
             $html .= '<p>' . \esc_html__('Add content blocks here to show when expanded.', 'orbitools') . '</p>';
         }
-        
+
         $html .= '</div>';
 
         // Close content container
         $html .= '</div>';
-        
+
         // Close main wrapper
         $html .= '</div>';
 
@@ -210,7 +211,7 @@ class Read_More extends Module_Base
 
     /**
      * Filter out unwanted WordPress classes
-     * 
+     *
      * @param string $class_names Space-separated class names
      * @param array $classes_to_filter Array of class names to remove
      * @return string Filtered class names
@@ -220,18 +221,18 @@ class Read_More extends Module_Base
         if (empty($class_names)) {
             return '';
         }
-        
+
         $classes = explode(' ', $class_names);
         $filtered = array_filter($classes, function ($class) use ($classes_to_filter) {
             return !empty($class) && !in_array($class, $classes_to_filter);
         });
-        
+
         return implode(' ', $filtered);
     }
 
     /**
      * Generate icon HTML based on icon type
-     * 
+     *
      * @param string $icon_type The type of icon (none, chevron, arrow, plus)
      * @return string Icon HTML or empty string if none
      */

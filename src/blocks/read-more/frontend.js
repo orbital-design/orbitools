@@ -72,26 +72,23 @@
          * @param {boolean} isOpen Whether the content is expanded
          */
         function updateButtonContent(button, text, iconType, isOpen) {
-            // Clear existing content
-            button.innerHTML = '';
+            // Find the text span within the button
+            const textSpan = button.querySelector('.orb-read-more__text');
+            
+            if (textSpan) {
+                // Update only the text content, preserving the icon
+                textSpan.textContent = text;
+            }
 
-            // Add text node
-            button.appendChild(document.createTextNode(text));
-
-            // Add icon if not 'none'
-            if (iconType !== 'none') {
-                const iconSpan = document.createElement('span');
-                iconSpan.className = `orb-read-more__icon ${isOpen ? 'orb-read-more__icon--is-rotated' : ''}`;
-
-                // Set icon based on type with SVG icons
-                const icons = {
-                    chevron: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right"><path d="m9 18 6-6-6-6"/></svg>',
-                    arrow: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>',
-                    plus: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>'
-                };
-
-                iconSpan.innerHTML = icons[iconType] || icons['chevron'];
-                button.appendChild(iconSpan);
+            // Update icon state for animation (but don't recreate it)
+            const iconSpan = button.querySelector('.orb-read-more__icon');
+            if (iconSpan && iconType !== 'none') {
+                // Toggle rotation class for animation
+                if (isOpen) {
+                    iconSpan.classList.add('orb-read-more__icon--is-rotated');
+                } else {
+                    iconSpan.classList.remove('orb-read-more__icon--is-rotated');
+                }
             }
         }
 
