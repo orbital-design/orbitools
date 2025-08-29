@@ -70,7 +70,7 @@ class Analytics extends Module_Base
 
     /**
      * Get the module's unique slug
-     * 
+     *
      * @return string
      */
     public function get_slug(): string
@@ -80,7 +80,7 @@ class Analytics extends Module_Base
 
     /**
      * Get the module's display name
-     * 
+     *
      * @return string
      */
     public function get_name(): string
@@ -90,7 +90,7 @@ class Analytics extends Module_Base
 
     /**
      * Get the module's description
-     * 
+     *
      * @return string
      */
     public function get_description(): string
@@ -100,7 +100,7 @@ class Analytics extends Module_Base
 
     /**
      * Get module's default settings
-     * 
+     *
      * @return array
      */
     public function get_default_settings(): array
@@ -127,35 +127,23 @@ class Analytics extends Module_Base
     /**
      * Initialize the module
      * Called by Module_Base when module should be initialized
-     * 
+     *
      * @return void
      */
     public function init(): void
     {
         // Always initialize admin functionality for module registration
         $this->admin = new Admin();
-        
+
         // Initialize Settings class
         Settings::init();
 
-        // Initialize frontend functionality
-        $this->init_frontend_functionality();
-    }
-
-    /**
-     * Initialize frontend module functionality
-     *
-     * Sets up frontend integration when the module is enabled.
-     *
-     * @since 1.0.0
-     */
-    private function init_frontend_functionality(): void
-    {
+        // Init frontend functionality to init hook to ensure WordPress is fully loaded
         // Hook into WordPress
         add_action('wp_head', [$this, 'render_head_tracking'], 1);
         add_action('wp_body_open', [$this, 'render_body_tracking']);
         add_action('wp_footer', [$this, 'render_footer_tracking'], 99);
-        
+
         // Enhanced ecommerce hooks (WooCommerce)
         if (class_exists('WooCommerce')) {
             $this->init_ecommerce_tracking();
@@ -175,7 +163,6 @@ class Analytics extends Module_Base
         }
 
         $analytics_type = $this->get_analytics_setting('analytics_type', 'ga4');
-
         switch ($analytics_type) {
             case 'ga4':
                 $this->render_ga4_head();
@@ -196,7 +183,6 @@ class Analytics extends Module_Base
         }
 
         $analytics_type = $this->get_analytics_setting('analytics_type', 'ga4');
-
         if ($analytics_type === 'gtm') {
             $this->render_gtm_body();
         }
@@ -221,33 +207,36 @@ class Analytics extends Module_Base
     private function render_ga4_head()
     {
         $measurement_id = $this->get_analytics_setting('analytics_ga4_id');
-        
+
         if (empty($measurement_id)) {
             return;
         }
 
         $config = $this->get_ga4_config();
-        ?>
-        <!-- Google Analytics 4 -->
-        <script async src="https://www.googletagmanager.com/gtag/js?id=<?php echo esc_attr($measurement_id); ?>"></script>
-        <script>
-            window.dataLayer = window.dataLayer || [];
-            function gtag(){dataLayer.push(arguments);}
-            
-            <?php if ($this->get_analytics_setting('analytics_consent_mode')): ?>
-            // Consent Mode v2
-            gtag('consent', 'default', {
-                'ad_storage': 'denied',
-                'ad_user_data': 'denied',
-                'ad_personalization': 'denied',
-                'analytics_storage': 'denied'
-            });
-            <?php endif; ?>
-            
-            gtag('js', new Date());
-            gtag('config', '<?php echo esc_js($measurement_id); ?>', <?php echo wp_json_encode($config); ?>);
-        </script>
-        <?php
+?>
+<!-- Google Analytics 4 -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=<?php echo esc_attr($measurement_id); ?>"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+
+function gtag() {
+    dataLayer.push(arguments);
+}
+
+<?php if ($this->get_analytics_setting('analytics_consent_mode')): ?>
+// Consent Mode v2
+gtag('consent', 'default', {
+    'ad_storage': 'denied',
+    'ad_user_data': 'denied',
+    'ad_personalization': 'denied',
+    'analytics_storage': 'denied'
+});
+<?php endif; ?>
+
+gtag('js', new Date());
+gtag('config', '<?php echo esc_js($measurement_id); ?>', <?php echo wp_json_encode($config); ?>);
+</script>
+<?php
     }
 
     /**
@@ -256,33 +245,45 @@ class Analytics extends Module_Base
     private function render_gtm_head()
     {
         $container_id = $this->get_analytics_setting('analytics_gtm_id');
-        
+
         if (empty($container_id)) {
             return;
         }
-        ?>
-        <!-- Google Tag Manager -->
-        <script>
-            <?php if ($this->get_analytics_setting('analytics_consent_mode')): ?>
-            // Consent Mode v2 for GTM
-            window.dataLayer = window.dataLayer || [];
-            function gtag(){dataLayer.push(arguments);}
-            gtag('consent', 'default', {
-                'ad_storage': 'denied',
-                'ad_user_data': 'denied', 
-                'ad_personalization': 'denied',
-                'analytics_storage': 'denied'
-            });
-            <?php endif; ?>
-            
-            (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
-            new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
-            j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
-            'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-            })(window,document,'script','dataLayer','<?php echo esc_js($container_id); ?>');
-        </script>
-        <!-- End Google Tag Manager -->
-        <?php
+    ?>
+<!-- Google Tag Manager -->
+<script>
+<?php if ($this->get_analytics_setting('analytics_consent_mode')): ?>
+// Consent Mode v2 for GTM
+window.dataLayer = window.dataLayer || [];
+
+function gtag() {
+    dataLayer.push(arguments);
+}
+gtag('consent', 'default', {
+    'ad_storage': 'denied',
+    'ad_user_data': 'denied',
+    'ad_personalization': 'denied',
+    'analytics_storage': 'denied'
+});
+<?php endif; ?>
+
+    (function(w, d, s, l, i) {
+        w[l] = w[l] || [];
+        w[l].push({
+            'gtm.start': new Date().getTime(),
+            event: 'gtm.js'
+        });
+        var f = d.getElementsByTagName(s)[0],
+            j = d.createElement(s),
+            dl = l != 'dataLayer' ? '&l=' + l : '';
+        j.async = true;
+        j.src =
+            'https://www.googletagmanager.com/gtm.js?id=' + i + dl;
+        f.parentNode.insertBefore(j, f);
+    })(window, document, 'script', 'dataLayer', '<?php echo esc_js($container_id); ?>');
+</script>
+<!-- End Google Tag Manager -->
+<?php
     }
 
     /**
@@ -291,16 +292,16 @@ class Analytics extends Module_Base
     private function render_gtm_body()
     {
         $container_id = $this->get_analytics_setting('analytics_gtm_id');
-        
+
         if (empty($container_id)) {
             return;
         }
-        ?>
-        <!-- Google Tag Manager (noscript) -->
-        <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=<?php echo esc_attr($container_id); ?>"
-        height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
-        <!-- End Google Tag Manager (noscript) -->
-        <?php
+    ?>
+<!-- Google Tag Manager (noscript) -->
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=<?php echo esc_attr($container_id); ?>"
+            height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<!-- End Google Tag Manager (noscript) -->
+<?php
     }
 
 
@@ -314,80 +315,80 @@ class Analytics extends Module_Base
         }
 
         $analytics_type = $this->get_analytics_setting('analytics_type', 'ga4');
-        ?>
-        <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            <?php if (Settings_Helper::is_custom_event_enabled('downloads')): ?>
-            // Track file downloads
-            document.addEventListener('click', function(e) {
-                const link = e.target.closest('a[href]');
-                if (!link) return;
-                
-                const href = link.getAttribute('href');
-                const fileExtensions = /\.(pdf|doc|docx|xls|xlsx|ppt|pptx|zip|rar|mp3|mp4|avi|mov)$/i;
-                
-                if (fileExtensions.test(href)) {
-                    <?php echo $this->get_tracking_code_js('file_download', [
-                        'file_name' => 'href',
-                        'link_text' => 'link.textContent.trim()'
-                    ], $analytics_type); ?>
-                }
-            });
-            <?php endif; ?>
+    ?>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    <?php if (Settings_Helper::is_custom_event_enabled('downloads')): ?>
+    // Track file downloads
+    document.addEventListener('click', function(e) {
+        const link = e.target.closest('a[href]');
+        if (!link) return;
 
-            <?php if (Settings_Helper::is_custom_event_enabled('outbound')): ?>
-            // Track outbound links
-            document.addEventListener('click', function(e) {
-                const link = e.target.closest('a[href]');
-                if (!link) return;
-                
-                const href = link.getAttribute('href');
-                const isExternal = href && (href.startsWith('http') && !href.includes(location.hostname));
-                
-                if (isExternal) {
-                    <?php echo $this->get_tracking_code_js('click', [
-                        'event_category' => '"outbound"',
-                        'event_label' => 'href',
-                        'transport_type' => '"beacon"'
-                    ], $analytics_type); ?>
-                }
-            });
-            <?php endif; ?>
+        const href = link.getAttribute('href');
+        const fileExtensions = /\.(pdf|doc|docx|xls|xlsx|ppt|pptx|zip|rar|mp3|mp4|avi|mov)$/i;
 
-            <?php if (Settings_Helper::is_custom_event_enabled('scroll')): ?>
-            // Track scroll depth
-            let scrollTracked = [];
-            window.addEventListener('scroll', function() {
-                const scrollPercent = Math.round((window.scrollY / (document.documentElement.scrollHeight - window.innerHeight)) * 100);
-                
-                [25, 50, 75, 100].forEach(threshold => {
-                    if (scrollPercent >= threshold && !scrollTracked.includes(threshold)) {
-                        scrollTracked.push(threshold);
-                        <?php echo $this->get_tracking_code_js('scroll', [
-                            'event_category' => '"engagement"',
-                            'event_label' => 'threshold + "%"'
-                        ], $analytics_type); ?>
-                    }
-                });
-            });
-            <?php endif; ?>
+        if (fileExtensions.test(href)) {
+            <?php echo $this->get_tracking_code_js('file_download', [
+                                'file_name' => 'href',
+                                'link_text' => 'link.textContent.trim()'
+                            ], $analytics_type); ?>
+        }
+    });
+    <?php endif; ?>
 
-            <?php if (Settings_Helper::is_custom_event_enabled('forms')): ?>
-            // Track form submissions
-            document.addEventListener('submit', function(e) {
-                const form = e.target;
-                if (form.tagName === 'FORM') {
-                    const formId = form.id || form.className || 'unknown';
-                    <?php echo $this->get_tracking_code_js('form_submit', [
-                        'event_category' => '"engagement"',
-                        'event_label' => 'formId'
-                    ], $analytics_type); ?>
-                }
-            });
-            <?php endif; ?>
+    <?php if (Settings_Helper::is_custom_event_enabled('outbound')): ?>
+    // Track outbound links
+    document.addEventListener('click', function(e) {
+        const link = e.target.closest('a[href]');
+        if (!link) return;
+
+        const href = link.getAttribute('href');
+        const isExternal = href && (href.startsWith('http') && !href.includes(location.hostname));
+
+        if (isExternal) {
+            <?php echo $this->get_tracking_code_js('click', [
+                                'event_category' => '"outbound"',
+                                'event_label' => 'href',
+                                'transport_type' => '"beacon"'
+                            ], $analytics_type); ?>
+        }
+    });
+    <?php endif; ?>
+
+    <?php if (Settings_Helper::is_custom_event_enabled('scroll')): ?>
+    // Track scroll depth
+    let scrollTracked = [];
+    window.addEventListener('scroll', function() {
+        const scrollPercent = Math.round((window.scrollY / (document.documentElement.scrollHeight - window.innerHeight)) * 100);
+
+        [25, 50, 75, 100].forEach(threshold => {
+            if (scrollPercent >= threshold && !scrollTracked.includes(threshold)) {
+                scrollTracked.push(threshold);
+                <?php echo $this->get_tracking_code_js('scroll', [
+                                    'event_category' => '"engagement"',
+                                    'event_label' => 'threshold + "%"'
+                                ], $analytics_type); ?>
+            }
         });
-        </script>
-        <?php
+    });
+    <?php endif; ?>
+
+    <?php if (Settings_Helper::is_custom_event_enabled('forms')): ?>
+    // Track form submissions
+    document.addEventListener('submit', function(e) {
+        const form = e.target;
+        if (form.tagName === 'FORM') {
+            const formId = form.id || form.className || 'unknown';
+            <?php echo $this->get_tracking_code_js('form_submit', [
+                                'event_category' => '"engagement"',
+                                'event_label' => 'formId'
+                            ], $analytics_type); ?>
+        }
+    });
+    <?php endif; ?>
+});
+</script>
+<?php
     }
 
     /**
@@ -401,13 +402,13 @@ class Analytics extends Module_Base
 
         // Purchase tracking
         add_action('woocommerce_thankyou', [$this, 'track_purchase'], 10, 1);
-        
+
         // Product view tracking
         add_action('woocommerce_single_product_summary', [$this, 'track_product_view'], 5);
-        
+
         // Add to cart tracking
         add_action('wp_footer', [$this, 'render_add_to_cart_tracking']);
-        
+
         // Begin checkout tracking
         add_action('woocommerce_before_checkout_form', [$this, 'track_begin_checkout']);
     }
@@ -446,13 +447,13 @@ class Analytics extends Module_Base
             'currency' => $currency,
             'items' => $items
         ];
-        
+
         $analytics_type = $this->get_analytics_setting('analytics_type', 'ga4');
-        ?>
-        <script>
-        <?php echo $this->get_tracking_code_for_data('purchase', $purchase_data, $analytics_type); ?>
-        </script>
-        <?php
+    ?>
+<script>
+<?php echo $this->get_tracking_code_for_data('purchase', $purchase_data, $analytics_type); ?>
+</script>
+<?php
     }
 
     /**
@@ -500,15 +501,15 @@ class Analytics extends Module_Base
                 // Enhanced Ecommerce format for GTM
                 $ecommerce_data = $this->convert_to_gtm_ecommerce_format($event_name, $data);
                 return "window.dataLayer = window.dataLayer || []; window.dataLayer.push({\n" .
-                       "    'event': '" . esc_js($ecommerce_data['event']) . "',\n" .
-                       "    'ecommerce': " . wp_json_encode($ecommerce_data['ecommerce']) . "\n" .
-                       "});";
-            
+                    "    'event': '" . esc_js($ecommerce_data['event']) . "',\n" .
+                    "    'ecommerce': " . wp_json_encode($ecommerce_data['ecommerce']) . "\n" .
+                    "});";
+
             case 'ga4':
             default:
                 return "if (typeof gtag !== 'undefined') {\n" .
-                       "    gtag('event', '" . esc_js($event_name) . "', " . wp_json_encode($data) . ");\n" .
-                       "}";
+                    "    gtag('event', '" . esc_js($event_name) . "', " . wp_json_encode($data) . ");\n" .
+                    "}";
         }
     }
 
@@ -527,19 +528,19 @@ class Analytics extends Module_Base
             }
         }
         $params_str = '{' . implode(', ', $params_js) . '}';
-        
+
         switch ($analytics_type) {
             case 'gtm':
                 return "window.dataLayer = window.dataLayer || []; window.dataLayer.push({\n" .
-                       "    'event': '" . esc_js($event_name) . "',\n" .
-                       "    'eventData': " . $params_str . "\n" .
-                       "});";
-            
+                    "    'event': '" . esc_js($event_name) . "',\n" .
+                    "    'eventData': " . $params_str . "\n" .
+                    "});";
+
             case 'ga4':
             default:
                 return "if (typeof gtag !== 'undefined') {\n" .
-                       "    gtag('event', '" . esc_js($event_name) . "', " . $params_str . ");\n" .
-                       "}";
+                    "    gtag('event', '" . esc_js($event_name) . "', " . $params_str . ");\n" .
+                    "}";
         }
     }
 
@@ -559,10 +560,10 @@ class Analytics extends Module_Base
                     }
                 }
                 return "window.dataLayer = window.dataLayer || []; window.dataLayer.push({\n" .
-                       "    'event': '" . esc_js($event_name) . "',\n" .
-                       "    'ecommerce': {" . implode(', ', $data_js) . "}\n" .
-                       "});";
-            
+                    "    'event': '" . esc_js($event_name) . "',\n" .
+                    "    'ecommerce': {" . implode(', ', $data_js) . "}\n" .
+                    "});";
+
             case 'ga4':
             default:
                 $data_js = [];
@@ -574,8 +575,8 @@ class Analytics extends Module_Base
                     }
                 }
                 return "if (typeof gtag !== 'undefined') {\n" .
-                       "    gtag('event', '" . esc_js($event_name) . "', {" . implode(', ', $data_js) . "});\n" .
-                       "}";
+                    "    gtag('event', '" . esc_js($event_name) . "', {" . implode(', ', $data_js) . "});\n" .
+                    "}";
         }
     }
 
@@ -586,7 +587,7 @@ class Analytics extends Module_Base
     {
         $gtm_event = $event_name;
         $ecommerce = [];
-        
+
         // Map GA4/Universal events to GTM Enhanced Ecommerce events
         switch ($event_name) {
             case 'purchase':
@@ -599,7 +600,7 @@ class Analytics extends Module_Base
                     'items' => $data['items'] ?? []
                 ];
                 break;
-                
+
             case 'view_item':
                 $gtm_event = 'view_item';
                 $ecommerce = [
@@ -608,7 +609,7 @@ class Analytics extends Module_Base
                     'items' => $data['items'] ?? []
                 ];
                 break;
-                
+
             case 'add_to_cart':
                 $gtm_event = 'add_to_cart';
                 $ecommerce = [
@@ -617,7 +618,7 @@ class Analytics extends Module_Base
                     'items' => $data['items'] ?? []
                 ];
                 break;
-                
+
             case 'remove_from_cart':
                 $gtm_event = 'remove_from_cart';
                 $ecommerce = [
@@ -626,7 +627,7 @@ class Analytics extends Module_Base
                     'items' => $data['items'] ?? []
                 ];
                 break;
-                
+
             case 'begin_checkout':
                 $gtm_event = 'begin_checkout';
                 $ecommerce = [
@@ -635,12 +636,12 @@ class Analytics extends Module_Base
                     'items' => $data['items'] ?? []
                 ];
                 break;
-                
+
             default:
                 // For other events, use the original data structure
                 $ecommerce = $data;
         }
-        
+
         return [
             'event' => $gtm_event,
             'ecommerce' => $ecommerce
@@ -667,41 +668,43 @@ class Analytics extends Module_Base
     {
         // Add debug mode for development (only for localhost/staging)
         if (defined('WP_DEBUG') && WP_DEBUG && current_user_can('manage_options') && $this->is_development_environment()) {
-            add_action('wp_footer', function() {
+            add_action('wp_footer', function () {
                 if ($this->should_track()) {
-                    ?>
-                    <script>
-                    if (console && console.log) {
-                        console.log('OrbiTools Analytics Debug Mode - Config Loaded');
-                        // Note: Actual tracking IDs not exposed for security
-                    }
-                    </script>
-                    <?php
+        ?>
+<script>
+if (console && console.log) {
+    console.log('OrbiTools Analytics Debug Mode - Config Loaded');
+    // Note: Actual tracking IDs not exposed for security
+}
+</script>
+<?php
                 }
             }, 999);
         }
 
         // Add performance tracking
         if ($this->get_analytics_setting('analytics_track_performance') && $this->get_analytics_setting('analytics_type') === 'ga4') {
-            add_action('wp_footer', function() {
+            add_action('wp_footer', function () {
                 if (!$this->should_track()) return;
                 ?>
-                <script>
-                // Core Web Vitals tracking
-                if ('PerformanceObserver' in window) {
-                    new PerformanceObserver((list) => {
-                        const entries = list.getEntries();
-                        const lastEntry = entries[entries.length - 1];
-                        if (typeof gtag !== 'undefined') {
-                            gtag('event', 'timing_complete', {
-                                'name': 'LCP',
-                                'value': Math.round(lastEntry.startTime)
-                            });
-                        }
-                    }).observe({entryTypes: ['largest-contentful-paint']});
-                }
-                </script>
-                <?php
+<script>
+// Core Web Vitals tracking
+if ('PerformanceObserver' in window) {
+    new PerformanceObserver((list) => {
+        const entries = list.getEntries();
+        const lastEntry = entries[entries.length - 1];
+        if (typeof gtag !== 'undefined') {
+            gtag('event', 'timing_complete', {
+                'name': 'LCP',
+                'value': Math.round(lastEntry.startTime)
+            });
+        }
+    }).observe({
+        entryTypes: ['largest-contentful-paint']
+    });
+}
+</script>
+<?php
             }, 999);
         }
     }
@@ -735,13 +738,13 @@ class Analytics extends Module_Base
                 'price' => $product->get_price()
             ]]
         ];
-        
+
         $analytics_type = $this->get_analytics_setting('analytics_type', 'ga4');
         ?>
-        <script>
-        <?php echo $this->get_tracking_code_for_data('view_item', $product_data, $analytics_type); ?>
-        </script>
-        <?php
+<script>
+<?php echo $this->get_tracking_code_for_data('view_item', $product_data, $analytics_type); ?>
+</script>
+<?php
     }
 
     /**
@@ -750,7 +753,7 @@ class Analytics extends Module_Base
     public function render_add_to_cart_tracking()
     {
         if (!is_woocommerce()) return;
-        
+
         $currency = $this->get_analytics_setting('analytics_ecommerce_currency');
         if (empty($currency) && function_exists('get_woocommerce_currency')) {
             $currency = get_woocommerce_currency();
@@ -758,47 +761,47 @@ class Analytics extends Module_Base
         if (empty($currency)) {
             $currency = 'USD';
         }
-        ?>
-        <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Track add to cart button clicks
-            document.addEventListener('click', function(e) {
-                const addToCartBtn = e.target.closest('.single_add_to_cart_button, button[name="add-to-cart"]');
-                if (!addToCartBtn) return;
+    ?>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Track add to cart button clicks
+    document.addEventListener('click', function(e) {
+        const addToCartBtn = e.target.closest('.single_add_to_cart_button, button[name="add-to-cart"]');
+        if (!addToCartBtn) return;
 
-                // Get product data
-                const productForm = addToCartBtn.closest('form.cart');
-                if (!productForm) return;
+        // Get product data
+        const productForm = addToCartBtn.closest('form.cart');
+        if (!productForm) return;
 
-                const productId = productForm.querySelector('[name="add-to-cart"]')?.value || 
-                                productForm.querySelector('[name="product_id"]')?.value;
-                
-                if (!productId) return;
+        const productId = productForm.querySelector('[name="add-to-cart"]')?.value ||
+            productForm.querySelector('[name="product_id"]')?.value;
 
-                // Simple add to cart tracking
-                <?php 
-                $add_to_cart_data = [
-                    'currency' => $currency,
-                    'value' => 0,
-                    'items' => [['item_id' => 'productId', 'quantity' => 1]]
-                ];
-                echo $this->get_tracking_code_js_for_object('add_to_cart', $add_to_cart_data, $this->get_analytics_setting('analytics_type', 'ga4'));
-                ?>
-            });
+        if (!productId) return;
 
-            // Track remove from cart
-            document.addEventListener('click', function(e) {
-                const removeBtn = e.target.closest('.remove');
-                if (!removeBtn || !removeBtn.href.includes('remove_item')) return;
-
-                <?php 
-                $remove_data = ['currency' => $currency];
-                echo $this->get_tracking_code_js_for_object('remove_from_cart', $remove_data, $this->get_analytics_setting('analytics_type', 'ga4'));
-                ?>
-            });
-        });
-        </script>
+        // Simple add to cart tracking
         <?php
+                    $add_to_cart_data = [
+                        'currency' => $currency,
+                        'value' => 0,
+                        'items' => [['item_id' => 'productId', 'quantity' => 1]]
+                    ];
+                    echo $this->get_tracking_code_js_for_object('add_to_cart', $add_to_cart_data, $this->get_analytics_setting('analytics_type', 'ga4'));
+                    ?>
+    });
+
+    // Track remove from cart
+    document.addEventListener('click', function(e) {
+        const removeBtn = e.target.closest('.remove');
+        if (!removeBtn || !removeBtn.href.includes('remove_item')) return;
+
+        <?php
+                    $remove_data = ['currency' => $currency];
+                    echo $this->get_tracking_code_js_for_object('remove_from_cart', $remove_data, $this->get_analytics_setting('analytics_type', 'ga4'));
+                    ?>
+    });
+});
+</script>
+<?php
     }
 
     /**
@@ -839,13 +842,13 @@ class Analytics extends Module_Base
                 'value' => $cart_value,
                 'items' => $cart_data
             ];
-            
+
             $analytics_type = $this->get_analytics_setting('analytics_type', 'ga4');
-            ?>
-            <script>
-            <?php echo $this->get_tracking_code_for_data('begin_checkout', $checkout_data, $analytics_type); ?>
-            </script>
-            <?php
+        ?>
+<script>
+<?php echo $this->get_tracking_code_for_data('begin_checkout', $checkout_data, $analytics_type); ?>
+</script>
+<?php
         }
     }
 
@@ -860,7 +863,7 @@ class Analytics extends Module_Base
         // Check for common development indicators
         $server_name = $_SERVER['SERVER_NAME'] ?? '';
         $server_addr = $_SERVER['SERVER_ADDR'] ?? '';
-        
+
         $dev_indicators = array(
             'localhost',
             '127.0.0.1',
@@ -869,18 +872,18 @@ class Analytics extends Module_Base
             '.test',
             'staging.'
         );
-        
+
         foreach ($dev_indicators as $indicator) {
             if (strpos($server_name, $indicator) !== false) {
                 return true;
             }
         }
-        
+
         // Check for local IP ranges
         if (filter_var($server_addr, FILTER_VALIDATE_IP, FILTER_FLAG_NO_RES_RANGE)) {
             return false; // Public IP
         }
-        
+
         return true; // Private/local IP or undetected
     }
 }
