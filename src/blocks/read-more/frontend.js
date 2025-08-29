@@ -16,7 +16,7 @@
         // Find all read more toggle buttons on the page
         // Uses the BEM class for targeting
         const toggles = document.querySelectorAll('.orb-read-more__toggle');
-        console.log(toggles)
+
         // Initialize each toggle button
         toggles.forEach(function(toggle) {
             toggle.addEventListener('click', function() {
@@ -74,7 +74,7 @@
         function updateButtonContent(button, text, iconType, isOpen) {
             // Find the text span within the button
             const textSpan = button.querySelector('.orb-read-more__text');
-            
+
             if (textSpan) {
                 // Update only the text content, preserving the icon
                 textSpan.textContent = text;
