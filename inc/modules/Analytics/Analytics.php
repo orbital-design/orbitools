@@ -666,27 +666,11 @@ document.addEventListener('DOMContentLoaded', function() {
      */
     private function init_additional_features()
     {
-        // Add debug mode for development (only for localhost/staging)
-        if (defined('WP_DEBUG') && WP_DEBUG && current_user_can('manage_options') && $this->is_development_environment()) {
-            add_action('wp_footer', function () {
-                if ($this->should_track()) {
-        ?>
-<script>
-if (console && console.log) {
-    console.log('OrbiTools Analytics Debug Mode - Config Loaded');
-    // Note: Actual tracking IDs not exposed for security
-}
-</script>
-<?php
-                }
-            }, 999);
-        }
-
         // Add performance tracking
         if ($this->get_analytics_setting('analytics_track_performance') && $this->get_analytics_setting('analytics_type') === 'ga4') {
             add_action('wp_footer', function () {
                 if (!$this->should_track()) return;
-                ?>
+        ?>
 <script>
 // Core Web Vitals tracking
 if ('PerformanceObserver' in window) {
