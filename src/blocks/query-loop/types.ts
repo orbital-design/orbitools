@@ -19,6 +19,7 @@
  * initialize them until the user interacts with controls.
  */
 export interface QueryLoopAttributes {
+    queryId?: string;
     queryParameters?: {
         type?: string;
         args?: {

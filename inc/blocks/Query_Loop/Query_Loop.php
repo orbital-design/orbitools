@@ -122,12 +122,15 @@ class Query_Loop extends Module_Base
         // Extract query parameters with defaults
         $query_parameters = $attributes['queryParameters'] ?? [];
         $query_type = $query_parameters['type'] ?? 'inherit';
-        
+
+        // Get the user-defined query ID for filter targeting (empty string if not set)
+        $user_query_id = $attributes['queryId'] ?? '';
+
         // Build the query based on type
         if ($query_type === 'inherit') {
-            $query_args = $this->build_inherit_query($block);
+            $query_args = $this->build_inherit_query($block, $user_query_id);
         } else {
-            $query_args = $this->build_custom_query($query_parameters['args'] ?? []);
+            $query_args = $this->build_custom_query($query_parameters['args'] ?? [], $user_query_id);
         }
         
         
@@ -148,9 +151,10 @@ class Query_Loop extends Module_Base
      * Build query arguments for inherit type (uses block context)
      *
      * @param \WP_Block $block Block instance with context
+     * @param string $query_id User-defined query ID for filter targeting
      * @return array WP_Query arguments
      */
-    private function build_inherit_query(\WP_Block $block): array
+    private function build_inherit_query(\WP_Block $block, string $query_id = ''): array
     {
         $context = $block->context ?? [];
         
@@ -204,20 +208,22 @@ class Query_Loop extends Module_Base
 
         /**
          * Filter inherit query arguments
-         * 
+         *
          * @param array $query_args WP_Query arguments
          * @param array $context Block context
+         * @param string $query_id User-defined query ID for targeting specific queries
          */
-        return \apply_filters('orbitools/query_loop/inherit_query_args', $query_args, $context);
+        return \apply_filters('orbitools/query_loop/inherit_query_args', $query_args, $context, $query_id);
     }
 
     /**
      * Build query arguments for custom type (uses block attributes)
      *
      * @param array $args Custom query arguments from block attributes
+     * @param string $query_id User-defined query ID for filter targeting
      * @return array WP_Query arguments
      */
-    private function build_custom_query(array $args): array
+    private function build_custom_query(array $args, string $query_id = ''): array
     {
         // If no args provided, return special flag to show "no parameters" message
         if (empty($args)) {
@@ -342,11 +348,12 @@ class Query_Loop extends Module_Base
 
         /**
          * Filter custom query arguments
-         * 
+         *
          * @param array $query_args WP_Query arguments
          * @param array $args Original custom arguments
+         * @param string $query_id User-defined query ID for targeting specific queries
          */
-        return \apply_filters('orbitools/query_loop/custom_query_args', $query_args, $args);
+        return \apply_filters('orbitools/query_loop/custom_query_args', $query_args, $args, $query_id);
     }
 
     /**

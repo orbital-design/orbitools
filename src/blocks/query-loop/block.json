@@ -12,6 +12,10 @@
     },
     "keywords": ["posts", "pages", "news", "articles", "query", "dynamic", "latest", "loop"],
     "attributes": {
+        "queryId": {
+            "type": "string",
+            "default": ""
+        },
         "queryParameters": {
             "type": "object",
             "default": {

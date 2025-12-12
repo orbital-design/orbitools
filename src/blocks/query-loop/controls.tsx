@@ -13,7 +13,7 @@
 
 import { Fragment } from '@wordpress/element';
 import { createToolsPanelItem, createToggleGroup } from '../utils/control-helpers';
-import { InspectorControls } from '@wordpress/block-editor';
+import { InspectorControls, InspectorAdvancedControls } from '@wordpress/block-editor';
 import { useSelect } from '@wordpress/data';
 import {
     __experimentalToolsPanel as ToolsPanel,
@@ -1360,6 +1360,17 @@ export default function QueryLoopControls({ attributes, setAttributes }: QueryLo
                     </ToolsPanel>
                 </PanelBody>
             </InspectorControls>
+
+            {/* Advanced Controls - Query ID for filter targeting */}
+            <InspectorAdvancedControls>
+                <TextControl
+                    label={__('Query ID', 'orbitools')}
+                    help={__('Optional identifier for targeting this query with PHP filters (orbitools/query_loop/custom_query_args or orbitools/query_loop/inherit_query_args). Use lowercase letters, numbers, and hyphens.', 'orbitools')}
+                    value={attributes.queryId || ''}
+                    onChange={(value) => setAttributes({ queryId: value.toLowerCase().replace(/[^a-z0-9-]/g, '-') })}
+                    placeholder={__('e.g., upcoming-events', 'orbitools')}
+                />
+            </InspectorAdvancedControls>
         </Fragment>
     );
 }
