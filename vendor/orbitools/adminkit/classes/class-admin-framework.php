@@ -410,6 +410,28 @@ class Admin_Kit
     }
 
     /**
+     * Check if the current page is an external page
+     *
+     * External pages are registered by other plugins and have their own
+     * settings forms, so AdminKit should not show its save button.
+     *
+     * @since 1.0.0
+     * @return bool True if current page is external, false otherwise.
+     */
+    public function is_current_page_external()
+    {
+        $page_key = $this->get_current_page_key();
+
+        if (empty($page_key) || !isset($this->pages_config[$page_key])) {
+            return false;
+        }
+
+        $page_config = $this->pages_config[$page_key];
+
+        return is_array($page_config) && !empty($page_config['_external']);
+    }
+
+    /**
      * Get current page key from URL
      *
      * @since 1.0.0

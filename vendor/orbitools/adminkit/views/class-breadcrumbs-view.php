@@ -155,6 +155,12 @@ class Breadcrumbs_View
         // Allow custom actions via hook
         do_action($this->admin_kit->get_func_slug() . '_render_nav_actions');
 
+        // Don't show save button for external pages (they have their own forms)
+        // or if custom actions are already registered
+        if ($this->admin_kit->is_current_page_external()) {
+            return;
+        }
+
         // Default save button if no custom actions
         if (!has_action($this->admin_kit->get_func_slug() . '_render_nav_actions')) {
         ?>
