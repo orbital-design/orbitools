@@ -38,20 +38,8 @@ class Settings_Helper
      */
     public static function normalize_boolean($value): bool
     {
-        // Handle various possible formats
-        if (is_bool($value)) {
-            return $value;
-        }
-
-        if (is_string($value)) {
-            return $value === '1' || $value === 'true' || $value === 'on';
-        }
-
-        if (is_array($value)) {
-            return !empty($value);
-        }
-
-        return !empty($value);
+        // Simple check matching Typography_Presets pattern
+        return !empty($value) && $value !== '0';
     }
 
     /**

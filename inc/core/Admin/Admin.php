@@ -27,8 +27,10 @@ class Admin
         // add_action('orbitools_post_save_settings', [$this, 'detect_module_changes'], 10, 2);
 
         // Setup filters (these don't use translations immediately)
-        add_filter('orbitools_adminkit_structure', [$this, 'configure_admin_structure']);
-        add_filter('orbitools_adminkit_fields', [$this, 'get_settings_config']);
+        // Use priority 20 so module filters (at default priority 10) run first
+        // This allows modules to add their sections before we build the final structure
+        add_filter('orbitools_adminkit_structure', [$this, 'configure_admin_structure'], 20);
+        add_filter('orbitools_adminkit_fields', [$this, 'get_settings_config'], 20);
 
 
         // Override the default AJAX save handler to add module change detection
@@ -120,7 +122,11 @@ class Admin
      */
     public function configure_admin_structure(array $structure): array
     {
-        return array(
+        // Get existing module sections (added by modules via their own filters)
+        $existing_module_sections = $structure['modules']['sections'] ?? array();
+
+        // Build the base structure
+        $base_structure = array(
             // Dashboard page structure
             'dashboard' => array(
                 'display_mode' => 'cards',
@@ -137,7 +143,7 @@ class Admin
             // Modules page structure - sections populated by active modules
             'modules' => array(
                 'display_mode' => 'tabs',
-                'sections' => array(),
+                'sections' => $existing_module_sections, // Preserve sections added by modules
             ),
             // Tools/Info page structure
             'tools' => array(
@@ -154,43 +160,54 @@ class Admin
                 ),
             ),
         );
+
+        return $base_structure;
     }
 
     /**
      * Get settings configuration.
      *
-     * @return array
+     * @param array $settings Existing settings array from other filters.
+     * @return array Modified settings array.
      */
-    public function get_settings_config(): array
+    public function get_settings_config(array $settings): array
     {
-        return array(
-            'dashboard' => array(
-                array(
-                    'id'      => 'module_management',
-                    'name'    => __('Available Modules', 'orbitools'),
-                    'desc'    => __('Enable, disable, and configure the various modules.', 'orbitools'),
-                    'type'    => 'modules',
-                    'section' => 'modules',
-                )
+        // Preserve existing module fields (added by modules via their own filters)
+        $existing_module_fields = $settings['modules'] ?? array();
+
+        // Add core settings
+        $settings['dashboard'] = array(
+            array(
+                'id'      => 'module_management',
+                'name'    => __('Available Modules', 'orbitools'),
+                'desc'    => __('Enable, disable, and configure the various modules.', 'orbitools'),
+                'type'    => 'modules',
+                'section' => 'modules',
+            )
+        );
+
+        $settings['tools'] = array(
+            array(
+                'id'      => 'current_version',
+                'name'    => __('Version Information', 'orbitools'),
+                'type'    => 'html',
+                'std'     => $this->get_version_info_html(),
+                'section' => 'plugin',
             ),
-            'tools' => array(
-                array(
-                    'id'      => 'current_version',
-                    'name'    => __('Version Information', 'orbitools'),
-                    'type'    => 'html',
-                    'std'     => $this->get_version_info_html(),
-                    'section' => 'plugin',
-                ),
-                array(
-                    'id'      => 'reset_on_deactivation',
-                    'name'    => __('Reset Data on Deactivation', 'orbitools'),
-                    'desc'    => __('Remove all plugin data when deactivating.', 'orbitools'),
-                    'type'    => 'checkbox',
-                    'std'     => false,
-                    'section' => 'utils',
-                ),
+            array(
+                'id'      => 'reset_on_deactivation',
+                'name'    => __('Reset Data on Deactivation', 'orbitools'),
+                'desc'    => __('Remove all plugin data when deactivating.', 'orbitools'),
+                'type'    => 'checkbox',
+                'std'     => false,
+                'section' => 'utils',
             ),
         );
+
+        // Preserve module fields that were added by modules at priority 10
+        $settings['modules'] = $existing_module_fields;
+
+        return $settings;
     }
 
     /**

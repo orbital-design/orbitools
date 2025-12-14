@@ -61,6 +61,9 @@ class Settings
     /**
      * Get field definitions for the Analytics module
      *
+     * Note: Fields only show when module is enabled (controlled by Module_Admin_Base).
+     * The show_if conditions here are only for inter-field dependencies (e.g., GA4 vs GTM).
+     *
      * @since 1.0.0
      * @return array Field definitions array.
      */
@@ -79,11 +82,6 @@ class Settings
                     'gtm' => __('Google Tag Manager (GTM)', 'orbitools')
                 ),
                 'std' => 'ga4',
-                'show_if' => array(
-                    'field' => 'analytics_enabled',
-                    'operator' => '===',
-                    'value' => '1'
-                )
             ),
 
             // GA4 Measurement ID
@@ -95,17 +93,9 @@ class Settings
                 'section' => 'analytics',
                 'placeholder' => 'G-XXXXXXXXXX',
                 'show_if' => array(
-                    array(
-                        'field' => 'analytics_enabled',
-                        'operator' => '===',
-                        'value' => '1'
-                    ),
-                    array(
-                        'field' => 'analytics_type',
-                        'operator' => '===',
-                        'value' => 'ga4'
-                    ),
-                    'relation' => 'AND'
+                    'field' => 'analytics_type',
+                    'operator' => '===',
+                    'value' => 'ga4'
                 )
             ),
 
@@ -118,17 +108,9 @@ class Settings
                 'section' => 'analytics',
                 'placeholder' => 'GTM-XXXXXXX',
                 'show_if' => array(
-                    array(
-                        'field' => 'analytics_enabled',
-                        'operator' => '===',
-                        'value' => '1'
-                    ),
-                    array(
-                        'field' => 'analytics_type',
-                        'operator' => '===',
-                        'value' => 'gtm'
-                    ),
-                    'relation' => 'AND'
+                    'field' => 'analytics_type',
+                    'operator' => '===',
+                    'value' => 'gtm'
                 )
             ),
 
@@ -141,20 +123,11 @@ class Settings
                 'section' => 'analytics',
                 'std' => '',
                 'show_if' => array(
-                    array(
-                        'field' => 'analytics_enabled',
-                        'operator' => '===',
-                        'value' => '1'
-                    ),
-                    array(
-                        'field' => 'analytics_type',
-                        'operator' => '===',
-                        'value' => 'gtm'
-                    ),
-                    'relation' => 'AND'
+                    'field' => 'analytics_type',
+                    'operator' => '===',
+                    'value' => 'gtm'
                 )
             ),
-
 
             // Privacy Settings
             array(
@@ -164,11 +137,6 @@ class Settings
                 'type' => 'checkbox',
                 'section' => 'analytics',
                 'std' => true,
-                'show_if' => array(
-                    'field' => 'analytics_enabled',
-                    'operator' => '===',
-                    'value' => '1'
-                )
             ),
 
             array(
@@ -178,19 +146,6 @@ class Settings
                 'type' => 'checkbox',
                 'section' => 'analytics',
                 'std' => true,
-                'show_if' => array(
-                    array(
-                        'field' => 'analytics_enabled',
-                        'operator' => '===',
-                        'value' => '1'
-                    ),
-                    array(
-                        'field' => 'analytics_type',
-                        'operator' => 'in',
-                        'value' => array('ga4', 'gtm')
-                    ),
-                    'relation' => 'AND'
-                )
             ),
 
             // Enhanced Ecommerce
@@ -201,19 +156,6 @@ class Settings
                 'type' => 'checkbox',
                 'section' => 'analytics',
                 'std' => false,
-                'show_if' => array(
-                    array(
-                        'field' => 'analytics_enabled',
-                        'operator' => '===',
-                        'value' => '1'
-                    ),
-                    array(
-                        'field' => 'analytics_type',
-                        'operator' => 'in',
-                        'value' => array('ga4', 'gtm')
-                    ),
-                    'relation' => 'AND'
-                )
             ),
 
             array(
@@ -225,22 +167,9 @@ class Settings
                 'std' => function_exists('get_woocommerce_currency') ? get_woocommerce_currency() : 'USD',
                 'placeholder' => 'USD',
                 'show_if' => array(
-                    array(
-                        'field' => 'analytics_enabled',
-                        'operator' => '===',
-                        'value' => '1'
-                    ),
-                    array(
-                        'field' => 'analytics_ecommerce_enable',
-                        'operator' => '===',
-                        'value' => '1'
-                    ),
-                    array(
-                        'field' => 'analytics_type',
-                        'operator' => 'in',
-                        'value' => array('ga4', 'gtm')
-                    ),
-                    'relation' => 'AND'
+                    'field' => 'analytics_ecommerce_enable',
+                    'operator' => '===',
+                    'value' => '1'
                 )
             ),
 
@@ -259,19 +188,6 @@ class Settings
                     'forms' => __('Form Submissions - Track HTML form submissions including Contact Form 7, Gravity Forms', 'orbitools')
                 ),
                 'std' => array('downloads', 'outbound'),
-                'show_if' => array(
-                    array(
-                        'field' => 'analytics_enabled',
-                        'operator' => '===',
-                        'value' => '1'
-                    ),
-                    array(
-                        'field' => 'analytics_type',
-                        'operator' => 'in',
-                        'value' => array('ga4', 'gtm')
-                    ),
-                    'relation' => 'AND'
-                )
             ),
 
             // Advanced Settings
@@ -284,11 +200,6 @@ class Settings
                 'multiple' => true,
                 'options' => self::get_user_roles(),
                 'std' => array('administrator'),
-                'show_if' => array(
-                    'field' => 'analytics_enabled',
-                    'operator' => '===',
-                    'value' => '1'
-                )
             ),
 
             array(
@@ -299,17 +210,9 @@ class Settings
                 'section' => 'analytics',
                 'std' => false,
                 'show_if' => array(
-                    array(
-                        'field' => 'analytics_enabled',
-                        'operator' => '===',
-                        'value' => '1'
-                    ),
-                    array(
-                        'field' => 'analytics_type',
-                        'operator' => '===',
-                        'value' => 'ga4'
-                    ),
-                    'relation' => 'AND'
+                    'field' => 'analytics_type',
+                    'operator' => '===',
+                    'value' => 'ga4'
                 )
             ),
 
@@ -321,17 +224,9 @@ class Settings
                 'section' => 'analytics',
                 'placeholder' => '{"custom_parameter_1": "value1", "send_page_view": false}',
                 'show_if' => array(
-                    array(
-                        'field' => 'analytics_enabled',
-                        'operator' => '===',
-                        'value' => '1'
-                    ),
-                    array(
-                        'field' => 'analytics_type',
-                        'operator' => '===',
-                        'value' => 'ga4'
-                    ),
-                    'relation' => 'AND'
+                    'field' => 'analytics_type',
+                    'operator' => '===',
+                    'value' => 'ga4'
                 )
             ),
         );

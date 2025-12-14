@@ -1028,6 +1028,7 @@ class Admin_Kit
 
         // Process settings
         $settings_raw = isset($_POST['settings']) ? $_POST['settings'] : '';
+
         if (is_string($settings_raw)) {
             $settings_data = json_decode(stripslashes($settings_raw), true);
         } else {
@@ -1065,6 +1066,24 @@ class Admin_Kit
         // Get current settings and merge with new data
         // This is critical for multi-page mode where each page only submits its own fields
         $current_settings = get_option($this->slug . '_settings', array());
+
+        // Handle module enabled checkboxes specially:
+        // Only do this when saving from the dashboard page (where module toggles exist).
+        // Check if we're on dashboard by looking for module_management field in submitted data,
+        // or if any _enabled key was actually submitted (meaning we're on the right page).
+        $is_dashboard_save = isset($settings_data['module_management']) ||
+                             $this->has_enabled_key_in_data($settings_data);
+
+        if ($is_dashboard_save) {
+            // If a _enabled key exists in current settings but not in submitted data,
+            // it means the checkbox was unchecked (browsers don't send unchecked checkboxes).
+            foreach ($current_settings as $key => $value) {
+                if (strpos($key, '_enabled') !== false && !array_key_exists($key, $sanitized_data)) {
+                    $sanitized_data[$key] = 0;
+                }
+            }
+        }
+
         $merged_settings = array_merge($current_settings, $sanitized_data);
 
         // Save to database
@@ -1085,6 +1104,25 @@ class Admin_Kit
         do_action($this->func_slug . '_post_save_settings', $merged_settings, $result);
 
         return $result;
+    }
+
+    /**
+     * Check if submitted data contains any _enabled keys
+     *
+     * Used to detect if we're saving from the dashboard page where module toggles exist.
+     *
+     * @since 1.0.0
+     * @param array $data Submitted data.
+     * @return bool True if any _enabled key exists in data.
+     */
+    private function has_enabled_key_in_data($data)
+    {
+        foreach ($data as $key => $value) {
+            if (strpos($key, '_enabled') !== false) {
+                return true;
+            }
+        }
+        return false;
     }
 
     // ============================================================================
