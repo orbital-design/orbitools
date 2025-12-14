@@ -47,7 +47,21 @@
          * Initialize tab functionality
          */
         initTabs: function() {
-            // Show active tab content, hide others
+            // Check if we're in multi-page mode (nav items have --page class)
+            const isMultiPageMode = document.querySelector('.adminkit-nav__item--page') !== null;
+
+            // In multi-page mode, skip tab switching - each page only has its own content
+            if (isMultiPageMode) {
+                // Just initialize sub-tabs for the current page content
+                const pageContent = document.querySelector('.adminkit-content__page');
+                if (pageContent) {
+                    pageContent.style.display = 'block';
+                    this.initSubTabsForTab(pageContent);
+                }
+                return;
+            }
+
+            // Single-page mode: Show active tab content, hide others
             const activeTab = this.getActiveTab();
             const tabContents = document.querySelectorAll('.adminkit-content__page');
             let activeSection = null;
@@ -645,12 +659,20 @@
         }
 
         // Simple tab switching for adminkit navigation
+        // In multi-page mode (--page class), nav items are real links, so we don't intercept them
         document.addEventListener('click', function(e) {
             if (e.target.matches('.adminkit-nav__item') || e.target.closest('.adminkit-nav__item')) {
                 const link = e.target.matches('.adminkit-nav__item') ? e.target : e.target.closest('.adminkit-nav__item');
+
+                // In multi-page mode, nav items have --page class and should navigate normally
+                if (link.classList.contains('adminkit-nav__item--page')) {
+                    // Let the browser handle the navigation naturally
+                    return;
+                }
+
                 const tabKey = link.getAttribute('data-page');
 
-                // Only handle elements with data-page attribute (AdminKit tabs)
+                // Only handle elements with data-page attribute (AdminKit tabs in single-page mode)
                 if (tabKey) {
                     e.preventDefault();
 

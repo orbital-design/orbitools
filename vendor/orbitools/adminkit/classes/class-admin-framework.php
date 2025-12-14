@@ -106,6 +106,14 @@ class Admin_Kit
     private $menu_config = array();
 
     /**
+     * Pages configuration for multi-page mode
+     *
+     * @since 1.0.0
+     * @var array
+     */
+    private $pages_config = array();
+
+    /**
      * Field ID validation flag
      *
      * @since 1.0.0
@@ -204,6 +212,9 @@ class Admin_Kit
         if (isset($config['menu'])) {
             $this->set_menu_config($config['menu']);
         }
+        if (isset($config['pages'])) {
+            $this->set_pages_config($config['pages']);
+        }
 
         $this->init_hooks();
         return $this;
@@ -278,6 +289,128 @@ class Admin_Kit
         }
 
         $this->menu_config = array_merge($this->menu_config, $config);
+    }
+
+    /**
+     * Set pages configuration for multi-page mode
+     *
+     * Pages config format:
+     * array(
+     *     'page_key' => array(
+     *         'title' => 'Page Title',
+     *         'icon' => array('type' => 'svg', 'value' => '...'), // Optional
+     *         'menu_title' => 'Menu Title', // Optional, defaults to title
+     *     ),
+     *     ...
+     * )
+     *
+     * @since 1.0.0
+     * @param array $config Pages configuration array.
+     */
+    public function set_pages_config($config)
+    {
+        $this->pages_config = $config;
+    }
+
+    /**
+     * Get pages configuration
+     *
+     * @since 1.0.0
+     * @return array
+     */
+    public function get_pages_config()
+    {
+        return $this->pages_config;
+    }
+
+    /**
+     * Check if multi-page mode is enabled
+     *
+     * @since 1.0.0
+     * @return bool
+     */
+    public function is_multi_page_mode()
+    {
+        return !empty($this->pages_config);
+    }
+
+    /**
+     * Get current page key from URL
+     *
+     * @since 1.0.0
+     * @return string
+     */
+    public function get_current_page_key()
+    {
+        if (!$this->is_multi_page_mode()) {
+            return '';
+        }
+
+        $current_page = isset($_GET['page']) ? sanitize_text_field($_GET['page']) : '';
+
+        // Check if we're on the main page
+        if ($current_page === $this->slug) {
+            // Return first page key
+            $pages = array_keys($this->pages_config);
+            return !empty($pages) ? $pages[0] : '';
+        }
+
+        // Check if we're on a subpage
+        if (strpos($current_page, $this->slug . '-') === 0) {
+            $page_key = str_replace($this->slug . '-', '', $current_page);
+            if (isset($this->pages_config[$page_key])) {
+                return $page_key;
+            }
+        }
+
+        return '';
+    }
+
+    /**
+     * Get URL for a specific page
+     *
+     * @since 1.0.0
+     * @param string $page_key Page key.
+     * @return string
+     */
+    public function get_page_url($page_key)
+    {
+        if (!$this->is_multi_page_mode()) {
+            return '';
+        }
+
+        $pages = array_keys($this->pages_config);
+        $first_page_key = !empty($pages) ? $pages[0] : '';
+
+        // First page uses the main slug
+        if ($page_key === $first_page_key) {
+            $page_slug = $this->slug;
+        } else {
+            $page_slug = $this->slug . '-' . $page_key;
+        }
+
+        return admin_url('admin.php?page=' . $page_slug);
+    }
+
+    /**
+     * Check if current admin screen is one of our pages
+     *
+     * @since 1.0.0
+     * @return bool
+     */
+    public function is_our_admin_page()
+    {
+        $screen = get_current_screen();
+        if (!$screen) {
+            return false;
+        }
+
+        // Check main page
+        if (strpos($screen->id, $this->slug) !== false) {
+            return true;
+        }
+
+        return false;
     }
 
     /**
@@ -507,6 +640,13 @@ class Admin_Kit
     {
         $menu_type = isset($this->menu_config['menu_type']) ? $this->menu_config['menu_type'] : 'submenu';
 
+        // Multi-page mode: register multiple pages
+        if ($this->is_multi_page_mode()) {
+            $this->add_multi_page_menus($menu_type);
+            return;
+        }
+
+        // Single page mode (original behavior)
         if ($menu_type === 'menu') {
             // Add top-level menu page
             add_menu_page(
@@ -530,6 +670,89 @@ class Admin_Kit
                 $this->slug,
                 array($this, 'render_admin_page')
             );
+        }
+    }
+
+    /**
+     * Add multiple page menus for multi-page mode
+     *
+     * @since 1.0.0
+     * @param string $menu_type Menu type (menu or submenu).
+     */
+    private function add_multi_page_menus($menu_type)
+    {
+        $pages = $this->pages_config;
+        $page_keys = array_keys($pages);
+        $first_page_key = !empty($page_keys) ? $page_keys[0] : '';
+
+        if ($menu_type === 'menu') {
+            // Add top-level menu page (uses first page)
+            add_menu_page(
+                $this->page_title,
+                $this->menu_config['menu_title'],
+                $this->menu_config['capability'],
+                $this->slug,
+                array($this, 'render_admin_page'),
+                $this->menu_config['icon_url'],
+                $this->menu_config['position']
+            );
+
+            // Add submenu pages for each page in config
+            foreach ($pages as $page_key => $page_config) {
+                $page_title = is_array($page_config) ? ($page_config['title'] ?? ucfirst($page_key)) : $page_config;
+                $menu_title = is_array($page_config) ? ($page_config['menu_title'] ?? $page_title) : $page_title;
+
+                // First page uses the main slug (replaces the auto-created submenu)
+                if ($page_key === $first_page_key) {
+                    add_submenu_page(
+                        $this->slug,
+                        $page_title,
+                        $menu_title,
+                        $this->menu_config['capability'],
+                        $this->slug,
+                        array($this, 'render_admin_page')
+                    );
+                } else {
+                    // Other pages use slug-pagekey format
+                    add_submenu_page(
+                        $this->slug,
+                        $page_title,
+                        $menu_title,
+                        $this->menu_config['capability'],
+                        $this->slug . '-' . $page_key,
+                        array($this, 'render_admin_page')
+                    );
+                }
+            }
+        } else {
+            // Submenu mode - add all pages under the parent
+            $parent = isset($this->menu_config['parent']) ? $this->menu_config['parent'] : 'options-general.php';
+
+            foreach ($pages as $page_key => $page_config) {
+                $page_title = is_array($page_config) ? ($page_config['title'] ?? ucfirst($page_key)) : $page_config;
+                $menu_title = is_array($page_config) ? ($page_config['menu_title'] ?? $page_title) : $page_title;
+
+                // First page uses the main slug
+                if ($page_key === $first_page_key) {
+                    add_submenu_page(
+                        $parent,
+                        $page_title,
+                        $menu_title,
+                        $this->menu_config['capability'],
+                        $this->slug,
+                        array($this, 'render_admin_page')
+                    );
+                } else {
+                    add_submenu_page(
+                        $parent,
+                        $page_title,
+                        $menu_title,
+                        $this->menu_config['capability'],
+                        $this->slug . '-' . $page_key,
+                        array($this, 'render_admin_page')
+                    );
+                }
+            }
         }
     }
 
@@ -800,13 +1023,26 @@ class Admin_Kit
     // ============================================================================
 
     /**
-     * Get tabs
+     * Get tabs (or pages in multi-page mode)
+     *
+     * In multi-page mode, this returns pages instead of tabs.
+     * This allows view components to render navigation consistently.
      *
      * @since 1.0.0
-     * @return array Tabs array.
+     * @return array Tabs/pages array.
      */
     public function get_tabs()
     {
+        // In multi-page mode, return pages config for navigation
+        if ($this->is_multi_page_mode()) {
+            $tabs = array();
+            foreach ($this->pages_config as $page_key => $page_config) {
+                $tabs[$page_key] = is_array($page_config) ? $page_config : array('title' => $page_config);
+            }
+            return $tabs;
+        }
+
+        // Original single-page mode behavior
         $structure = $this->get_content_structure();
         $tabs = array();
 
@@ -818,10 +1054,10 @@ class Admin_Kit
     }
 
     /**
-     * Get sections for a tab
+     * Get sections for a tab/page
      *
      * @since 1.0.0
-     * @param string $tab_key Tab key.
+     * @param string $tab_key Tab/page key.
      * @return array Sections array.
      */
     public function get_sections($tab_key)
@@ -834,7 +1070,7 @@ class Admin_Kit
      * Get section display mode
      *
      * @since 1.0.0
-     * @param string $tab_key Tab key.
+     * @param string $tab_key Tab/page key.
      * @return string Display mode (tabs or cards).
      */
     public function get_section_display_mode($tab_key)
@@ -845,13 +1081,19 @@ class Admin_Kit
 
 
     /**
-     * Get active tab
+     * Get active tab (or current page in multi-page mode)
      *
      * @since 1.0.0
-     * @return string Active tab key.
+     * @return string Active tab/page key.
      */
     public function get_active_tab()
     {
+        // In multi-page mode, return current page key
+        if ($this->is_multi_page_mode()) {
+            return $this->get_current_page_key();
+        }
+
+        // Original single-page mode behavior
         $tabs = $this->get_tabs();
         $current_tab = isset($_GET['tab']) ? sanitize_text_field($_GET['tab']) : '';
 
@@ -864,10 +1106,10 @@ class Admin_Kit
     }
 
     /**
-     * Get current tab
+     * Get current tab (or current page in multi-page mode)
      *
      * @since 1.0.0
-     * @return string Current tab key.
+     * @return string Current tab/page key.
      */
     public function get_current_tab()
     {
@@ -907,14 +1149,20 @@ class Admin_Kit
     }
 
     /**
-     * Get tab URL
+     * Get tab URL (or page URL in multi-page mode)
      *
      * @since 1.0.0
-     * @param string $tab_key Tab key.
-     * @return string Tab URL.
+     * @param string $tab_key Tab/page key.
+     * @return string Tab/page URL.
      */
     public function get_tab_url($tab_key)
     {
+        // In multi-page mode, return actual page URL
+        if ($this->is_multi_page_mode()) {
+            return $this->get_page_url($tab_key);
+        }
+
+        // Original single-page mode behavior
         $base_url = admin_url('admin.php');
         $parent = isset($this->menu_config['parent']) ? $this->menu_config['parent'] : 'options-general.php';
 
