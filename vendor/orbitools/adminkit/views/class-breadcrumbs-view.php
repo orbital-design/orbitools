@@ -64,8 +64,8 @@ class Breadcrumbs_View
      */
     private function should_render()
     {
-        $screen = get_current_screen();
-        return $screen && strpos($screen->id, $this->admin_kit->get_slug()) !== false;
+        // Use the AdminKit's is_our_admin_page() method which handles external pages
+        return $this->admin_kit->is_our_admin_page();
     }
 
     /**

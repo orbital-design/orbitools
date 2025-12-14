@@ -188,9 +188,18 @@ function AdminKit_load()
 }
 
 /**
+ * Global registry of AdminKit instances
+ *
+ * @global array $adminkit_instances
+ */
+global $adminkit_instances;
+$adminkit_instances = array();
+
+/**
  * Get or create an admin framework instance
  *
  * Convenience function for creating framework instances.
+ * Instances are stored globally for access by external plugins.
  *
  * @since 1.0.0
  * @param string $slug Unique slug for the admin page.
@@ -198,17 +207,141 @@ function AdminKit_load()
  */
 function AdminKit($slug)
 {
+    global $adminkit_instances;
+
     if (!AdminKit_load()) {
         return null;
     }
-    
+
     if (empty($slug) || !is_string($slug)) {
         error_log('AdminKit Error: Invalid slug provided');
         return null;
     }
-    
-    // Create new instance
-    return new Orbitools\AdminKit\Admin_Kit($slug);
+
+    // Create new instance and store it globally
+    $instance = new Orbitools\AdminKit\Admin_Kit($slug);
+    $adminkit_instances[$slug] = $instance;
+
+    return $instance;
+}
+
+/**
+ * Get an existing AdminKit instance by slug
+ *
+ * @since 1.0.0
+ * @param string $slug The AdminKit instance slug.
+ * @return Orbitools\AdminKit\Admin_Kit|null The instance or null if not found.
+ */
+function AdminKit_get($slug)
+{
+    global $adminkit_instances;
+    return isset($adminkit_instances[$slug]) ? $adminkit_instances[$slug] : null;
+}
+
+/**
+ * Check if OrbiTools AdminKit is available
+ *
+ * External plugins can use this to check if they can integrate.
+ *
+ * @since 1.0.0
+ * @param string $slug Optional. Check if a specific AdminKit instance exists.
+ * @return bool True if available.
+ */
+function orbitools_adminkit_available($slug = '')
+{
+    if (!AdminKit_Loader::isLoaded() && !AdminKit_load()) {
+        return false;
+    }
+
+    if ($slug) {
+        return AdminKit_get($slug) !== null;
+    }
+
+    return true;
+}
+
+/**
+ * Register an external page with an AdminKit instance
+ *
+ * Allows external plugins to add pages to AdminKit's navigation and submenu.
+ * This should be called on the appropriate `{func_slug}_register_pages` action
+ * or on `plugins_loaded` (the page will be queued for registration).
+ *
+ * Example usage:
+ * ```php
+ * // Method 1: Using the action hook (recommended)
+ * add_action('orbitools_register_pages', function($admin_kit, $slug) {
+ *     $admin_kit->register_external_page('my-plugin', array(
+ *         'title' => 'My Plugin',
+ *         'menu_title' => 'My Plugin',
+ *         'icon' => array('type' => 'dashicon', 'value' => 'admin-plugins'),
+ *         'callback' => 'my_plugin_render_page',
+ *     ));
+ * }, 10, 2);
+ *
+ * // Method 2: Using the helper function
+ * add_action('plugins_loaded', function() {
+ *     if (function_exists('orbitools_register_page')) {
+ *         orbitools_register_page('orbitools', 'my-plugin', array(
+ *             'title' => 'My Plugin',
+ *             'menu_title' => 'My Plugin',
+ *             'icon' => array('type' => 'dashicon', 'value' => 'admin-plugins'),
+ *             'callback' => 'my_plugin_render_page',
+ *         ));
+ *     }
+ * });
+ * ```
+ *
+ * @since 1.0.0
+ * @param string $adminkit_slug The AdminKit instance slug to add page to.
+ * @param string $page_key      Unique key for the page.
+ * @param array  $page_config   Page configuration array:
+ *                              - title: (required) Page title
+ *                              - menu_title: (optional) Menu title, defaults to title
+ *                              - icon: (optional) Icon array with 'type' and 'value'
+ *                              - callback: (required) Callable for rendering the page
+ *                              - capability: (optional) Required capability, defaults to parent
+ * @return bool True if registered successfully.
+ */
+function orbitools_register_page($adminkit_slug, $page_key, $page_config)
+{
+    global $adminkit_pending_pages;
+
+    // Try to get the AdminKit instance
+    $admin_kit = AdminKit_get($adminkit_slug);
+
+    if ($admin_kit) {
+        // Instance exists, register directly
+        return $admin_kit->register_external_page($page_key, $page_config);
+    }
+
+    // Instance doesn't exist yet, queue for later registration
+    if (!isset($adminkit_pending_pages)) {
+        $adminkit_pending_pages = array();
+    }
+
+    if (!isset($adminkit_pending_pages[$adminkit_slug])) {
+        $adminkit_pending_pages[$adminkit_slug] = array();
+
+        // Set up the hook to register when the instance is ready
+        $func_slug = str_replace('-', '_', $adminkit_slug);
+        add_action($func_slug . '_register_pages', function($admin_kit, $slug) use ($adminkit_slug) {
+            global $adminkit_pending_pages;
+
+            if (isset($adminkit_pending_pages[$adminkit_slug])) {
+                foreach ($adminkit_pending_pages[$adminkit_slug] as $page_key => $config) {
+                    $admin_kit->register_external_page($page_key, $config);
+                }
+                // Clear the queue
+                unset($adminkit_pending_pages[$adminkit_slug]);
+            }
+        }, 10, 2);
+    }
+
+    // Add to pending queue
+    $adminkit_pending_pages[$adminkit_slug][$page_key] = $page_config;
+
+    return true;
 }
 
 

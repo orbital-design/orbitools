@@ -167,6 +167,8 @@ class Admin_Kit
      */
     private function init_hooks()
     {
+        // Fire action before admin_menu so external plugins can register pages
+        add_action('admin_menu', array($this, 'fire_register_pages_action'), 5);
         add_action('admin_menu', array($this, 'add_admin_page'));
         add_action('admin_enqueue_scripts', array($this, 'enqueue_assets'));
         add_action('admin_init', array($this, 'register_settings'));
@@ -183,6 +185,27 @@ class Admin_Kit
 
         // Add AdminKit body class
         add_filter('admin_body_class', array($this, 'add_admin_body_class'));
+    }
+
+    /**
+     * Fire action for external plugins to register pages
+     *
+     * This action fires just before admin_menu so external plugins
+     * can register their pages with the AdminKit navigation.
+     *
+     * @since 1.0.0
+     */
+    public function fire_register_pages_action()
+    {
+        /**
+         * Action fired before AdminKit adds its admin menus.
+         *
+         * Use this hook to register external pages with AdminKit.
+         *
+         * @param Admin_Kit $admin_kit The AdminKit instance.
+         * @param string    $slug      The AdminKit instance slug.
+         */
+        do_action($this->func_slug . '_register_pages', $this, $this->slug);
     }
 
     /**
@@ -313,6 +336,58 @@ class Admin_Kit
     }
 
     /**
+     * Register an external page from another plugin
+     *
+     * Allows other plugins to add pages to this AdminKit instance's
+     * navigation and submenu. The page will appear in the header nav
+     * and WordPress admin submenu.
+     *
+     * Example usage from another plugin:
+     * ```php
+     * add_action('plugins_loaded', function() {
+     *     if (function_exists('orbitools_register_page')) {
+     *         orbitools_register_page('my-plugin', array(
+     *             'title' => 'My Plugin',
+     *             'menu_title' => 'My Plugin',
+     *             'icon' => array('type' => 'dashicon', 'value' => 'admin-plugins'),
+     *             'callback' => 'my_plugin_render_page',
+     *             'capability' => 'manage_options', // Optional, defaults to parent capability
+     *             'skip_menu' => true, // Optional, if true AdminKit won't register a WP menu
+     *             'url' => 'admin.php?page=my-plugin', // Required if skip_menu is true
+     *         ));
+     *     }
+     * });
+     * ```
+     *
+     * @since 1.0.0
+     * @param string $page_key   Unique key for the page (will be prefixed with slug).
+     * @param array  $page_config Page configuration array:
+     *                            - title: Page title (required)
+     *                            - menu_title: Menu title (optional, defaults to title)
+     *                            - icon: Icon array with 'type' and 'value' (optional)
+     *                            - callback: Render callback (required unless skip_menu)
+     *                            - capability: Required capability (optional)
+     *                            - skip_menu: If true, only adds to header nav, not WP menu (optional)
+     *                            - url: Custom URL for navigation (required if skip_menu is true)
+     * @return bool True if registered successfully, false if page key already exists.
+     */
+    public function register_external_page($page_key, $page_config)
+    {
+        // Don't allow overwriting existing pages
+        if (isset($this->pages_config[$page_key])) {
+            return false;
+        }
+
+        // Mark as external page so we know it has a custom callback
+        $page_config['_external'] = true;
+
+        // Add to pages config
+        $this->pages_config[$page_key] = $page_config;
+
+        return true;
+    }
+
+    /**
      * Get pages configuration
      *
      * @since 1.0.0
@@ -363,6 +438,20 @@ class Admin_Kit
             }
         }
 
+        // Check external pages with custom URLs (skip_menu pages)
+        foreach ($this->pages_config as $page_key => $page_config) {
+            if (is_array($page_config) && !empty($page_config['skip_menu']) && !empty($page_config['url'])) {
+                // Extract page slug from URL (e.g., "admin.php?page=ott-settings" -> "ott-settings")
+                $url_parts = parse_url($page_config['url']);
+                if (isset($url_parts['query'])) {
+                    parse_str($url_parts['query'], $query_params);
+                    if (isset($query_params['page']) && $query_params['page'] === $current_page) {
+                        return $page_key;
+                    }
+                }
+            }
+        }
+
         return '';
     }
 
@@ -377,6 +466,14 @@ class Admin_Kit
     {
         if (!$this->is_multi_page_mode()) {
             return '';
+        }
+
+        // Check if this page has a custom URL (for external pages with skip_menu)
+        if (isset($this->pages_config[$page_key]) && is_array($this->pages_config[$page_key])) {
+            $page_config = $this->pages_config[$page_key];
+            if (!empty($page_config['url'])) {
+                return admin_url($page_config['url']);
+            }
         }
 
         $pages = array_keys($this->pages_config);
@@ -405,9 +502,24 @@ class Admin_Kit
             return false;
         }
 
-        // Check main page
+        // Check main page and subpages
         if (strpos($screen->id, $this->slug) !== false) {
             return true;
+        }
+
+        // Check external pages with custom URLs (skip_menu pages)
+        $current_page = isset($_GET['page']) ? sanitize_text_field($_GET['page']) : '';
+        foreach ($this->pages_config as $page_key => $page_config) {
+            if (is_array($page_config) && !empty($page_config['skip_menu']) && !empty($page_config['url'])) {
+                // Extract page slug from URL (e.g., "admin.php?page=ott-settings" -> "ott-settings")
+                $url_parts = parse_url($page_config['url']);
+                if (isset($url_parts['query'])) {
+                    parse_str($url_parts['query'], $query_params);
+                    if (isset($query_params['page']) && $query_params['page'] === $current_page) {
+                        return true;
+                    }
+                }
+            }
         }
 
         return false;
@@ -479,8 +591,7 @@ class Admin_Kit
     public function render_breadcrumbs()
     {
         // Only render breadcrumbs on our admin pages
-        $screen = get_current_screen();
-        if (!$screen || strpos($screen->id, $this->slug) === false) {
+        if (!$this->is_our_admin_page()) {
             return;
         }
 
@@ -497,8 +608,7 @@ class Admin_Kit
     public function admin_footer_text($text)
     {
         // Only modify footer on our admin pages
-        $screen = get_current_screen();
-        if (!$screen || strpos($screen->id, $this->slug) === false) {
+        if (!$this->is_our_admin_page()) {
             return $text;
         }
 
@@ -671,8 +781,20 @@ class Admin_Kit
 
             // Add submenu pages for each page in config
             foreach ($pages as $page_key => $page_config) {
+                // Skip menu registration for external pages with skip_menu option
+                // These pages will still appear in header nav but register their own WP menu
+                $skip_menu = is_array($page_config) && !empty($page_config['skip_menu']);
+                if ($skip_menu) {
+                    continue;
+                }
+
                 $page_title = is_array($page_config) ? ($page_config['title'] ?? ucfirst($page_key)) : $page_config;
                 $menu_title = is_array($page_config) ? ($page_config['menu_title'] ?? $page_title) : $page_title;
+                $capability = is_array($page_config) ? ($page_config['capability'] ?? $this->menu_config['capability']) : $this->menu_config['capability'];
+
+                // External pages use their custom callback, internal pages use render_admin_page
+                $is_external = is_array($page_config) && !empty($page_config['_external']);
+                $callback = $is_external && isset($page_config['callback']) ? $page_config['callback'] : array($this, 'render_admin_page');
 
                 // First page uses the main slug (replaces the auto-created submenu)
                 if ($page_key === $first_page_key) {
@@ -680,9 +802,9 @@ class Admin_Kit
                         $this->slug,
                         $page_title,
                         $menu_title,
-                        $this->menu_config['capability'],
+                        $capability,
                         $this->slug,
-                        array($this, 'render_admin_page')
+                        $callback
                     );
                 } else {
                     // Other pages use slug-pagekey format
@@ -690,9 +812,9 @@ class Admin_Kit
                         $this->slug,
                         $page_title,
                         $menu_title,
-                        $this->menu_config['capability'],
+                        $capability,
                         $this->slug . '-' . $page_key,
-                        array($this, 'render_admin_page')
+                        $callback
                     );
                 }
             }
@@ -701,8 +823,19 @@ class Admin_Kit
             $parent = isset($this->menu_config['parent']) ? $this->menu_config['parent'] : 'options-general.php';
 
             foreach ($pages as $page_key => $page_config) {
+                // Skip menu registration for external pages with skip_menu option
+                $skip_menu = is_array($page_config) && !empty($page_config['skip_menu']);
+                if ($skip_menu) {
+                    continue;
+                }
+
                 $page_title = is_array($page_config) ? ($page_config['title'] ?? ucfirst($page_key)) : $page_config;
                 $menu_title = is_array($page_config) ? ($page_config['menu_title'] ?? $page_title) : $page_title;
+                $capability = is_array($page_config) ? ($page_config['capability'] ?? $this->menu_config['capability']) : $this->menu_config['capability'];
+
+                // External pages use their custom callback, internal pages use render_admin_page
+                $is_external = is_array($page_config) && !empty($page_config['_external']);
+                $callback = $is_external && isset($page_config['callback']) ? $page_config['callback'] : array($this, 'render_admin_page');
 
                 // First page uses the main slug
                 if ($page_key === $first_page_key) {
@@ -710,18 +843,18 @@ class Admin_Kit
                         $parent,
                         $page_title,
                         $menu_title,
-                        $this->menu_config['capability'],
+                        $capability,
                         $this->slug,
-                        array($this, 'render_admin_page')
+                        $callback
                     );
                 } else {
                     add_submenu_page(
                         $parent,
                         $page_title,
                         $menu_title,
-                        $this->menu_config['capability'],
+                        $capability,
                         $this->slug . '-' . $page_key,
-                        array($this, 'render_admin_page')
+                        $callback
                     );
                 }
             }
@@ -737,7 +870,7 @@ class Admin_Kit
     public function enqueue_assets($hook_suffix)
     {
         // Only enqueue on our admin page
-        if (strpos($hook_suffix, $this->slug) === false) {
+        if (strpos($hook_suffix, $this->slug) === false && !$this->is_our_admin_page()) {
             return;
         }
 
@@ -929,25 +1062,27 @@ class Admin_Kit
         // Sanitize data
         $sanitized_data = $this->sanitize_settings_data($settings_data);
 
-        // Get current settings to compare
+        // Get current settings and merge with new data
+        // This is critical for multi-page mode where each page only submits its own fields
         $current_settings = get_option($this->slug . '_settings', array());
+        $merged_settings = array_merge($current_settings, $sanitized_data);
 
         // Save to database
-        $result = update_option($this->slug . '_settings', $sanitized_data);
+        $result = update_option($this->slug . '_settings', $merged_settings);
 
         // update_option returns false if the value is the same (no change)
         // In this case, we still consider it a "success" since the data is correct
         if ($result === false) {
             // Check if the data is actually the same (no change) vs a real error
             $updated_settings = get_option($this->slug . '_settings', array());
-            if ($updated_settings === $sanitized_data) {
+            if ($updated_settings === $merged_settings) {
                 // Data is correct, just no change - treat as success
                 $result = true;
             }
         }
 
         // Trigger post-save action
-        do_action($this->func_slug . '_post_save_settings', $sanitized_data, $result);
+        do_action($this->func_slug . '_post_save_settings', $merged_settings, $result);
 
         return $result;
     }
@@ -1233,8 +1368,7 @@ class Admin_Kit
      */
     public function add_admin_body_class($classes)
     {
-        $screen = get_current_screen();
-        if ($screen && strpos($screen->id, $this->slug) !== false) {
+        if ($this->is_our_admin_page()) {
             $classes .= ' is-adminKit';
         }
         return $classes;
