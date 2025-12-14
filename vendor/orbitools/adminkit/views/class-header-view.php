@@ -141,17 +141,11 @@ class Header_View
     private function render_nav_item($tab_key, $tab_label, $active_tab)
     {
         $is_active = $active_tab === $tab_key;
-        $is_multi_page = $this->admin_kit->is_multi_page_mode();
 
-        $classes = array('adminkit-nav__item');
+        $classes = array('adminkit-nav__item', 'adminkit-nav__item--page');
 
         if ($is_active) {
             $classes[] = 'adminkit-nav__item--active';
-        }
-
-        // In multi-page mode, nav items are actual page links
-        if ($is_multi_page) {
-            $classes[] = 'adminkit-nav__item--page';
         }
 
         // Handle tab data (could be string or array with icon)
@@ -161,7 +155,6 @@ class Header_View
     ?>
 <a href="<?php echo esc_url($this->admin_kit->get_tab_url($tab_key)); ?>"
     class="<?php echo esc_attr(implode(' ', $classes)); ?>"
-    <?php if (!$is_multi_page): ?>data-page="<?php echo esc_attr($tab_key); ?>"<?php endif; ?>
     id="<?php echo esc_attr('adminkit-nav-' . $tab_key); ?>">
     <?php if ($tab_icon): ?>
         <span class="adminkit-nav__icon">

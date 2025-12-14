@@ -76,17 +76,16 @@ class Breadcrumbs_View
     private function render_toolbar_html()
     {
         $page_title = $this->admin_kit->get_page_title();
-        $is_multi_page = $this->admin_kit->is_multi_page_mode();
-        $current_tab = $this->admin_kit->get_current_tab();
+        $current_page = $this->admin_kit->get_current_tab();
         $current_section = $this->admin_kit->get_current_section();
 
-        // Get page/tab name
-        $tabs = $this->admin_kit->get_tabs();
-        $tab_data = isset($tabs[$current_tab]) ? $tabs[$current_tab] : '';
-        $tab_name = is_array($tab_data) ? ($tab_data['title'] ?? '') : $tab_data;
+        // Get page name
+        $pages = $this->admin_kit->get_tabs();
+        $page_data = isset($pages[$current_page]) ? $pages[$current_page] : '';
+        $page_name = is_array($page_data) ? ($page_data['title'] ?? '') : $page_data;
 
         // Get section name
-        $sections = $this->get_sections($current_tab);
+        $sections = $this->get_sections($current_page);
         $section_data = isset($sections[$current_section]) ? $sections[$current_section] : '';
         $section_name = is_array($section_data) ? ($section_data['title'] ?? '') : $section_data;
 
@@ -95,12 +94,8 @@ class Breadcrumbs_View
             <nav class="adminkit-toolbar__breadcrumbs">
                 <ol class="adminkit-toolbar__breadcrumb-list">
                     <?php $this->render_breadcrumb($page_title); ?>
-                    <?php if ($is_multi_page && $tab_name): ?>
-                        <?php // In multi-page mode, show page name as breadcrumb ?>
-                        <?php $this->render_breadcrumb($tab_name, true, true); ?>
-                    <?php elseif (!$is_multi_page && $tab_name): ?>
-                        <?php // In single-page mode, show tab name ?>
-                        <?php $this->render_breadcrumb($tab_name, true, true); ?>
+                    <?php if ($page_name): ?>
+                        <?php $this->render_breadcrumb($page_name, true, true); ?>
                     <?php endif; ?>
                     <?php if ($section_name): ?>
                         <?php $this->render_breadcrumb($section_name, true, true); ?>

@@ -632,45 +632,17 @@ class Admin_Kit
     // settings management, and data processing.
 
     /**
-     * Add admin page to WordPress admin menu
+     * Add admin pages to WordPress admin menu
+     *
+     * Creates multiple admin pages based on the pages configuration.
+     * Each page becomes a separate WordPress admin page with its own URL.
      *
      * @since 1.0.0
      */
     public function add_admin_page()
     {
         $menu_type = isset($this->menu_config['menu_type']) ? $this->menu_config['menu_type'] : 'submenu';
-
-        // Multi-page mode: register multiple pages
-        if ($this->is_multi_page_mode()) {
-            $this->add_multi_page_menus($menu_type);
-            return;
-        }
-
-        // Single page mode (original behavior)
-        if ($menu_type === 'menu') {
-            // Add top-level menu page
-            add_menu_page(
-                $this->page_title,
-                $this->menu_config['menu_title'],
-                $this->menu_config['capability'],
-                $this->slug,
-                array($this, 'render_admin_page'),
-                $this->menu_config['icon_url'],
-                $this->menu_config['position']
-            );
-        } else {
-            // Add submenu page (default behavior)
-            $parent = isset($this->menu_config['parent']) ? $this->menu_config['parent'] : 'options-general.php';
-
-            add_submenu_page(
-                $parent,
-                $this->page_title,
-                $this->menu_config['menu_title'],
-                $this->menu_config['capability'],
-                $this->slug,
-                array($this, 'render_admin_page')
-            );
-        }
+        $this->add_multi_page_menus($menu_type);
     }
 
     /**
@@ -1023,33 +995,20 @@ class Admin_Kit
     // ============================================================================
 
     /**
-     * Get tabs (or pages in multi-page mode)
+     * Get pages for navigation
      *
-     * In multi-page mode, this returns pages instead of tabs.
-     * This allows view components to render navigation consistently.
+     * Returns the pages configuration for header navigation.
+     * Each page becomes a separate WordPress admin page.
      *
      * @since 1.0.0
-     * @return array Tabs/pages array.
+     * @return array Pages array with title and optional icon.
      */
     public function get_tabs()
     {
-        // In multi-page mode, return pages config for navigation
-        if ($this->is_multi_page_mode()) {
-            $tabs = array();
-            foreach ($this->pages_config as $page_key => $page_config) {
-                $tabs[$page_key] = is_array($page_config) ? $page_config : array('title' => $page_config);
-            }
-            return $tabs;
-        }
-
-        // Original single-page mode behavior
-        $structure = $this->get_content_structure();
         $tabs = array();
-
-        foreach ($structure as $tab_key => $tab_config) {
-            $tabs[$tab_key] = isset($tab_config['title']) ? $tab_config['title'] : ucfirst($tab_key);
+        foreach ($this->pages_config as $page_key => $page_config) {
+            $tabs[$page_key] = is_array($page_config) ? $page_config : array('title' => $page_config);
         }
-
         return $tabs;
     }
 
@@ -1081,39 +1040,27 @@ class Admin_Kit
 
 
     /**
-     * Get active tab (or current page in multi-page mode)
+     * Get current page key
+     *
+     * Returns the key of the currently displayed admin page.
      *
      * @since 1.0.0
-     * @return string Active tab/page key.
+     * @return string Current page key.
      */
     public function get_active_tab()
     {
-        // In multi-page mode, return current page key
-        if ($this->is_multi_page_mode()) {
-            return $this->get_current_page_key();
-        }
-
-        // Original single-page mode behavior
-        $tabs = $this->get_tabs();
-        $current_tab = isset($_GET['tab']) ? sanitize_text_field($_GET['tab']) : '';
-
-        // If no tab specified or invalid tab, use first tab
-        if (empty($current_tab) || ! array_key_exists($current_tab, $tabs)) {
-            $current_tab = ! empty($tabs) ? key($tabs) : '';
-        }
-
-        return $current_tab;
+        return $this->get_current_page_key();
     }
 
     /**
-     * Get current tab (or current page in multi-page mode)
+     * Get current page key (alias for get_active_tab)
      *
      * @since 1.0.0
-     * @return string Current tab/page key.
+     * @return string Current page key.
      */
     public function get_current_tab()
     {
-        return $this->get_active_tab();
+        return $this->get_current_page_key();
     }
 
     /**
@@ -1149,31 +1096,17 @@ class Admin_Kit
     }
 
     /**
-     * Get tab URL (or page URL in multi-page mode)
+     * Get page URL
+     *
+     * Returns the WordPress admin URL for a specific page.
      *
      * @since 1.0.0
-     * @param string $tab_key Tab/page key.
-     * @return string Tab/page URL.
+     * @param string $tab_key Page key.
+     * @return string Page URL.
      */
     public function get_tab_url($tab_key)
     {
-        // In multi-page mode, return actual page URL
-        if ($this->is_multi_page_mode()) {
-            return $this->get_page_url($tab_key);
-        }
-
-        // Original single-page mode behavior
-        $base_url = admin_url('admin.php');
-        $parent = isset($this->menu_config['parent']) ? $this->menu_config['parent'] : 'options-general.php';
-
-        if ($parent === 'options-general.php') {
-            $base_url = admin_url('options-general.php');
-        }
-
-        return add_query_arg(array(
-            'page' => $this->slug,
-            'tab' => $tab_key,
-        ), $base_url);
+        return $this->get_page_url($tab_key);
     }
 
     /**

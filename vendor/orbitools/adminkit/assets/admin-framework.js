@@ -44,42 +44,17 @@
         },
 
         /**
-         * Initialize tab functionality
+         * Initialize page content and sub-tabs
+         *
+         * Each admin page only has its own content rendered (multi-page mode).
+         * This initializes sub-tabs (sections) within the current page.
          */
         initTabs: function() {
-            // Check if we're in multi-page mode (nav items have --page class)
-            const isMultiPageMode = document.querySelector('.adminkit-nav__item--page') !== null;
-
-            // In multi-page mode, skip tab switching - each page only has its own content
-            if (isMultiPageMode) {
-                // Just initialize sub-tabs for the current page content
-                const pageContent = document.querySelector('.adminkit-content__page');
-                if (pageContent) {
-                    pageContent.style.display = 'block';
-                    this.initSubTabsForTab(pageContent);
-                }
-                return;
-            }
-
-            // Single-page mode: Show active tab content, hide others
-            const activeTab = this.getActiveTab();
-            const tabContents = document.querySelectorAll('.adminkit-content__page');
-            let activeSection = null;
-
-            tabContents.forEach(function(content) {
-                const tabKey = content.getAttribute('data-page');
-                if (tabKey === activeTab) {
-                    content.style.display = 'block';
-                    // Initialize sub-tabs for the active tab and get the active section
-                    activeSection = this.initSubTabsForTab(content);
-                } else {
-                    content.style.display = 'none';
-                }
-            }.bind(this));
-
-            // Update breadcrumbs for initial page load with the actual active section
-            if (activeTab) {
-                this.updateBreadcrumbs(activeTab, activeSection);
+            // Initialize sub-tabs for the current page content
+            const pageContent = document.querySelector('.adminkit-content__page');
+            if (pageContent) {
+                pageContent.style.display = 'block';
+                this.initSubTabsForTab(pageContent);
             }
         },
 
@@ -424,16 +399,13 @@
         },
 
         /**
-         * Get currently active tab
+         * Get currently active page key
+         *
+         * Gets the page key from the content div (there's only one per admin page).
          */
         getActiveTab: function() {
-            const urlParams = new URLSearchParams(window.location.search);
-            const urlTab = urlParams.get('tab');
-
-            if (urlTab) return urlTab;
-
-            const activeLink = document.querySelector('.adminkit-nav__item--active');
-            return activeLink ? activeLink.getAttribute('data-page') : '';
+            const pageContent = document.querySelector('.adminkit-content__page');
+            return pageContent ? pageContent.getAttribute('data-page') : '';
         },
 
         /**
@@ -658,57 +630,8 @@
             OrbitoolsAdminKit.init();
         }
 
-        // Simple tab switching for adminkit navigation
-        // In multi-page mode (--page class), nav items are real links, so we don't intercept them
-        document.addEventListener('click', function(e) {
-            if (e.target.matches('.adminkit-nav__item') || e.target.closest('.adminkit-nav__item')) {
-                const link = e.target.matches('.adminkit-nav__item') ? e.target : e.target.closest('.adminkit-nav__item');
-
-                // In multi-page mode, nav items have --page class and should navigate normally
-                if (link.classList.contains('adminkit-nav__item--page')) {
-                    // Let the browser handle the navigation naturally
-                    return;
-                }
-
-                const tabKey = link.getAttribute('data-page');
-
-                // Only handle elements with data-page attribute (AdminKit tabs in single-page mode)
-                if (tabKey) {
-                    e.preventDefault();
-
-                    // Update active states
-                    document.querySelectorAll('.adminkit-nav__item').forEach(tabLink => {
-                        tabLink.classList.remove('adminkit-nav__item--active');
-                    });
-                    link.classList.add('adminkit-nav__item--active');
-
-                    // Switch tab content
-                    document.querySelectorAll('.adminkit-content__page').forEach(content => {
-                        content.style.display = 'none';
-                    });
-
-                    const activeContent = document.querySelector('.adminkit-content__page[data-page="' + tabKey + '"]');
-                    if (activeContent) {
-                        activeContent.style.display = 'block';
-                        // Initialize sub-tabs for the newly active tab
-                        const activeSection = OrbitoolsAdminKit.initSubTabsForTab(activeContent);
-
-                        // Update breadcrumbs with the active section
-                        OrbitoolsAdminKit.updateBreadcrumbs(tabKey, activeSection);
-                    } else {
-                        // No sub-tabs, just update breadcrumbs with tab
-                        OrbitoolsAdminKit.updateBreadcrumbs(tabKey);
-                    }
-
-                    // Update URL
-                    if (history.pushState) {
-                        const url = new URL(window.location);
-                        url.searchParams.set('tab', tabKey);
-                        history.pushState(null, '', url.toString());
-                    }
-                }
-            }
-        });
+        // Nav items are real page links - browser handles navigation naturally
+        // No JavaScript tab switching needed
 
         // Direct form handler as backup
         const form = document.getElementById('adminkit-settings-form');

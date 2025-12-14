@@ -79,37 +79,30 @@ class Content_View
     }
 
     /**
-     * Render all tab content containers
+     * Render current page content
      *
-     * In multi-page mode, only renders the current page content.
-     * In single-page mode (tabs), renders all tabs with display toggling.
+     * Only renders the content for the currently active admin page.
      *
      * @since 1.0.0
-     * @param array $tabs All tabs
-     * @param string $active_tab Active tab key
+     * @param array $tabs All pages
+     * @param string $active_tab Active page key
      * @param array $settings All settings
      */
     private function render_tabs($tabs, $active_tab, $settings)
     {
-        $is_multi_page = $this->admin_kit->is_multi_page_mode();
-
-        foreach ($tabs as $tab_key => $tab_title) {
-            $is_active = $active_tab === $tab_key;
-
-            // In multi-page mode, only render the current page
-            if ($is_multi_page && !$is_active) {
-                continue;
-            }
-        ?>
-            <div class="adminkit-content__page" data-page="<?php echo esc_attr($tab_key); ?>"
-                aria-labelledby="<?php echo esc_attr('adminkit-nav-' . $tab_key); ?>"
-                style="display: block;">
-
-                <?php $this->render_tab_content_sections($tab_key, $settings); ?>
-                <?php do_action($this->admin_kit->get_func_slug() . '_render_tab_content', $tab_key); ?>
-            </div>
-        <?php
+        // Only render the current page content
+        if (!isset($tabs[$active_tab])) {
+            return;
         }
+        ?>
+        <div class="adminkit-content__page" data-page="<?php echo esc_attr($active_tab); ?>"
+            aria-labelledby="<?php echo esc_attr('adminkit-nav-' . $active_tab); ?>"
+            style="display: block;">
+
+            <?php $this->render_tab_content_sections($active_tab, $settings); ?>
+            <?php do_action($this->admin_kit->get_func_slug() . '_render_tab_content', $active_tab); ?>
+        </div>
+        <?php
     }
 
     /**
