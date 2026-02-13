@@ -575,18 +575,26 @@ export default function QueryLoopControls({ attributes, setAttributes }: QueryLo
 
 
     // Prepare post type options - only public/viewable ones, excluding 'post' type
-    const postTypeOptions = availablePostTypes
+    const filteredPostTypes = availablePostTypes
         .filter((pt: any) => {
             // Must be viewable/public
             const isPublic = pt.viewable || (pt.visibility && pt.visibility.publicly_queryable);
             // Exclude 'post' type completely - we don't use it
             const isNotPost = pt.slug !== 'post';
             return isPublic && isNotPost;
-        })
-        .map((pt: any) => {
-            // Use slug for the actual post type value, not name or label  
-            return pt.slug;
         });
+
+    // Suggestion list uses display names
+    const postTypeOptions = filteredPostTypes.map((pt: any) => pt.labels?.singular_name || pt.name);
+
+    // Lookup maps for name ↔ slug conversion
+    const postTypeNameToSlug: Record<string, string> = {};
+    const postTypeSlugToName: Record<string, string> = {};
+    filteredPostTypes.forEach((pt: any) => {
+        const name = pt.labels?.singular_name || pt.name;
+        postTypeNameToSlug[name.toLowerCase()] = pt.slug;
+        postTypeSlugToName[pt.slug] = name;
+    });
 
     // Prepare post status options
     const postStatusOptions = ['publish', 'draft', 'future', 'private', 'trash', 'any'];
@@ -715,9 +723,12 @@ export default function QueryLoopControls({ attributes, setAttributes }: QueryLo
                                 <FormTokenDropdown
                                     label={__('Post Types', 'orbitools')}
                                     help={__('Select which post types to query', 'orbitools')}
-                                    value={postTypes}
+                                    value={postTypes.map((slug: string) => postTypeSlugToName[slug] || slug)}
                                     suggestions={postTypeOptions}
-                                    onChange={(tokens) => updateAttribute('postTypes', tokens)}
+                                    onChange={(tokens) => {
+                                        const slugs = tokens.map((token) => postTypeNameToSlug[token.toLowerCase()] || token);
+                                        updateAttribute('postTypes', slugs);
+                                    }}
                                     placeholder={__('Select post types...', 'orbitools')}
                                 />
                                 <FormTokenDropdown
