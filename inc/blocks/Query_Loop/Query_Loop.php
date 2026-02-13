@@ -126,11 +126,15 @@ class Query_Loop extends Module_Base
         // Get the user-defined query ID for filter targeting (empty string if not set)
         $user_query_id = $attributes['queryId'] ?? '';
 
+        // Check if pagination is enabled for this block
+        $args = $query_parameters['args'] ?? [];
+        $needs_pagination = !empty($args['paged']) && empty($args['noPaging']);
+
         // Build the query based on type
         if ($query_type === 'inherit') {
-            $query_args = $this->build_inherit_query($block, $user_query_id);
+            $query_args = $this->build_inherit_query($block, $user_query_id, $needs_pagination);
         } else {
-            $query_args = $this->build_custom_query($query_parameters['args'] ?? [], $user_query_id);
+            $query_args = $this->build_custom_query($args, $user_query_id);
         }
         
         
@@ -152,24 +156,25 @@ class Query_Loop extends Module_Base
      *
      * @param \WP_Block $block Block instance with context
      * @param string $query_id User-defined query ID for filter targeting
+     * @param bool $needs_pagination Whether pagination is enabled for this block
      * @return array WP_Query arguments
      */
-    private function build_inherit_query(\WP_Block $block, string $query_id = ''): array
+    private function build_inherit_query(\WP_Block $block, string $query_id = '', bool $needs_pagination = false): array
     {
         $context = $block->context ?? [];
-        
+
         // If no context is available, fall back to page query
         if (empty($context)) {
             return [
                 'post_type' => 'page',
                 'posts_per_page' => 10,
                 'post_status' => 'publish',
-                'no_found_rows' => false,
+                'no_found_rows' => !$needs_pagination,
                 'orderby' => 'date',
                 'order' => 'DESC'
             ];
         }
-        
+
         // Default inherit query - uses global query context from parent blocks
         $paged = \get_query_var('paged') ? \get_query_var('paged') : (\get_query_var('page') ? \get_query_var('page') : 1);
 
@@ -177,8 +182,10 @@ class Query_Loop extends Module_Base
             'post_type' => $context['postType'] ?? 'page',
             'posts_per_page' => isset($context['query']['perPage']) ? $context['query']['perPage'] : 10,
             'post_status' => 'publish',
-            'no_found_rows' => false, // Enable pagination
+            'no_found_rows' => !$needs_pagination,
             'paged' => $paged,
+            'update_post_meta_cache' => true,
+            'update_post_term_cache' => true,
         ];
 
         // Apply inherited query modifications from context
@@ -234,9 +241,14 @@ class Query_Loop extends Module_Base
         }
         
         // Start with basic query structure
+        // Only count total rows (no_found_rows = false) when pagination is enabled
+        $needs_pagination = !empty($args['paged']) && empty($args['noPaging']);
+
         $query_args = [
             'post_status' => $args['postStatus'] ?? ['publish'],
-            'no_found_rows' => false, // Enable pagination
+            'no_found_rows' => !$needs_pagination,
+            'update_post_meta_cache' => true,
+            'update_post_term_cache' => true,
         ];
 
         // Handle post types
@@ -503,12 +515,14 @@ class Query_Loop extends Module_Base
         }
         
         $available_templates = $this->get_available_templates($layout_type);
-        
+
         // Ensure selected template exists, fallback to default
         if (!isset($available_templates[$selected_template])) {
             $selected_template = 'default';
         }
-        
+
+        // Prime thumbnail cache in a single query to avoid N+1
+        \update_post_thumbnail_cache($query);
 
         // Loop through posts
         while ($query->have_posts()) {
@@ -984,16 +998,18 @@ class Query_Loop extends Module_Base
             return new \WP_REST_Response(['html' => '', 'has_more' => false], 400);
         }
 
-        $query_type = $query_parameters['type'] ?? 'custom';
+        // Cap page number to prevent abuse
+        $page = min(absint($page), 100);
+
         $args = $query_parameters['args'] ?? [];
 
-        // Build query args (reuse existing method for custom queries)
-        if ($query_type === 'custom') {
-            $query_args = $this->build_custom_query($args);
-        } else {
-            // For inherit type via load-more, treat as custom with provided args
-            $query_args = $this->build_custom_query($args);
+        // Enforce a maximum posts_per_page to prevent expensive queries
+        if (isset($args['postsPerPage'])) {
+            $args['postsPerPage'] = min(absint($args['postsPerPage']), 100);
         }
+
+        // Build query args (reuse existing method which sanitizes inputs)
+        $query_args = $this->build_custom_query($args);
 
         // Override the paged parameter with the requested page
         $query_args['paged'] = $page;
@@ -1019,6 +1035,9 @@ class Query_Loop extends Module_Base
         if (!isset($available_templates[$selected_template])) {
             $selected_template = 'default';
         }
+
+        // Prime thumbnail cache in a single query to avoid N+1
+        \update_post_thumbnail_cache($query);
 
         $html = '';
         while ($query->have_posts()) {
