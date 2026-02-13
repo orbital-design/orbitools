@@ -727,8 +727,11 @@ class Query_Loop extends Module_Base
         $html .= ' data-rest-url="' . \esc_attr(\rest_url('orbitools/v1/query-loop/load-more')) . '"';
         $html .= ' data-nonce="' . \esc_attr(\wp_create_nonce('wp_rest')) . '"';
         $html .= '>';
+        $custom_text = $query_parameters['args']['loadMoreText'] ?? '';
+        $button_text = !empty($custom_text) ? $custom_text : \__('Load more', 'orbitools');
+
         $html .= '<button type="button" class="orb-query-loop__load-more-btn">';
-        $html .= \esc_html__('Load more', 'orbitools');
+        $html .= \esc_html($button_text);
         $html .= '</button>';
         $html .= '</div>';
 

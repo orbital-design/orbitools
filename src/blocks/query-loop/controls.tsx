@@ -61,6 +61,7 @@ export default function QueryLoopControls({ attributes, setAttributes }: QueryLo
     const noPaging = params?.args?.noPaging || QUERY_DEFAULTS.noPaging;
     const paged = params?.args?.paged || QUERY_DEFAULTS.paged;
     const paginationType = params?.args?.paginationType || QUERY_DEFAULTS.paginationType;
+    const loadMoreText = params?.args?.loadMoreText ?? QUERY_DEFAULTS.loadMoreText;
     const searchKeyword = params?.args?.searchKeyword || QUERY_DEFAULTS.searchKeyword;
     const metaQuery = params?.args?.meta_query?.queries || QUERY_DEFAULTS.metaQuery;
     const metaQueryRelation = params?.args?.meta_query?.relation || QUERY_DEFAULTS.metaQueryRelation;
@@ -122,6 +123,7 @@ export default function QueryLoopControls({ attributes, setAttributes }: QueryLo
                     noPaging: QUERY_DEFAULTS.noPaging,
                     paged: QUERY_DEFAULTS.paged,
                     paginationType: QUERY_DEFAULTS.paginationType,
+                    loadMoreText: QUERY_DEFAULTS.loadMoreText,
                     searchKeyword: QUERY_DEFAULTS.searchKeyword,
                     specificPost: 0, // Add this missing default
                     includePosts: QUERY_DEFAULTS.includePosts,
@@ -354,6 +356,7 @@ export default function QueryLoopControls({ attributes, setAttributes }: QueryLo
             case 'noPaging':
             case 'paged':
             case 'paginationType':
+            case 'loadMoreText':
             case 'searchKeyword':
             case 'includePosts':
             case 'excludePosts':
@@ -441,6 +444,7 @@ export default function QueryLoopControls({ attributes, setAttributes }: QueryLo
         updateAttribute('noPaging', QUERY_DEFAULTS.noPaging);
         updateAttribute('paged', QUERY_DEFAULTS.paged);
         updateAttribute('paginationType', QUERY_DEFAULTS.paginationType);
+        updateAttribute('loadMoreText', QUERY_DEFAULTS.loadMoreText);
         updateAttribute('searchKeyword', QUERY_DEFAULTS.searchKeyword);
         updateAttribute('metaQuery', QUERY_DEFAULTS.metaQuery);
         updateAttribute('metaQueryRelation', QUERY_DEFAULTS.metaQueryRelation);
@@ -492,6 +496,9 @@ export default function QueryLoopControls({ attributes, setAttributes }: QueryLo
                 break;
             case 'paginationType':
                 currentValue = params.args?.paginationType;
+                break;
+            case 'loadMoreText':
+                currentValue = params.args?.loadMoreText;
                 break;
             case 'searchKeyword':
                 currentValue = params.args?.searchKeyword;
@@ -682,6 +689,7 @@ export default function QueryLoopControls({ attributes, setAttributes }: QueryLo
                                 updateAttribute('noPaging', QUERY_DEFAULTS.noPaging);
                                 updateAttribute('paged', QUERY_DEFAULTS.paged);
                                 updateAttribute('paginationType', QUERY_DEFAULTS.paginationType);
+                                updateAttribute('loadMoreText', QUERY_DEFAULTS.loadMoreText);
                                 updateAttribute('includePosts', QUERY_DEFAULTS.includePosts);
                                 updateAttribute('excludePosts', QUERY_DEFAULTS.excludePosts);
                                 updateAttribute('parentPostsOnly', QUERY_DEFAULTS.parentPostsOnly);
@@ -775,6 +783,7 @@ export default function QueryLoopControls({ attributes, setAttributes }: QueryLo
                                 hasNonDefaultValue('noPaging', QUERY_DEFAULTS.noPaging) ||
                                 hasNonDefaultValue('paged', QUERY_DEFAULTS.paged) ||
                                 hasNonDefaultValue('paginationType', QUERY_DEFAULTS.paginationType) ||
+                                hasNonDefaultValue('loadMoreText', QUERY_DEFAULTS.loadMoreText) ||
                                 hasNonDefaultValue('offset', QUERY_DEFAULTS.offset)
                             }
                             label={__('Pagination', 'orbitools')}
@@ -783,6 +792,7 @@ export default function QueryLoopControls({ attributes, setAttributes }: QueryLo
                                 updateAttribute('noPaging', QUERY_DEFAULTS.noPaging);
                                 updateAttribute('paged', QUERY_DEFAULTS.paged);
                                 updateAttribute('paginationType', QUERY_DEFAULTS.paginationType);
+                                updateAttribute('loadMoreText', QUERY_DEFAULTS.loadMoreText);
                                 updateAttribute('offset', QUERY_DEFAULTS.offset);
                             }}
                             panelId="query-loop-panel"
@@ -816,16 +826,27 @@ export default function QueryLoopControls({ attributes, setAttributes }: QueryLo
                                             __nextHasNoMarginBottom={true}
                                         />
                                         {paged && (
-                                            <SelectControl
-                                                label={__('Pagination type', 'orbitools')}
-                                                value={paginationType}
-                                                options={[
-                                                    { label: __('Page numbers', 'orbitools'), value: 'pages' },
-                                                    { label: __('Load more button', 'orbitools'), value: 'load-more' },
-                                                ]}
-                                                onChange={(value) => updateAttribute('paginationType', value)}
-                                                __nextHasNoMarginBottom={true}
-                                            />
+                                            <>
+                                                <SelectControl
+                                                    label={__('Pagination type', 'orbitools')}
+                                                    value={paginationType}
+                                                    options={[
+                                                        { label: __('Page numbers', 'orbitools'), value: 'pages' },
+                                                        { label: __('Load more button', 'orbitools'), value: 'load-more' },
+                                                    ]}
+                                                    onChange={(value) => updateAttribute('paginationType', value)}
+                                                    __nextHasNoMarginBottom={true}
+                                                />
+                                                {paginationType === 'load-more' && (
+                                                    <TextControl
+                                                        label={__('Button text', 'orbitools')}
+                                                        placeholder={__('Load more', 'orbitools')}
+                                                        value={loadMoreText}
+                                                        onChange={(value) => updateAttribute('loadMoreText', value)}
+                                                        __nextHasNoMarginBottom={true}
+                                                    />
+                                                )}
+                                            </>
                                         )}
                                         <RangeControl
                                             label={__('Offset', 'orbitools')}

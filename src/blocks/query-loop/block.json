@@ -29,6 +29,7 @@
                     "noPaging": false,
                     "paged": false,
                     "paginationType": "pages",
+                    "loadMoreText": "",
                     "offset": 0,
                     "searchKeyword": "",
                     "specificPost": 0,
