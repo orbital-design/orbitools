@@ -593,7 +593,7 @@ export default function QueryLoopControls({ attributes, setAttributes }: QueryLo
     // Prepare taxonomy options - all available taxonomies
     const allTaxonomyOptions = availableTaxonomies
         .filter((tax: any) => tax.visibility && tax.visibility.publicly_queryable)
-        .map((tax: any) => tax.slug);
+        .map((tax: any) => ({ label: tax.name, value: tax.slug }));
 
     // Prepare taxonomy options filtered by selected post types
     const getFilteredTaxonomyOptions = () => {
@@ -605,7 +605,7 @@ export default function QueryLoopControls({ attributes, setAttributes }: QueryLo
         }
 
         // Get taxonomies that are attached to the selected post types
-        const filteredTaxonomies = availableTaxonomies
+        return availableTaxonomies
             .filter((tax: any) => {
                 if (!tax.visibility || !tax.visibility.publicly_queryable) {
                     return false;
@@ -618,9 +618,7 @@ export default function QueryLoopControls({ attributes, setAttributes }: QueryLo
                     return objectTypes.includes(postType);
                 });
             })
-            .map((tax: any) => tax.slug);
-
-        return filteredTaxonomies;
+            .map((tax: any) => ({ label: tax.name, value: tax.slug }));
     };
 
     const taxonomyOptions = getFilteredTaxonomyOptions();
@@ -1101,7 +1099,7 @@ export default function QueryLoopControls({ attributes, setAttributes }: QueryLo
                                         value={rule.taxonomy || ''}
                                         options={[
                                             { label: __('-- Select Taxonomy --', 'orbitools'), value: '' },
-                                            ...taxonomyOptions.map((tax: string) => ({ label: tax, value: tax }))
+                                            ...taxonomyOptions
                                         ]}
                                         onChange={(value) => {
                                             const newTaxQuery = [...taxQuery];
