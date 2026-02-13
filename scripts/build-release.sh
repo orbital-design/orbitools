@@ -105,6 +105,12 @@ echo "Restoring dev dependencies..."
 cd "$PLUGIN_DIR"
 composer install --quiet 2>/dev/null || true
 
+# Commit release-modified files
+echo "Committing release changes..."
+cd "$PLUGIN_DIR"
+git add orbitools.php package.json vendor/composer/installed.php
+git commit -m "Release v$VERSION" --quiet 2>/dev/null || true
+
 # Output results
 ZIP_SIZE=$(du -h "$ZIP_FILE" | cut -f1)
 FILE_COUNT=$(unzip -l "$ZIP_FILE" | tail -1 | awk '{print $2}')

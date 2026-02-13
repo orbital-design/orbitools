@@ -1,6 +1,6 @@
 {
   "name": "orbitools-plugin",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "WordPress Orbitools Plugin with Layout Blocks",
   "main": "build/index.js",
   "scripts": {
