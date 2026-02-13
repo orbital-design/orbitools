@@ -10,7 +10,14 @@
     "start": "wp-scripts start --config webpack.blocks.js",
     "start:blocks": "wp-scripts start --config webpack.blocks.js",
     "start:assets": "webpack --config webpack.assets.js --watch",
-    "dev": "npm-run-all --parallel start:blocks start:assets"
+    "dev": "npm-run-all --parallel start:blocks start:assets",
+    "bump:patch": "./scripts/bump-version.sh patch",
+    "bump:minor": "./scripts/bump-version.sh minor",
+    "bump:major": "./scripts/bump-version.sh major",
+    "release": "./scripts/build-release.sh",
+    "release:patch": "./scripts/bump-version.sh patch && ./scripts/build-release.sh",
+    "release:minor": "./scripts/bump-version.sh minor && ./scripts/build-release.sh",
+    "release:major": "./scripts/bump-version.sh major && ./scripts/build-release.sh"
   },
   "devDependencies": {
     "@babel/core": "^7.22.0",
