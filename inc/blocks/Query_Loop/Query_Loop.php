@@ -171,11 +171,14 @@ class Query_Loop extends Module_Base
         }
         
         // Default inherit query - uses global query context from parent blocks
+        $paged = \get_query_var('paged') ? \get_query_var('paged') : (\get_query_var('page') ? \get_query_var('page') : 1);
+
         $query_args = [
             'post_type' => $context['postType'] ?? 'page',
             'posts_per_page' => isset($context['query']['perPage']) ? $context['query']['perPage'] : 10,
             'post_status' => 'publish',
             'no_found_rows' => false, // Enable pagination
+            'paged' => $paged,
         ];
 
         // Apply inherited query modifications from context
@@ -253,6 +256,12 @@ class Query_Loop extends Module_Base
             $query_args['nopaging'] = true;
         } else {
             $query_args['posts_per_page'] = $args['postsPerPage'] ?? 10;
+
+            // Set current page for pagination
+            if (!empty($args['paged'])) {
+                $paged = \get_query_var('paged') ? \get_query_var('paged') : (\get_query_var('page') ? \get_query_var('page') : 1);
+                $query_args['paged'] = $paged;
+            }
         }
 
         // Handle offset
@@ -665,9 +674,11 @@ class Query_Loop extends Module_Base
             return '';
         }
 
+        $paged = \get_query_var('paged') ? \get_query_var('paged') : (\get_query_var('page') ? \get_query_var('page') : 1);
+
         $pagination = \paginate_links([
             'total' => $query->max_num_pages,
-            'current' => max(1, \get_query_var('paged')),
+            'current' => max(1, $paged),
             'prev_text' => \__('&laquo; Previous', 'orbitools'),
             'next_text' => \__('Next &raquo;', 'orbitools'),
             'type' => 'array'
