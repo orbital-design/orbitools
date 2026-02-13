@@ -30,6 +30,7 @@ export interface QueryLoopAttributes {
             postsPerPage?: number;
             noPaging?: boolean;
             paged?: boolean;
+            paginationType?: string;
             offset?: number;
             searchKeyword?: string;
             specificPost?: number;
@@ -99,6 +100,7 @@ export const QUERY_DEFAULTS = {
     offset: 0,
     noPaging: false,
     paged: false,
+    paginationType: 'pages',
     searchKeyword: '',
     metaQuery: [] as Array<{ key: string; value: string; compare: string; }>,
     metaQueryRelation: 'AND',

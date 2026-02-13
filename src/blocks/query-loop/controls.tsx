@@ -60,6 +60,7 @@ export default function QueryLoopControls({ attributes, setAttributes }: QueryLo
     const offset = params?.args?.offset || QUERY_DEFAULTS.offset;
     const noPaging = params?.args?.noPaging || QUERY_DEFAULTS.noPaging;
     const paged = params?.args?.paged || QUERY_DEFAULTS.paged;
+    const paginationType = params?.args?.paginationType || QUERY_DEFAULTS.paginationType;
     const searchKeyword = params?.args?.searchKeyword || QUERY_DEFAULTS.searchKeyword;
     const metaQuery = params?.args?.meta_query?.queries || QUERY_DEFAULTS.metaQuery;
     const metaQueryRelation = params?.args?.meta_query?.relation || QUERY_DEFAULTS.metaQueryRelation;
@@ -120,6 +121,7 @@ export default function QueryLoopControls({ attributes, setAttributes }: QueryLo
                     offset: QUERY_DEFAULTS.offset,
                     noPaging: QUERY_DEFAULTS.noPaging,
                     paged: QUERY_DEFAULTS.paged,
+                    paginationType: QUERY_DEFAULTS.paginationType,
                     searchKeyword: QUERY_DEFAULTS.searchKeyword,
                     specificPost: 0, // Add this missing default
                     includePosts: QUERY_DEFAULTS.includePosts,
@@ -351,6 +353,7 @@ export default function QueryLoopControls({ attributes, setAttributes }: QueryLo
             case 'offset':
             case 'noPaging':
             case 'paged':
+            case 'paginationType':
             case 'searchKeyword':
             case 'includePosts':
             case 'excludePosts':
@@ -437,6 +440,7 @@ export default function QueryLoopControls({ attributes, setAttributes }: QueryLo
         updateAttribute('offset', QUERY_DEFAULTS.offset);
         updateAttribute('noPaging', QUERY_DEFAULTS.noPaging);
         updateAttribute('paged', QUERY_DEFAULTS.paged);
+        updateAttribute('paginationType', QUERY_DEFAULTS.paginationType);
         updateAttribute('searchKeyword', QUERY_DEFAULTS.searchKeyword);
         updateAttribute('metaQuery', QUERY_DEFAULTS.metaQuery);
         updateAttribute('metaQueryRelation', QUERY_DEFAULTS.metaQueryRelation);
@@ -485,6 +489,9 @@ export default function QueryLoopControls({ attributes, setAttributes }: QueryLo
                 break;
             case 'paged':
                 currentValue = params.args?.paged;
+                break;
+            case 'paginationType':
+                currentValue = params.args?.paginationType;
                 break;
             case 'searchKeyword':
                 currentValue = params.args?.searchKeyword;
@@ -674,6 +681,7 @@ export default function QueryLoopControls({ attributes, setAttributes }: QueryLo
                                 updateAttribute('offset', QUERY_DEFAULTS.offset);
                                 updateAttribute('noPaging', QUERY_DEFAULTS.noPaging);
                                 updateAttribute('paged', QUERY_DEFAULTS.paged);
+                                updateAttribute('paginationType', QUERY_DEFAULTS.paginationType);
                                 updateAttribute('includePosts', QUERY_DEFAULTS.includePosts);
                                 updateAttribute('excludePosts', QUERY_DEFAULTS.excludePosts);
                                 updateAttribute('parentPostsOnly', QUERY_DEFAULTS.parentPostsOnly);
@@ -766,6 +774,7 @@ export default function QueryLoopControls({ attributes, setAttributes }: QueryLo
                                 hasNonDefaultValue('postsPerPage', QUERY_DEFAULTS.postsPerPage) ||
                                 hasNonDefaultValue('noPaging', QUERY_DEFAULTS.noPaging) ||
                                 hasNonDefaultValue('paged', QUERY_DEFAULTS.paged) ||
+                                hasNonDefaultValue('paginationType', QUERY_DEFAULTS.paginationType) ||
                                 hasNonDefaultValue('offset', QUERY_DEFAULTS.offset)
                             }
                             label={__('Pagination', 'orbitools')}
@@ -773,6 +782,7 @@ export default function QueryLoopControls({ attributes, setAttributes }: QueryLo
                                 updateAttribute('postsPerPage', QUERY_DEFAULTS.postsPerPage);
                                 updateAttribute('noPaging', QUERY_DEFAULTS.noPaging);
                                 updateAttribute('paged', QUERY_DEFAULTS.paged);
+                                updateAttribute('paginationType', QUERY_DEFAULTS.paginationType);
                                 updateAttribute('offset', QUERY_DEFAULTS.offset);
                             }}
                             panelId="query-loop-panel"
@@ -805,6 +815,18 @@ export default function QueryLoopControls({ attributes, setAttributes }: QueryLo
                                             onChange={(value) => updateAttribute('paged', value)}
                                             __nextHasNoMarginBottom={true}
                                         />
+                                        {paged && (
+                                            <SelectControl
+                                                label={__('Pagination type', 'orbitools')}
+                                                value={paginationType}
+                                                options={[
+                                                    { label: __('Page numbers', 'orbitools'), value: 'pages' },
+                                                    { label: __('Load more button', 'orbitools'), value: 'load-more' },
+                                                ]}
+                                                onChange={(value) => updateAttribute('paginationType', value)}
+                                                __nextHasNoMarginBottom={true}
+                                            />
+                                        )}
                                         <RangeControl
                                             label={__('Offset', 'orbitools')}
                                             help={__('Number of posts to skip', 'orbitools')}

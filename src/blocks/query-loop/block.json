@@ -28,6 +28,7 @@
                     "postsPerPage": 10,
                     "noPaging": false,
                     "paged": false,
+                    "paginationType": "pages",
                     "offset": 0,
                     "searchKeyword": "",
                     "specificPost": 0,
@@ -70,6 +71,7 @@
     },
     "textdomain": "orbitools",
     "editorScript": "file:./index.js",
+    "script": "file:./frontend.js",
     "editorStyle": "file:./editor.css",
     "style": "file:./index.css"
 }

@@ -210,6 +210,37 @@ $elem_base: 'orb-query-loop';
     }
 
     // =======================
+    // Load More Button
+    // =======================
+
+    .#{$elem_base}__load-more {
+        margin-top: 2rem;
+        display: flex;
+        justify-content: center;
+    }
+
+    .#{$elem_base}__load-more-btn {
+        padding: 0.625rem 1.5rem;
+        border: 1px solid #ddd;
+        background: #fff;
+        color: #333;
+        font-size: 0.875rem;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+
+        &:hover {
+            background: #f5f5f5;
+            border-color: #999;
+        }
+
+        &.is-loading {
+            opacity: 0.6;
+            cursor: wait;
+        }
+    }
+
+    // =======================
     // Frontend Filters & Sorting
     // =======================
 

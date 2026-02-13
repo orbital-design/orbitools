@@ -525,9 +525,14 @@ class Query_Loop extends Module_Base
         // Add pagination if needed - check both noPaging and paged settings
         $noPaging = $query_parameters['args']['noPaging'] ?? false;
         $paged = $query_parameters['args']['paged'] ?? false;
-        
+        $pagination_type = $query_parameters['args']['paginationType'] ?? 'pages';
+
         if (!$noPaging && $paged) {
-            $html .= $this->render_pagination($query);
+            if ($pagination_type === 'load-more') {
+                $html .= $this->render_load_more($query, $query_parameters);
+            } else {
+                $html .= $this->render_pagination($query);
+            }
         }
         
         // Close main container
@@ -696,6 +701,36 @@ class Query_Loop extends Module_Base
         }
         
         $html .= '</ul></nav>';
+
+        return $html;
+    }
+
+    /**
+     * Render load more button
+     *
+     * @param \WP_Query $query Query object
+     * @param array $query_parameters Full query parameters for the AJAX request
+     * @return string Load more button HTML
+     */
+    private function render_load_more(\WP_Query $query, array $query_parameters): string
+    {
+        if ($query->max_num_pages <= 1) {
+            return '';
+        }
+
+        $paged = \get_query_var('paged') ? \get_query_var('paged') : (\get_query_var('page') ? \get_query_var('page') : 1);
+
+        $html = '<div class="orb-query-loop__load-more"';
+        $html .= ' data-page="' . \esc_attr($paged) . '"';
+        $html .= ' data-max-pages="' . \esc_attr($query->max_num_pages) . '"';
+        $html .= ' data-query-params="' . \esc_attr(\wp_json_encode($query_parameters)) . '"';
+        $html .= ' data-rest-url="' . \esc_attr(\rest_url('orbitools/v1/query-loop/load-more')) . '"';
+        $html .= ' data-nonce="' . \esc_attr(\wp_create_nonce('wp_rest')) . '"';
+        $html .= '>';
+        $html .= '<button type="button" class="orb-query-loop__load-more-btn">';
+        $html .= \esc_html__('Load more', 'orbitools');
+        $html .= '</button>';
+        $html .= '</div>';
 
         return $html;
     }
@@ -898,6 +933,23 @@ class Query_Loop extends Module_Base
             ]
         ]);
 
+        \register_rest_route('orbitools/v1', '/query-loop/load-more', [
+            'methods' => 'POST',
+            'callback' => [$this, 'load_more_rest'],
+            'permission_callback' => '__return_true',
+            'args' => [
+                'query_parameters' => [
+                    'required' => true,
+                    'type' => 'object',
+                ],
+                'page' => [
+                    'required' => true,
+                    'type' => 'integer',
+                    'sanitize_callback' => 'absint',
+                ],
+            ],
+        ]);
+
         \register_rest_route('orbitools/v1', '/query-loop/message-templates', [
             'methods' => 'GET',
             'callback' => [$this, 'get_message_template_options_rest'],
@@ -912,6 +964,70 @@ class Query_Loop extends Module_Base
                 ]
             ]
         ]);
+    }
+
+    /**
+     * REST API callback for load more posts
+     *
+     * @param \WP_REST_Request $request
+     * @return \WP_REST_Response
+     */
+    public function load_more_rest(\WP_REST_Request $request): \WP_REST_Response
+    {
+        $query_parameters = $request->get_param('query_parameters');
+        $page = $request->get_param('page');
+
+        if (empty($query_parameters) || !$page) {
+            return new \WP_REST_Response(['html' => '', 'has_more' => false], 400);
+        }
+
+        $query_type = $query_parameters['type'] ?? 'custom';
+        $args = $query_parameters['args'] ?? [];
+
+        // Build query args (reuse existing method for custom queries)
+        if ($query_type === 'custom') {
+            $query_args = $this->build_custom_query($args);
+        } else {
+            // For inherit type via load-more, treat as custom with provided args
+            $query_args = $this->build_custom_query($args);
+        }
+
+        // Override the paged parameter with the requested page
+        $query_args['paged'] = $page;
+
+        $query = $this->execute_query($query_args);
+
+        if (!$query || !$query->have_posts()) {
+            return new \WP_REST_Response(['html' => '', 'has_more' => false], 200);
+        }
+
+        // Get display settings
+        $display = $query_parameters['display'] ?? [];
+        $layout = $display['layout'] ?? [];
+        $layout_type = $layout['type'] ?? 'grid';
+        $grid_columns = $layout['gridColumns'] ?? '3';
+        $selected_template = $display['template'] ?? 'default';
+
+        if (!is_string($selected_template) && !is_numeric($selected_template)) {
+            $selected_template = 'default';
+        }
+
+        $available_templates = $this->get_available_templates($layout_type);
+        if (!isset($available_templates[$selected_template])) {
+            $selected_template = 'default';
+        }
+
+        $html = '';
+        while ($query->have_posts()) {
+            $query->the_post();
+            $html .= $this->render_post_item(\get_post(), $layout_type, $selected_template, $grid_columns);
+        }
+        \wp_reset_postdata();
+
+        return new \WP_REST_Response([
+            'html' => $html,
+            'has_more' => $page < $query->max_num_pages,
+        ], 200);
     }
 
     /**

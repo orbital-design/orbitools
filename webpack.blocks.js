@@ -15,6 +15,7 @@ const blockEntries = {
     'blocks/entry/editor': path.resolve(process.cwd(), 'src', 'blocks', 'entry', 'editor.scss'),
     'blocks/query-loop/index': path.resolve(process.cwd(), 'src', 'blocks', 'query-loop', 'index.tsx'),
     'blocks/query-loop/editor': path.resolve(process.cwd(), 'src', 'blocks', 'query-loop', 'editor.scss'),
+    'blocks/query-loop/frontend': path.resolve(process.cwd(), 'src', 'blocks', 'query-loop', 'frontend.js'),
     'blocks/read-more/index': path.resolve(process.cwd(), 'src', 'blocks', 'read-more', 'index.tsx'),
     'blocks/read-more/editor': path.resolve(process.cwd(), 'src', 'blocks', 'read-more', 'editor.scss'),
     'blocks/read-more/frontend': path.resolve(process.cwd(), 'src', 'blocks', 'read-more', 'frontend.js'),
