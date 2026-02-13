@@ -35,6 +35,7 @@ import FormTokenDropdown from './components/FormTokenDropdown';
 import QueryTemplateControl from './components/QueryTemplateControl';
 import MessageTemplateControl from './components/MessageTemplateControl';
 import PostSelector from './components/PostSelector';
+import TaxonomyTermsSelector from './components/TaxonomyTermsSelector';
 import type { QueryLoopAttributes, QueryLoopControlsProps } from './types';
 import { QUERY_DEFAULTS } from './types';
 
@@ -1109,18 +1110,14 @@ export default function QueryLoopControls({ attributes, setAttributes }: QueryLo
                                         __nextHasNoMarginBottom={true}
                                     />
                                     {rule.taxonomy && (
-                                        <TextControl
-                                            label={__('Terms', 'orbitools')}
-                                            help={__('Comma-separated term IDs or slugs', 'orbitools')}
-                                            value={rule.terms ? rule.terms.join(',') : ''}
-                                            onChange={(value) => {
-                                                const terms = value.split(',').map(term => term.trim()).filter(term => term);
+                                        <TaxonomyTermsSelector
+                                            taxonomy={rule.taxonomy}
+                                            value={rule.terms || []}
+                                            onChange={(termIds) => {
                                                 const newTaxQuery = [...taxQuery];
-                                                newTaxQuery[index] = { ...rule, terms: terms };
+                                                newTaxQuery[index] = { ...rule, terms: termIds };
                                                 updateAttribute('taxQuery', newTaxQuery);
                                             }}
-                                            placeholder={__('e.g. 1,2,3 or slug1,slug2', 'orbitools')}
-                                            __nextHasNoMarginBottom={true}
                                         />
                                     )}
                                     {rule.taxonomy && (
