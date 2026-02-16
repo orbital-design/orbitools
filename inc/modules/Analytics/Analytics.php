@@ -229,7 +229,8 @@ class Analytics extends Module_Base
     }
 
     /**
-     * Render GA4 head code
+     * Render GA4 head code — delay-loads the library until first user
+     * interaction or 3.5 s timeout to eliminate render-blocking JS.
      */
     private function render_ga4_head()
     {
@@ -241,33 +242,21 @@ class Analytics extends Module_Base
 
         $config = $this->get_ga4_config();
 ?>
-<!-- Google Analytics 4 -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=<?php echo esc_attr($measurement_id); ?>"></script>
+<!-- Google Analytics 4 (delay-loaded) -->
 <script>
-window.dataLayer = window.dataLayer || [];
-
-function gtag() {
-    dataLayer.push(arguments);
-}
-
+window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}
 <?php if ($this->get_analytics_setting('analytics_consent_mode')): ?>
-// Consent Mode v2
-gtag('consent', 'default', {
-    'ad_storage': 'denied',
-    'ad_user_data': 'denied',
-    'ad_personalization': 'denied',
-    'analytics_storage': 'denied'
-});
+gtag('consent','default',{'ad_storage':'denied','ad_user_data':'denied','ad_personalization':'denied','analytics_storage':'denied'});
 <?php endif; ?>
-
-gtag('js', new Date());
-gtag('config', '<?php echo esc_js($measurement_id); ?>', <?php echo wp_json_encode($config); ?>);
+gtag('js',new Date());gtag('config','<?php echo esc_js($measurement_id); ?>',<?php echo wp_json_encode($config); ?>);
+(function(){var d=false;function l(){if(d)return;d=true;var s=document.createElement('script');s.src='https://www.googletagmanager.com/gtag/js?id=<?php echo esc_attr($measurement_id); ?>';document.head.appendChild(s);}['click','scroll','keypress','touchstart'].forEach(function(e){document.addEventListener(e,l,{once:true,passive:true});});setTimeout(l,3500);})();
 </script>
 <?php
     }
 
     /**
-     * Render GTM head code
+     * Render GTM head code — delay-loads the library until first user
+     * interaction or 3.5 s timeout to eliminate render-blocking JS.
      */
     private function render_gtm_head()
     {
@@ -277,37 +266,15 @@ gtag('config', '<?php echo esc_js($measurement_id); ?>', <?php echo wp_json_enco
             return;
         }
     ?>
-<!-- Google Tag Manager -->
+<!-- Google Tag Manager (delay-loaded) -->
 <script>
+window.dataLayer=window.dataLayer||[];
 <?php if ($this->get_analytics_setting('analytics_consent_mode')): ?>
-// Consent Mode v2 for GTM
-window.dataLayer = window.dataLayer || [];
-
-function gtag() {
-    dataLayer.push(arguments);
-}
-gtag('consent', 'default', {
-    'ad_storage': 'denied',
-    'ad_user_data': 'denied',
-    'ad_personalization': 'denied',
-    'analytics_storage': 'denied'
-});
+function gtag(){dataLayer.push(arguments);}
+gtag('consent','default',{'ad_storage':'denied','ad_user_data':'denied','ad_personalization':'denied','analytics_storage':'denied'});
 <?php endif; ?>
-
-    (function(w, d, s, l, i) {
-        w[l] = w[l] || [];
-        w[l].push({
-            'gtm.start': new Date().getTime(),
-            event: 'gtm.js'
-        });
-        var f = d.getElementsByTagName(s)[0],
-            j = d.createElement(s),
-            dl = l != 'dataLayer' ? '&l=' + l : '';
-        j.async = true;
-        j.src =
-            'https://www.googletagmanager.com/gtm.js?id=' + i + dl;
-        f.parentNode.insertBefore(j, f);
-    })(window, document, 'script', 'dataLayer', '<?php echo esc_js($container_id); ?>');
+dataLayer.push({'gtm.start':new Date().getTime(),event:'gtm.js'});
+(function(){var d=false;function l(){if(d)return;d=true;var s=document.createElement('script');s.async=true;s.src='https://www.googletagmanager.com/gtm.js?id=<?php echo esc_js($container_id); ?>';document.head.appendChild(s);}['click','scroll','keypress','touchstart'].forEach(function(e){document.addEventListener(e,l,{once:true,passive:true});});setTimeout(l,3500);})();
 </script>
 <!-- End Google Tag Manager -->
 <?php
@@ -344,17 +311,13 @@ gtag('consent', 'default', {
         $analytics_type = $this->get_analytics_setting('analytics_type', 'ga4');
     ?>
 <script>
-document.addEventListener('DOMContentLoaded', function() {
+(window.requestIdleCallback||function(cb){setTimeout(cb,200)})(function() {
     <?php if (Settings_Helper::is_custom_event_enabled('downloads')): ?>
-    // Track file downloads
     document.addEventListener('click', function(e) {
-        const link = e.target.closest('a[href]');
+        var link = e.target.closest('a[href]');
         if (!link) return;
-
-        const href = link.getAttribute('href');
-        const fileExtensions = /\.(pdf|doc|docx|xls|xlsx|ppt|pptx|zip|rar|mp3|mp4|avi|mov)$/i;
-
-        if (fileExtensions.test(href)) {
+        var href = link.getAttribute('href');
+        if (/\.(pdf|doc|docx|xls|xlsx|ppt|pptx|zip|rar|mp3|mp4|avi|mov)$/i.test(href)) {
             <?php echo $this->get_tracking_code_js('file_download', [
                                 'file_name' => 'href',
                                 'link_text' => 'link.textContent.trim()'
@@ -364,15 +327,11 @@ document.addEventListener('DOMContentLoaded', function() {
     <?php endif; ?>
 
     <?php if (Settings_Helper::is_custom_event_enabled('outbound')): ?>
-    // Track outbound links
     document.addEventListener('click', function(e) {
-        const link = e.target.closest('a[href]');
+        var link = e.target.closest('a[href]');
         if (!link) return;
-
-        const href = link.getAttribute('href');
-        const isExternal = href && (href.startsWith('http') && !href.includes(location.hostname));
-
-        if (isExternal) {
+        var href = link.getAttribute('href');
+        if (href && href.indexOf('http') === 0 && href.indexOf(location.hostname) === -1) {
             <?php echo $this->get_tracking_code_js('click', [
                                 'event_category' => '"outbound"',
                                 'event_label' => 'href',
@@ -383,13 +342,11 @@ document.addEventListener('DOMContentLoaded', function() {
     <?php endif; ?>
 
     <?php if (Settings_Helper::is_custom_event_enabled('scroll')): ?>
-    // Track scroll depth
-    let scrollTracked = [];
+    var scrollTracked = [];
     window.addEventListener('scroll', function() {
-        const scrollPercent = Math.round((window.scrollY / (document.documentElement.scrollHeight - window.innerHeight)) * 100);
-
-        [25, 50, 75, 100].forEach(threshold => {
-            if (scrollPercent >= threshold && !scrollTracked.includes(threshold)) {
+        var scrollPercent = Math.round((window.scrollY / (document.documentElement.scrollHeight - window.innerHeight)) * 100);
+        [25, 50, 75, 100].forEach(function(threshold) {
+            if (scrollPercent >= threshold && scrollTracked.indexOf(threshold) === -1) {
                 scrollTracked.push(threshold);
                 <?php echo $this->get_tracking_code_js('scroll', [
                                     'event_category' => '"engagement"',
@@ -397,15 +354,14 @@ document.addEventListener('DOMContentLoaded', function() {
                                 ], $analytics_type); ?>
             }
         });
-    });
+    }, {passive: true});
     <?php endif; ?>
 
     <?php if (Settings_Helper::is_custom_event_enabled('forms')): ?>
-    // Track form submissions
     document.addEventListener('submit', function(e) {
-        const form = e.target;
+        var form = e.target;
         if (form.tagName === 'FORM') {
-            const formId = form.id || form.className || 'unknown';
+            var formId = form.id || form.className || 'unknown';
             <?php echo $this->get_tracking_code_js('form_submit', [
                                 'event_category' => '"engagement"',
                                 'event_label' => 'formId'
@@ -699,21 +655,20 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (!$this->should_track()) return;
         ?>
 <script>
-// Core Web Vitals tracking
-if ('PerformanceObserver' in window) {
-    new PerformanceObserver((list) => {
-        const entries = list.getEntries();
-        const lastEntry = entries[entries.length - 1];
-        if (typeof gtag !== 'undefined') {
-            gtag('event', 'timing_complete', {
-                'name': 'LCP',
-                'value': Math.round(lastEntry.startTime)
-            });
-        }
-    }).observe({
-        entryTypes: ['largest-contentful-paint']
-    });
-}
+(window.requestIdleCallback||function(cb){setTimeout(cb,200)})(function(){
+    if ('PerformanceObserver' in window) {
+        new PerformanceObserver(function(list) {
+            var entries = list.getEntries();
+            var lastEntry = entries[entries.length - 1];
+            if (typeof gtag !== 'undefined') {
+                gtag('event', 'timing_complete', {
+                    'name': 'LCP',
+                    'value': Math.round(lastEntry.startTime)
+                });
+            }
+        }).observe({entryTypes: ['largest-contentful-paint']});
+    }
+});
 </script>
 <?php
             }, 999);
