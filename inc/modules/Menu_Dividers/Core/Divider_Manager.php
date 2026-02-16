@@ -54,13 +54,15 @@ class Divider_Manager
     public function handle_add_divider_ajax()
     {
         // Verify nonce
-        if (!wp_verify_nonce($_POST['nonce'], 'add-divider-nonce')) {
+        if (!wp_verify_nonce($_POST['nonce'] ?? '', 'add-divider-nonce')) {
             wp_send_json_error(__('Security check failed', 'orbitools'));
+            return;
         }
 
         // Check permissions
         if (!current_user_can('edit_theme_options')) {
             wp_send_json_error(__('You do not have permission to do this', 'orbitools'));
+            return;
         }
 
         $menu_id = isset($_POST['menu_id']) ? intval($_POST['menu_id']) : 0;

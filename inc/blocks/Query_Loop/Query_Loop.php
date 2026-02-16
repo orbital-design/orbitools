@@ -281,13 +281,15 @@ class Query_Loop extends Module_Base
             $query_args['offset'] = $args['offset'];
         }
 
-        // Handle ordering
-        if (isset($args['orderby'])) {
+        // Handle ordering (whitelist valid values)
+        $allowed_orderby = ['date', 'ID', 'title', 'name', 'modified', 'rand', 'menu_order', 'comment_count', 'relevance', 'meta_value', 'meta_value_num'];
+        if (isset($args['orderby']) && in_array($args['orderby'], $allowed_orderby, true)) {
             $query_args['orderby'] = $args['orderby'];
         }
-        
-        if (isset($args['order'])) {
-            $query_args['order'] = $args['order'];
+
+        $allowed_order = ['ASC', 'DESC'];
+        if (isset($args['order']) && in_array(strtoupper($args['order']), $allowed_order, true)) {
+            $query_args['order'] = strtoupper($args['order']);
         }
 
         // Handle search keyword

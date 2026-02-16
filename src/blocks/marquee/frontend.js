@@ -446,96 +446,57 @@
             if (!this.cachedDimensions) return;
 
             const { contentWidth, contentHeight } = this.cachedDimensions;
+            const contentDim = isHorizontal ? config.contentWidth : config.contentHeight;
+            const viewportDim = isHorizontal ? contentWidth : contentHeight;
 
-            // Check each item for repositioning
+            // Single pass: compute min/max positions and collect items needing repositioning
+            let minPos = Infinity;
+            let maxPos = -Infinity;
+            const itemsToReposition = [];
+
             this.items.forEach((item) => {
-                const itemPos = this.itemPositions.get(item) || 0;
-                let needsReposition = false;
+                const pos = this.itemPositions.get(item) || 0;
+                if (pos < minPos) minPos = pos;
+                const end = pos + contentDim;
+                if (end > maxPos) maxPos = end;
 
-                if (isHorizontal) {
-                    if (isReverse) {
-                        needsReposition = itemPos > contentWidth;
-                    } else {
-                        needsReposition = (itemPos + config.contentWidth) < 0;
-                    }
-                } else {
-                    if (isReverse) {
-                        needsReposition = itemPos > contentHeight;
-                    } else {
-                        needsReposition = (itemPos + config.contentHeight) < 0;
-                    }
-                }
+                const needsReposition = isReverse
+                    ? pos > viewportDim
+                    : (pos + contentDim) < 0;
 
                 if (needsReposition) {
-                    this.repositionItem(item, isHorizontal, isReverse, config);
+                    itemsToReposition.push(item);
                 }
             });
-        }
 
-        /**
-         * Reposition an item to maintain seamless loop
-         */
-        repositionItem(item, isHorizontal, isReverse, config) {
-            if (isHorizontal) {
+            // Reposition collected items using pre-computed min/max
+            for (const item of itemsToReposition) {
+                let newPos;
                 if (isReverse) {
-                    // Find leftmost position
-                    let leftmostPosition = Infinity;
-                    this.items.forEach(otherItem => {
-                        const pos = this.itemPositions.get(otherItem) || 0;
-                        if (pos < leftmostPosition) {
-                            leftmostPosition = pos;
-                        }
-                    });
-                    this.itemPositions.set(item, leftmostPosition - config.contentWidth);
+                    newPos = minPos - contentDim;
                 } else {
-                    // Find rightmost position
-                    let rightmostPosition = -Infinity;
-                    this.items.forEach(otherItem => {
-                        const pos = this.itemPositions.get(otherItem) || 0;
-                        const right = pos + config.contentWidth;
-                        if (right > rightmostPosition) {
-                            rightmostPosition = right;
-                        }
-                    });
-                    this.itemPositions.set(item, rightmostPosition);
+                    newPos = maxPos;
                 }
-                
-                const newPos = this.itemPositions.get(item);
-                item.style.transform = `translateX(${newPos}px)`;
-                
-            } else {
-                if (isReverse) {
-                    // Find topmost position
-                    let topmostPosition = Infinity;
-                    this.items.forEach(otherItem => {
-                        const pos = this.itemPositions.get(otherItem) || 0;
-                        if (pos < topmostPosition) {
-                            topmostPosition = pos;
-                        }
-                    });
-                    this.itemPositions.set(item, topmostPosition - config.contentHeight);
-                } else {
-                    // Find bottommost position
-                    let bottommostPosition = -Infinity;
-                    this.items.forEach(otherItem => {
-                        const pos = this.itemPositions.get(otherItem) || 0;
-                        const bottom = pos + config.contentHeight;
-                        if (bottom > bottommostPosition) {
-                            bottommostPosition = bottom;
-                        }
-                    });
-                    this.itemPositions.set(item, bottommostPosition);
-                }
-                
-                const newPos = this.itemPositions.get(item);
-                item.style.transform = `translateY(${newPos}px)`;
-            }
 
-            // Move item to end of array for proper layering
-            const itemIndex = this.items.indexOf(item);
-            if (itemIndex > -1) {
-                this.items.splice(itemIndex, 1);
-                this.items.push(item);
+                this.itemPositions.set(item, newPos);
+
+                if (isHorizontal) {
+                    item.style.transform = `translateX(${newPos}px)`;
+                } else {
+                    item.style.transform = `translateY(${newPos}px)`;
+                }
+
+                // Update min/max for subsequent repositions in same frame
+                if (newPos < minPos) minPos = newPos;
+                const newEnd = newPos + contentDim;
+                if (newEnd > maxPos) maxPos = newEnd;
+
+                // Move item to end of array for proper layering
+                const itemIndex = this.items.indexOf(item);
+                if (itemIndex > -1) {
+                    this.items.splice(itemIndex, 1);
+                    this.items.push(item);
+                }
             }
         }
 

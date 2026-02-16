@@ -389,10 +389,12 @@ class Admin
         $nonce = $_POST['nonce'] ?? '';
         if (!wp_verify_nonce($nonce, 'orbitools_adminkit_orbitools')) {
             wp_send_json_error('Invalid nonce');
+            return;
         }
 
         if (!current_user_can('manage_options')) {
             wp_send_json_error('Insufficient permissions');
+            return;
         }
 
         // Process settings data

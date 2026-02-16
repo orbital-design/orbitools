@@ -54,13 +54,15 @@ class Group_Manager
     public function handle_add_group_ajax()
     {
         // Verify nonce
-        if (!wp_verify_nonce($_POST['nonce'], 'add-group-nonce')) {
+        if (!wp_verify_nonce($_POST['nonce'] ?? '', 'add-group-nonce')) {
             wp_send_json_error(__('Security check failed', 'orbitools'));
+            return;
         }
 
         // Check permissions
         if (!current_user_can('edit_theme_options')) {
             wp_send_json_error(__('You do not have permission to do this', 'orbitools'));
+            return;
         }
 
         // Get and sanitize input
