@@ -107,6 +107,13 @@ class Typography_Presets extends Module_Base
     private static $initialized = false;
 
     /**
+     * Cached allowed blocks list (avoids repeated DB queries)
+     *
+     * @var array|null
+     */
+    private $allowed_blocks_cache = null;
+
+    /**
      * Initialize the Typography Presets module
      *
      * Sets up the module by calling the parent constructor which handles
@@ -220,27 +227,16 @@ class Typography_Presets extends Module_Base
     }
 
     /**
-     * Set up filters for dynamic blocks that are rendered server-side
+     * Set up a single render_block filter for typography class injection
+     *
+     * Uses one filter instead of per-block filters to avoid iterating the
+     * entire block registry on every page load.
      *
      * @since 1.0.0
      */
     private function setup_dynamic_block_filters(): void
     {
-        // Get all registered block types to find which ones are dynamic
-        $registered_blocks = \WP_Block_Type_Registry::get_instance()->get_all_registered();
-
-        foreach ($registered_blocks as $block_name => $block_type) {
-            // Check if this block type is supported and is dynamic (has render_callback)
-            if (
-                $this->is_supported_block($block_name) &&
-                ($block_type->render_callback !== null || $block_type->is_dynamic())
-            ) {
-
-                // Add specific filter for this dynamic block
-                $filter_name = 'render_block_' . $block_name;
-                add_filter($filter_name, [$this, 'apply_typography_classes_to_dynamic_block'], 10, 2);
-            }
-        }
+        add_filter('render_block', [$this, 'apply_typography_classes_to_dynamic_block'], 10, 2);
     }
 
     /**
@@ -261,7 +257,11 @@ class Typography_Presets extends Module_Base
             return $block_content;
         }
 
-        // Block is already validated as supported in setup_dynamic_block_filters()
+        // Check if this block type is supported
+        $block_name = $block['blockName'] ?? '';
+        if (empty($block_name) || !$this->is_supported_block($block_name)) {
+            return $block_content;
+        }
 
         // Get the preset class name
         $preset_slug = \sanitize_html_class($block['attrs']['orbitoolsTypographyPreset']);
@@ -315,24 +315,24 @@ class Typography_Presets extends Module_Base
      */
     private function is_supported_block($block_name): bool
     {
-        // Get allowed blocks from database settings
-        $allowed_blocks = $this->settings_manager->get_module_setting(
-            'typography-presets',
-            'typography_allowed_blocks',
-            []
-        );
+        if ($this->allowed_blocks_cache === null) {
+            // Get allowed blocks from database settings
+            $allowed_blocks = $this->settings_manager->get_module_setting(
+                'typography-presets',
+                'typography_allowed_blocks',
+                []
+            );
 
-        // If setting is empty (not configured yet), use sensible defaults
-        if (empty($allowed_blocks)) {
-            $allowed_blocks = self::DEFAULT_ALLOWED_BLOCKS;
+            // If setting is empty (not configured yet), use sensible defaults
+            if (empty($allowed_blocks)) {
+                $allowed_blocks = self::DEFAULT_ALLOWED_BLOCKS;
+            }
+
+            // Allow filtering of supported blocks — cache the final result
+            $this->allowed_blocks_cache = \apply_filters('orbitools_typography_supported_blocks', $allowed_blocks);
         }
 
-        // Allow filtering of supported blocks
-        $allowed_blocks = \apply_filters('orbitools_typography_supported_blocks', $allowed_blocks);
-
-        $is_supported = in_array($block_name, $allowed_blocks);
-
-        return $is_supported;
+        return in_array($block_name, $this->allowed_blocks_cache);
     }
 
     /**

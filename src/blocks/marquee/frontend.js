@@ -97,6 +97,9 @@
                 // Set up resize handler
                 this.setupResizeHandler();
 
+                // Eagerly cache dimensions so the animation loop never triggers reflow
+                this.measureDimensions();
+
                 // Initialize positioning
                 this.setupInitialPositioning(contentSize);
 
@@ -271,20 +274,37 @@
         }
 
         /**
-         * Set up resize handler to invalidate cached dimensions
+         * Measure and cache wrapper dimensions (outside animation frame)
+         */
+        measureDimensions() {
+            const wrapperStyles = getComputedStyle(this.wrapper);
+            const wrapperRect = this.wrapper.getBoundingClientRect();
+            const paddingLeft = parseFloat(wrapperStyles.paddingLeft) || 0;
+            const paddingRight = parseFloat(wrapperStyles.paddingRight) || 0;
+            const paddingTop = parseFloat(wrapperStyles.paddingTop) || 0;
+            const paddingBottom = parseFloat(wrapperStyles.paddingBottom) || 0;
+
+            this.cachedDimensions = {
+                contentWidth: wrapperRect.width - paddingLeft - paddingRight,
+                contentHeight: wrapperRect.height - paddingTop - paddingBottom,
+            };
+        }
+
+        /**
+         * Set up resize handler to recalculate cached dimensions
          */
         setupResizeHandler() {
             let resizeTimeout;
-            
+
             const handleResize = () => {
                 clearTimeout(resizeTimeout);
                 resizeTimeout = setTimeout(() => {
-                    this.cachedDimensions = null;
+                    this.measureDimensions();
                 }, 150);
             };
 
             window.addEventListener('resize', handleResize);
-            
+
             this.cleanupFunctions.push(() => {
                 window.removeEventListener('resize', handleResize);
                 clearTimeout(resizeTimeout);
@@ -422,22 +442,9 @@
          * Check and handle item repositioning for seamless loop
          */
         checkRepositioning(isHorizontal, isReverse, config) {
-            // Get cached dimensions
-            if (!this.cachedDimensions) {
-                const wrapperStyles = getComputedStyle(this.wrapper);
-                const wrapperRect = this.wrapper.getBoundingClientRect();
-                const paddingLeft = parseFloat(wrapperStyles.paddingLeft) || 0;
-                const paddingRight = parseFloat(wrapperStyles.paddingRight) || 0;
-                const paddingTop = parseFloat(wrapperStyles.paddingTop) || 0;
-                const paddingBottom = parseFloat(wrapperStyles.paddingBottom) || 0;
-                
-                this.cachedDimensions = {
-                    contentWidth: wrapperRect.width - paddingLeft - paddingRight,
-                    contentHeight: wrapperRect.height - paddingTop - paddingBottom,
-                    lastUpdate: Date.now()
-                };
-            }
-            
+            // Dimensions are always pre-cached (measured during init and on resize)
+            if (!this.cachedDimensions) return;
+
             const { contentWidth, contentHeight } = this.cachedDimensions;
 
             // Check each item for repositioning

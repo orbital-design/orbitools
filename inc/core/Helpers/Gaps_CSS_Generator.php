@@ -18,17 +18,45 @@ if (!defined('ABSPATH')) {
 class Gaps_CSS_Generator
 {
     /**
-     * Generate CSS for all gap classes
-     * 
+     * Transient key prefix for cached CSS
+     */
+    private const TRANSIENT_KEY = 'orbitools_gaps_css';
+
+    /**
+     * In-memory cache for the current request
+     *
+     * @var string|null
+     */
+    private static $css_cache = null;
+
+    /**
+     * Generate CSS for all gap classes (with transient caching)
+     *
      * @return string Generated CSS for gap classes
      */
     public static function generate_gaps_css(): string
     {
+        // Return in-memory cache if available (same request)
+        if (self::$css_cache !== null) {
+            return self::$css_cache;
+        }
+
         $spacing_sizes = Spacing_Utils::get_spacing_sizes();
         $breakpoints = Spacing_Utils::get_breakpoints();
-        
+
         if (empty($spacing_sizes)) {
+            self::$css_cache = '';
             return '';
+        }
+
+        // Build cache key from config data
+        $cache_key = self::TRANSIENT_KEY . '_' . md5(\wp_json_encode([$spacing_sizes, $breakpoints]));
+
+        // Check transient cache
+        $cached = \get_transient($cache_key);
+        if ($cached !== false) {
+            self::$css_cache = $cached;
+            return $cached;
         }
 
         $css = '';
@@ -76,7 +104,35 @@ class Gaps_CSS_Generator
             $css .= "}\n\n";
         }
 
+        // Store in transient (no expiry — invalidated on config change)
+        \set_transient($cache_key, $css);
+
+        // Store in-memory for same request
+        self::$css_cache = $css;
+
         return $css;
+    }
+
+    /**
+     * Clear cached gaps CSS
+     *
+     * Call this when spacing sizes or breakpoints config changes.
+     */
+    public static function clear_cache(): void
+    {
+        global $wpdb;
+
+        // Clear all gaps CSS transients
+        $wpdb->query(
+            $wpdb->prepare(
+                "DELETE FROM {$wpdb->options} WHERE option_name LIKE %s OR option_name LIKE %s",
+                '_transient_' . self::TRANSIENT_KEY . '_%',
+                '_transient_timeout_' . self::TRANSIENT_KEY . '_%'
+            )
+        );
+
+        // Clear in-memory cache
+        self::$css_cache = null;
     }
 
     /**
@@ -137,9 +193,17 @@ class Gaps_CSS_Generator
     {
         // Add inline styles for frontend
         \add_action('wp_enqueue_scripts', [self::class, 'enqueue_frontend_gaps_css']);
-        
+
         // Add inline styles for block editor
         \add_action('enqueue_block_editor_assets', [self::class, 'enqueue_editor_gaps_css']);
+
+        // Clear CSS cache when theme settings change
+        \add_action('switch_theme', [self::class, 'clear_cache']);
+        \add_action('customize_save_after', [self::class, 'clear_cache']);
+        \add_filter('wp_theme_json_data_user', function ($theme_json) {
+            self::clear_cache();
+            return $theme_json;
+        });
     }
 
     /**
