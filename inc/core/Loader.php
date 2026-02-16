@@ -51,65 +51,90 @@ class Loader
     private $updater;
 
     /**
-     * Remove path metadata from block style handles so WordPress
-     * serves them as external <link> tags instead of inlining.
+     * Block slugs that have frontend CSS.
+     *
+     * @var string[]
+     */
+    private const STYLED_BLOCKS = [
+        'collection',
+        'entry',
+        'marquee',
+        'group',
+        'query-loop',
+        'read-more',
+    ];
+
+    /**
+     * Register block frontend styles (without enqueuing).
+     *
+     * Styles are registered here and enqueued per-block during render_block,
+     * so they output in the footer via print_late_styles() (non-render-blocking).
      *
      * @return void
      */
-    public function disable_block_css_inlining(): void
+    public function register_block_styles(): void
     {
-        $wp_styles = wp_styles();
+        foreach (self::STYLED_BLOCKS as $block) {
+            $css_file = ORBITOOLS_DIR . "build/blocks/{$block}/index.css";
 
-        foreach ($wp_styles->registered as $handle => $style) {
-            if (strpos($handle, 'orb-') === 0 && isset($style->extra['path'])) {
-                // Skip editor-only styles — inlining is fine in the admin
-                if (substr($handle, -13) === '-editor-style') {
-                    continue;
-                }
-                $wp_styles->add_data($handle, 'path', '');
+            if (!file_exists($css_file)) {
+                continue;
             }
+
+            wp_register_style(
+                "orb-{$block}-style",
+                plugins_url("build/blocks/{$block}/index.css", ORBITOOLS_FILE),
+                [],
+                (string) filemtime($css_file)
+            );
         }
     }
 
     /**
-     * Make block stylesheets non-render-blocking by swapping to
-     * media="print" with an onload handler that flips to "all".
+     * Enqueue a block's frontend style when that block is rendered.
      *
-     * @param string $html   The <link> tag HTML.
-     * @param string $handle The style handle.
-     * @return string Modified tag HTML.
+     * Fires on render_block — after wp_head has already printed, so styles
+     * output via print_late_styles() in wp_footer (non-render-blocking).
+     *
+     * @param string $content      The block HTML content.
+     * @param array  $parsed_block The parsed block data.
+     * @return string Unmodified block content.
      */
-    public function async_block_styles(string $html, string $handle): string
+    public function enqueue_rendered_block_style(string $content, array $parsed_block): string
     {
-        if (strpos($handle, 'orb-') !== 0 || substr($handle, -13) === '-editor-style') {
-            return $html;
+        $block_name = $parsed_block['blockName'] ?? '';
+
+        if (strpos($block_name, 'orb/') === 0) {
+            $slug   = substr($block_name, 4);
+            $handle = "orb-{$slug}-style";
+
+            if (wp_style_is($handle, 'registered') && !wp_style_is($handle, 'enqueued')) {
+                wp_enqueue_style($handle);
+            }
         }
 
-        // Replace media="all" with media="print" onload="this.media='all'"
-        $html = str_replace(
-            "media='all'",
-            "media='print' onload=\"this.media='all'\"",
-            $html
-        );
+        return $content;
+    }
 
-        // Also handle double-quoted variant
-        $html = str_replace(
-            'media="all"',
-            'media="print" onload="this.media=\'all\'"',
-            $html
-        );
-
-        // Add noscript fallback after the link tag
-        if (strpos($html, "media='print'") !== false || strpos($html, 'media="print"') !== false) {
-            $noscript = '<noscript>' . str_replace(
-                ["media='print' onload=\"this.media='all'\"", 'media="print" onload="this.media=\'all\'"'],
-                ["media='all'", 'media="all"'],
-                $html
-            ) . '</noscript>';
-            $html .= $noscript;
+    /**
+     * Make block <link> tags non-render-blocking by applying
+     * the media="print" onload async pattern.
+     *
+     * @param string $tag    The <link> tag HTML.
+     * @param string $handle The style handle.
+     * @return string Modified HTML.
+     */
+    public function async_block_styles(string $tag, string $handle): string
+    {
+        if (strpos($handle, 'orb-') === 0 && substr($handle, -6) === '-style') {
+            $tag = preg_replace(
+                '/(?<=\s)media=[\'"]all[\'"]/',
+                'media="print" onload="this.media=\'all\'"',
+                $tag
+            );
         }
 
-        return $html;
+        return $tag;
     }
 
     /**
@@ -137,10 +162,9 @@ class Loader
         // Initialize Toolbar FAB
         new Toolbar_FAB();
 
-        // Prevent WordPress from inlining block CSS — serve as cacheable <link> tags
-        add_action('wp_enqueue_scripts', [$this, 'disable_block_css_inlining']);
-
-        // Make block CSS non-render-blocking on the frontend
+        // Register block frontend styles (enqueued per-block via render_block → footer).
+        add_action('wp_enqueue_scripts', [$this, 'register_block_styles']);
+        add_filter('render_block', [$this, 'enqueue_rendered_block_style'], 10, 2);
         add_filter('style_loader_tag', [$this, 'async_block_styles'], 10, 2);
 
         // Initialize modules.

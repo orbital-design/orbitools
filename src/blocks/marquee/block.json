@@ -59,6 +59,5 @@
     "textdomain": "orbitools",
     "editorScript": "file:./index.js",
     "editorStyle": "file:./editor.css",
-    "style": "file:./index.css",
     "viewScript": "file:./frontend.js"
 }
