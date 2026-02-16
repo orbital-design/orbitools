@@ -51,6 +51,68 @@ class Loader
     private $updater;
 
     /**
+     * Remove path metadata from block style handles so WordPress
+     * serves them as external <link> tags instead of inlining.
+     *
+     * @return void
+     */
+    public function disable_block_css_inlining(): void
+    {
+        $wp_styles = wp_styles();
+
+        foreach ($wp_styles->registered as $handle => $style) {
+            if (strpos($handle, 'orb-') === 0 && isset($style->extra['path'])) {
+                // Skip editor-only styles — inlining is fine in the admin
+                if (substr($handle, -13) === '-editor-style') {
+                    continue;
+                }
+                $wp_styles->add_data($handle, 'path', '');
+            }
+        }
+    }
+
+    /**
+     * Make block stylesheets non-render-blocking by swapping to
+     * media="print" with an onload handler that flips to "all".
+     *
+     * @param string $html   The <link> tag HTML.
+     * @param string $handle The style handle.
+     * @return string Modified tag HTML.
+     */
+    public function async_block_styles(string $html, string $handle): string
+    {
+        if (strpos($handle, 'orb-') !== 0 || substr($handle, -13) === '-editor-style') {
+            return $html;
+        }
+
+        // Replace media="all" with media="print" onload="this.media='all'"
+        $html = str_replace(
+            "media='all'",
+            "media='print' onload=\"this.media='all'\"",
+            $html
+        );
+
+        // Also handle double-quoted variant
+        $html = str_replace(
+            'media="all"',
+            'media="print" onload="this.media=\'all\'"',
+            $html
+        );
+
+        // Add noscript fallback after the link tag
+        if (strpos($html, "media='print'") !== false || strpos($html, 'media="print"') !== false) {
+            $noscript = '<noscript>' . str_replace(
+                ["media='print' onload=\"this.media='all'\"", 'media="print" onload="this.media=\'all\'"'],
+                ["media='all'", 'media="all"'],
+                $html
+            ) . '</noscript>';
+            $html .= $noscript;
+        }
+
+        return $html;
+    }
+
+    /**
      * Initializes core classes and modules.
      *
      * @return void
@@ -74,6 +136,12 @@ class Loader
 
         // Initialize Toolbar FAB
         new Toolbar_FAB();
+
+        // Prevent WordPress from inlining block CSS — serve as cacheable <link> tags
+        add_action('wp_enqueue_scripts', [$this, 'disable_block_css_inlining']);
+
+        // Make block CSS non-render-blocking on the frontend
+        add_filter('style_loader_tag', [$this, 'async_block_styles'], 10, 2);
 
         // Initialize modules.
         $this->modules[] = new Typography_Presets();
