@@ -315,6 +315,16 @@ class Collection extends Module_Base
     }
 
     /**
+     * Precompiled regex for wrapper-bound classes (background/text colors)
+     */
+    private const WRAPPER_CLASS_REGEX = '/^(?:has-background|has-text-color|has-link-color|has-.*-background-color|has-.*-color|has-vivid-.*|has-pale-.*|has-luminous-.*)$/';
+
+    /**
+     * Precompiled regex for inner-excluded classes (wrapper classes + alignment + block name)
+     */
+    private const INNER_EXCLUDE_REGEX = '/^(?:alignfull|alignwide|wp-block-orb-collection|has-background|has-text-color|has-link-color|has-.*-background-color|has-.*-color|has-vivid-.*|has-pale-.*|has-luminous-.*)$/';
+
+    /**
      * Get classes that should go on the wrapper div (full-width background/text colors)
      */
     private function get_wrapper_classes(string $class_names): string
@@ -323,37 +333,20 @@ class Collection extends Module_Base
             return 'alignfull';
         }
 
-        $classes = explode(' ', $class_names);
-        $wrapper_classes = ['alignfull']; // Always include alignfull for wrapper
-        
-        // Classes that should go on wrapper (full-width background/text effects)
-        $wrapper_patterns = [
-            'has-background',
-            'has-text-color',
-            'has-.*-background-color',
-            'has-.*-color',
-            'has-link-color',
-            'has-vivid-.*',
-            'has-pale-.*',
-            'has-luminous-.*'
-        ];
-        
+        $classes = array_filter(explode(' ', $class_names));
+        $wrapper_classes = ['alignfull'];
+
         foreach ($classes as $class) {
-            if (empty($class)) continue;
-            
-            foreach ($wrapper_patterns as $pattern) {
-                if (preg_match('/^' . str_replace('.*', '.*', $pattern) . '$/', $class)) {
-                    $wrapper_classes[] = $class;
-                    break;
-                }
+            if (preg_match(self::WRAPPER_CLASS_REGEX, $class)) {
+                $wrapper_classes[] = $class;
             }
         }
-        
+
         return implode(' ', array_unique($wrapper_classes));
     }
 
     /**
-     * Get classes that should go on the inner div (layout and other functionality)  
+     * Get classes that should go on the inner div (layout and other functionality)
      */
     private function get_inner_classes(string $class_names): string
     {
@@ -361,40 +354,15 @@ class Collection extends Module_Base
             return '';
         }
 
-        $classes = explode(' ', $class_names);
+        $classes = array_filter(explode(' ', $class_names));
         $inner_classes = [];
-        
-        // Classes that should NOT go on wrapper (everything except background/text colors)
-        $wrapper_patterns = [
-            'alignfull',
-            'alignwide', 
-            'has-background',
-            'has-text-color',
-            'has-.*-background-color',
-            'has-.*-color',
-            'has-link-color',
-            'has-vivid-.*',
-            'has-pale-.*',
-            'has-luminous-.*',
-            'wp-block-orb-collection'
-        ];
-        
+
         foreach ($classes as $class) {
-            if (empty($class)) continue;
-            
-            $should_skip = false;
-            foreach ($wrapper_patterns as $pattern) {
-                if (preg_match('/^' . str_replace('.*', '.*', $pattern) . '$/', $class)) {
-                    $should_skip = true;
-                    break;
-                }
-            }
-            
-            if (!$should_skip) {
+            if (!preg_match(self::INNER_EXCLUDE_REGEX, $class)) {
                 $inner_classes[] = $class;
             }
         }
-        
+
         return implode(' ', $inner_classes);
     }
 

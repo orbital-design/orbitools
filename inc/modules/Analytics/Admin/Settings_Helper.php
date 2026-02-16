@@ -28,6 +28,13 @@ if (!defined('ABSPATH')) {
 class Settings_Helper
 {
     /**
+     * Cached settings array (avoids repeated get_option calls)
+     *
+     * @var array|null
+     */
+    private static $settings_cache = null;
+
+    /**
      * Normalize a setting value to boolean
      *
      * AdminKit stores checkbox values as strings: "1" or ""
@@ -45,6 +52,8 @@ class Settings_Helper
     /**
      * Get a setting value with default fallback
      *
+     * Settings are loaded once per request and cached in memory.
+     *
      * @since 1.0.0
      * @param string $key Setting key.
      * @param mixed $default Default value if setting not found.
@@ -52,14 +61,17 @@ class Settings_Helper
      */
     public static function get_setting(string $key, $default = '')
     {
-        $settings = get_option('orbitools_settings', array());
-        $value = $settings[$key] ?? $default;
-        
+        if (self::$settings_cache === null) {
+            self::$settings_cache = get_option('orbitools_settings', array());
+        }
+
+        $value = self::$settings_cache[$key] ?? $default;
+
         // For boolean settings, normalize the value
         if (is_bool($default)) {
             return self::normalize_boolean($value);
         }
-        
+
         return $value;
     }
 

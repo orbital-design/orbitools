@@ -450,52 +450,37 @@ class SpacingConfig {
     
     /**
      * Enqueue spacings configuration for JavaScript
-     * 
-     * This provides configuration data to JavaScript for blocks that use orbitools.spacings
+     *
+     * This provides configuration data to JavaScript for blocks that use orbitools.spacings.
+     * Uses a single wp_add_inline_script call on wp-blocks (always loaded in editor)
+     * instead of 9 separate wp_localize_script calls across 3 handles.
      */
     public static function enqueue_spacings_config() {
-        // Get all registered blocks that use orbitools spacings
+        // Build blocks config — only orbitools blocks with spacings support
         $registry = \WP_Block_Type_Registry::get_instance();
         $blocks_config = [];
-        
+
         foreach ($registry->get_all_registered() as $block_name => $block_type) {
+            // Only check orbitools blocks to avoid looping all core blocks
+            if (strpos($block_name, 'orb/') !== 0) {
+                continue;
+            }
+
             $supports = $block_type->supports ?? [];
-            
-            // Check if block uses orbitools spacings
             if (isset($supports['orbitools']['spacings'])) {
                 $blocks_config[$block_name] = self::get_block_config($block_name);
             }
         }
-        
-        
-        // Localize the configuration for JavaScript on multiple possible script handles
-        $script_handles = ['wp-blocks', 'orb-collection-editor-script', 'wp-edit-post'];
-        
-        foreach ($script_handles as $handle) {
-            \wp_localize_script(
-                $handle,
-                'orbitoolsSpacingsConfig',
-                $blocks_config
-            );
-            
-            // Localize theme configuration
-            \wp_localize_script(
-                $handle,
-                'orbitoolsThemeConfig',
-                [
-                    'settings' => [
-                        'breakpoints' => self::get_theme_breakpoints()
-                    ]
-                ]
-            );
-            
-            // Localize plugin breakpoints configuration  
-            \wp_localize_script(
-                $handle,
-                'orbitoolsBreakpoints',
-                self::get_plugin_default_breakpoints()
-            );
-        }
+
+        // Output all config as a single inline script on wp-blocks (always present in editor)
+        $inline_js = sprintf(
+            'var orbitoolsSpacingsConfig = %s; var orbitoolsThemeConfig = %s; var orbitoolsBreakpoints = %s;',
+            \wp_json_encode($blocks_config),
+            \wp_json_encode(['settings' => ['breakpoints' => self::get_theme_breakpoints()]]),
+            \wp_json_encode(self::get_plugin_default_breakpoints())
+        );
+
+        \wp_add_inline_script('wp-blocks', $inline_js, 'before');
     }
 }
 
