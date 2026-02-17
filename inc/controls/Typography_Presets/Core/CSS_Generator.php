@@ -14,6 +14,7 @@
 namespace Orbitools\Controls\Typography_Presets\Core;
 
 use Orbitools\Controls\Typography_Presets\Admin\Settings_Helper;
+use Orbitools\Core\Helpers\Minifier;
 
 // Prevent direct access
 if (!defined('ABSPATH')) {
@@ -253,8 +254,8 @@ class CSS_Generator
         }
 
         printf(
-            "<style id=\"orbitools-typography-presets-css\">\n%s\n</style>\n",
-            $css
+            '<style id="orbitools-typography-presets-css">%s</style>',
+            Minifier::css($css)
         );
     }
 

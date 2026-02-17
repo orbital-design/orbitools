@@ -2,6 +2,8 @@
 
 namespace Orbitools\Core;
 
+use Orbitools\Core\Helpers\Minifier;
+
 if (!defined('ABSPATH')) {
     exit;
 }
@@ -75,21 +77,8 @@ class Toolbar_FAB
 
     public function hide_admin_bar()
     {
-?>
-<style>
-#wpadminbar {
-    display: none !important;
-}
-
-html {
-    margin-top: 0 !important;
-}
-
-* html body {
-    margin-top: 0 !important;
-}
-</style>
-<?php
+        $css = '#wpadminbar { display: none !important; } html { margin-top: 0 !important; } * html body { margin-top: 0 !important; }';
+        printf('<style>%s</style>', Minifier::css($css));
     }
 
     public function enqueue_assets()
@@ -97,12 +86,12 @@ html {
         // Create a dummy style handle to attach our CSS to
         \wp_register_style('orbitools-fab', false);
         \wp_enqueue_style('orbitools-fab');
-        \wp_add_inline_style('orbitools-fab', $this->get_fab_styles());
+        \wp_add_inline_style('orbitools-fab', Minifier::css($this->get_fab_styles()));
 
         // Create a dummy script handle to attach our JS to
         \wp_register_script('orbitools-fab', false, array(), false, true);
         \wp_enqueue_script('orbitools-fab');
-        \wp_add_inline_script('orbitools-fab', $this->get_fab_scripts());
+        \wp_add_inline_script('orbitools-fab', Minifier::js($this->get_fab_scripts()));
     }
 
     private function get_fab_styles()

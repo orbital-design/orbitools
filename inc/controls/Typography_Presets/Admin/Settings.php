@@ -13,6 +13,8 @@
 
 namespace Orbitools\Controls\Typography_Presets\Admin;
 
+use Orbitools\Core\Helpers\Minifier;
+
 // Prevent direct access
 if (!defined('ABSPATH')) {
     exit;
@@ -372,8 +374,8 @@ class Settings
 
         $css_vars .= '}';
 
-        // Add inline CSS
-        wp_add_inline_style('orbitools-typography-presets-admin', $css_vars);
+        // Add inline CSS (already compact, but minify for consistency)
+        wp_add_inline_style('orbitools-typography-presets-admin', Minifier::css($css_vars));
     }
 
     /**

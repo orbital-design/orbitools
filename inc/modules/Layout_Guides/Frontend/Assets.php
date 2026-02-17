@@ -13,6 +13,7 @@
 
 namespace Orbitools\Modules\Layout_Guides\Frontend;
 
+use Orbitools\Core\Helpers\Minifier;
 use Orbitools\Modules\Layout_Guides\Admin\Settings_Helper;
 
 // Prevent direct access
@@ -101,8 +102,6 @@ class Assets
             return;
         }
 
-        echo '<style type="text/css">';
-        echo Settings_Helper::get_css_custom_properties();
-        echo '</style>';
+        printf('<style>%s</style>', Minifier::css(Settings_Helper::get_css_custom_properties()));
     }
 }

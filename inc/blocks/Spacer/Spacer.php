@@ -3,6 +3,7 @@
 namespace Orbitools\Blocks\Spacer;
 
 use Orbitools\Core\Abstracts\Module_Base;
+use Orbitools\Core\Helpers\Minifier;
 use Orbitools\Core\Helpers\Spacing_Utils;
 
 // Prevent direct access
@@ -226,6 +227,6 @@ class Spacer extends Module_Base
             $css .= "}\n\n";
         }
 
-        return $css;
+        return Minifier::css($css);
     }
 }

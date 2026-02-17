@@ -104,6 +104,9 @@ class Gaps_CSS_Generator
             $css .= "}\n\n";
         }
 
+        // Minify before caching
+        $css = Minifier::css($css);
+
         // Store in transient (no expiry — invalidated on config change)
         \set_transient($cache_key, $css);
 
