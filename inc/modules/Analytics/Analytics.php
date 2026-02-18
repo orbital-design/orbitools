@@ -282,20 +282,11 @@ dataLayer.push({'gtm.start':new Date().getTime(),event:'gtm.js'});
 
     /**
      * Render GTM body code
+     * Note: noscript iframe intentionally removed to avoid bfcache issues.
+     * The delay-loaded script handles all tracking for JS-enabled browsers.
      */
     private function render_gtm_body()
     {
-        $container_id = $this->get_analytics_setting('analytics_gtm_id');
-
-        if (empty($container_id)) {
-            return;
-        }
-    ?>
-<!-- Google Tag Manager (noscript) -->
-<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=<?php echo esc_attr($container_id); ?>"
-            height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
-<!-- End Google Tag Manager (noscript) -->
-<?php
     }
 
 
