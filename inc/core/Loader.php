@@ -138,6 +138,29 @@ class Loader
     }
 
     /**
+     * Enqueue block frontend styles in the editor so previews match the frontend.
+     *
+     * @return void
+     */
+    public function enqueue_editor_block_styles(): void
+    {
+        foreach (self::STYLED_BLOCKS as $block) {
+            $css_file = ORBITOOLS_DIR . "build/blocks/{$block}/index.css";
+
+            if (!file_exists($css_file)) {
+                continue;
+            }
+
+            wp_enqueue_style(
+                "orb-{$block}-style",
+                plugins_url("build/blocks/{$block}/index.css", ORBITOOLS_FILE),
+                [],
+                (string) filemtime($css_file)
+            );
+        }
+    }
+
+    /**
      * Initializes core classes and modules.
      *
      * @return void
@@ -166,6 +189,10 @@ class Loader
         add_action('wp_enqueue_scripts', [$this, 'register_block_styles']);
         add_filter('render_block', [$this, 'enqueue_rendered_block_style'], 10, 2);
         add_filter('style_loader_tag', [$this, 'async_block_styles'], 10, 2);
+
+        // Load frontend CSS in the editor so block previews are styled correctly.
+        // Fires before editorStyle assets, so editor.css can override.
+        add_action('enqueue_block_editor_assets', [$this, 'enqueue_editor_block_styles']);
 
         // Initialize modules.
         $this->modules[] = new Typography_Presets();
