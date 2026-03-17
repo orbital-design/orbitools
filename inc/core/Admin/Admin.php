@@ -195,6 +195,14 @@ class Admin
                 'section' => 'plugin',
             ),
             array(
+                'id'      => 'disable_block_css',
+                'name'    => __('Disable Block CSS', 'orbitools'),
+                'desc'    => __('Prevent Orbitools from loading block frontend and editor styles. Use this if your theme provides its own styles for Orbitools blocks.', 'orbitools'),
+                'type'    => 'checkbox',
+                'std'     => false,
+                'section' => 'utils',
+            ),
+            array(
                 'id'      => 'reset_on_deactivation',
                 'name'    => __('Reset Data on Deactivation', 'orbitools'),
                 'desc'    => __('Remove all plugin data when deactivating.', 'orbitools'),

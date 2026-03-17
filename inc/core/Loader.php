@@ -65,6 +65,17 @@ class Loader
     ];
 
     /**
+     * Check if block CSS loading is disabled via settings.
+     *
+     * @return bool
+     */
+    private function is_block_css_disabled(): bool
+    {
+        $settings = get_option('orbitools_settings', []);
+        return !empty($settings['disable_block_css']);
+    }
+
+    /**
      * Register block frontend styles (without enqueuing).
      *
      * Styles are registered here and enqueued per-block during render_block,
@@ -74,6 +85,10 @@ class Loader
      */
     public function register_block_styles(): void
     {
+        if ($this->is_block_css_disabled()) {
+            return;
+        }
+
         foreach (self::STYLED_BLOCKS as $block) {
             $css_file = ORBITOOLS_DIR . "build/blocks/{$block}/index.css";
 
@@ -144,6 +159,14 @@ class Loader
      */
     public function enqueue_editor_block_styles(): void
     {
+        if ($this->is_block_css_disabled()) {
+            // Dequeue editor styles registered via block.json editorStyle
+            foreach (self::STYLED_BLOCKS as $block) {
+                wp_dequeue_style("orb-{$block}-editor-style");
+            }
+            return;
+        }
+
         foreach (self::STYLED_BLOCKS as $block) {
             $css_file = ORBITOOLS_DIR . "build/blocks/{$block}/index.css";
 
