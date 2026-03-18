@@ -959,17 +959,22 @@ class Admin_Kit
             $all_fields = array_merge($all_fields, $tab_fields);
         }
 
-        // Handle configured fields
+        // Handle configured fields — only process fields actually submitted
+        // so saving one page doesn't wipe settings from other pages.
         foreach ($all_fields as $field) {
             if (! isset($field['id'])) {
                 continue;
             }
 
             $field_id = $field['id'];
-            $field_value = isset($input[$field_id]) ? $input[$field_id] : '';
+
+            // Skip fields not present in submitted data
+            if (! array_key_exists($field_id, $input)) {
+                continue;
+            }
 
             // Apply field-specific sanitization
-            $sanitized[$field_id] = $this->sanitize_setting($field_value, $field);
+            $sanitized[$field_id] = $this->sanitize_setting($input[$field_id], $field);
         }
 
         // Handle module fields specially (they don't match the configured field IDs)

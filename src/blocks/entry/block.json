@@ -24,6 +24,9 @@
             "background": true,
             "text": true
         },
+        "__experimentalBorder": {
+            "radius": true
+        },
         "orbitools": {
             "spacings": {
                 "breakpoints": true,
