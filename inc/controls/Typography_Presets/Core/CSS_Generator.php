@@ -59,6 +59,10 @@ class CSS_Generator
         // Hook into WordPress to output CSS
         add_action('wp_head', array($this, 'output_preset_css'));
         add_action('admin_head', array($this, 'output_preset_css'));
+
+        // Enqueue inside the block editor iframe so presets style block previews.
+        // Uses enqueue_block_assets which WordPress injects into the editor iframe.
+        add_action('enqueue_block_assets', array($this, 'enqueue_editor_preset_css'));
     }
 
     /**
@@ -257,6 +261,33 @@ class CSS_Generator
             '<style id="orbitools-typography-presets-css">%s</style>',
             Minifier::css($css)
         );
+    }
+
+    /**
+     * Enqueue preset CSS inside the block editor iframe.
+     *
+     * @since 1.0.0
+     */
+    public function enqueue_editor_preset_css(): void
+    {
+        // Only in editor — frontend is handled by wp_head output
+        if (!is_admin()) {
+            return;
+        }
+
+        if (!Settings_Helper::output_preset_css()) {
+            return;
+        }
+
+        $css = $this->get_cached_css();
+
+        if (empty($css)) {
+            return;
+        }
+
+        wp_register_style('orbitools-typography-presets', false);
+        wp_enqueue_style('orbitools-typography-presets');
+        wp_add_inline_style('orbitools-typography-presets', Minifier::css($css));
     }
 
     /**
