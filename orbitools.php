@@ -4,7 +4,7 @@
  * Plugin Name:     Orbitools
  * Plugin URI:      https://github.com/orbital-design/orbitools
  * Description:     A modern, extensible WordPress plugin.
- * Version:         1.3.8
+ * Version:         1.3.9
  * Author:          Adam Cullen, Orbital Design
  * Author URI:      https://orbital.co.uk
  * Text Domain:     orbitools
@@ -24,7 +24,7 @@ if (!defined('ABSPATH')) {
 /**
  * Define plugin constants.
  */
-define('ORBITOOLS_VERSION', '1.3.8');
+define('ORBITOOLS_VERSION', '1.3.9');
 define('ORBITOOLS_FILE', __FILE__);
 define('ORBITOOLS_BASENAME', plugin_basename(__FILE__));
 define('ORBITOOLS_DIR', plugin_dir_path(__FILE__));
