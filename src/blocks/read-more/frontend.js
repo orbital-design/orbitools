@@ -28,8 +28,9 @@
                 const content = document.getElementById(contentId);
 
                 // Get button text states and icon type from data attributes
-                const openText = this.getAttribute('data-open-text') || 'Read More';
-                const closeText = this.getAttribute('data-close-text') || 'Read Less';
+                // Empty strings are valid — user may want icon-only buttons
+                const openText = this.getAttribute('data-open-text') || '';
+                const closeText = this.getAttribute('data-close-text') || '';
                 const iconType = this.getAttribute('data-icon-type') || 'chevron';
 
                 // Only proceed if we found the matching content area
@@ -73,11 +74,22 @@
          */
         function updateButtonContent(button, text, iconType, isOpen) {
             // Find the text span within the button
-            const textSpan = button.querySelector('.orb-read-more__text');
+            var textSpan = button.querySelector('.orb-read-more__text');
 
-            if (textSpan) {
-                // Update only the text content, preserving the icon
-                textSpan.textContent = text;
+            if (text) {
+                if (textSpan) {
+                    // Update existing text span
+                    textSpan.textContent = text;
+                } else {
+                    // Create text span if it doesn't exist yet
+                    textSpan = document.createElement('span');
+                    textSpan.className = 'orb-read-more__text';
+                    textSpan.textContent = text;
+                    button.insertBefore(textSpan, button.firstChild);
+                }
+            } else if (textSpan) {
+                // Remove text span when text is empty
+                textSpan.remove();
             }
 
             // Update icon state for animation (but don't recreate it)

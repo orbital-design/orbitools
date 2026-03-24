@@ -109,7 +109,8 @@ class Read_More extends Module_Base
      */
     public function render_callback(array $attributes, string $content, \WP_Block $block): string
     {
-        // Extract button texts and icon from block attributes with fallbacks
+        // Extract button texts and icon from block attributes
+        // Empty strings are valid — user may want icon-only buttons
         $open_text = $attributes['openText'] ?? __('Read More', 'orbitools');
         $close_text = $attributes['closeText'] ?? __('Read Less', 'orbitools');
         $icon_type = $attributes['iconType'] ?? 'chevron';
@@ -153,15 +154,20 @@ class Read_More extends Module_Base
         // - aria-controls links to content area for screen readers
         // - BEM naming with JS hook class
         // - data attributes store both text states and icon type for JS toggling
+        // Build button text span — only include if text is not empty
+        $text_html = '';
+        if ($open_text !== '') {
+            $text_html = sprintf('<span class="orb-read-more__text">%s</span>', \esc_html($open_text));
+        }
+
         $html .= sprintf(
-            '<button type="button" id="%s" class="orb-read-more__toggle" aria-expanded="false" aria-controls="%s" data-open-text="%s" data-close-text="%s" data-icon-type="%s"><span class="%s">%s</span>%s</button>',
+            '<button type="button" id="%s" class="orb-read-more__toggle" aria-expanded="false" aria-controls="%s" data-open-text="%s" data-close-text="%s" data-icon-type="%s">%s%s</button>',
             \esc_attr($button_id),
             \esc_attr($content_id),
             \esc_attr($open_text),
             \esc_attr($close_text),
             \esc_attr($icon_type),
-            \esc_attr('orb-read-more__text'),
-            \esc_html($open_text),
+            $text_html,
             $icon_html
         );
 
