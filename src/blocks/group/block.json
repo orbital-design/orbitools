@@ -8,6 +8,10 @@
 	"keywords": [ "container", "wrapper", "row", "section" ],
 	"textdomain": "default",
 	"attributes": {
+		"tagName": {
+			"type": "string",
+			"default": "div"
+		},
 		"templateLock": {
 			"type": [ "string", "boolean" ],
 			"enum": [ "all", "insert", "contentOnly", false ]
@@ -15,16 +19,32 @@
 		"allowedBlocks": {
 			"type": "array"
 		},
-        "layout": {
+		"layout": {
 			"type": "object"
+		},
+		"alignItems": {
+			"type": "string",
+			"default": "stretch"
+		},
+		"justifyContent": {
+			"type": "string",
+			"default": "flex-start"
+		},
+		"flexWrap": {
+			"type": "string",
+			"default": "nowrap"
 		},
 		"orbGap": {
 			"type": "object",
 			"default": {}
 		},
 		"orbPadding": {
-			"type": "object", 
+			"type": "object",
 			"default": {}
+		},
+		"restrictContentWidth": {
+			"type": "boolean",
+			"default": false
 		}
 	},
 	"supports": {
@@ -39,16 +59,25 @@
 				"backgroundImage": true
 			}
 		},
+		"__experimentalBorder": {
+			"radius": true
+		},
+		"border": {
+			"radius": true
+		},
 		"color": {
-            "background": true,
-            "text": true
+			"background": true,
+			"text": true
+		},
+		"dimensions": {
+			"aspectRatio": true
 		},
 		"shadow": true,
 		"orbitools": {
 			"spacings": {
-				"enabled": true,
 				"breakpoints": true,
 				"gap": true,
+				"margin": true,
 				"padding": true
 			}
 		}

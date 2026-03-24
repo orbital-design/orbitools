@@ -9,7 +9,7 @@
  */
 
 import { registerBlockType } from '@wordpress/blocks';
-import { group as icon } from '@wordpress/icons';
+import { groupIcon as icon } from './icons';
 
 // Import block components and metadata
 import Edit from './edit';

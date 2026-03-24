@@ -82,9 +82,8 @@ class Group extends Module_Base
             \add_action('init', [$this, 'register_block']);
         }
         
-        // Filter out the default wp-block-orb-group class
+        // Filter CSS selectors for theme.json styling support
         \add_filter('wp_get_block_css_selector', [$this, 'filter_block_css_selector'], 10, 3);
-        \add_filter('render_block', [$this, 'filter_block_classes'], 10, 2);
     }
 
     /**
@@ -95,7 +94,9 @@ class Group extends Module_Base
         $block_dir = ORBITOOLS_DIR . 'build/blocks/group/';
 
         if (file_exists($block_dir . 'block.json')) {
-            \register_block_type($block_dir);
+            \register_block_type($block_dir, [
+                'render_callback' => [$this, 'render_callback']
+            ]);
         }
     }
 
@@ -125,35 +126,6 @@ class Group extends Module_Base
     }
 
     /**
-     * Filter block HTML to remove WordPress core classes
-     */
-    public function filter_block_classes($block_content, $block): string
-    {
-        // Only process our group block
-        if ($block['blockName'] === 'orb/group') {
-            // Remove all WordPress core classes that begin with "wp-"
-            $block_content = preg_replace('/\s+wp-[a-zA-Z0-9\-_]+/', '', $block_content);
-            $block_content = preg_replace('/^wp-[a-zA-Z0-9\-_]+\s+/', '', $block_content);
-            $block_content = preg_replace('/class="wp-[a-zA-Z0-9\-_]+(\s+[^"]*)?"/','class="$1"', $block_content);
-            $block_content = preg_replace('/class="([^"]*\s+)?wp-[a-zA-Z0-9\-_]+(\s+[^"]*)?"/','class="$1$2"', $block_content);
-            
-            // Remove all WordPress core classes that begin with "is-"
-            $block_content = preg_replace('/\s+is-[a-zA-Z0-9\-_]+/', '', $block_content);
-            $block_content = preg_replace('/^is-[a-zA-Z0-9\-_]+\s+/', '', $block_content);
-            $block_content = preg_replace('/class="is-[a-zA-Z0-9\-_]+(\s+[^"]*)?"/','class="$1"', $block_content);
-            $block_content = preg_replace('/class="([^"]*\s+)?is-[a-zA-Z0-9\-_]+(\s+[^"]*)?"/','class="$1$2"', $block_content);
-            
-            // Clean up any empty class attributes or double spaces
-            $block_content = preg_replace('/class="\s*"/', '', $block_content);
-            $block_content = preg_replace('/class="(\s+)"/', 'class="$1"', $block_content);
-            $block_content = preg_replace('/\s+/', ' ', $block_content);
-            $block_content = trim($block_content);
-        }
-        
-        return $block_content;
-    }
-
-    /**
      * Render callback for Group block
      *
      * Creates a flexible layout container with semantic HTML tag support.
@@ -166,12 +138,8 @@ class Group extends Module_Base
      */
     public function render_callback(array $attributes, string $content, \WP_Block $block): string
     {
-        // Sanitize and default attributes
+        // Sanitize tag name
         $tagName = \sanitize_text_field($attributes['tagName'] ?? 'div');
-        $templateLock = $attributes['templateLock'] ?? false;
-        $allowedBlocks = $attributes['allowedBlocks'] ?? null;
-
-        // Validate tag name - ensure it's a valid HTML tag
         $allowed_tags = ['div', 'header', 'main', 'section', 'article', 'aside', 'footer', 'nav', 'figure', 'details', 'summary', 'fieldset', 'hgroup'];
         if (!in_array($tagName, $allowed_tags, true)) {
             $tagName = 'div';
@@ -182,40 +150,155 @@ class Group extends Module_Base
         $layoutType = $layout['type'] ?? 'group';
         $variationClass = $this->getVariationClass($layoutType);
 
-        // Build base classes
-        $group_block_classes = [
-            $variationClass
+        // Content width constraint
+        $align = $attributes['align'] ?? '';
+        $restrict_content_width = $attributes['restrictContentWidth'] ?? false;
+        $needs_wrapper = ($align === 'full') && $restrict_content_width;
+
+        // Get wrapper attributes from WordPress and extract existing classes
+        $wrapper_attributes = \get_block_wrapper_attributes();
+        $existing_classes = '';
+        if (preg_match('/class=["\']([^"\']*)["\']/', $wrapper_attributes, $matches)) {
+            $existing_classes = $matches[1];
+        }
+
+        if ($needs_wrapper) {
+            // Dual-wrapper: outer gets alignment + background/color, inner gets layout + spacings
+            $wrapper_classes = $this->get_wrapper_classes($existing_classes);
+            $inner_classes = $this->get_inner_classes($existing_classes);
+
+            $has_variation_class = strpos(' ' . $inner_classes . ' ', ' ' . $variationClass . ' ') !== false;
+            $base_classes = $has_variation_class
+                ? $inner_classes
+                : trim($variationClass . ' ' . $inner_classes);
+            $all_classes = SpacingsRenderer::add_spacings($base_classes, $attributes);
+        } else {
+            // Filter out WordPress core classes (wp-block-orb-group, wp-*, is-*)
+            $filtered_classes = $this->filter_wordpress_classes($existing_classes);
+
+            // Build our classes: variation class + filtered WP classes + spacings
+            $has_variation_class = strpos(' ' . $filtered_classes . ' ', ' ' . $variationClass . ' ') !== false;
+            $base_classes = $has_variation_class
+                ? $filtered_classes
+                : trim($variationClass . ' ' . $filtered_classes);
+            $all_classes = SpacingsRenderer::add_spacings($base_classes, $attributes);
+        }
+
+        // Extract non-class attributes (style, id, etc.)
+        $other_attrs = preg_replace('/class=["\'][^"\']*["\']/', '', $wrapper_attributes);
+        $other_attrs = trim($other_attrs);
+
+        // Generate flex data attributes for row/stack variants
+        $data_attrs_html = '';
+        if ($layoutType === 'group-row' || $layoutType === 'group-stack') {
+            $data_attrs_html = $this->generate_flex_data_attributes($attributes, $layoutType);
+        }
+
+        // Content constraint data attribute
+        if ($needs_wrapper) {
+            $data_attrs_html .= ' data-constrain="true"';
+        }
+
+        // Render inner blocks
+        $inner_blocks_content = '';
+        if (!empty($block->inner_blocks)) {
+            foreach ($block->inner_blocks as $inner_block) {
+                $inner_blocks_content .= $inner_block->render();
+            }
+        }
+
+        if ($needs_wrapper) {
+            // Full-width with content constraint: outer wrapper + inner layout div
+            return sprintf(
+                '<%s class="%s"><%s%s class="%s"%s>%s</%s></%s>',
+                \esc_attr($tagName),
+                \esc_attr($wrapper_classes),
+                'div',
+                $other_attrs ? ' ' . $other_attrs : '',
+                \esc_attr($all_classes),
+                $data_attrs_html,
+                $inner_blocks_content,
+                'div',
+                \esc_attr($tagName)
+            );
+        }
+
+        return sprintf(
+            '<%s%s class="%s"%s>%s</%s>',
+            \esc_attr($tagName),
+            $other_attrs ? ' ' . $other_attrs : '',
+            \esc_attr($all_classes),
+            $data_attrs_html,
+            $inner_blocks_content,
+            \esc_attr($tagName)
+        );
+    }
+
+    /**
+     * Filter out WordPress core classes from the class string
+     */
+    private function filter_wordpress_classes(string $classes): string
+    {
+        $class_array = array_filter(explode(' ', $classes));
+        $filtered = array_filter($class_array, function ($class) {
+            // Remove wp-block-orb-group and other wp- prefixed classes
+            if (strpos($class, 'wp-') === 0) {
+                return false;
+            }
+            // Remove is- prefixed classes
+            if (strpos($class, 'is-') === 0) {
+                return false;
+            }
+            return true;
+        });
+        return implode(' ', $filtered);
+    }
+
+    /**
+     * Generate flex data attributes for row/stack variants
+     */
+    private function generate_flex_data_attributes(array $attributes, string $layoutType): string
+    {
+        $data_attrs = [];
+
+        $align_items = $attributes['alignItems'] ?? 'stretch';
+        $justify_content = $attributes['justifyContent'] ?? 'flex-start';
+        $flex_wrap = $attributes['flexWrap'] ?? 'nowrap';
+
+        $align_mappings = [
+            'flex-start' => 'start',
+            'flex-end' => 'end',
+            'center' => 'center',
         ];
 
-        // Build base classes and add OrbiTools spacing controls
-        $base_classes = $this->get_css_classes($group_block_classes);
-        $classes_with_spacings = SpacingsRenderer::add_spacings($base_classes, $attributes);
-        
-        // Clean up any extra whitespace and build class attribute manually
-        $clean_classes = trim(preg_replace('/\s+/', ' ', $classes_with_spacings));
+        $justify_mappings = [
+            'flex-start' => 'start',
+            'flex-end' => 'end',
+            'center' => 'center',
+            'space-between' => 'between',
+            'space-around' => 'around',
+            'space-evenly' => 'evenly',
+        ];
 
-        // Get wrapper attributes from WordPress without class, then add our clean class
-        $wrapper_attributes = \get_block_wrapper_attributes();
-        $wrapper_attributes .= sprintf(' class="%s"', \esc_attr($clean_classes));
+        // Cross-axis alignment (only when non-default)
+        if ($align_items !== 'stretch') {
+            $data_attrs['data-align'] = $align_mappings[$align_items] ?? $align_items;
+        }
 
-        $allowed_html = $this->get_kses_allowed_html();
+        // Main-axis alignment (only when non-default)
+        if ($justify_content !== 'flex-start') {
+            $data_attrs['data-justify'] = $justify_mappings[$justify_content] ?? $justify_content;
+        }
 
-        // Start building the HTML structure
-        $html = sprintf(
-            '<%s %s>',
-            \esc_attr($tagName),
-            \wp_kses_post($wrapper_attributes)
-        );
+        // Flex wrap (row only, only when non-default)
+        if ($layoutType === 'group-row' && $flex_wrap !== 'nowrap') {
+            $data_attrs['data-wrap'] = $flex_wrap;
+        }
 
-        // Add inner wrapper for content
-        $html .= '<div class="' . $variationClass . '__inner">';
-        
-        // Add inner blocks content
-        $html .= \wp_kses($content, $allowed_html);
-
-        // Close wrappers
-        $html .= '</div>';
-        $html .= sprintf('</%s>', \esc_attr($tagName));
+        $html = '';
+        foreach ($data_attrs as $attr => $value) {
+            $html .= ' ' . \esc_attr($attr) . '="' . \esc_attr($value) . '"';
+        }
 
         return $html;
     }
@@ -236,132 +319,63 @@ class Group extends Module_Base
     }
 
     /**
+     * Regex for wrapper-bound classes (background/text colors)
+     */
+    private const WRAPPER_CLASS_REGEX = '/^(?:has-background|has-text-color|has-link-color|has-.*-background-color|has-.*-color|has-vivid-.*|has-pale-.*|has-luminous-.*)$/';
+
+    /**
+     * Regex for inner-excluded classes (wrapper classes + alignment + block name)
+     */
+    private const INNER_EXCLUDE_REGEX = '/^(?:alignfull|alignwide|wp-block-orb-group|has-background|has-text-color|has-link-color|has-.*-background-color|has-.*-color|has-vivid-.*|has-pale-.*|has-luminous-.*)$/';
+
+    /**
+     * Get classes for the outer wrapper div (alignment + background/text colors)
+     */
+    private function get_wrapper_classes(string $class_names): string
+    {
+        if (empty($class_names)) {
+            return 'alignfull';
+        }
+
+        $classes = array_filter(explode(' ', $class_names));
+        $wrapper_classes = ['alignfull'];
+
+        foreach ($classes as $class) {
+            if (preg_match(self::WRAPPER_CLASS_REGEX, $class)) {
+                $wrapper_classes[] = $class;
+            }
+        }
+
+        return implode(' ', array_unique($wrapper_classes));
+    }
+
+    /**
+     * Get classes for the inner div (layout and other functionality)
+     */
+    private function get_inner_classes(string $class_names): string
+    {
+        if (empty($class_names)) {
+            return '';
+        }
+
+        $classes = array_filter(explode(' ', $class_names));
+        $inner_classes = [];
+
+        foreach ($classes as $class) {
+            // Exclude wrapper-bound and WP core classes
+            if (!preg_match(self::INNER_EXCLUDE_REGEX, $class) && strpos($class, 'wp-') !== 0 && strpos($class, 'is-') !== 0) {
+                $inner_classes[] = $class;
+            }
+        }
+
+        return implode(' ', $inner_classes);
+    }
+
+    /**
      * Get default settings
      */
     public function get_default_settings(): array
     {
         return [];
-    }
-
-    /**
-     * Array to css class.
-     *
-     * @param array<int|string, ?mixed> $classes_array css classes array.
-     *
-     * @return string
-     * @since  1.0.0
-     * @example
-     * <code>
-     *   ['class-a', 'class-b']
-     *   // or
-     *   ['class-a'=>true, 'class-b'=>false, 'class-c'=>'', 'class-e'=>null, 'class-d'=>'hello']
-     * </code>
-     */
-    public function get_css_classes(array $classes_array = array()): string
-    {
-        $classes = array();
-        foreach ($classes_array as $class_name => $should_include) {
-            // Is class assign by numeric array. Like: ['class-a', 'class-b'].
-            if (is_int($class_name)) {
-                if (!is_string($should_include)) {
-                    continue;
-                }
-
-                if ($this->is_empty_string($should_include)) {
-                    continue;
-                }
-
-                $classes[] = $should_include;
-                continue;
-            }
-
-            if (false === $should_include) {
-                continue;
-            }
-
-            if (is_string($should_include) && $this->is_empty_string($should_include)) {
-                continue;
-            }
-
-            if (is_null($should_include)) {
-                continue;
-            }
-
-            if (is_array($should_include) && $this->is_empty_array($should_include)) {
-                continue;
-            }
-
-            // Is class assign by associative array.
-            // Like: ['class-a'=>true, 'class-b'=>false, class-c'=>'', 'class-d'=>'hello', 'class-x'=>null, 'class-y'=>array()].
-            $classes[] = $class_name;
-        }
-
-        return implode(' ', array_unique($classes));
-    }
-
-    /**
-     * Returns an array of allowed HTML tags and attributes for a given context.
-     *
-     * @param array<string, mixed> $args extra argument.
-     *
-     * @return array<string, mixed>
-     * @since 1.0.0
-     */
-    public function get_kses_allowed_html(array $args = array()): array
-    {
-        $defaults = \wp_kses_allowed_html('post');
-
-        $tags = array(
-            'svg'   => array(
-                'class',
-                'aria-hidden',
-                'aria-labelledby',
-                'role',
-                'xmlns',
-                'width',
-                'height',
-                'viewbox',
-                'height',
-            ),
-            'g'     => array('fill'),
-            'title' => array('title'),
-            'path'  => array('d', 'fill'),
-        );
-
-        $allowed_args = array_reduce(
-            array_keys($tags),
-            function (array $carry, string $tag) use ($tags) {
-                $carry[$tag] = array_fill_keys($tags[$tag], true);
-
-                return $carry;
-            },
-            array()
-        );
-
-        return array_merge($defaults, $allowed_args, $args);
-    }
-
-    /**
-     * Check is string is empty.
-     *
-     * @param string $check_value Check value.
-     *
-     * @return bool
-     */
-    public function is_empty_string(string $check_value = ''): bool
-    {
-        return 0 === strlen(trim($check_value));
-    }
-
-    /**
-     * Check numeric array is empty.
-     *
-     * @param array<int|string, ?mixed> $items Check array.
-     *
-     * @return bool
-     */
-    public function is_empty_array(array $items = array()): bool
-    {
-        return 0 === count($items);
     }
 }

@@ -18,7 +18,6 @@
 .orb-group,
 .orb-row,
 .orb-stack {
-	// This block has customizable padding, border-box makes that more predictable.
 	box-sizing: border-box;
 }
 
@@ -38,4 +37,37 @@
 	display: flex;
 	flex-direction: column;
 	gap: 1rem;
+}
+
+// Flex alignment via data attributes (shared by row & stack)
+.orb-row,
+.orb-stack {
+	// Cross-axis alignment
+	&[data-align="start"]   { align-items: flex-start; }
+	&[data-align="center"]  { align-items: center; }
+	&[data-align="end"]     { align-items: flex-end; }
+
+	// Main-axis alignment
+	&[data-justify="center"]  { justify-content: center; }
+	&[data-justify="end"]     { justify-content: flex-end; }
+	&[data-justify="between"] { justify-content: space-between; }
+	&[data-justify="around"]  { justify-content: space-around; }
+	&[data-justify="evenly"]  { justify-content: space-evenly; }
+}
+
+// Wrap (row only)
+.orb-row {
+	&[data-wrap="wrap"]         { flex-wrap: wrap; }
+	&[data-wrap="wrap-reverse"] { flex-wrap: wrap-reverse; }
+}
+
+// Content width constraint (full-width blocks with constrain enabled)
+.orb-group,
+.orb-row,
+.orb-stack {
+	&[data-constrain="true"] {
+		max-width: var(--wp--style--global--content-size, 1200px);
+		margin-left: auto;
+		margin-right: auto;
+	}
 }

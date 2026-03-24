@@ -2,7 +2,7 @@
  * WordPress dependencies
  */
 import { __, _x } from '@wordpress/i18n';
-import { group, row, stack } from '@wordpress/icons';
+import { groupIcon, rowIcon, stackIcon } from './icons';
 
 const example = {
 	innerBlocks: [
@@ -69,7 +69,7 @@ const variations = [
 			! blockAttributes.layout ||
 			! blockAttributes.layout?.type ||
 			blockAttributes.layout?.type === 'group',
-		icon: group,
+		icon: groupIcon,
 	},
 	{
 		name: 'group-row',
@@ -79,7 +79,7 @@ const variations = [
 		scope: [ 'block', 'inserter', 'transform' ],
 		isActive: ( blockAttributes: any ) =>
 			blockAttributes.layout?.type === 'group-row',
-		icon: row,
+		icon: rowIcon,
 		example,
 	},
 	{
@@ -90,7 +90,7 @@ const variations = [
 		scope: [ 'block', 'inserter', 'transform' ],
 		isActive: ( blockAttributes: any ) =>
 			blockAttributes.layout?.type === 'group-stack',
-		icon: stack,
+		icon: stackIcon,
 		example,
 	},
 ];

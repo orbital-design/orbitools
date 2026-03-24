@@ -230,7 +230,7 @@ class Loader
         $this->modules[] = new Spacer();
         $this->modules[] = new Read_More();
         $this->modules[] = new Marquee();
-        // $this->modules[] = new Group();
+        $this->modules[] = new Group();
         $this->modules[] = new Spacings_Controls();
         $this->modules[] = new User_Avatars();
     }

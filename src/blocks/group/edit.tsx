@@ -16,12 +16,13 @@ import { View } from '@wordpress/primitives';
  * Internal dependencies
  */
 import GroupPlaceHolder, { useShouldShowPlaceHolder } from './placeholder';
+import LayoutControls from './layout-controls';
 
 
 function GroupEdit( { attributes, name, setAttributes, clientId } ) {
 	const { hasInnerBlocks } = useSelect(
 		( select ) => {
-			const { getBlock, getSettings } = select( blockEditorStore );
+			const { getBlock } = select( blockEditorStore );
 			const block = getBlock( clientId );
 			return {
 				hasInnerBlocks: !! ( block && block.innerBlocks.length )
@@ -33,10 +34,19 @@ function GroupEdit( { attributes, name, setAttributes, clientId } ) {
 	const {
 		templateLock,
 		allowedBlocks,
-		layout
+		layout,
+		alignItems = 'stretch',
+		justifyContent = 'flex-start',
+		flexWrap = 'nowrap',
+		align,
+		restrictContentWidth = false,
 	} = attributes;
-	
+
 	const layoutType = layout?.type || 'group';
+	const isRow = layoutType === 'group-row';
+	const isStack = layoutType === 'group-stack';
+	const isFlex = isRow || isStack;
+	const showLayoutPanel = isFlex || align === 'full';
 
 	// Get variation-specific class name
 	const getVariationClass = (type: string) => {
@@ -67,14 +77,8 @@ function GroupEdit( { attributes, name, setAttributes, clientId } ) {
 	// Default to the regular appender being rendered.
 	let renderAppender;
 	if ( showPlaceholder ) {
-		// In the placeholder state, ensure the appender is not rendered.
-		// This is needed because `...innerBlocksProps` is used in the placeholder
-		// state so that blocks can dragged onto the placeholder area
-		// from both the list view and in the editor canvas.
 		renderAppender = false;
 	} else if ( ! hasInnerBlocks ) {
-		// When there is no placeholder, but the block is also empty,
-		// use the larger button appender.
 		renderAppender = InnerBlocks.ButtonBlockAppender;
 	}
 
@@ -98,6 +102,17 @@ function GroupEdit( { attributes, name, setAttributes, clientId } ) {
 
 	return (
 		<>
+			{ showLayoutPanel && (
+				<LayoutControls
+					variant={ isRow ? 'row' : ( isStack ? 'stack' : null ) }
+					alignItems={ alignItems }
+					justifyContent={ justifyContent }
+					flexWrap={ flexWrap }
+					align={ align }
+					restrictContentWidth={ restrictContentWidth }
+					setAttributes={ setAttributes }
+				/>
+			) }
 			{ showPlaceholder && (
 				<View>
 					{ innerBlocksProps.children }
