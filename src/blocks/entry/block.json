@@ -12,7 +12,7 @@
     "supports": {
         "html": false,
         "reusable": false,
-        "lock": false,
+        "lock": true,
         "background": {
 			"backgroundImage": true,
 			"backgroundSize": true,
@@ -40,6 +40,13 @@
         }
     },
     "attributes": {
+        "lock": {
+            "type": "object",
+            "default": {
+                "move": false,
+                "remove": true
+            }
+        },
         "width": {
             "type": "string",
             "default": ""
