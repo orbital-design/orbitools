@@ -19,7 +19,8 @@
 
         // Initialize each toggle button
         toggles.forEach(function(toggle) {
-            toggle.addEventListener('click', function() {
+            toggle.addEventListener('click', function(e) {
+                e.preventDefault();
                 // Check current state from accessibility attribute
                 const expanded = this.getAttribute('aria-expanded') === 'true';
 
