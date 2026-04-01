@@ -10,8 +10,8 @@
 #base_padding .spacing-sizes-control__range-control ~ .components-button {
     display: none !important;
 }
-// Nested spacings panel inside tabs
-.orbitools-nested-spacings-panel .components-tools-panel {
+// Nested ToolsPanel inside responsive tab controls
+.orbitools-nested-panel .components-tools-panel {
     border-top: none !important;
     padding: 8px 0 0 !important;
 

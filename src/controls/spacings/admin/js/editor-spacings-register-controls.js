@@ -566,8 +566,7 @@ import { getBreakpointOptions } from '../../../../core/utils/breakpoints.js';
 
         // Nested ToolsPanel with ItemGroup for the active tab's gap/padding/margin
         const activeControls = effectiveActiveTab ? wp.element.createElement('div', {
-            className: 'orbitools-nested-spacings-panel',
-            style: { overflow: 'hidden' }
+            className: 'orbitools-nested-panel'
         },
             wp.element.createElement(ToolsPanel, {
                 label: nestedPanelLabel,
