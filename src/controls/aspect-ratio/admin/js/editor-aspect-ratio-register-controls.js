@@ -105,16 +105,38 @@ import { getBreakpointOptions } from '../../../../core/utils/breakpoints.js';
             onAspectRatioChange(updated);
         }
 
-        // Active tab data for label
+        // Active tab data for nested panel label
         var activeTabData = null;
         allBreakpoints.forEach(function(bp) {
             if (bp.slug === activeTab) activeTabData = bp;
         });
-        var activeLabel = activeTabData
+        var nestedPanelLabel = activeTabData
             ? (activeTabData.slug === 'base'
                 ? activeTabData.tooltip
                 : activeTabData.tooltip + '+')
-            : '';
+            : 'Aspect Ratio';
+
+        // Controls for the active tab
+        var activeControls = activeTab ? createElement('div', {
+            style: { paddingTop: '8px' }
+        },
+            createElement('label', {
+                style: {
+                    display: 'block',
+                    fontSize: '11px',
+                    fontWeight: 500,
+                    color: '#757575',
+                    marginBottom: '4px'
+                }
+            }, nestedPanelLabel),
+            createElement(SelectControl, {
+                value: getValue(activeTab),
+                options: selectOptions,
+                onChange: function(value) { setValue(activeTab, value); },
+                __next40pxDefaultSize: true,
+                __nextHasNoMarginBottom: true
+            })
+        ) : null;
 
         return createElement(PanelBody, {
             title: 'Aspect Ratio',
@@ -167,25 +189,8 @@ import { getBreakpointOptions } from '../../../../core/utils/breakpoints.js';
                     );
                 })
             ),
-            // Label + select for active tab
-            createElement('div', { style: { paddingTop: '8px' } },
-                createElement('label', {
-                    style: {
-                        display: 'block',
-                        fontSize: '11px',
-                        fontWeight: 500,
-                        color: '#757575',
-                        marginBottom: '4px'
-                    }
-                }, activeLabel),
-                createElement(SelectControl, {
-                    value: getValue(activeTab),
-                    options: selectOptions,
-                    onChange: function(value) { setValue(activeTab, value); },
-                    __next40pxDefaultSize: true,
-                    __nextHasNoMarginBottom: true
-                })
-            )
+            // Active tab's controls
+            activeControls
         );
     }
 
