@@ -33,6 +33,9 @@
                 "gap": true,
                 "margin": false,
                 "padding": true
+            },
+            "aspectRatio": {
+                "breakpoints": true
             }
         },
         "typography": {

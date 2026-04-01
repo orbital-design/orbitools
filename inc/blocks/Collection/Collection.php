@@ -4,6 +4,7 @@ namespace Orbitools\Blocks\Collection;
 
 use Orbitools\Core\Abstracts\Module_Base;
 use Orbitools\Controls\Spacings_Controls\SpacingsRenderer;
+use Orbitools\Controls\AspectRatio_Controls\AspectRatioRenderer;
 
 // Prevent direct access
 if (!defined('ABSPATH')) {
@@ -157,12 +158,14 @@ class Collection extends Module_Base
             // Combine collection classes + layout classes + spacings for inner div
             $base_classes = trim($collection_classes . ' ' . $inner_classes);
             $all_classes = SpacingsRenderer::add_spacings($base_classes, $attributes);
+            $all_classes = AspectRatioRenderer::add_aspect_ratio($all_classes, $attributes);
         } else {
             // For normal output: remove wp-block class, keep other classes
             $filtered_classes = $this->filter_wordpress_classes($existing_classes, ['wp-block-orb-collection']);
             // Combine classes and add spacings
             $base_classes = trim($collection_classes . ' ' . $filtered_classes);
             $all_classes = SpacingsRenderer::add_spacings($base_classes, $attributes);
+            $all_classes = AspectRatioRenderer::add_aspect_ratio($all_classes, $attributes);
         }
 
         // Format data attributes as HTML attributes

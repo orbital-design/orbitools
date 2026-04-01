@@ -21,6 +21,9 @@ use Orbitools\Blocks\Marquee\Marquee;
 use Orbitools\Blocks\Group\Group;
 use Orbitools\Modules\User_Avatars\User_Avatars;
 use Orbitools\Controls\Spacings_Controls\Spacings_Controls;
+use Orbitools\Core\AspectRatioConfig;
+use Orbitools\Core\Helpers\AspectRatio_CSS_Generator;
+use Orbitools\Controls\AspectRatio_Controls\AspectRatio_Controls;
 
 /**
  * Class Loader
@@ -205,6 +208,10 @@ class Loader
         // Initialize Gaps CSS generation
         Gaps_CSS_Generator::init();
 
+        // Initialize Aspect Ratio Configuration and CSS generation
+        AspectRatioConfig::init();
+        AspectRatio_CSS_Generator::init();
+
         // Initialize Toolbar FAB
         new Toolbar_FAB();
 
@@ -232,6 +239,7 @@ class Loader
         $this->modules[] = new Marquee();
         $this->modules[] = new Group();
         $this->modules[] = new Spacings_Controls();
+        $this->modules[] = new AspectRatio_Controls();
         $this->modules[] = new User_Avatars();
     }
 }

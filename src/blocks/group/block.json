@@ -70,9 +70,6 @@
 			"gradients": true,
 			"text": true
 		},
-		"dimensions": {
-			"aspectRatio": true
-		},
 		"shadow": true,
 		"orbitools": {
 			"spacings": {
@@ -80,6 +77,9 @@
 				"gap": true,
 				"margin": true,
 				"padding": true
+			},
+			"aspectRatio": {
+				"breakpoints": true
 			}
 		}
 	},

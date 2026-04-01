@@ -4,6 +4,7 @@ namespace Orbitools\Blocks\Entry;
 
 use Orbitools\Core\Abstracts\Module_Base;
 use Orbitools\Controls\Spacings_Controls\SpacingsRenderer;
+use Orbitools\Controls\AspectRatio_Controls\AspectRatioRenderer;
 
 // Prevent direct access
 if (!defined('ABSPATH')) {
@@ -144,6 +145,7 @@ class Entry extends Module_Base
         // Combine classes and add spacings  
         $base_classes = trim($entry_classes . ' ' . $filtered_classes);
         $all_classes = SpacingsRenderer::add_spacings($base_classes, $attributes);
+        $all_classes = AspectRatioRenderer::add_aspect_ratio($all_classes, $attributes);
 
         // Extract other attributes but replace class
         $other_attrs = preg_replace('/class=["\'][^"\']*["\']/', '', $wrapper_attributes);

@@ -43,6 +43,10 @@ module.exports = {
         'admin/js/controls/spacings/editor-spacings-attribute-registration': path.resolve(process.cwd(), 'src', 'controls', 'spacings','admin', 'js','editor-spacings-attribute-registration.js'),
         'admin/js/controls/spacings/editor-spacings-classname-application': path.resolve(process.cwd(), 'src', 'controls', 'spacings','admin', 'js','editor-spacings-classname-application.js'),
         'admin/js/controls/spacings/editor-spacings-register-controls': path.resolve(process.cwd(), 'src', 'controls', 'spacings','admin', 'js','editor-spacings-register-controls.js'),
+        // - JS ~ Controls ~ Aspect Ratio
+        'admin/js/controls/aspect-ratio/editor-aspect-ratio-attribute-registration': path.resolve(process.cwd(), 'src', 'controls', 'aspect-ratio','admin', 'js','editor-aspect-ratio-attribute-registration.js'),
+        'admin/js/controls/aspect-ratio/editor-aspect-ratio-classname-application': path.resolve(process.cwd(), 'src', 'controls', 'aspect-ratio','admin', 'js','editor-aspect-ratio-classname-application.js'),
+        'admin/js/controls/aspect-ratio/editor-aspect-ratio-register-controls': path.resolve(process.cwd(), 'src', 'controls', 'aspect-ratio','admin', 'js','editor-aspect-ratio-register-controls.js'),
 
     },
     output: {

@@ -106,9 +106,14 @@ class SpacingConfig {
         }
         
         $config = self::resolve_breakpoints_priority();
-        
+
+        // Filter out 'base' entry — it's config-only, not a media query breakpoint
+        $config = array_values(array_filter($config, function($bp) {
+            return ($bp['slug'] ?? '') !== 'base';
+        }));
+
         \wp_cache_set(self::BREAKPOINTS_CACHE_KEY, $config, 'orbitools', self::CACHE_EXPIRATION);
-        
+
         return $config;
     }
     

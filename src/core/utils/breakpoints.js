@@ -20,22 +20,28 @@ export function getBreakpointOptions(blockName = '') {
     // 4. Empty array (no breakpoints available)
 
 
+    // Helper: filter out the "base" entry (used for base config, not a media query breakpoint)
+    function filterBase(bps) {
+        if (!Array.isArray(bps)) return bps;
+        return bps.filter(function(bp) { return bp.slug !== 'base'; });
+    }
+
     // 1. Check block-specific configuration first
     const configData = window.orbitoolsSpacingsConfig || {};
     if (configData[blockName] && configData[blockName].breakpoints) {
-        return configData[blockName].breakpoints;
+        return filterBase(configData[blockName].breakpoints);
     }
 
     // 2. Check theme orbitools.json settings
     const themeConfig = window.orbitoolsThemeConfig || {};
     if (themeConfig.settings && themeConfig.settings.breakpoints) {
-        return themeConfig.settings.breakpoints;
+        return filterBase(themeConfig.settings.breakpoints);
     }
 
     // 3. Check global plugin breakpoints configuration (final fallback)
     const globalBreakpoints = window.orbitoolsBreakpoints;
     if (globalBreakpoints && Array.isArray(globalBreakpoints)) {
-        return globalBreakpoints;
+        return filterBase(globalBreakpoints);
     }
 
     // 4. Return empty array - no breakpoints configured

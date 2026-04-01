@@ -4,6 +4,7 @@ namespace Orbitools\Blocks\Group;
 
 use Orbitools\Core\Abstracts\Module_Base;
 use Orbitools\Controls\Spacings_Controls\SpacingsRenderer;
+use Orbitools\Controls\AspectRatio_Controls\AspectRatioRenderer;
 
 // Prevent direct access
 if (!defined('ABSPATH')) {
@@ -172,6 +173,7 @@ class Group extends Module_Base
                 ? $inner_classes
                 : trim($variationClass . ' ' . $inner_classes);
             $all_classes = SpacingsRenderer::add_spacings($base_classes, $attributes);
+            $all_classes = AspectRatioRenderer::add_aspect_ratio($all_classes, $attributes);
         } else {
             // Filter out WordPress core classes (wp-block-orb-group, wp-*, is-*)
             $filtered_classes = $this->filter_wordpress_classes($existing_classes);
@@ -182,6 +184,7 @@ class Group extends Module_Base
                 ? $filtered_classes
                 : trim($variationClass . ' ' . $filtered_classes);
             $all_classes = SpacingsRenderer::add_spacings($base_classes, $attributes);
+            $all_classes = AspectRatioRenderer::add_aspect_ratio($all_classes, $attributes);
         }
 
         // Extract non-class attributes (style, id, etc.)
