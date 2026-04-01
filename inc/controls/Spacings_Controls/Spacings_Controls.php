@@ -99,6 +99,18 @@ class Spacings_Controls extends Module_Base {
             $this->get_version(),
             true
         );
+
+        // Enqueue editor styles
+        $css_url = ORBITOOLS_URL . 'build/admin/css/editor.css';
+        $css_file = ORBITOOLS_DIR . 'build/admin/css/editor.css';
+        if (file_exists($css_file)) {
+            \wp_enqueue_style(
+                'orbitools-editor',
+                $css_url,
+                [],
+                (string) filemtime($css_file)
+            );
+        }
     }
 
     /**
