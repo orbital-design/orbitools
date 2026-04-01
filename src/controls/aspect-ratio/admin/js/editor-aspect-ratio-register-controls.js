@@ -147,7 +147,7 @@ import { getBreakpointOptions } from '../../../../core/utils/breakpoints.js';
                                 justifyContent: 'center',
                                 padding: '6px 4px',
                                 border: 'none',
-                                borderRadius: '3px',
+                                borderRadius: '4px',
                                 background: isActive ? '#fff' : 'transparent',
                                 boxShadow: isActive ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
                                 color: isActive ? '#1e1e1e' : '#757575',
@@ -174,7 +174,6 @@ import { getBreakpointOptions } from '../../../../core/utils/breakpoints.js';
                         display: 'block',
                         fontSize: '11px',
                         fontWeight: 500,
-                        textTransform: 'uppercase',
                         color: '#757575',
                         marginBottom: '4px'
                     }

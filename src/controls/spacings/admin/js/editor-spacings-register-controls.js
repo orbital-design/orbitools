@@ -39,8 +39,7 @@ import { getBreakpointOptions } from '../../../../core/utils/breakpoints.js';
         RangeControl,
         Button,
         Tooltip,
-        __experimentalItemGroup: ItemGroup,
-        __experimentalItem: Item
+        __experimentalVStack: VStack
     } = wp.components;
 
 
@@ -321,7 +320,6 @@ import { getBreakpointOptions } from '../../../../core/utils/breakpoints.js';
                         style: {
                             fontSize: '11px',
                             fontWeight: '500',
-                            textTransform: 'uppercase',
                             color: '#757575',
                             margin: 0
                         }
@@ -479,16 +477,15 @@ import { getBreakpointOptions } from '../../../../core/utils/breakpoints.js';
                         style: {
                             fontSize: '11px',
                             fontWeight: '500',
-                            textTransform: 'uppercase',
                             color: '#757575',
                             margin: 0
                         }
                     }, spacingLabels[spacingType]),
                     wp.element.createElement('span', {
                         style: {
-                            fontSize: '13px',
-                            fontWeight: '500',
-                            color: '#757575'
+                            fontSize: '11px',
+                            fontWeight: '400',
+                            color: '#949494'
                         }
                     }, getSpacingDisplayName(spacingSizes, value || ''))
                 ),
@@ -576,9 +573,8 @@ import { getBreakpointOptions } from '../../../../core/utils/breakpoints.js';
                 label: nestedPanelLabel,
                 panelId: `${effectiveActiveTab}-spacings-panel`
             },
-                wp.element.createElement(ItemGroup, {
-                    isBordered: true,
-                    isSeparated: true,
+                wp.element.createElement(VStack, {
+                    spacing: 1,
                     style: { gridColumn: '1 / -1' }
                 },
                     supports.gap && wp.element.createElement(ToolsPanelItem, {
@@ -590,11 +586,9 @@ import { getBreakpointOptions } from '../../../../core/utils/breakpoints.js';
                         isShownByDefault: false,
                         panelId: `${effectiveActiveTab}-spacings-panel`
                     },
-                        wp.element.createElement(Item, null,
-                            createSpacingControl(
-                                spacingPresets, 'gap', gap?.[effectiveActiveTab],
-                                (newValue) => { onGapChange({ ...gap, [effectiveActiveTab]: newValue }); }
-                            )
+                        createSpacingControl(
+                            spacingPresets, 'gap', gap?.[effectiveActiveTab],
+                            (newValue) => { onGapChange({ ...gap, [effectiveActiveTab]: newValue }); }
                         )
                     ),
                     supports.padding && wp.element.createElement(ToolsPanelItem, {
@@ -606,11 +600,9 @@ import { getBreakpointOptions } from '../../../../core/utils/breakpoints.js';
                         isShownByDefault: false,
                         panelId: `${effectiveActiveTab}-spacings-panel`
                     },
-                        wp.element.createElement(Item, null,
-                            createBoxControl(
-                                spacingPresets, 'padding', padding?.[effectiveActiveTab] || {},
-                                (newValue) => { onPaddingChange({ ...padding, [effectiveActiveTab]: newValue }); }
-                            )
+                        createBoxControl(
+                            spacingPresets, 'padding', padding?.[effectiveActiveTab] || {},
+                            (newValue) => { onPaddingChange({ ...padding, [effectiveActiveTab]: newValue }); }
                         )
                     ),
                     supports.margin && wp.element.createElement(ToolsPanelItem, {
@@ -622,11 +614,9 @@ import { getBreakpointOptions } from '../../../../core/utils/breakpoints.js';
                         isShownByDefault: false,
                         panelId: `${effectiveActiveTab}-spacings-panel`
                     },
-                        wp.element.createElement(Item, null,
-                            createBoxControl(
-                                spacingPresets, 'margin', margin?.[effectiveActiveTab] || {},
-                                (newValue) => { onMarginChange({ ...margin, [effectiveActiveTab]: newValue }); }
-                            )
+                        createBoxControl(
+                            spacingPresets, 'margin', margin?.[effectiveActiveTab] || {},
+                            (newValue) => { onMarginChange({ ...margin, [effectiveActiveTab]: newValue }); }
                         )
                     )
                 )
@@ -664,7 +654,7 @@ import { getBreakpointOptions } from '../../../../core/utils/breakpoints.js';
                                 justifyContent: 'center',
                                 padding: '6px 4px',
                                 border: 'none',
-                                borderRadius: '3px',
+                                borderRadius: '4px',
                                 background: isActive ? '#fff' : 'transparent',
                                 boxShadow: isActive ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
                                 color: isActive ? '#1e1e1e' : '#757575',
