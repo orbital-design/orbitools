@@ -48,6 +48,24 @@ class AspectRatioRenderer
     }
 
     /**
+     * Get aspect ratio classes from block attributes
+     *
+     * @param array $attributes Block attributes containing orbAspectRatio
+     * @param bool $as_array Whether to return as array instead of string
+     * @return string|array Aspect ratio classes as string or array
+     */
+    public static function get_all_aspect_ratio_classes(array $attributes, bool $as_array = false)
+    {
+        $ar_classes = self::get_aspect_ratio_classes($attributes['orbAspectRatio'] ?? []);
+
+        if ($as_array) {
+            return !empty($ar_classes) ? explode(' ', $ar_classes) : [];
+        }
+
+        return $ar_classes;
+    }
+
+    /**
      * Check if block has aspect ratio support
      *
      * @param string $block_name Block name (e.g., 'orb/group')
