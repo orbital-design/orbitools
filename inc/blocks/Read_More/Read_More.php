@@ -160,12 +160,19 @@ class Read_More extends Module_Base
             $text_html = sprintf('<span class="orb-read-more__text">%s</span>', \esc_html($open_text));
         }
 
+        // Fallback accessible label when the button has no visible text (icon-only)
+        $open_label = $open_text !== '' ? $open_text : __('Show more', 'orbitools');
+        $close_label = $close_text !== '' ? $close_text : __('Show less', 'orbitools');
+
         $html .= sprintf(
-            '<button type="button" id="%s" class="orb-read-more__toggle" aria-expanded="false" aria-controls="%s" data-open-text="%s" data-close-text="%s" data-icon-type="%s">%s%s</button>',
+            '<button type="button" id="%s" class="orb-read-more__toggle" aria-expanded="false" aria-label="%s" aria-controls="%s" data-open-text="%s" data-close-text="%s" data-open-label="%s" data-close-label="%s" data-icon-type="%s">%s%s</button>',
             \esc_attr($button_id),
+            \esc_attr($open_label),
             \esc_attr($content_id),
             \esc_attr($open_text),
             \esc_attr($close_text),
+            \esc_attr($open_label),
+            \esc_attr($close_label),
             \esc_attr($icon_type),
             $text_html,
             $icon_html

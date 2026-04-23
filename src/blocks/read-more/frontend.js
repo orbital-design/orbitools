@@ -32,6 +32,8 @@
                 // Empty strings are valid — user may want icon-only buttons
                 const openText = this.getAttribute('data-open-text') || '';
                 const closeText = this.getAttribute('data-close-text') || '';
+                const openLabel = this.getAttribute('data-open-label') || 'Show more';
+                const closeLabel = this.getAttribute('data-close-label') || 'Show less';
                 const iconType = this.getAttribute('data-icon-type') || 'chevron';
 
                 // Only proceed if we found the matching content area
@@ -40,6 +42,7 @@
                         // Currently open - close it
                         // Update accessibility attributes for screen readers
                         this.setAttribute('aria-expanded', 'false');
+                        this.setAttribute('aria-label', openLabel);
                         content.setAttribute('aria-hidden', 'true');
 
                         // Update button text and icon state, remove visual state class
@@ -52,6 +55,7 @@
                         // Currently closed - open it
                         // Update accessibility attributes for screen readers
                         this.setAttribute('aria-expanded', 'true');
+                        this.setAttribute('aria-label', closeLabel);
                         content.setAttribute('aria-hidden', 'false');
 
                         // Update button text and icon state, add visual state class
