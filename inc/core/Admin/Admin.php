@@ -22,20 +22,10 @@ class Admin
         add_action('init', [$this, 'init_adminkit']);
         add_action('admin_enqueue_scripts', [$this, 'enqueue_scripts']);
 
-        // Hook into settings save to detect module changes
-        // COMMENTED OUT FOR DEBUGGING
-        // add_action('orbitools_post_save_settings', [$this, 'detect_module_changes'], 10, 2);
-
-        // Setup filters (these don't use translations immediately)
-        // Use priority 20 so module filters (at default priority 10) run first
-        // This allows modules to add their sections before we build the final structure
+        // Module filters run at priority 10; ours run at 20 so module sections
+        // are already in place when we assemble the final structure.
         add_filter('orbitools_adminkit_structure', [$this, 'configure_admin_structure'], 20);
         add_filter('orbitools_adminkit_fields', [$this, 'get_settings_config'], 20);
-
-
-        // Override the default AJAX save handler to add module change detection
-        // COMMENTED OUT FOR DEBUGGING
-        // add_action('wp_ajax_orbitools_adminkit_save_settings_orbitools', [$this, 'custom_ajax_save_settings'], 5);
     }
 
     /**
@@ -256,37 +246,6 @@ class Admin
 
 
     /**
-     * Get module status HTML for display.
-     *
-     * NOTE: This method appears to be unused and may be legacy code.
-     * Consider removing if not needed.
-     *
-     * @return string HTML markup for module status.
-     */
-    private function get_module_status_html(): string
-    {
-        $settings = get_option('orbitools_settings', array());
-        $html = '<div class="orbitools-module-status">';
-
-        // Typography Presets status
-        $typography_enabled = !empty($settings['typography_presets_enabled']);
-        $typography_loaded = class_exists('\\Orbitools\\Modules\\Typography_Presets\\Typography_Presets');
-
-        if ($typography_enabled && $typography_loaded) {
-            $status = '<span style="color: green;">✓ ' . __('Active', 'orbitools') . '</span>';
-        } elseif ($typography_enabled && !$typography_loaded) {
-            $status = '<span style="color: orange;">⚠ ' . __('Enabled but not loaded', 'orbitools') . '</span>';
-        } else {
-            $status = '<span style="color: red;">✗ ' . __('Disabled', 'orbitools') . '</span>';
-        }
-
-        $html .= '<p>' . __('Typography Presets', 'orbitools') . ': ' . $status . '</p>';
-        $html .= '</div>';
-
-        return $html;
-    }
-
-    /**
      * Enqueue admin scripts and styles.
      *
      * @param string $hook Current admin page hook.
@@ -313,144 +272,5 @@ class Admin
             ORBITOOLS_VERSION,
             true
         );
-    }
-
-    /**
-     * Detect module state changes during settings save.
-     *
-     * Compares previous and new module states and stores change information
-     * in a transient for the AJAX response to trigger page reload.
-     *
-     * @param array $new_settings The new settings being saved.
-     * @param bool $save_result The result of the save operation.
-     * @return void
-     */
-    public function detect_module_changes(array $new_settings, bool $save_result): void
-    {
-        if (!$save_result) {
-            return;
-        }
-
-        $previous_settings = get_option('orbitools_settings', array());
-        $module_changes = $this->compare_module_states($previous_settings, $new_settings);
-
-        if (!empty($module_changes)) {
-            // Store changes in transient for AJAX response (60 second expiry)
-            set_transient('orbitools_modules_changed_' . get_current_user_id(), $module_changes, 60);
-        }
-    }
-
-    /**
-     * Compare module states between old and new settings.
-     *
-     * Identifies modules that have been enabled or disabled by comparing
-     * settings that end with '_enabled'.
-     *
-     * @param array $old_settings Previous settings.
-     * @param array $new_settings New settings.
-     * @return array Array of changed modules with from/to states.
-     */
-    private function compare_module_states(array $old_settings, array $new_settings): array
-    {
-        $changes = array();
-        $all_keys = array_unique(array_merge(array_keys($old_settings), array_keys($new_settings)));
-
-        foreach ($all_keys as $key) {
-            if (substr($key, -8) !== '_enabled') {
-                continue;
-            }
-
-            $old_value = $old_settings[$key] ?? '';
-            $new_value = $new_settings[$key] ?? '';
-
-            // Normalize boolean values for comparison
-            $old_enabled = !empty($old_value) && $old_value !== '0';
-            $new_enabled = !empty($new_value) && $new_value !== '0';
-
-            if ($old_enabled !== $new_enabled) {
-                $module_id = str_replace('_enabled', '', $key);
-                $changes[$module_id] = array(
-                    'from' => $old_enabled,
-                    'to' => $new_enabled,
-                    'action' => $new_enabled ? 'enabled' : 'disabled'
-                );
-            }
-        }
-
-        return $changes;
-    }
-
-    /**
-     * Custom AJAX save settings handler with module change detection.
-     *
-     * Overrides the default AdminKit AJAX handler to add module change detection
-     * and communicate changes back to the frontend for auto-reload functionality.
-     *
-     * @return void
-     */
-    public function custom_ajax_save_settings(): void
-    {
-        // Prevent double execution
-        remove_action('wp_ajax_orbitools_adminkit_save_settings_orbitools', [$this, 'custom_ajax_save_settings'], 5);
-
-        // Security checks
-        $nonce = $_POST['nonce'] ?? '';
-        if (!wp_verify_nonce($nonce, 'orbitools_adminkit_orbitools')) {
-            wp_send_json_error('Invalid nonce');
-            return;
-        }
-
-        if (!current_user_can('manage_options')) {
-            wp_send_json_error('Insufficient permissions');
-            return;
-        }
-
-        // Process settings data
-        $settings_json = $_POST['settings'] ?? '{}';
-        $settings_data = json_decode(stripslashes($settings_json), true);
-
-        if (!is_array($settings_data)) {
-            $settings_data = array();
-        }
-
-        // Save settings and trigger hooks
-        $result = $this->save_orbitools_settings($settings_data);
-
-        if ($result) {
-            // Check for module changes via transient
-            $module_changes = get_transient('orbitools_modules_changed_' . get_current_user_id());
-
-            if ($module_changes) {
-                delete_transient('orbitools_modules_changed_' . get_current_user_id());
-            }
-
-            wp_send_json_success(array(
-                'message' => 'Settings saved successfully',
-                'modules_changed' => !empty($module_changes),
-                'module_changes' => $module_changes ?: array()
-            ));
-        } else {
-            wp_send_json_error('Failed to save settings');
-        }
-    }
-
-    /**
-     * Save orbitools settings using the same logic as AdminKit.
-     *
-     * @param array $settings_data Settings data to save.
-     * @return bool Success status.
-     */
-    private function save_orbitools_settings(array $settings_data): bool
-    {
-        // Apply pre-save filters (similar to AdminKit)
-        $sanitized_data = apply_filters('orbitools_pre_save_settings', $settings_data);
-
-        // Save settings
-        $result = update_option('orbitools_settings', $sanitized_data);
-
-        // Trigger post-save action (this will run our module detection)
-        do_action('orbitools_post_save_settings', $sanitized_data, $result);
-
-        return $result;
     }
 }

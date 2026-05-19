@@ -60,14 +60,6 @@ class Layout_Guides extends Module_Base
     private $assets;
 
     /**
-     * Prevent multiple initialization
-     *
-     * @since 1.0.0
-     * @var bool
-     */
-    private static $initialized = false;
-
-    /**
      * Initialize the module
      *
      * @since 1.0.0

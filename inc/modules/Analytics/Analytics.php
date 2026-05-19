@@ -47,14 +47,6 @@ class Analytics extends Module_Base
     private $admin;
 
     /**
-     * Whether the module has been initialized
-     *
-     * @since 1.0.0
-     * @var bool
-     */
-    private static $initialized = false;
-
-    /**
      * Initialize the Analytics module
      *
      * Sets up the module by calling the parent constructor which handles

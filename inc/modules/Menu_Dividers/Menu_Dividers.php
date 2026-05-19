@@ -54,14 +54,6 @@ class Menu_Dividers extends Module_Base
     private $divider_manager;
 
     /**
-     * Whether the module has been initialized
-     *
-     * @since 1.0.0
-     * @var bool
-     */
-    private static $initialized = false;
-
-    /**
      * Initialize the Menu Dividers module
      *
      * Sets up the module by calling the parent constructor which handles

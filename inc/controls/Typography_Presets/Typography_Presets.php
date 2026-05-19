@@ -99,14 +99,6 @@ class Typography_Presets extends Module_Base
     private $assets;
 
     /**
-     * Whether the module has been initialized
-     *
-     * @since 1.0.0
-     * @var bool
-     */
-    private static $initialized = false;
-
-    /**
      * Cached allowed blocks list (avoids repeated DB queries)
      *
      * @var array|null
