@@ -16,17 +16,39 @@ class Settings_Manager
 {
     /**
      * Settings cache to avoid repeated database queries
-     * 
+     *
      * @var array|null
      */
     private static $settings_cache = null;
 
     /**
+     * Resolves the default-enabled state for a module slug when no setting
+     * is stored. Wired by Module_Manager to consult module.json manifests.
+     *
+     * @var callable|null
+     */
+    private static $default_enabled_resolver = null;
+
+    /**
      * The main settings option name in WordPress
-     * 
+     *
      * @var string
      */
     private const SETTINGS_OPTION = 'orbitools_settings';
+
+    /**
+     * Register a callback that resolves the default-enabled state for a
+     * module slug when no `_enabled` setting is stored.
+     *
+     * The callback receives the module slug as a string and must return
+     * a boolean. Replaces any previously-registered resolver.
+     *
+     * @param callable(string):bool $resolver
+     */
+    public static function set_default_enabled_resolver(callable $resolver): void
+    {
+        self::$default_enabled_resolver = $resolver;
+    }
 
     /**
      * Get all OrbiTools settings
@@ -52,8 +74,19 @@ class Settings_Manager
     {
         $settings = $this->get_all_settings();
         $key = $module_slug . '_enabled';
-        
-        return isset($settings[$key]) ? (bool) $settings[$key] : true; // Default to enabled
+
+        if (isset($settings[$key])) {
+            return (bool) $settings[$key];
+        }
+
+        // Defer to the manifest-aware resolver when one is registered.
+        // Falls back to enabled-by-default to preserve pre-Phase 3 behaviour
+        // when no resolver has been wired in.
+        if (self::$default_enabled_resolver !== null) {
+            return (bool) (self::$default_enabled_resolver)($module_slug);
+        }
+
+        return true;
     }
 
     /**
