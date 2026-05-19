@@ -68,12 +68,14 @@ class Admin extends Module_Admin_Base
      */
     public function register_module_metadata(array $modules): array
     {
-        $modules['user_avatars'] = array(
-            'name'        => \__('User Avatars', 'orbitools'),
-            'subtitle'    => \__('Local avatar uploads & Gravatar management', 'orbitools'),
-            'description' => \__('Enable local avatar uploads for users and manage Gravatar settings. Control file types, sizes, and disable Gravatar entirely if needed.', 'orbitools'),
-            'icon'        => '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path fill="#32a3e2" d="M224 256A128 128 0 1 0 224 0a128 128 0 1 0 0 256zm-45.7 48C79.8 304 0 383.8 0 482.3C0 498.7 13.3 512 29.7 512l388.6 0c16.4 0 29.7-13.3 29.7-29.7C448 383.8 368.2 304 269.7 304l-91.4 0z"/></svg>',
-            'configure_url' => \admin_url('admin.php?page=orbitools&tab=modules&section=user_avatars'),
+        // Augment the manifest-sourced entry; slug must match manifest.
+        $modules['user-avatars'] = array_merge(
+            $modules['user-avatars'] ?? array(),
+            array(
+                'subtitle'      => \__('Local avatar uploads & Gravatar management', 'orbitools'),
+                'icon'          => '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path fill="#32a3e2" d="M224 256A128 128 0 1 0 224 0a128 128 0 1 0 0 256zm-45.7 48C79.8 304 0 383.8 0 482.3C0 498.7 13.3 512 29.7 512l388.6 0c16.4 0 29.7-13.3 29.7-29.7C448 383.8 368.2 304 269.7 304l-91.4 0z"/></svg>',
+                'configure_url' => \admin_url('admin.php?page=orbitools&tab=modules&section=user_avatars'),
+            )
         );
 
         return $modules;

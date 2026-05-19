@@ -79,12 +79,14 @@ class Admin
      */
     public function register_module_metadata(array $modules): array
     {
-        $modules['menu_groups'] = array(
-            'name'        => __('Menu Groups', 'orbitools'),
-            'subtitle'    => __('Organize menu items into groups', 'orbitools'),
-            'description' => __('Add group headings to your WordPress menus to organize menu items visually. Create cleaner navigation with logical groupings.', 'orbitools'),
-            'icon'        => '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="#32a3e2" d="M0 96C0 60.7 28.7 32 64 32l384 0c35.3 0 64 28.7 64 64l0 64c0 35.3-28.7 64-64 64l-288 0 0 96c0 17.7 14.3 32 32 32l32 0c0-35.3 28.7-64 64-64l160 0c35.3 0 64 28.7 64 64l0 64c0 35.3-28.7 64-64 64l-160 0c-35.3 0-64-28.7-64-64l-32 0c-53 0-96-43-96-96l0-96-32 0c-35.3 0-64-28.7-64-64L0 96zM448 352l-160 0 0 64 160 0 0-64z"/></svg>',
-            'configure_url' => null,
+        // Augment the manifest-sourced entry; slug must match manifest.
+        $modules['menu-groups'] = array_merge(
+            $modules['menu-groups'] ?? array(),
+            array(
+                'subtitle'      => __('Organize menu items into groups', 'orbitools'),
+                'icon'          => '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="#32a3e2" d="M0 96C0 60.7 28.7 32 64 32l384 0c35.3 0 64 28.7 64 64l0 64c0 35.3-28.7 64-64 64l-288 0 0 96c0 17.7 14.3 32 32 32l32 0c0-35.3 28.7-64 64-64l160 0c35.3 0 64 28.7 64 64l0 64c0 35.3-28.7 64-64 64l-160 0c-35.3 0-64-28.7-64-64l-32 0c-53 0-96-43-96-96l0-96-32 0c-35.3 0-64-28.7-64-64L0 96zM448 352l-160 0 0 64 160 0 0-64z"/></svg>',
+                'configure_url' => null,
+            )
         );
 
         return $modules;
