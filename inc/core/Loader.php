@@ -213,7 +213,7 @@ class Loader
         AspectRatio_CSS_Generator::init();
 
         // Initialize Toolbar FAB
-        new Toolbar_FAB();
+        // new Toolbar_FAB();
 
         // Register block frontend styles (enqueued per-block via render_block → footer).
         add_action('wp_enqueue_scripts', [$this, 'register_block_styles']);
