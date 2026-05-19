@@ -18,6 +18,29 @@
 }
 
 /* ==========================================================================
+   Category Section
+   ========================================================================== */
+
+.orbitools-modules-group {
+	margin-bottom: 32px;
+}
+
+.orbitools-modules-group:last-child {
+	margin-bottom: 0;
+}
+
+.orbitools-modules-group__title {
+	margin: 0 0 16px;
+	font-size: 18px;
+	font-weight: 600;
+	color: #1d2327;
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+	padding-bottom: 8px;
+	border-bottom: 2px solid #f0f0f0;
+}
+
+/* ==========================================================================
    Module Grid Layout
    ========================================================================== */
 
