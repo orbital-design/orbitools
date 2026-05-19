@@ -4,24 +4,38 @@ namespace Orbitools\Core;
 
 use Orbitools\Core\Helpers\Settings_Manager;
 use Orbitools\Core\Interfaces\Module_Interface;
+use Orbitools\Core\Module\Module_Manifest;
+use RuntimeException;
+use Throwable;
 
 /**
  * Module Manager
  *
- * Registry-based lifecycle for Orbitools modules. Modules are registered by
- * slug => fully-qualified class name and only instantiated when their
- * `_enabled` setting is true. Disabled modules incur no autoload cost,
- * no constructor cost, and no asset registration cost.
+ * Registry-based lifecycle for Orbitools modules. Built-in modules are
+ * discovered by scanning module.json files alongside each module's class.
+ * External code can register additional modules via the
+ * `orbitools/register_modules` action.
  *
- * External code (themes, plugins) can register additional modules via the
- * `orbitools/register_modules` action, which fires after built-in modules
- * are registered and before any are booted.
+ * Disabled modules are never autoloaded — their classes are touched only
+ * when {@see boot()} confirms the module's `_enabled` setting is true.
  *
  * @package Orbitools
  * @since 2.0.0
  */
 final class Module_Manager
 {
+    /**
+     * Glob patterns for built-in module manifests. Evaluated relative to
+     * ORBITOOLS_DIR. Order is unimportant — slug uniqueness wins.
+     *
+     * @var string[]
+     */
+    private const MANIFEST_PATTERNS = [
+        'inc/blocks/*/module.json',
+        'inc/controls/*/module.json',
+        'inc/modules/*/module.json',
+    ];
+
     /**
      * Registered modules: slug => fully-qualified class name.
      *
@@ -30,30 +44,41 @@ final class Module_Manager
     private array $registry = [];
 
     /**
+     * Loaded manifests keyed by slug. Built-in modules populate this map
+     * during register_built_in(); external modules registered via the
+     * action hook have no manifest entry.
+     *
+     * @var array<string, Module_Manifest>
+     */
+    private array $manifests = [];
+
+    /**
      * Instantiated (enabled) modules: slug => instance.
      *
      * @var array<string, Module_Interface>
      */
     private array $instances = [];
 
-    /**
-     * @var Settings_Manager
-     */
     private Settings_Manager $settings_manager;
 
     public function __construct()
     {
         $this->settings_manager = new Settings_Manager();
+
+        // Defer the default-enabled lookup for any slug to manifest data when
+        // available, else fall back to enabled-by-default.
+        Settings_Manager::set_default_enabled_resolver(function (string $slug): bool {
+            $manifest = $this->get_manifest($slug);
+            return $manifest !== null ? $manifest->default_enabled : true;
+        });
     }
 
     /**
-     * Register a module.
+     * Register a module by slug and class name.
      *
-     * Stores slug => class name. Does not autoload the class — the autoloader
-     * only runs in {@see boot()} if the module is enabled.
-     *
-     * First registration wins: duplicate slugs are ignored silently so
-     * external registrations cannot override built-ins.
+     * Does not autoload — class loading is deferred until boot() confirms
+     * the module is enabled. First registration wins so external code
+     * cannot override built-ins.
      *
      * @param string $slug       Module slug. Must match the class's get_slug() return value.
      * @param string $class_name Fully-qualified class name.
@@ -68,29 +93,15 @@ final class Module_Manager
     }
 
     /**
-     * Register all built-in modules and fire the extension hook.
-     *
-     * The hardcoded slug => class map below is replaced with a manifest
-     * scan in Phase 3.
+     * Discover built-in modules by scanning module.json manifests and fire
+     * the extension hook for external code to register additional modules.
      */
     public function register_built_in(): void
     {
-        $this->register('typography-presets',     \Orbitools\Controls\Typography_Presets\Typography_Presets::class);
-        $this->register('layout-guides',          \Orbitools\Modules\Layout_Guides\Layout_Guides::class);
-        $this->register('menu-groups',            \Orbitools\Modules\Menu_Groups\Menu_Groups::class);
-        $this->register('menu-dividers',          \Orbitools\Modules\Menu_Dividers\Menu_Dividers::class);
-        $this->register('analytics',              \Orbitools\Modules\Analytics\Analytics::class);
-        $this->register('user-avatars',           \Orbitools\Modules\User_Avatars\User_Avatars::class);
-        $this->register('collection-block',       \Orbitools\Blocks\Collection\Collection::class);
-        $this->register('entry-block',            \Orbitools\Blocks\Entry\Entry::class);
-        $this->register('query-loop-block',       \Orbitools\Blocks\Query_Loop\Query_Loop::class);
-        $this->register('spacer-block',           \Orbitools\Blocks\Spacer\Spacer::class);
-        $this->register('read-more-block',        \Orbitools\Blocks\Read_More\Read_More::class);
-        $this->register('marquee-block',          \Orbitools\Blocks\Marquee\Marquee::class);
-        $this->register('group-block',            \Orbitools\Blocks\Group\Group::class);
-        $this->register('spacings-controls',      \Orbitools\Controls\Spacings_Controls\Spacings_Controls::class);
-        $this->register('aspect-ratio-controls',  \Orbitools\Controls\AspectRatio_Controls\AspectRatio_Controls::class);
-        $this->register('toolbar-fab',            \Orbitools\Modules\Toolbar_FAB\Toolbar_FAB::class);
+        foreach ($this->load_built_in_manifests() as $manifest) {
+            $this->manifests[$manifest->slug] = $manifest;
+            $this->register($manifest->slug, $manifest->class);
+        }
 
         /**
          * Fires after built-in modules are registered, before any are booted.
@@ -119,7 +130,10 @@ final class Module_Manager
                 continue;
             }
 
-            $this->instances[$slug] = new $class_name();
+            $instance = new $class_name();
+            $this->instances[$slug] = $instance;
+
+            $this->maybe_warn_slug_mismatch($slug, $instance);
         }
     }
 
@@ -142,5 +156,76 @@ final class Module_Manager
     public function is_enabled(string $slug): bool
     {
         return $this->settings_manager->is_module_enabled($slug);
+    }
+
+    /**
+     * @return Module_Manifest|null Manifest for the given slug, or null if
+     *                              the slug has no manifest (e.g. external
+     *                              modules registered via the action hook).
+     */
+    public function get_manifest(string $slug): ?Module_Manifest
+    {
+        return $this->manifests[$slug] ?? null;
+    }
+
+    /**
+     * @return array<string, Module_Manifest> All loaded manifests by slug.
+     */
+    public function get_manifests(): array
+    {
+        return $this->manifests;
+    }
+
+    /**
+     * Scan the built-in manifest paths and return parsed manifests.
+     *
+     * In-memory only — Phase 3 starts without a persistent cache. Glob
+     * over 16 small JSON files is sub-millisecond.
+     *
+     * @return Module_Manifest[]
+     */
+    private function load_built_in_manifests(): array
+    {
+        $manifests = [];
+
+        foreach (self::MANIFEST_PATTERNS as $pattern) {
+            $paths = glob(ORBITOOLS_DIR . $pattern) ?: [];
+
+            foreach ($paths as $path) {
+                try {
+                    $manifests[] = Module_Manifest::from_file($path);
+                } catch (Throwable $e) {
+                    // Skip the malformed manifest; surface in WP_DEBUG.
+                    if (defined('WP_DEBUG') && WP_DEBUG) {
+                        \error_log('[Orbitools] ' . $e->getMessage());
+                    }
+                }
+            }
+        }
+
+        return $manifests;
+    }
+
+    /**
+     * In WP_DEBUG mode, warn if a module's get_slug() return value does not
+     * match the slug under which it was registered (which is the manifest
+     * slug for built-ins). A drift here means settings keys would point at
+     * the wrong module.
+     */
+    private function maybe_warn_slug_mismatch(string $registered_slug, Module_Interface $instance): void
+    {
+        if (!defined('WP_DEBUG') || !WP_DEBUG) {
+            return;
+        }
+
+        $actual = $instance->get_slug();
+        if ($actual !== $registered_slug) {
+            \error_log(sprintf(
+                '[Orbitools] Slug mismatch: module %s registered as "%s" but get_slug() returned "%s"',
+                get_class($instance),
+                $registered_slug,
+                $actual
+            ));
+        }
     }
 }
