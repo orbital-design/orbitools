@@ -5,7 +5,6 @@ namespace Orbitools\Core;
 use Orbitools\Core\Helpers\Settings_Manager;
 use Orbitools\Core\Interfaces\Module_Interface;
 use Orbitools\Core\Module\Module_Manifest;
-use RuntimeException;
 use Throwable;
 
 /**
@@ -37,6 +36,18 @@ final class Module_Manager
     ];
 
     /**
+     * Most-recently-constructed Module_Manager. Set by the constructor so
+     * downstream code (admin field renderers, etc.) can reach the manager
+     * without threading it through every callsite.
+     *
+     * Not a strict singleton — multiple constructions are allowed but the
+     * last wins. Loader builds exactly one per request.
+     *
+     * @var self|null
+     */
+    private static ?self $instance = null;
+
+    /**
      * Registered modules: slug => fully-qualified class name.
      *
      * @var array<string, string>
@@ -63,6 +74,7 @@ final class Module_Manager
 
     public function __construct()
     {
+        self::$instance = $this;
         $this->settings_manager = new Settings_Manager();
 
         // Defer the default-enabled lookup for any slug to manifest data when
@@ -71,6 +83,15 @@ final class Module_Manager
             $manifest = $this->get_manifest($slug);
             return $manifest !== null ? $manifest->default_enabled : true;
         });
+    }
+
+    /**
+     * @return self|null The active Module_Manager, or null if none has been
+     *                   constructed yet (e.g. before Loader::init() runs).
+     */
+    public static function instance(): ?self
+    {
+        return self::$instance;
     }
 
     /**
@@ -174,6 +195,47 @@ final class Module_Manager
     public function get_manifests(): array
     {
         return $this->manifests;
+    }
+
+    /**
+     * Build an admin-friendly array of module metadata keyed by slug.
+     *
+     * Each entry contains the manifest-sourced display data plus a
+     * `category` field used by the admin UI to group cards. Modules
+     * registered without a manifest (external) are still returned with
+     * the slug and class as the name fallback, and category "modules".
+     *
+     * @return array<string, array{slug:string,name:string,description:string,category:string,version:string}>
+     */
+    public function get_modules_metadata(): array
+    {
+        $metadata = [];
+
+        foreach ($this->registry as $slug => $class_name) {
+            $manifest = $this->get_manifest($slug);
+
+            if ($manifest !== null) {
+                $metadata[$slug] = [
+                    'slug'        => $manifest->slug,
+                    'name'        => \__($manifest->name, 'orbitools'), // phpcs:ignore WordPress.WP.I18n.NonSingularStringLiteralText
+                    'description' => \__($manifest->description, 'orbitools'), // phpcs:ignore WordPress.WP.I18n.NonSingularStringLiteralText
+                    'category'    => $manifest->category,
+                    'version'     => $manifest->version,
+                ];
+                continue;
+            }
+
+            // External (manifest-less) module — degrade gracefully.
+            $metadata[$slug] = [
+                'slug'        => $slug,
+                'name'        => $slug,
+                'description' => '',
+                'category'    => 'modules',
+                'version'     => '',
+            ];
+        }
+
+        return $metadata;
     }
 
     /**
