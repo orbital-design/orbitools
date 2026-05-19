@@ -219,7 +219,7 @@ class Orbitools_Modules_Field extends Orbitools\AdminKit\Field_Base
             array(
                 'type'    => 'css',
                 'handle'  => 'orbitools-modules-field',
-                'src'     => ORBITOOLS_URL . 'inc/core/Admin/adminkit/fields/modules/modules-field.css',
+                'src'     => ORBITOOLS_URL . 'inc/Core/Admin/adminkit/fields/modules/modules-field.css',
                 'version' => ORBITOOLS_VERSION,
             ),
         );

@@ -39,7 +39,7 @@ class Admin
             return;
         }
 
-        $field_file = ORBITOOLS_DIR . 'inc/core/Admin/adminkit/fields/modules/Orbitools_Modules_Field.php';
+        $field_file = ORBITOOLS_DIR . 'inc/Core/Admin/adminkit/fields/modules/Orbitools_Modules_Field.php';
 
         if (file_exists($field_file)) {
             \Orbitools\AdminKit\Field_Registry::register_field_type(

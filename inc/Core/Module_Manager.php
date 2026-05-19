@@ -30,9 +30,9 @@ final class Module_Manager
      * @var string[]
      */
     private const MANIFEST_PATTERNS = [
-        'inc/blocks/*/module.json',
-        'inc/controls/*/module.json',
-        'inc/modules/*/module.json',
+        'inc/Blocks/*/module.json',
+        'inc/Controls/*/module.json',
+        'inc/Modules/*/module.json',
     ];
 
     /**
