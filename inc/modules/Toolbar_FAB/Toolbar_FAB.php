@@ -1,16 +1,25 @@
 <?php
 
-namespace Orbitools\Core;
+namespace Orbitools\Modules\Toolbar_FAB;
 
+use Orbitools\Core\Abstracts\Module_Base;
 use Orbitools\Core\Helpers\Minifier;
 
 if (!defined('ABSPATH')) {
     exit;
 }
 
-class Toolbar_FAB
+/**
+ * Toolbar FAB Module
+ *
+ * Replaces the WordPress admin bar with a floating action button + drawer
+ * on the frontend, captured from the live admin bar nodes.
+ *
+ * @package Orbitools
+ * @since 2.0.0
+ */
+class Toolbar_FAB extends Module_Base
 {
-
     private $toolbar_items = array();
 
     // Array of parent IDs that are allowed to show their children
@@ -18,24 +27,56 @@ class Toolbar_FAB
         'new-content'
     );
 
-    public function __construct()
+    public function get_slug(): string
     {
-        // Only work on frontend, not in admin
-        if (!\is_admin()) {
-            \add_action('init', array($this, 'init'));
-            \add_action('wp_enqueue_scripts', array($this, 'enqueue_assets'));
-            \add_action('wp_footer', array($this, 'render_fab'));
-
-            // Don't hide admin bar yet - we need it to capture items first
-            \add_action('wp_before_admin_bar_render', array($this, 'capture_toolbar_items'));
-            \add_action('admin_bar_menu', array($this, 'capture_toolbar_items'), 999999);
-
-            // Hide admin bar after capturing items
-            \add_action('wp_head', array($this, 'hide_admin_bar'));
-        }
+        return 'toolbar-fab';
     }
 
-    public function init()
+    public function get_name(): string
+    {
+        return \__('Toolbar FAB', 'orbitools');
+    }
+
+    public function get_description(): string
+    {
+        return \__('Replaces the WordPress admin bar with a floating action button drawer on the frontend.', 'orbitools');
+    }
+
+    /**
+     * Default to disabled to preserve pre-refactor behaviour: commit f880e82
+     * "hid fab" intentionally removed the FAB. Phase 3 will surface this
+     * default via the module manifest's default_enabled flag.
+     */
+    public function is_enabled(): bool
+    {
+        $settings = $this->settings_manager->get_all_settings();
+        $key = $this->get_slug() . '_enabled';
+        return isset($settings[$key]) ? (bool) $settings[$key] : false;
+    }
+
+    public function init(): void
+    {
+        // Frontend-only feature.
+        if (\is_admin()) {
+            return;
+        }
+
+        \add_action('init', [$this, 'init_admin_bar']);
+        \add_action('wp_enqueue_scripts', [$this, 'enqueue_assets']);
+        \add_action('wp_footer', [$this, 'render_fab']);
+
+        // Capture admin bar nodes before hiding the bar itself.
+        \add_action('wp_before_admin_bar_render', [$this, 'capture_toolbar_items']);
+        \add_action('admin_bar_menu', [$this, 'capture_toolbar_items'], 999999);
+
+        \add_action('wp_head', [$this, 'hide_admin_bar']);
+    }
+
+    /**
+     * Bootstrap the WP admin bar so we can read its items.
+     * Renamed from init() to avoid colliding with the module lifecycle hook.
+     */
+    public function init_admin_bar(): void
     {
         require_once(ABSPATH . 'wp-includes/admin-bar.php');
         \_wp_admin_bar_init();
