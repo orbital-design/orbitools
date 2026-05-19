@@ -90,6 +90,7 @@ final class Module_Manager
         $this->register('group-block',            \Orbitools\Blocks\Group\Group::class);
         $this->register('spacings-controls',      \Orbitools\Controls\Spacings_Controls\Spacings_Controls::class);
         $this->register('aspect-ratio-controls',  \Orbitools\Controls\AspectRatio_Controls\AspectRatio_Controls::class);
+        $this->register('toolbar-fab',            \Orbitools\Modules\Toolbar_FAB\Toolbar_FAB::class);
 
         /**
          * Fires after built-in modules are registered, before any are booted.
@@ -100,7 +101,7 @@ final class Module_Manager
          *
          * @param Module_Manager $manager The module manager instance.
          */
-        do_action('orbitools/register_modules', $this);
+        \do_action('orbitools/register_modules', $this);
     }
 
     /**
