@@ -7,23 +7,8 @@ use Orbitools\Core\Updater\Updater;
 // use Orbitools\Core\Toolbar_FAB;
 use Orbitools\Core\SpacingConfig;
 use Orbitools\Core\Helpers\Gaps_CSS_Generator;
-use Orbitools\Controls\Typography_Presets\Typography_Presets;
-use Orbitools\Modules\Layout_Guides\Layout_Guides;
-use Orbitools\Modules\Menu_Groups\Menu_Groups;
-use Orbitools\Modules\Menu_Dividers\Menu_Dividers;
-use Orbitools\Modules\Analytics\Analytics;
-use Orbitools\Blocks\Collection\Collection;
-use Orbitools\Blocks\Entry\Entry;
-use Orbitools\Blocks\Query_Loop\Query_Loop;
-use Orbitools\Blocks\Spacer\Spacer;
-use Orbitools\Blocks\Read_More\Read_More;
-use Orbitools\Blocks\Marquee\Marquee;
-use Orbitools\Blocks\Group\Group;
-use Orbitools\Modules\User_Avatars\User_Avatars;
-use Orbitools\Controls\Spacings_Controls\Spacings_Controls;
 use Orbitools\Core\AspectRatioConfig;
 use Orbitools\Core\Helpers\AspectRatio_CSS_Generator;
-use Orbitools\Controls\AspectRatio_Controls\AspectRatio_Controls;
 
 /**
  * Class Loader
@@ -33,11 +18,11 @@ use Orbitools\Controls\AspectRatio_Controls\AspectRatio_Controls;
 class Loader
 {
     /**
-     * Holds the loaded modules.
+     * Module manager instance.
      *
-     * @var array
+     * @var Module_Manager
      */
-    private $modules = [];
+    private Module_Manager $module_manager;
 
     /**
      * Admin instance.
@@ -224,22 +209,10 @@ class Loader
         // Fires before editorStyle assets, so editor.css can override.
         add_action('enqueue_block_editor_assets', [$this, 'enqueue_editor_block_styles']);
 
-        // Initialize modules.
-        $this->modules[] = new Typography_Presets();
-        $this->modules[] = new Layout_Guides();
-        $this->modules[] = new Menu_Groups();
-        $this->modules[] = new Menu_Dividers();
-        $this->modules[] = new Analytics();
-        // Initialize individual blocks
-        $this->modules[] = new Collection();
-        $this->modules[] = new Entry();
-        $this->modules[] = new Query_Loop();
-        $this->modules[] = new Spacer();
-        $this->modules[] = new Read_More();
-        $this->modules[] = new Marquee();
-        $this->modules[] = new Group();
-        $this->modules[] = new Spacings_Controls();
-        $this->modules[] = new AspectRatio_Controls();
-        $this->modules[] = new User_Avatars();
+        // Initialize modules via the registry. Disabled modules are never
+        // autoloaded; their constructors and asset registrations are skipped.
+        $this->module_manager = new Module_Manager();
+        $this->module_manager->register_built_in();
+        $this->module_manager->boot();
     }
 }
