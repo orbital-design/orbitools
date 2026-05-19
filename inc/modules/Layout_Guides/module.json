@@ -1,0 +1,14 @@
+{
+  "$schema": "https://orbitools/schemas/module.v1.json",
+  "slug": "layout-guides",
+  "name": "Layout Guides",
+  "description": "Visual layout guides and grid systems for consistent design alignment.",
+  "version": "1.0.0",
+  "category": "modules",
+  "class": "\\Orbitools\\Modules\\Layout_Guides\\Layout_Guides",
+  "default_enabled": false,
+  "requires": {
+    "php": ">=7.4",
+    "wp": ">=5.0"
+  }
+}

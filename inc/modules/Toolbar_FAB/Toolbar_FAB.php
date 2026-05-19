@@ -42,18 +42,6 @@ class Toolbar_FAB extends Module_Base
         return \__('Replaces the WordPress admin bar with a floating action button drawer on the frontend.', 'orbitools');
     }
 
-    /**
-     * Default to disabled to preserve pre-refactor behaviour: commit f880e82
-     * "hid fab" intentionally removed the FAB. Phase 3 will surface this
-     * default via the module manifest's default_enabled flag.
-     */
-    public function is_enabled(): bool
-    {
-        $settings = $this->settings_manager->get_all_settings();
-        $key = $this->get_slug() . '_enabled';
-        return isset($settings[$key]) ? (bool) $settings[$key] : false;
-    }
-
     public function init(): void
     {
         // Frontend-only feature.

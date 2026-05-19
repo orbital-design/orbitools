@@ -1,0 +1,14 @@
+{
+  "$schema": "https://orbitools/schemas/module.v1.json",
+  "slug": "typography-presets",
+  "name": "Typography Presets",
+  "description": "Predefined typography styles and custom font management for consistent design.",
+  "version": "1.0.0",
+  "category": "controls",
+  "class": "\\Orbitools\\Controls\\Typography_Presets\\Typography_Presets",
+  "default_enabled": false,
+  "requires": {
+    "php": ">=7.4",
+    "wp": ">=5.0"
+  }
+}

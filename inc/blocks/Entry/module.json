@@ -1,0 +1,14 @@
+{
+  "$schema": "https://orbitools/schemas/module.v1.json",
+  "slug": "entry-block",
+  "name": "Entry Block",
+  "description": "Individual content item block for use within collections",
+  "version": "1.0.0",
+  "category": "blocks",
+  "class": "\\Orbitools\\Blocks\\Entry\\Entry",
+  "default_enabled": false,
+  "requires": {
+    "php": ">=7.4",
+    "wp": ">=5.0"
+  }
+}

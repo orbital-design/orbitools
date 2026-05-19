@@ -1,0 +1,14 @@
+{
+  "$schema": "https://orbitools/schemas/module.v1.json",
+  "slug": "analytics",
+  "name": "Analytics",
+  "description": "Advanced analytics integration with Google Analytics 4, Google Tag Manager, and custom event tracking.",
+  "version": "1.0.0",
+  "category": "modules",
+  "class": "\\Orbitools\\Modules\\Analytics\\Analytics",
+  "default_enabled": false,
+  "requires": {
+    "php": ">=7.4",
+    "wp": ">=5.0"
+  }
+}
