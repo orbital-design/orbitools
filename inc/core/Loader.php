@@ -4,11 +4,6 @@ namespace Orbitools\Core;
 
 use Orbitools\Core\Admin\Admin;
 use Orbitools\Core\Updater\Updater;
-// use Orbitools\Core\Toolbar_FAB;
-use Orbitools\Core\SpacingConfig;
-use Orbitools\Core\Helpers\Gaps_CSS_Generator;
-use Orbitools\Core\AspectRatioConfig;
-use Orbitools\Core\Helpers\AspectRatio_CSS_Generator;
 
 /**
  * Class Loader
@@ -186,19 +181,6 @@ class Loader
         // Initialize core classes.
         $this->admin = new Admin();
         $this->updater = new Updater();
-
-        // Initialize Spacing Configuration system
-        SpacingConfig::init();
-
-        // Initialize Gaps CSS generation
-        Gaps_CSS_Generator::init();
-
-        // Initialize Aspect Ratio Configuration and CSS generation
-        AspectRatioConfig::init();
-        AspectRatio_CSS_Generator::init();
-
-        // Initialize Toolbar FAB
-        // new Toolbar_FAB();
 
         // Register block frontend styles (enqueued per-block via render_block → footer).
         add_action('wp_enqueue_scripts', [$this, 'register_block_styles']);
