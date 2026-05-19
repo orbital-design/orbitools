@@ -2,6 +2,8 @@
 namespace Orbitools\Controls\AspectRatio_Controls;
 
 use Orbitools\Core\Abstracts\Module_Base;
+use Orbitools\Core\AspectRatioConfig;
+use Orbitools\Core\Helpers\AspectRatio_CSS_Generator;
 
 /**
  * Aspect Ratio Controls Module
@@ -46,6 +48,11 @@ class AspectRatio_Controls extends Module_Base
 
     public function init(): void
     {
+        // Aspect ratio configuration + CSS generation are part of this module —
+        // they only run when AspectRatio_Controls is enabled.
+        AspectRatioConfig::init();
+        AspectRatio_CSS_Generator::init();
+
         add_action('enqueue_block_editor_assets', [$this, 'enqueue_editor_assets']);
     }
 
