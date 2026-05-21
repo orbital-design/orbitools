@@ -173,6 +173,10 @@ class Loader
      */
     public function init()
     {
+        // Run pending data migrations before anything reads settings — keeps
+        // Settings_Manager's request-scoped cache from priming on stale data.
+        Migrations::run();
+
         // Load the OrbiTools AdminKit
         if (file_exists(ORBITOOLS_DIR . 'vendor/orbitools/adminkit/adminkit.php')) {
             require_once ORBITOOLS_DIR . 'vendor/orbitools/adminkit/adminkit.php';
