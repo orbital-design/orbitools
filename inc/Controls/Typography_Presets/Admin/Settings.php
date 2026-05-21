@@ -52,7 +52,6 @@ class Settings
     public static function get_defaults(): array
     {
         return array(
-            'typography_presets_enabled' => false,
             'typography_show_groups_in_dropdown' => false,
             'typography_output_preset_css' => true,
             'typography_allowed_blocks' => \Orbitools\Controls\Typography_Presets\Typography_Presets::DEFAULT_ALLOWED_BLOCKS,

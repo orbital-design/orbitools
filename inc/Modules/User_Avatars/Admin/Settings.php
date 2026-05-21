@@ -63,7 +63,6 @@ class Settings
     public static function get_defaults(): array
     {
         return array(
-            'user_avatars_enabled' => true,
             'user_avatars_local_avatars_enabled' => true,
             'user_avatars_disable_gravatar' => false,
             'user_avatars_allowed_filetypes' => array(

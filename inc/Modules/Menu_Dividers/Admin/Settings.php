@@ -41,9 +41,7 @@ class Settings
      */
     public static function get_defaults()
     {
-        return array(
-            'menu_dividers_enabled' => true // Always enabled, no settings needed
-        );
+        return array();
     }
 
     /**

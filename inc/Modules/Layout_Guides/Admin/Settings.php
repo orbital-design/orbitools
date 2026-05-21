@@ -36,7 +36,6 @@ class Settings
     public static function get_defaults()
     {
         return array(
-            'layout_guides_enabled' => false,
             'layout_guides_show_grids' => true,
             'layout_guides_show_rulers' => true,
             'layout_guides_grid_gutter' => 'var(--gutter)',
