@@ -55,14 +55,6 @@ class Spacings_Controls extends Module_Base {
     }
 
     /**
-     * Check if the module is currently enabled
-     */
-    public function is_enabled(): bool {
-        // Always enabled - this is a core layout feature
-        return true;
-    }
-
-    /**
      * Initialize the module
      */
     public function init(): void {
