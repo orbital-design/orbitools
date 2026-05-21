@@ -70,7 +70,7 @@ class Settings_Helper
      */
     public static function is_module_enabled(): bool
     {
-        return self::get_setting('typography_presets_enabled', false);
+        return self::get_setting('typography-presets_enabled', false);
     }
 
     /**

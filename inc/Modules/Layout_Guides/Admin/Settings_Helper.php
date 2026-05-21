@@ -88,7 +88,7 @@ class Settings_Helper
         $settings = self::normalize_settings($settings);
 
         return array(
-            'enabled' => $settings['layout_guides_enabled'],
+            'enabled' => $settings['layout-guides_enabled'],
             'shouldShow' => self::should_show_guides(), // Server-side authorization check
             'showGrids' => $settings['layout_guides_show_grids'],
             'showRulers' => $settings['layout_guides_show_rulers'],
@@ -108,7 +108,7 @@ class Settings_Helper
     public static function is_module_enabled(): bool
     {
         $settings = Settings::get_current_settings();
-        return !empty($settings['layout_guides_enabled']);
+        return !empty($settings['layout-guides_enabled']);
     }
 
     /**
@@ -124,7 +124,7 @@ class Settings_Helper
 
 
         // Module must be enabled
-        if (!$settings['layout_guides_enabled']) {
+        if (!$settings['layout-guides_enabled']) {
             return false;
         }
 

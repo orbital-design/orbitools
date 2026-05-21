@@ -90,6 +90,6 @@ class Admin extends Module_Admin_Base
     public function is_module_enabled(): bool
     {
         $settings = get_option('orbitools_settings', array());
-        return !empty($settings['user_avatars_enabled']) && $settings['user_avatars_enabled'] !== '0';
+        return !empty($settings['user-avatars_enabled']) && $settings['user-avatars_enabled'] !== '0';
     }
 }

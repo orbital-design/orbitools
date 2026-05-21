@@ -67,7 +67,7 @@ class Admin
     public function is_module_enabled(): bool
     {
         $settings = get_option('orbitools_settings', array());
-        return !empty($settings['menu_groups_enabled']) && $settings['menu_groups_enabled'] !== '0';
+        return !empty($settings['menu-groups_enabled']) && $settings['menu-groups_enabled'] !== '0';
     }
 
     /**

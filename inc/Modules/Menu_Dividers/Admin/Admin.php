@@ -66,7 +66,7 @@ class Admin
     public function is_module_enabled(): bool
     {
         $settings = get_option('orbitools_settings', array());
-        return !empty($settings['menu_dividers_enabled']) && $settings['menu_dividers_enabled'] !== '0';
+        return !empty($settings['menu-dividers_enabled']) && $settings['menu-dividers_enabled'] !== '0';
     }
 
     /**
