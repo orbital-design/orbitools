@@ -2,10 +2,12 @@ node_modules/
 .DS_Store
 legacy/
 tests/
-# Ignore all Markdown files
+# Ignore all Markdown files by default…
 *.md
-# But do NOT ignore the main directory README.md (case-insensitive)
+# …but keep the root README and CLAUDE.md tracked — these are
+# load-bearing docs for humans and agents joining the repo.
 !/[Rr][Ee][Aa][Dd][Mm][Ee].md
+!/CLAUDE.md
 .claude/
 .nova/
 *.log

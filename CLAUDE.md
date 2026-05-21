@@ -1,0 +1,195 @@
+# Orbitools Development Notes
+
+This file contains important development lessons, patterns, and guidelines for working on the Orbitools WordPress plugin.
+
+## 🏗 v2 Module Architecture
+
+The plugin uses a registry-based module system. Adding a new module requires three artifacts and no edits to core code.
+
+### How to add a module
+
+1. **Create the folder** under one of the three category roots:
+   - `inc/Blocks/{Name}/` — Gutenberg blocks
+   - `inc/Controls/{Name}/` — editor-side controls injected into existing blocks
+   - `inc/Modules/{Name}/` — anything else
+
+2. **Add the class** at `inc/{Category}/{Name}/{Name}.php` extending `Orbitools\Core\Abstracts\Module_Base`:
+   ```php
+   namespace Orbitools\Modules\Example;
+   use Orbitools\Core\Abstracts\Module_Base;
+
+   class Example extends Module_Base
+   {
+       public function get_slug(): string { return 'example'; }
+       public function get_name(): string { return \__('Example', 'orbitools'); }
+       public function get_description(): string { return \__('What it does.', 'orbitools'); }
+       public function init(): void { /* register hooks here */ }
+   }
+   ```
+
+3. **Add `module.json`** alongside the class. Required fields: `slug`, `name`, `description`, `version`, `category`, `class`, `default_enabled`. Categories are `blocks` | `controls` | `modules`. The `slug` must equal the class's `get_slug()` return value — `Module_Manager` warns on mismatch under `WP_DEBUG`.
+
+That's it. `Module_Manager` scans `inc/{Blocks,Controls,Modules}/*/module.json` on every request and registers each manifest. The module is instantiated only when its `{slug}_enabled` setting is true; manifest `default_enabled` controls the value when no setting is stored.
+
+### How Module_Manager works
+
+- `Loader::init()` builds one `Module_Manager`, calls `register_built_in()` (manifest scan + `do_action('orbitools/register_modules', $manager)`), then `boot()` (instantiates enabled modules only).
+- `Settings_Manager::is_module_enabled($slug)` consults a resolver registered by `Module_Manager` — the resolver looks up the manifest's `default_enabled` when no `{slug}_enabled` setting is stored.
+- **Disabled modules cost zero**: their class is never autoloaded, never constructed, never asset-registered. Verified by `class_exists()` being called only after the enable check.
+- `Module_Manager::instance()` returns the active manager (used by `Orbitools_Modules_Field` to render the admin grid).
+
+### External modules
+
+Themes or other plugins can register their own modules:
+```php
+add_action('orbitools/register_modules', function ($manager) {
+    $manager->register('my-feature', \My\Namespace\Feature::class);
+});
+```
+External modules have no manifest, so they default to enabled (the resolver's fallback) and render in the admin grid under the generic "modules" category.
+
+### Slug stability
+
+Settings are keyed by `{slug}_enabled`. **Never rename a `get_slug()` return value** — existing client sites have their toggles stored against that key. The `WP_DEBUG` slug-mismatch warning in `Module_Manager::boot()` catches accidental drift.
+
+### Filesystem layout
+
+```
+inc/
+├── Blocks/         # Gutenberg blocks (PascalCase namespace + folder)
+├── Controls/       # Editor-side controls
+├── Core/           # Plugin core (Loader, Module_Manager, Module_Base, etc.)
+└── Modules/        # Other modules
+```
+
+Composer autoload is a single PSR-4 mapping: `"Orbitools\\": "inc/"`. macOS is case-insensitive, but the codebase must work on Linux — paths in code MUST match folder casing exactly.
+
+## 🎯 Core Development Principles
+
+### 1. Systematic API Changes
+**CRITICAL**: When fixing API issues, always apply changes systematically across the entire codebase.
+
+#### Example: useSettings API Fix
+**Issue Encountered**: During spacer block development, `useSettings(['spacing.spacingSizes'])` was causing React hook errors.
+
+**Mistake Made**: Fixed only the spacer block without checking other blocks.
+
+**Correct Approach**:
+```bash
+# 1. Search entire codebase for the pattern
+grep -r "useSettings.*spacing" src/
+
+# 2. Fix ALL instances systematically  
+# ❌ Wrong: useSettings(['spacing.spacingSizes'])
+# ✅ Correct: useSettings('spacing.spacingSizes')
+
+# 3. Test all affected blocks together
+```
+
+**Result of Incomplete Fix**: Collection and Entry block spacing controls broke, causing reliability issues.
+
+### 2. WordPress Block Development Patterns
+
+#### Consistent useSettings Usage
+```tsx
+// ✅ Correct pattern for ALL blocks
+const [spacingSizes] = useSettings('spacing.spacingSizes');
+
+// ❌ Avoid - causes hook ordering issues
+const [spacingSizes] = useSettings(['spacing.spacingSizes']);
+```
+
+#### Responsive Control Architecture
+- Use `ResponsiveToolsPanel` for breakpoint-specific controls
+- Each breakpoint should be a separate `ToolsPanelItem` 
+- Include visual breakpoint labels for UX clarity
+- Follow ToolsPanel patterns, not custom dropdown menus
+
+### 3. Code Quality Standards
+
+#### Before Committing Changes:
+1. **Search for patterns**: `grep -r "pattern" src/` 
+2. **Fix systematically**: Update ALL instances
+3. **Test all affected areas**: Not just the current feature
+4. **Build successfully**: `npm run build:blocks`
+5. **Verify in browser**: Test all related functionality
+
+#### File Organization:
+- Keep blocks modular and focused
+- Remove unused files promptly (e.g., `controls.tsx`, `frontend.js`)
+- Use consistent naming patterns
+- Document complex logic
+
+### 4. WordPress Integration
+
+#### Theme.json Integration:
+- Always use theme spacing values via `useSettings`
+- Provide fallback defaults in plugin config
+- Support theme override capability
+
+#### Block Registration:
+- Update webpack config for new blocks
+- Register in PHP Layout_Blocks class
+- Follow WordPress block.json standards
+
+## 🔧 Technical Patterns
+
+### Responsive Controls Implementation:
+```tsx
+// 1. Config system reads breakpoints from theme → plugin defaults
+import { useBreakpoints } from './config-reader';
+
+// 2. ResponsiveToolsPanel creates ToolsPanelItems for each breakpoint
+<ResponsiveToolsPanel
+  controls={[heightControlConfig]}
+  values={{ height }}
+  onValuesChange={handleChange}
+/>
+
+// 3. CSS classes generated: h-medium, sm:h-large, md:h-fill
+const classes = getResponsiveClasses(height, 'h', formatValue);
+```
+
+### WordPress Block Structure:
+```
+/src/blocks/[block-name]/
+├── block.json          # WordPress metadata
+├── index.tsx          # Registration & imports  
+├── edit.tsx           # Editor component
+├── save.tsx           # Frontend output
+├── [control].tsx      # Specific controls
+├── index.scss         # Frontend styles
+└── editor.scss        # Editor styles
+```
+
+## 🚨 Common Pitfalls
+
+1. **Incomplete Refactoring**: Fixing API issues in one place but not others
+2. **Hook Ordering**: Calling hooks conditionally or in wrong order
+3. **Copy-Paste Errors**: Copying broken patterns between blocks
+4. **Missing Dependencies**: Not updating webpack/PHP registration for new blocks
+5. **Theme Integration**: Hardcoding values instead of using theme.json
+
+## 📋 Quality Checklist
+
+Before marking any feature complete:
+- [ ] All `useSettings` calls use string format
+- [ ] All blocks build successfully
+- [ ] All controls appear and function correctly  
+- [ ] No unused files remain
+- [ ] Consistent patterns across blocks
+- [ ] Theme integration working
+- [ ] Responsive features tested
+
+## 🎯 Future Development
+
+When adding new blocks or features:
+1. **Start with existing patterns** - Don't reinvent the wheel
+2. **Check ALL similar code** - Ensure consistency from day one  
+3. **Test systematically** - Don't just test the new feature
+4. **Document decisions** - Update this file with new patterns
+5. **Clean as you go** - Remove unused code immediately
+
+---
+*Last Updated: 2026-05-19 (v2 module architecture refactor)*
+*This file should be updated whenever new development patterns or lessons are discovered.*
