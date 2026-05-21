@@ -1,0 +1,14 @@
+{
+  "$schema": "https://orbitools/schemas/module.v1.json",
+  "slug": "collection-block",
+  "name": "Collection Block",
+  "description": "Flexible layout container block for organizing content",
+  "version": "1.0.0",
+  "category": "blocks",
+  "class": "\\Orbitools\\Blocks\\Collection\\Collection",
+  "default_enabled": false,
+  "requires": {
+    "php": ">=7.4",
+    "wp": ">=5.0"
+  }
+}

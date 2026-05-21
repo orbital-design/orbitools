@@ -1,0 +1,14 @@
+{
+  "$schema": "https://orbitools/schemas/module.v1.json",
+  "slug": "spacings-controls",
+  "name": "Spacings Controls",
+  "description": "Automatic responsive spacings controls for blocks with orbitools.spacings support.",
+  "version": "1.0.0",
+  "category": "controls",
+  "class": "\\Orbitools\\Controls\\Spacings_Controls\\Spacings_Controls",
+  "default_enabled": true,
+  "requires": {
+    "php": ">=7.4",
+    "wp": ">=5.0"
+  }
+}

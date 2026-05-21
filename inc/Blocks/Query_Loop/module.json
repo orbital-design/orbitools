@@ -1,0 +1,14 @@
+{
+  "$schema": "https://orbitools/schemas/module.v1.json",
+  "slug": "query-loop-block",
+  "name": "Query Loop Block",
+  "description": "Flexible query builder for dynamically displaying posts using a range of parameters.",
+  "version": "1.0.0",
+  "category": "blocks",
+  "class": "\\Orbitools\\Blocks\\Query_Loop\\Query_Loop",
+  "default_enabled": false,
+  "requires": {
+    "php": ">=7.4",
+    "wp": ">=5.0"
+  }
+}

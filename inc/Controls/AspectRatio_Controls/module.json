@@ -1,0 +1,14 @@
+{
+  "$schema": "https://orbitools/schemas/module.v1.json",
+  "slug": "aspect-ratio-controls",
+  "name": "Aspect Ratio Controls",
+  "description": "Responsive aspect ratio controls for blocks with orbitools.aspectRatio support.",
+  "version": "1.0.0",
+  "category": "controls",
+  "class": "\\Orbitools\\Controls\\AspectRatio_Controls\\AspectRatio_Controls",
+  "default_enabled": true,
+  "requires": {
+    "php": ">=7.4",
+    "wp": ">=5.0"
+  }
+}

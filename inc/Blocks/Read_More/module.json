@@ -1,0 +1,14 @@
+{
+  "$schema": "https://orbitools/schemas/module.v1.json",
+  "slug": "read-more-block",
+  "name": "Read More Block",
+  "description": "Accordion like container for hiding and showing simple content",
+  "version": "1.0.0",
+  "category": "blocks",
+  "class": "\\Orbitools\\Blocks\\Read_More\\Read_More",
+  "default_enabled": false,
+  "requires": {
+    "php": ">=7.4",
+    "wp": ">=5.0"
+  }
+}
