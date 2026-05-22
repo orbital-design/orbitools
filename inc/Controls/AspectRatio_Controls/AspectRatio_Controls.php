@@ -41,11 +41,6 @@ class AspectRatio_Controls extends Module_Base
         return '1.0.0';
     }
 
-    public function is_enabled(): bool
-    {
-        return true;
-    }
-
     public function init(): void
     {
         // Aspect ratio configuration + CSS generation are part of this module —
