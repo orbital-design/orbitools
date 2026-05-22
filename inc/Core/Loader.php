@@ -3,6 +3,7 @@
 namespace Orbitools\Core;
 
 use Orbitools\Core\Admin\Admin;
+use Orbitools\Core\Admin\React_Admin;
 use Orbitools\Core\Rest\Rest_Server;
 use Orbitools\Core\Updater\Updater;
 
@@ -20,6 +21,7 @@ class Loader
 {
     private Module_Manager $module_manager;
     private Admin $admin;
+    private React_Admin $react_admin;
     private Updater $updater;
     private Rest_Server $rest_server;
 
@@ -37,6 +39,7 @@ class Loader
 
         // Initialize core classes.
         $this->admin = new Admin();
+        $this->react_admin = new React_Admin();
         $this->updater = new Updater();
 
         // Wire up non-render-blocking block CSS loading.
