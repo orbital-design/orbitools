@@ -36,7 +36,7 @@ That's it. `Module_Manager` scans `inc/{Blocks,Controls,Modules}/*/module.json` 
 - `Loader::init()` builds one `Module_Manager`, calls `register_built_in()` (manifest scan + `do_action('orbitools/register_modules', $manager)`), then `boot()` (instantiates enabled modules only).
 - `Settings_Manager::is_module_enabled($slug)` consults a resolver registered by `Module_Manager` — the resolver looks up the manifest's `default_enabled` when no `{slug}_enabled` setting is stored.
 - **Disabled modules cost zero**: their class is never autoloaded, never constructed, never asset-registered. Verified by `class_exists()` being called only after the enable check.
-- `Module_Manager::instance()` returns the active manager (used by `Orbitools_Modules_Field` to render the admin grid).
+- `Module_Manager::instance()` returns the active manager (used by the REST `Modules_Controller` to assemble the React admin's modules list).
 
 ### External modules
 
@@ -46,7 +46,7 @@ add_action('orbitools/register_modules', function ($manager) {
     $manager->register('my-feature', \My\Namespace\Feature::class);
 });
 ```
-External modules have no manifest, so they default to enabled (the resolver's fallback) and render in the admin grid under the generic "modules" category.
+External modules have no manifest, so they default to enabled (the resolver's fallback) and surface in the React admin under the generic "modules" category with no `settings_schema`.
 
 ### Slug stability
 
@@ -58,11 +58,114 @@ Settings are keyed by `{slug}_enabled`. **Never rename a `get_slug()` return val
 inc/
 ├── Blocks/         # Gutenberg blocks (PascalCase namespace + folder)
 ├── Controls/       # Editor-side controls
-├── Core/           # Plugin core (Loader, Module_Manager, Module_Base, etc.)
+├── Core/           # Plugin core (Loader, Module_Manager, Module_Base, REST,
+│                   #             React_Admin, etc.)
 └── Modules/        # Other modules
 ```
 
 Composer autoload is a single PSR-4 mapping: `"Orbitools\\": "inc/"`. macOS is case-insensitive, but the codebase must work on Linux — paths in code MUST match folder casing exactly.
+
+## 🧩 v3 React Admin Layer
+
+The plugin admin is a single-page React app served from `?page=orbitools`. The PHP side renders one mount div (`Orbitools\Core\Admin\React_Admin`) and exposes a versioned REST surface; everything visible is rendered by `src/admin/index.tsx`.
+
+### Surface map
+
+```
+src/admin/
+├── index.tsx              # Mount + store registration + field side-effect imports
+├── App.tsx                # Hash-routed root: dashboard / category / settings
+├── components/            # Dashboard, CategoryPage, SettingsPage, AppChrome, TopNav, …
+├── fields/                # One file per field type (text, toggle, range, …);
+│                          #   each self-registers with fields/registry.ts at import
+├── hooks/                 # useModules, useSettings
+├── lib/                   # api.ts (apiFetch wiring), router.ts, slots.ts, showIf.ts
+├── modules/               # Per-module admin extensions (drop-a-file, see below)
+├── store/                 # @wordpress/data store: modules / settings / ui slices
+└── types/                 # FieldSchema, Module, ModuleExtension, etc.
+```
+
+### REST API
+
+Base path: `/wp-json/orbitools/v1/` (registered by `Rest_Server`, hosting `Modules_Controller`, `Settings_Controller`, `Field_Types_Controller`).
+
+```
+GET    /modules                 # list + per-module settings_schema
+GET    /modules/{slug}
+POST   /modules/{slug}/enabled  # body: { enabled: bool }
+GET    /settings/{slug}         # slug-prefix stripped from keys
+PUT    /settings/{slug}         # replace
+PATCH  /settings/{slug}         # partial
+GET    /field-types             # catalog of the 10 built-in types
+```
+
+All write endpoints require `manage_options` and the `wp_rest` nonce (set by `lib/api.ts` via `apiFetch.createNonceMiddleware`).
+
+### Settings schema in module.json
+
+The React admin's per-module settings page is **auto-rendered from a `settings` array in `module.json`** — modules don't write React. Fields are flat, ID-relative to the module slug, and validated under `WP_DEBUG` by `Module_Manifest::validate_settings_schema()`.
+
+```json
+{
+  "slug": "example",
+  "settings": [
+    {
+      "id": "show_grids",
+      "type": "toggle",
+      "label": "Enable grids",
+      "description": "…",
+      "default": true
+    },
+    {
+      "id": "color",
+      "type": "color",
+      "label": "Guide colour",
+      "default": "#32a3e2",
+      "show_if": { "show_grids": true }
+    }
+  ]
+}
+```
+
+Stored option keys are `{slug}_{field_id}` (e.g. `example_show_grids`). The REST controller strips/adds the prefix; the React store and the field schema both speak slug-relative IDs.
+
+The 10 v1 field types: `text`, `textarea`, `number`, `toggle`, `select`, `multiselect`, `radio`, `checkbox-group`, `color`, `range`. Anything richer than `show_if` equality should route to a custom Page (see below) instead of trying to encode logic in the schema.
+
+### Drop-a-file admin extensions
+
+A module can replace the auto-rendered settings page or contribute UI to named slots by dropping `src/admin/modules/{slug}/index.tsx`:
+
+```tsx
+import type { ModuleExtension, ModulePage } from '../../types';
+
+const Page: ModulePage = ({ slug }) => <CustomTypographyEditor slug={slug} />;
+function Fills() { return <Fill name="orbitools.dashboard.cards">…</Fill>; }
+
+const extension: ModuleExtension = { Page, Fills };
+export default extension;
+```
+
+`scripts/discover-admin-extensions.js` runs from the webpack `beforeRun` hook, writes `src/admin/.generated/discovered.ts` as a static import map, and `App.tsx` consults it to decide whether to render the custom Page or fall back to `SettingsPage`. `Fills` are mounted globally inside the `SlotFillProvider` so dashboard/sidebar contributions persist across routes. Slot names live in `src/admin/lib/slots.ts`.
+
+### Routing
+
+Hash-based, no router dependency. See `src/admin/lib/router.ts` for the full table — `#`, `#blocks`, `#controls`, `#modules`, `#settings/{slug}`. `routes.X()` is the single constructor; never hand-build hash strings elsewhere.
+
+### Store
+
+`@wordpress/data` — one store, three slices (`modules`, `settings`, `ui`), all under the key `'orbitools'` (exported as `STORE_KEY` from `src/admin/store/index.ts`).
+
+**Critical gotcha:** inside thunks and resolvers, `dispatch` and `select` are **already bound** to the current store. Calling `dispatch('orbitools').actionName()` dispatches the literal string `'orbitools'` as an action and silently no-ops. Always call `dispatch.actionName()` / `select.selectorName()` directly.
+
+### @wordpress/components imports
+
+`VStack`, `HStack`, `NumberControl` are exported only under the experimental name (`__experimentalVStack`, etc.). Importing as plain `VStack` resolves to `undefined` at runtime and renders as `<undefined />` (React #130). Alias on import:
+
+```tsx
+import { __experimentalVStack as VStack } from '@wordpress/components';
+```
+
+Controls with the 36px-default-size deprecation (SelectControl, FormTokenField, TextControl, RangeControl, NumberControl) need `__next40pxDefaultSize` to silence the warning.
 
 ## 🎯 Core Development Principles
 
@@ -111,7 +214,7 @@ const [spacingSizes] = useSettings(['spacing.spacingSizes']);
 1. **Search for patterns**: `grep -r "pattern" src/` 
 2. **Fix systematically**: Update ALL instances
 3. **Test all affected areas**: Not just the current feature
-4. **Build successfully**: `npm run build:blocks`
+4. **Build successfully**: `npm run build` (blocks + assets + admin) or the targeted `npm run build:admin`
 5. **Verify in browser**: Test all related functionality
 
 #### File Organization:
@@ -169,17 +272,20 @@ const classes = getResponsiveClasses(height, 'h', formatValue);
 3. **Copy-Paste Errors**: Copying broken patterns between blocks
 4. **Missing Dependencies**: Not updating webpack/PHP registration for new blocks
 5. **Theme Integration**: Hardcoding values instead of using theme.json
+6. **Store thunk dispatch**: Using registry-style `dispatch('orbitools').x()` inside a thunk silently no-ops — always use bound `dispatch.x()`
+7. **Experimental @wordpress/components imports**: `VStack`, `HStack`, `NumberControl` etc. need the `__experimental` prefix alias
 
 ## 📋 Quality Checklist
 
 Before marking any feature complete:
 - [ ] All `useSettings` calls use string format
-- [ ] All blocks build successfully
+- [ ] All bundles build successfully (`npm run build`)
 - [ ] All controls appear and function correctly  
 - [ ] No unused files remain
 - [ ] Consistent patterns across blocks
 - [ ] Theme integration working
 - [ ] Responsive features tested
+- [ ] React admin settings pages render for any module changes (manifest schema validated under `WP_DEBUG`)
 
 ## 🎯 Future Development
 
@@ -191,5 +297,5 @@ When adding new blocks or features:
 5. **Clean as you go** - Remove unused code immediately
 
 ---
-*Last Updated: 2026-05-19 (v2 module architecture refactor)*
+*Last Updated: 2026-05-26 (v3 React admin layer + AdminKit retirement)*
 *This file should be updated whenever new development patterns or lessons are discovered.*
