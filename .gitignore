@@ -13,3 +13,8 @@ tests/
 *.log
 build/
 dist/
+
+# Build-generated admin extension manifest. Source of truth is
+# scripts/discover-admin-extensions.js, which rewrites this every
+# compile from src/admin/modules/*/index.tsx.
+src/admin/.generated/

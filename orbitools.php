@@ -9,7 +9,7 @@
  * Author URI:      https://orbital.co.uk
  * Text Domain:     orbitools
  * Domain Path:     /languages
- * Requires at least: 5.0
+ * Requires at least: 6.4
  * Tested up to:    6.4
  * Requires PHP:    7.4
  * Network:         false
@@ -30,7 +30,7 @@ define('ORBITOOLS_BASENAME', plugin_basename(__FILE__));
 define('ORBITOOLS_DIR', plugin_dir_path(__FILE__));
 define('ORBITOOLS_URL', plugin_dir_url(__FILE__));
 define('ORBITOOLS_MIN_PHP', '7.4');
-define('ORBITOOLS_MIN_WP', '5.0');
+define('ORBITOOLS_MIN_WP', '6.4');
 
 /**
  * Check PHP version compatibility and show admin notice if not met.

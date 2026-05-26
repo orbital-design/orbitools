@@ -10,11 +10,8 @@ module.exports = {
         'frontend/css/base': path.resolve(process.cwd(), 'src', 'frontend', 'scss', 'base.scss'),
         // - SCSS ~ Editor ~ Loaded in the block editor
         'admin/css/editor': path.resolve(process.cwd(), 'src', 'admin', 'scss', 'editor.scss'),
-        // - SCSS ~ Admin ~ Loaded in the admin area
-        'admin/css/admin': path.resolve(process.cwd(), 'src', 'admin', 'scss', 'admin.scss'),
         // - SCSS ~ Module ~ Layout Guides
         'frontend/css/modules/layout-guides/base': path.resolve(process.cwd(), 'src', 'modules', 'layout-guides','frontend', 'scss','base.scss'),
-        'admin/css/modules/layout-guides/admin': path.resolve(process.cwd(), 'src', 'modules', 'layout-guides','admin', 'scss','admin.scss'),
         // - SCSS ~ Module ~ Menu Dividers
         'admin/css/modules/menu-dividers/admin': path.resolve(process.cwd(), 'src', 'modules', 'menu-dividers','admin', 'scss','admin.scss'),
         // - SCSS ~ Module ~ Menu Groups
@@ -23,8 +20,6 @@ module.exports = {
         'admin/css/controls/typography-presets/admin': path.resolve(process.cwd(), 'src', 'controls', 'typography-presets','admin', 'scss','admin.scss'),
 
         // JS entries for JavaScript compilation
-        // - JS ~ Admin ~ Loaded in the admin area
-        'admin/js/admin': path.resolve(process.cwd(), 'src', 'admin', 'js', 'admin.js'),
         // - JS ~ Module ~ Layout Guides
         'frontend/js/modules/layout-guides/base': path.resolve(process.cwd(), 'src', 'modules', 'layout-guides','frontend', 'js','base.js'),
         // - JS ~ Module ~ Menu Dividers
@@ -34,7 +29,6 @@ module.exports = {
         'admin/js/modules/menu-groups/admin': path.resolve(process.cwd(), 'src', 'modules', 'menu-groups','admin', 'js','admin.js'),
         'admin/js/modules/menu-groups/processor': path.resolve(process.cwd(), 'src', 'modules', 'menu-groups','admin', 'js','processor.js'),
         // - JS ~ Controls ~ Typography Presets
-        'admin/js/controls/typography-presets/admin-handle-module-dashboard': path.resolve(process.cwd(), 'src', 'controls', 'typography-presets','admin', 'js','admin-handle-module-dashboard.js'),
         'admin/js/controls/typography-presets/editor-disable-core-typography-controls': path.resolve(process.cwd(), 'src', 'controls', 'typography-presets','admin', 'js','editor-disable-core-typography-controls.js'),
         'admin/js/controls/typography-presets/editor-presets-attribute-registration': path.resolve(process.cwd(), 'src', 'controls', 'typography-presets','admin', 'js','editor-presets-attribute-registration.js'),
         'admin/js/controls/typography-presets/editor-presets-classname-application': path.resolve(process.cwd(), 'src', 'controls', 'typography-presets','admin', 'js','editor-presets-classname-application.js'),

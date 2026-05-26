@@ -2,14 +2,16 @@
 
 namespace Orbitools\Core;
 
-use Orbitools\Core\Admin\Admin;
+use Orbitools\Core\Admin\React_Admin;
+use Orbitools\Core\Rest\Rest_Server;
 use Orbitools\Core\Updater\Updater;
 
 /**
  * Loader
  *
- * Orchestrates plugin boot: data migrations, AdminKit, the Admin and
- * Updater instances, the block CSS loader, and the module registry.
+ * Orchestrates plugin boot: data migrations, the React admin, the
+ * Updater, the block CSS loader, the REST API, and the module
+ * registry. AdminKit and its orchestrator were retired in v3 Phase 7.
  *
  * @package Orbitools
  * @since 2.0.0
@@ -17,8 +19,9 @@ use Orbitools\Core\Updater\Updater;
 class Loader
 {
     private Module_Manager $module_manager;
-    private Admin $admin;
+    private React_Admin $react_admin;
     private Updater $updater;
+    private Rest_Server $rest_server;
 
     public function init(): void
     {
@@ -27,17 +30,16 @@ class Loader
         // stale data.
         Migrations::run();
 
-        // Load the OrbiTools AdminKit
-        if (file_exists(ORBITOOLS_DIR . 'vendor/orbitools/adminkit/adminkit.php')) {
-            require_once ORBITOOLS_DIR . 'vendor/orbitools/adminkit/adminkit.php';
-        }
-
         // Initialize core classes.
-        $this->admin = new Admin();
+        $this->react_admin = new React_Admin();
         $this->updater = new Updater();
 
         // Wire up non-render-blocking block CSS loading.
         Block_Style_Loader::init();
+
+        // Bootstrap the v3 REST API. The instance registers its own
+        // routes on rest_api_init; Loader just keeps it alive.
+        $this->rest_server = new Rest_Server();
 
         // Initialize modules via the registry. Disabled modules are never
         // autoloaded; their constructors and asset registrations are skipped.

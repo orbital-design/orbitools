@@ -10,5 +10,60 @@
   "requires": {
     "php": ">=7.4",
     "wp": ">=5.0"
-  }
+  },
+  "settings": [
+    {
+      "id": "show_grids",
+      "type": "toggle",
+      "label": "Enable layout grids",
+      "description": "Enable grid overlays (12 and 5 column). Use the FAB to switch between grid types.",
+      "default": true
+    },
+    {
+      "id": "show_rulers",
+      "type": "toggle",
+      "label": "Enable rulers",
+      "description": "Enable measurement rulers. Use the FAB to show/hide when active.",
+      "default": true
+    },
+    {
+      "id": "grid_gutter",
+      "type": "text",
+      "label": "Grid gutter",
+      "description": "Space between grid columns. Any CSS length value or custom property.",
+      "default": "var(--gutter)",
+      "placeholder": "var(--gutter)"
+    },
+    {
+      "id": "opacity",
+      "type": "range",
+      "label": "Guide opacity",
+      "description": "Opacity of the layout guides.",
+      "default": 0.3,
+      "min": 0.1,
+      "max": 1,
+      "step": 0.05
+    },
+    {
+      "id": "color",
+      "type": "color",
+      "label": "Guide colour",
+      "description": "Colour of the layout guides.",
+      "default": "#32a3e2"
+    },
+    {
+      "id": "toggle_key",
+      "type": "select",
+      "label": "Toggle shortcut",
+      "description": "Keyboard shortcut to toggle guides on or off.",
+      "default": "ctrl+shift+g",
+      "options": [
+        { "value": "ctrl+shift+g", "label": "Ctrl+Shift+G" },
+        { "value": "ctrl+shift+l", "label": "Ctrl+Shift+L" },
+        { "value": "ctrl+shift+r", "label": "Ctrl+Shift+R" },
+        { "value": "alt+shift+g",  "label": "Alt+Shift+G" },
+        { "value": "alt+shift+l",  "label": "Alt+Shift+L" }
+      ]
+    }
+  ]
 }
