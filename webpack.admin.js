@@ -8,13 +8,36 @@
  *     and a content-hash version)
  *   - SCSS pipeline via MiniCssExtractPlugin
  *
- * Single entry — the whole admin app is one bundle. Webpack-driven
- * code splitting for per-module UI chunks lands in Phase 4 when the
- * filesystem discovery scan is introduced.
+ * Single entry — the whole admin app is one bundle. The
+ * DiscoverAdminExtensionsPlugin runs the filesystem scan before each
+ * compile and watch tick, refreshing src/admin/.generated/discovered.ts
+ * so static imports of newly-added modules resolve correctly.
  */
 
 const defaultConfig = require('@wordpress/scripts/config/webpack.config');
 const path = require('path');
+const { run: discover } = require('./scripts/discover-admin-extensions');
+
+class DiscoverAdminExtensionsPlugin {
+    apply(compiler) {
+        const handler = (_compilation, callback) => {
+            try {
+                discover();
+            } catch (err) {
+                console.error('[discover-admin-extensions] failed:', err);
+            }
+            if (typeof callback === 'function') {
+                callback();
+            }
+        };
+        compiler.hooks.beforeRun.tapAsync('DiscoverAdminExtensionsPlugin', handler);
+        compiler.hooks.watchRun.tapAsync('DiscoverAdminExtensionsPlugin', handler);
+    }
+}
+
+// Run once at config-load time so the manifest exists before the
+// first compile pass (otherwise the static import in App.tsx fails).
+discover();
 
 module.exports = {
     ...defaultConfig,
@@ -34,4 +57,8 @@ module.exports = {
             '@admin': path.resolve(process.cwd(), 'src', 'admin'),
         },
     },
+    plugins: [
+        ...((defaultConfig.plugins) || []),
+        new DiscoverAdminExtensionsPlugin(),
+    ],
 };

@@ -77,3 +77,26 @@ export interface FieldTypeCatalogEntry {
     id: string;
     label: string;
 }
+
+/**
+ * Optional admin extensions a module can ship. The build-time
+ * discovery scan (scripts/discover-admin-extensions.js) finds modules
+ * at src/admin/modules/{slug}/index.tsx and writes a static manifest
+ * at src/admin/.generated/discovered.ts.
+ *
+ * Page  — replaces the generic SettingsPage when the module is opened
+ *         at #settings/{slug}. The component receives the slug as a
+ *         prop so it can reuse hooks like useSettings(slug).
+ * Fills — a component rendered globally inside the SlotFillProvider.
+ *         It is expected to return one or more <Fill> elements
+ *         targeting names from src/admin/lib/slots.ts. Mounted once,
+ *         outside the routed page, so its fills persist across routes.
+ *
+ * Both are optional; a module may ship either, both, or neither.
+ */
+export interface ModuleExtension {
+    Page?: ModulePage;
+    Fills?: () => JSX.Element | null;
+}
+
+export type ModulePage = (props: { slug: string }) => JSX.Element;

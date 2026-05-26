@@ -1,19 +1,25 @@
 /**
  * Root component. Phase 2 shipped a placeholder dashboard; Phase 3
  * adds minimal hash routing so the manifest-driven SettingsPage is
- * reachable. Phase 5 will replace this with the full router and the
- * real Dashboard / Modules pages.
+ * reachable. Phase 4 hooks in the discovered admin-extension manifest
+ * (a module's optional Page replaces the generic SettingsPage; its
+ * optional Fills mount globally under SlotFillProvider). Phase 5 will
+ * replace this with the full router and the real Dashboard / Modules
+ * pages.
  *
  * Route table (hash-based):
  *   #                              → placeholder dashboard
- *   #settings/{slug}               → manifest-driven settings page
+ *   #settings/{slug}               → discovered[slug].Page (if any)
+ *                                    else manifest-driven SettingsPage
  */
-import { SlotFillProvider } from '@wordpress/components';
+import { Slot, SlotFillProvider } from '@wordpress/components';
 import { useEffect, useState } from '@wordpress/element';
 import { AppChrome } from './components/AppChrome';
 import { LoadingState } from './components/LoadingState';
 import { SettingsPage } from './components/SettingsPage';
 import { useModules } from './hooks/useModules';
+import { SLOTS } from './lib/slots';
+import { discovered } from './.generated/discovered';
 
 interface Route {
     name: 'dashboard' | 'settings';
@@ -50,14 +56,49 @@ export function App(): JSX.Element {
 
     return (
         <SlotFillProvider>
+            <DiscoveredFills />
             {route.name === 'settings' && route.slug !== undefined ? (
-                <SettingsPage slug={route.slug} />
+                <RoutedSettings slug={route.slug} />
             ) : (
                 <AppChrome title="Orbitools">
                     <PlaceholderDashboard />
                 </AppChrome>
             )}
         </SlotFillProvider>
+    );
+}
+
+/**
+ * Route the settings page. If the module ships a custom Page via
+ * src/admin/modules/{slug}/index.tsx, render it; otherwise fall back
+ * to the manifest-driven SettingsPage.
+ */
+function RoutedSettings({ slug }: { slug: string }): JSX.Element {
+    const CustomPage = discovered[slug]?.Page;
+    if (CustomPage !== undefined) {
+        return <CustomPage slug={slug} />;
+    }
+    return <SettingsPage slug={slug} />;
+}
+
+/**
+ * Mount every discovered module's Fills component inside the
+ * SlotFillProvider. Each module's Fills component is expected to
+ * return one or more <Fill> elements; rendering them here once,
+ * outside the routed page, keeps the fills alive across route
+ * changes so dashboard/sidebar contributions don't unmount.
+ */
+function DiscoveredFills(): JSX.Element {
+    return (
+        <>
+            {Object.entries(discovered).map(([slug, ext]) => {
+                if (ext.Fills === undefined) {
+                    return null;
+                }
+                const Fills = ext.Fills;
+                return <Fills key={slug} />;
+            })}
+        </>
     );
 }
 
@@ -101,6 +142,10 @@ function PlaceholderDashboard(): JSX.Element {
                     </ul>
                 </>
             )}
+            <div className="orbitools-placeholder__discovered" style={{ marginTop: 16 }}>
+                <p>Phase 4: discovered admin extensions (rendered via SlotFill):</p>
+                <Slot name={SLOTS.DASHBOARD_CARDS} />
+            </div>
         </div>
     );
 }
