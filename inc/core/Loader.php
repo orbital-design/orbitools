@@ -3,7 +3,6 @@
 namespace Orbitools\Core;
 
 use Orbitools\Core\Admin\Admin;
-use Orbitools\Core\Updater\Updater;
 // use Orbitools\Core\Toolbar_FAB;
 use Orbitools\Core\SpacingConfig;
 use Orbitools\Core\Helpers\Gaps_CSS_Generator;
@@ -45,13 +44,6 @@ class Loader
      * @var Admin
      */
     private $admin;
-
-    /**
-     * Updater instance.
-     *
-     * @var Updater
-     */
-    private $updater;
 
     /**
      * Block slugs that have frontend CSS.
@@ -200,7 +192,6 @@ class Loader
 
         // Initialize core classes.
         $this->admin = new Admin();
-        $this->updater = new Updater();
 
         // Initialize Spacing Configuration system
         SpacingConfig::init();
