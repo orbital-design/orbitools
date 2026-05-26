@@ -19,7 +19,15 @@ namespace Orbitools\Core\Admin;
  */
 final class React_Admin
 {
-    public const PAGE_SLUG    = 'orbitools';
+    /**
+     * Page slug for the React admin top-level menu.
+     *
+     * Distinct from AdminKit's slug — its root page already uses
+     * `orbitools` (under Settings), so a collision there would route
+     * both menu entries to the same URL. Phase 7 retires AdminKit at
+     * which point this can be renamed to plain `orbitools`.
+     */
+    public const PAGE_SLUG    = 'orbitools-app';
     public const SCRIPT_HANDLE = 'orbitools-admin';
     public const STYLE_HANDLE  = 'orbitools-admin';
 
