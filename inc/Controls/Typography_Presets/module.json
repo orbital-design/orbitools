@@ -10,5 +10,52 @@
   "requires": {
     "php": ">=7.4",
     "wp": ">=5.0"
-  }
+  },
+  "settings": [
+    {
+      "id": "show_groups_in_dropdown",
+      "type": "toggle",
+      "label": "Show groups in dropdown",
+      "description": "Display preset groups as separate dropdown options.",
+      "default": false
+    },
+    {
+      "id": "output_preset_css",
+      "type": "toggle",
+      "label": "Output preset CSS",
+      "description": "Automatically output CSS for typography presets in the page head.",
+      "default": true
+    },
+    {
+      "id": "allowed_blocks",
+      "type": "checkbox-group",
+      "label": "Allowed blocks",
+      "description": "Block types that can use typography presets.",
+      "default": [
+        "core/paragraph",
+        "core/heading",
+        "core/details",
+        "core/post-title",
+        "core/list",
+        "core/list-item",
+        "core/quote",
+        "core/button",
+        "core/pullquote"
+      ],
+      "options": [
+        { "value": "core/paragraph", "label": "Paragraph" },
+        { "value": "core/heading", "label": "Heading" },
+        { "value": "core/details", "label": "Details" },
+        { "value": "core/post-title", "label": "Title" },
+        { "value": "core/list", "label": "List" },
+        { "value": "core/list-item", "label": "List item" },
+        { "value": "core/quote", "label": "Quote" },
+        { "value": "core/button", "label": "Button" },
+        { "value": "core/group", "label": "Group" },
+        { "value": "core/column", "label": "Column" },
+        { "value": "core/cover", "label": "Cover" },
+        { "value": "core/pullquote", "label": "Pullquote" }
+      ]
+    }
+  ]
 }

@@ -10,5 +10,129 @@
   "requires": {
     "php": ">=7.4",
     "wp": ">=5.0"
-  }
+  },
+  "sections": [
+    { "id": "provider",  "title": "Provider" },
+    { "id": "privacy",   "title": "Privacy" },
+    { "id": "ecommerce", "title": "Ecommerce" },
+    { "id": "events",    "title": "Custom events" },
+    { "id": "advanced",  "title": "Advanced" }
+  ],
+  "settings": [
+    {
+      "id": "analytics_type",
+      "section": "provider",
+      "type": "select",
+      "label": "Analytics type",
+      "description": "Choose your preferred analytics implementation.",
+      "default": "ga4",
+      "options": [
+        { "value": "ga4", "label": "Google Analytics 4 (recommended)" },
+        { "value": "gtm", "label": "Google Tag Manager" }
+      ]
+    },
+    {
+      "id": "ga4_id",
+      "section": "provider",
+      "type": "text",
+      "label": "GA4 measurement ID",
+      "description": "Your GA4 measurement ID (e.g. G-XXXXXXXXXX).",
+      "default": "",
+      "placeholder": "G-XXXXXXXXXX",
+      "show_if": { "analytics_type": "ga4" }
+    },
+    {
+      "id": "gtm_id",
+      "section": "provider",
+      "type": "text",
+      "label": "GTM container ID",
+      "description": "Your Google Tag Manager container ID (e.g. GTM-XXXXXXX).",
+      "default": "",
+      "placeholder": "GTM-XXXXXXX",
+      "show_if": { "analytics_type": "gtm" }
+    },
+    {
+      "id": "respect_dnt",
+      "section": "privacy",
+      "type": "toggle",
+      "label": "Respect Do Not Track",
+      "description": "Honour browser Do Not Track settings (applies to all providers).",
+      "default": true
+    },
+    {
+      "id": "consent_mode",
+      "section": "privacy",
+      "type": "toggle",
+      "label": "Enable Consent Mode v2",
+      "description": "Google Consent Mode v2 — default deny state until the user grants consent via a banner or consent management platform.",
+      "default": true
+    },
+    {
+      "id": "ecommerce_enable",
+      "section": "ecommerce",
+      "type": "toggle",
+      "label": "Enable Enhanced Ecommerce",
+      "description": "Track purchase, product view, add-to-cart and checkout events. Requires WooCommerce.",
+      "default": false
+    },
+    {
+      "id": "ecommerce_currency",
+      "section": "ecommerce",
+      "type": "text",
+      "label": "Currency code",
+      "description": "Default currency code for ecommerce tracking (e.g. USD, EUR, GBP).",
+      "default": "USD",
+      "placeholder": "USD",
+      "show_if": { "ecommerce_enable": true }
+    },
+    {
+      "id": "custom_events",
+      "section": "events",
+      "type": "checkbox-group",
+      "label": "Custom event tracking",
+      "description": "Which custom events to track. GA4 fires enhanced events; GTM pushes equivalent dataLayer events.",
+      "default": ["downloads", "outbound"],
+      "options": [
+        { "value": "downloads", "label": "File downloads (PDF, DOC, ZIP, MP3, MP4, …)" },
+        { "value": "outbound",  "label": "Outbound links" },
+        { "value": "scroll",    "label": "Scroll depth (25 / 50 / 75 / 100 %)" },
+        { "value": "forms",     "label": "Form submissions (incl. CF7, Gravity Forms)" }
+      ]
+    },
+    {
+      "id": "exclude_roles",
+      "section": "advanced",
+      "type": "multiselect",
+      "label": "Exclude user roles",
+      "description": "Disable all tracking for users with these roles. Useful for excluding admins and editors.",
+      "default": ["administrator"],
+      "options": [
+        { "value": "administrator", "label": "Administrator" },
+        { "value": "editor",        "label": "Editor" },
+        { "value": "author",        "label": "Author" },
+        { "value": "contributor",   "label": "Contributor" },
+        { "value": "subscriber",    "label": "Subscriber" }
+      ]
+    },
+    {
+      "id": "track_performance",
+      "section": "advanced",
+      "type": "toggle",
+      "label": "Track Core Web Vitals",
+      "description": "Send page performance metrics (LCP, CLS, INP) as GA4 events for SEO insights.",
+      "default": false,
+      "show_if": { "analytics_type": "ga4" }
+    },
+    {
+      "id": "custom_config",
+      "section": "advanced",
+      "type": "textarea",
+      "label": "Custom GA4 config parameters",
+      "description": "JSON object merged into the GA4 config call. Advanced. Use for custom dimensions, debug mode, etc.",
+      "default": "",
+      "placeholder": "{\"custom_parameter_1\": \"value1\", \"send_page_view\": false}",
+      "rows": 4,
+      "show_if": { "analytics_type": "ga4" }
+    }
+  ]
 }

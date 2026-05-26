@@ -10,5 +10,43 @@
   "requires": {
     "php": ">=7.4",
     "wp": ">=5.0"
-  }
+  },
+  "settings": [
+    {
+      "id": "local_avatars_enabled",
+      "type": "toggle",
+      "label": "Enable local avatars",
+      "description": "Allow users to upload local avatar images instead of using Gravatar.",
+      "default": true
+    },
+    {
+      "id": "disable_gravatar",
+      "type": "toggle",
+      "label": "Disable Gravatar",
+      "description": "Disable Gravatar integration completely. When enabled, all Gravatar functionality will be removed.",
+      "default": false
+    },
+    {
+      "id": "allowed_filetypes",
+      "type": "checkbox-group",
+      "label": "Allowed file types",
+      "description": "Image file types that can be uploaded for local avatars.",
+      "default": ["jpg|jpeg|jpe", "gif", "png"],
+      "options": [
+        { "value": "jpg|jpeg|jpe", "label": "JPG / JPEG" },
+        { "value": "gif",          "label": "GIF" },
+        { "value": "png",          "label": "PNG" }
+      ]
+    },
+    {
+      "id": "max_file_size",
+      "type": "number",
+      "label": "Max file size (KB)",
+      "description": "Maximum upload size for avatars in KB. Recommended: 2048 KB (2 MB).",
+      "default": 2048,
+      "min": 100,
+      "max": 10240,
+      "step": 1
+    }
+  ]
 }
