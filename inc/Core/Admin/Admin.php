@@ -57,7 +57,11 @@ class Admin
      */
     public function init_adminkit(): void
     {
-        AdminKit('orbitools')->init(array(
+        // Slug intentionally avoids "orbitools" prefix so AdminKit's
+        // substring-match is_our_admin_page() doesn't catch the new
+        // React admin at ?page=orbitools-app. Phase 7 retires AdminKit
+        // entirely; at that point this whole class is removed.
+        AdminKit('orbi-legacy')->init(array(
             'title' => __('Orbitools', 'orbitools'),
             'description' => __('Advanced WordPress tools and utilities.', 'orbitools'),
             'hide_title_description' => true,
@@ -253,8 +257,11 @@ class Admin
      */
     public function enqueue_scripts(string $hook): void
     {
-        // Only load on our admin pages
-        if (strpos($hook, 'orbitools') === false) {
+        // Only load on AdminKit's own pages. The substring used to be
+        // 'orbitools', which incorrectly caught the new React admin at
+        // toplevel_page_orbitools-app and silently shadowed its
+        // 'orbitools-admin' script handle.
+        if (strpos($hook, 'orbi-legacy') === false) {
             return;
         }
 

@@ -28,8 +28,14 @@ final class React_Admin
      * which point this can be renamed to plain `orbitools`.
      */
     public const PAGE_SLUG    = 'orbitools-app';
-    public const SCRIPT_HANDLE = 'orbitools-admin';
-    public const STYLE_HANDLE  = 'orbitools-admin';
+    /**
+     * Distinct from the legacy AdminKit handle ('orbitools-admin' in
+     * Admin::enqueue_scripts) — wp_enqueue_script silently keeps the
+     * first registration on a handle collision, which would mask
+     * this bundle behind the legacy admin.js.
+     */
+    public const SCRIPT_HANDLE = 'orbitools-app';
+    public const STYLE_HANDLE  = 'orbitools-app';
 
     public function __construct()
     {

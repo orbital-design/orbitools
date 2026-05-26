@@ -82,13 +82,13 @@ const actions = {
 
     saveSettings:
         (slug: string, settings: ModuleSettings) =>
-        async ({ dispatch }: { dispatch: (k: string) => Dispatchers }) => {
+        async ({ dispatch }: { dispatch: Dispatchers }) => {
             try {
                 const updated = await api.replaceSettings(slug, settings);
-                dispatch('orbitools').replaceSettings(slug, updated);
+                dispatch.replaceSettings(slug, updated);
             } catch (err) {
                 const message = err instanceof Error ? err.message : String(err);
-                dispatch('orbitools').addNotice({
+                dispatch.addNotice({
                     status: 'error',
                     message: `Failed to save settings for ${slug}: ${message}`,
                 });
@@ -97,18 +97,18 @@ const actions = {
 
     updateSetting:
         (slug: string, key: string, value: unknown) =>
-        async ({ select, dispatch }: { select: (k: string) => Selectors; dispatch: (k: string) => Dispatchers }) => {
-            const current = select('orbitools').getSettings(slug) ?? {};
+        async ({ select, dispatch }: { select: Selectors; dispatch: Dispatchers }) => {
+            const current = select.getSettings(slug) ?? {};
             const next = { ...current, [key]: value };
             // Optimistic local update.
-            dispatch('orbitools').replaceSettings(slug, next);
+            dispatch.replaceSettings(slug, next);
             try {
                 const updated = await api.patchSettings(slug, { [key]: value });
-                dispatch('orbitools').replaceSettings(slug, updated);
+                dispatch.replaceSettings(slug, updated);
             } catch (err) {
-                dispatch('orbitools').replaceSettings(slug, current);
+                dispatch.replaceSettings(slug, current);
                 const message = err instanceof Error ? err.message : String(err);
-                dispatch('orbitools').addNotice({
+                dispatch.addNotice({
                     status: 'error',
                     message: `Failed to update ${slug}.${key}: ${message}`,
                 });
@@ -127,14 +127,14 @@ const selectors = {
 const resolvers = {
     getSettings:
         (slug: string) =>
-        async ({ dispatch }: { dispatch: (k: string) => Dispatchers }) => {
-            dispatch('orbitools').fetchSettingsStart(slug);
+        async ({ dispatch }: { dispatch: Dispatchers }) => {
+            dispatch.fetchSettingsStart(slug);
             try {
                 const settings = await api.fetchSettings(slug);
-                dispatch('orbitools').fetchSettingsSuccess(slug, settings);
+                dispatch.fetchSettingsSuccess(slug, settings);
             } catch (err) {
                 const message = err instanceof Error ? err.message : String(err);
-                dispatch('orbitools').fetchSettingsError(slug, message);
+                dispatch.fetchSettingsError(slug, message);
             }
         },
 };

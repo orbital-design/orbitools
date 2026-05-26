@@ -69,21 +69,21 @@ const actions = {
      */
     toggleModule:
         (slug: string, enabled: boolean) =>
-        async ({ select, dispatch }: { select: (k: string) => Selectors; dispatch: (k: string) => Dispatchers }) => {
-            const before = select('orbitools').getModule(slug);
+        async ({ select, dispatch }: { select: Selectors; dispatch: Dispatchers }) => {
+            const before = select.getModule(slug);
             if (before === undefined) {
                 return;
             }
             // Optimistic update.
-            dispatch('orbitools').replaceModule({ ...before, enabled });
+            dispatch.replaceModule({ ...before, enabled });
             try {
                 const updated = await api.setModuleEnabled(slug, enabled);
-                dispatch('orbitools').replaceModule(updated);
+                dispatch.replaceModule(updated);
             } catch (err) {
                 // Roll back.
-                dispatch('orbitools').replaceModule(before);
+                dispatch.replaceModule(before);
                 const message = err instanceof Error ? err.message : String(err);
-                dispatch('orbitools').addNotice({
+                dispatch.addNotice({
                     status: 'error',
                     message: `Failed to update ${slug}: ${message}`,
                 });
@@ -110,14 +110,14 @@ const selectors = {
 const resolvers = {
     getModules:
         () =>
-        async ({ dispatch }: { dispatch: (k: string) => Dispatchers }) => {
-            dispatch('orbitools').fetchModulesStart();
+        async ({ dispatch }: { dispatch: Dispatchers }) => {
+            dispatch.fetchModulesStart();
             try {
                 const modules = await api.fetchModules();
-                dispatch('orbitools').fetchModulesSuccess(modules);
+                dispatch.fetchModulesSuccess(modules);
             } catch (err) {
                 const message = err instanceof Error ? err.message : String(err);
-                dispatch('orbitools').fetchModulesError(message);
+                dispatch.fetchModulesError(message);
             }
         },
 };
