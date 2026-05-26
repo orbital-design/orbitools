@@ -7,6 +7,9 @@
 import { createRoot } from '@wordpress/element';
 import { registerStore } from './store';
 import { App } from './App';
+// Side-effect imports: each field component self-registers with the
+// field registry, making the type available to SettingsPage.
+import './fields';
 import './scss/react-admin.scss';
 
 registerStore();
