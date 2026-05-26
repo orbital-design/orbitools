@@ -2,6 +2,7 @@
 
 namespace Orbitools\Core\Rest;
 
+use Orbitools\Core\Module\Module_Manifest;
 use WP_REST_Controller;
 use WP_REST_Request;
 use WP_REST_Response;
@@ -48,10 +49,43 @@ final class Field_Types_Controller extends WP_REST_Controller
 
     /**
      * GET /field-types
+     *
+     * Returns the v1 field type catalog. Source of truth lives in
+     * {@see Module_Manifest::FIELD_TYPES}; the React layer ships a
+     * matching renderer for each. Clients can sanity-check unknown
+     * types from manifests they haven't bundled for (the React layer
+     * renders a FieldFallback in that case).
      */
     public function get_field_types($request)
     {
-        // Phase 3 will populate this from the field type registry.
-        return new WP_REST_Response(['field_types' => []]);
+        $catalog = [];
+        foreach (Module_Manifest::FIELD_TYPES as $type) {
+            $catalog[] = [
+                'id'    => $type,
+                'label' => $this->describe_type($type),
+            ];
+        }
+        return new WP_REST_Response(['field_types' => $catalog]);
+    }
+
+    /**
+     * Human-facing label for the catalog entry. Not used for rendering —
+     * surfaces in dev tooling and the field-types diagnostic page only.
+     */
+    private function describe_type(string $type): string
+    {
+        $labels = [
+            'text'           => \__('Text', 'orbitools'),
+            'textarea'       => \__('Textarea', 'orbitools'),
+            'number'         => \__('Number', 'orbitools'),
+            'toggle'         => \__('Toggle', 'orbitools'),
+            'select'         => \__('Select', 'orbitools'),
+            'multiselect'    => \__('Multi-select', 'orbitools'),
+            'radio'          => \__('Radio', 'orbitools'),
+            'checkbox-group' => \__('Checkbox group', 'orbitools'),
+            'color'          => \__('Color', 'orbitools'),
+            'range'          => \__('Range', 'orbitools'),
+        ];
+        return $labels[$type] ?? $type;
     }
 }

@@ -173,7 +173,8 @@ final class Modules_Controller extends WP_REST_Controller
                 'has_custom_page'    => false, // Phase 4 populates from discovery manifest.
                 'has_dashboard_card' => false, // Phase 4 populates from discovery manifest.
                 'requires'           => (object) $manifest->requires,
-                'settings_schema'    => [], // Phase 3 populates from manifest.settings.
+                'sections'           => $this->prepare_sections($manifest->sections),
+                'settings_schema'    => $this->prepare_settings_schema($manifest->settings),
             ];
         }
 
@@ -188,7 +189,83 @@ final class Modules_Controller extends WP_REST_Controller
             'has_custom_page'    => false,
             'has_dashboard_card' => false,
             'requires'           => (object) [],
+            'sections'           => [],
             'settings_schema'    => [],
         ];
+    }
+
+    /**
+     * Apply __() to section titles + descriptions so the React layer
+     * just renders whatever the server returns.
+     *
+     * @param array<int,array<string,mixed>> $sections
+     * @return array<int,array<string,mixed>>
+     */
+    private function prepare_sections(array $sections): array
+    {
+        $out = [];
+        foreach ($sections as $section) {
+            if (!is_array($section) || !isset($section['id'], $section['title'])) {
+                continue;
+            }
+            $prepared = [
+                'id'    => (string) $section['id'],
+                // phpcs:ignore WordPress.WP.I18n.NonSingularStringLiteralText
+                'title' => \__($section['title'], 'orbitools'),
+            ];
+            if (isset($section['description'])) {
+                // phpcs:ignore WordPress.WP.I18n.NonSingularStringLiteralText
+                $prepared['description'] = \__((string) $section['description'], 'orbitools');
+            }
+            $out[] = $prepared;
+        }
+        return $out;
+    }
+
+    /**
+     * Apply __() to user-facing strings in field schemas (label,
+     * description, placeholder, options[].label) so the React layer
+     * just renders whatever the server returns.
+     *
+     * @param array<int,array<string,mixed>> $fields
+     * @return array<int,array<string,mixed>>
+     */
+    private function prepare_settings_schema(array $fields): array
+    {
+        $out = [];
+        foreach ($fields as $field) {
+            if (!is_array($field)) {
+                continue;
+            }
+            $prepared = $field;
+
+            if (isset($field['label']) && is_string($field['label'])) {
+                // phpcs:ignore WordPress.WP.I18n.NonSingularStringLiteralText
+                $prepared['label'] = \__($field['label'], 'orbitools');
+            }
+            if (isset($field['description']) && is_string($field['description'])) {
+                // phpcs:ignore WordPress.WP.I18n.NonSingularStringLiteralText
+                $prepared['description'] = \__($field['description'], 'orbitools');
+            }
+            if (isset($field['placeholder']) && is_string($field['placeholder'])) {
+                // phpcs:ignore WordPress.WP.I18n.NonSingularStringLiteralText
+                $prepared['placeholder'] = \__($field['placeholder'], 'orbitools');
+            }
+            if (isset($field['options']) && is_array($field['options'])) {
+                $prepared['options'] = array_map(static function ($opt) {
+                    if (!is_array($opt)) {
+                        return $opt;
+                    }
+                    if (isset($opt['label']) && is_string($opt['label'])) {
+                        // phpcs:ignore WordPress.WP.I18n.NonSingularStringLiteralText
+                        $opt['label'] = \__($opt['label'], 'orbitools');
+                    }
+                    return $opt;
+                }, $field['options']);
+            }
+
+            $out[] = $prepared;
+        }
+        return $out;
     }
 }
