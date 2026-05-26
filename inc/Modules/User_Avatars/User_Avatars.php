@@ -14,7 +14,6 @@
 namespace Orbitools\Modules\User_Avatars;
 
 use Orbitools\Core\Abstracts\Module_Base;
-use Orbitools\Modules\User_Avatars\Admin\Admin;
 
 // Prevent direct access
 if (!defined('ABSPATH')) {
@@ -34,14 +33,6 @@ class User_Avatars extends Module_Base
      * Module version
      */
     protected const VERSION = '1.0.0';
-
-    /**
-     * Admin handler instance
-     *
-     * @since 1.0.0
-     * @var Admin
-     */
-    private $admin;
 
     /**
      * Initialize the User Avatars module
@@ -115,9 +106,6 @@ class User_Avatars extends Module_Base
      */
     public function init(): void
     {
-        // Always initialize admin functionality for module registration
-        $this->admin = new Admin();
-
         // Initialize avatar functionality
         $this->init_avatar_functionality();
     }
@@ -221,14 +209,4 @@ class User_Avatars extends Module_Base
         return __('Upload a local avatar or use the default avatar.', 'orbitools');
     }
 
-    /**
-     * Get the admin handler instance
-     *
-     * @since 1.0.0
-     * @return Admin Admin instance.
-     */
-    public function get_admin(): Admin
-    {
-        return $this->admin;
-    }
 }

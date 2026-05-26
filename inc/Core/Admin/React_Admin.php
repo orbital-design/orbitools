@@ -10,32 +10,18 @@ namespace Orbitools\Core\Admin;
  * div; everything visible is rendered by the React app at
  * src/admin/index.tsx.
  *
- * Runs in parallel with the AdminKit-driven Admin class until the
- * Phase 7 retirement of AdminKit. Both write to the same
- * orbitools_settings option.
- *
  * @package Orbitools
  * @since 3.0.0
  */
 final class React_Admin
 {
     /**
-     * Page slug for the React admin top-level menu.
-     *
-     * Distinct from AdminKit's slug — its root page already uses
-     * `orbitools` (under Settings), so a collision there would route
-     * both menu entries to the same URL. Phase 7 retires AdminKit at
-     * which point this can be renamed to plain `orbitools`.
+     * Page slug for the React admin top-level menu. Phase 7 reclaimed
+     * the plain `orbitools` slug from the now-deleted AdminKit admin.
      */
-    public const PAGE_SLUG    = 'orbitools-app';
-    /**
-     * Distinct from the legacy AdminKit handle ('orbitools-admin' in
-     * Admin::enqueue_scripts) — wp_enqueue_script silently keeps the
-     * first registration on a handle collision, which would mask
-     * this bundle behind the legacy admin.js.
-     */
-    public const SCRIPT_HANDLE = 'orbitools-app';
-    public const STYLE_HANDLE  = 'orbitools-app';
+    public const PAGE_SLUG    = 'orbitools';
+    public const SCRIPT_HANDLE = 'orbitools';
+    public const STYLE_HANDLE  = 'orbitools';
 
     public function __construct()
     {

@@ -50,9 +50,6 @@ class Admin
      */
     public function __construct()
     {
-        // Register module metadata
-        add_filter('orbitools_available_modules', array($this, 'register_module_metadata'));
-
         // Add admin styles for menu editing
         add_action('admin_enqueue_scripts', array($this, 'enqueue_admin_assets'));
     }
@@ -67,29 +64,6 @@ class Admin
     {
         $settings = get_option('orbitools_settings', array());
         return !empty($settings['menu-dividers_enabled']) && $settings['menu-dividers_enabled'] !== '0';
-    }
-
-    /**
-     * Register module metadata for the admin interface
-     *
-     * @since 1.0.0
-     * @param array $modules Existing modules array.
-     * @return array Modified modules array with Menu Dividers metadata.
-     */
-    public function register_module_metadata(array $modules): array
-    {
-        // Augment the manifest-sourced entry; slug must match manifest
-        // (previously 'menu_dividers' — a key the module never read).
-        $modules['menu-dividers'] = array_merge(
-            $modules['menu-dividers'] ?? array(),
-            array(
-                'subtitle'      => __('Add visual dividers between menu items', 'orbitools'),
-                'icon'          => '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 672 672"><!--!Font Awesome Pro 7.0.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2025 Fonticons, Inc.--><path fill="#32a3e2" d="M112 336c0 22 1.1 32.1 3.5 37.9 1 2.4 2.3 5.5 12.9 8.9 12.5 4 33.1 6.6 67.9 7.9 92.8 3.5 186.7 3.5 279.5 0 34.8-1.3 55.4-3.9 67.9-7.9 10.6-3.4 11.9-6.5 12.9-8.9 2.4-5.9 3.5-16 3.5-37.9s-1.1-32.1-3.5-37.9c-1-2.4-2.3-5.5-12.9-8.9-12.5-4-33.1-6.6-67.9-7.9-92.8-3.5-186.7-3.5-279.5 0-34.8 1.3-55.4 3.9-67.9 7.9-10.6 3.4-11.9 6.5-12.9 8.9-2.4 5.9-3.5 16-3.5 37.9z" opacity=".4"/><path fill="#32a3e2" d="M63.7 395.2C56.4 377.4 56 356 56 336s.4-41.4 7.7-59.2c8.7-21.2 25.3-33.9 47.7-41 20.5-6.5 47.9-9.2 82.8-10.5 93.8-3.5 189.9-3.5 283.7 0 35 1.3 62.3 4 82.8 10.5 22.4 7.1 39 19.8 47.7 41 7.3 17.8 7.7 39.1 7.7 59.2s-.4 41.4-7.7 59.2c-8.7 21.2-25.3 33.9-47.7 41-20.5 6.5-47.9 9.2-82.8 10.5-93.8 3.5-189.9 3.5-283.7 0-35-1.3-62.3-4-82.8-10.5-22.4-7.1-39-19.8-47.7-41zm132.6-4.5c92.8 3.5 186.7 3.5 279.5 0 34.8-1.3 55.4-3.9 67.9-7.9 10.6-3.4 11.9-6.5 12.9-8.9 2.4-5.9 3.5-16 3.5-37.9s-1.1-32.1-3.5-37.9c-1-2.4-2.3-5.5-12.9-8.9-12.5-4-33.1-6.6-67.9-7.9-92.8-3.5-186.7-3.5-279.5 0-34.8 1.3-55.4 3.9-67.9 7.9-10.6 3.4-11.9 6.5-12.9 8.9-2.4 5.9-3.5 16-3.5 37.9s1.1 32.1 3.5 37.9c1 2.4 2.3 5.5 12.9 8.9 12.5 4 33.1 6.6 67.9 7.9z"/></svg>',
-                'configure_url' => null,
-            )
-        );
-
-        return $modules;
     }
 
     /**

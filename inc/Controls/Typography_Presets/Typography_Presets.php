@@ -14,7 +14,6 @@
 namespace Orbitools\Controls\Typography_Presets;
 
 use Orbitools\Core\Abstracts\Module_Base;
-use Orbitools\Controls\Typography_Presets\Admin\Admin;
 use Orbitools\Controls\Typography_Presets\Admin\Settings;
 use Orbitools\Controls\Typography_Presets\Core\Preset_Manager;
 use Orbitools\Controls\Typography_Presets\Core\CSS_Generator;
@@ -57,14 +56,6 @@ class Typography_Presets extends Module_Base
         'core/button',
         'core/pullquote'
     ];
-
-    /**
-     * Admin handler instance
-     *
-     * @since 1.0.0
-     * @var Admin
-     */
-    private $admin;
 
     /**
      * Preset manager instance
@@ -174,9 +165,6 @@ class Typography_Presets extends Module_Base
      */
     public function init(): void
     {
-        // Always initialize admin functionality for module registration
-        $this->admin = new Admin();
-
         // Initialize Settings class for AJAX handlers
         Settings::init();
 
@@ -347,17 +335,6 @@ class Typography_Presets extends Module_Base
     public function get_block_editor(): ?Block_Editor
     {
         return $this->block_editor;
-    }
-
-    /**
-     * Get the admin handler instance
-     *
-     * @since 1.0.0
-     * @return Admin Admin instance.
-     */
-    public function get_admin(): Admin
-    {
-        return $this->admin;
     }
 
     /**

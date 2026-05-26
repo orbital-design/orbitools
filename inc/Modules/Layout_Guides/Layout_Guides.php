@@ -36,14 +36,6 @@ class Layout_Guides extends Module_Base
     protected const VERSION = '1.0.0';
 
     /**
-     * Admin handler instance
-     *
-     * @since 1.0.0
-     * @var Admin\Admin
-     */
-    private $admin;
-
-    /**
      * Guide renderer instance
      *
      * @since 1.0.0
@@ -123,25 +115,11 @@ class Layout_Guides extends Module_Base
      */
     public function init(): void
     {
-        // Always initialize admin (needed for module registration)
-        $this->init_admin();
-
         // Always initialize core (needed for admin previews)
         $this->init_core();
 
         // Initialize frontend when module is enabled (this method is only called when enabled)
         $this->init_frontend();
-    }
-
-    /**
-     * Initialize admin functionality
-     *
-     * @since 1.0.0
-     */
-    private function init_admin()
-    {
-        $this->admin = new Admin\Admin();
-        $this->admin->init();
     }
 
     /**
@@ -166,17 +144,6 @@ class Layout_Guides extends Module_Base
         $this->assets->init();
     }
 
-
-    /**
-     * Get admin handler instance
-     *
-     * @since 1.0.0
-     * @return Admin\Admin
-     */
-    public function get_admin()
-    {
-        return $this->admin;
-    }
 
     /**
      * Get guide renderer instance

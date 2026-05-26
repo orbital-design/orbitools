@@ -10,8 +10,6 @@ module.exports = {
         'frontend/css/base': path.resolve(process.cwd(), 'src', 'frontend', 'scss', 'base.scss'),
         // - SCSS ~ Editor ~ Loaded in the block editor
         'admin/css/editor': path.resolve(process.cwd(), 'src', 'admin', 'scss', 'editor.scss'),
-        // - SCSS ~ Admin ~ Loaded in the admin area
-        'admin/css/admin': path.resolve(process.cwd(), 'src', 'admin', 'scss', 'admin.scss'),
         // - SCSS ~ Module ~ Layout Guides
         'frontend/css/modules/layout-guides/base': path.resolve(process.cwd(), 'src', 'modules', 'layout-guides','frontend', 'scss','base.scss'),
         'admin/css/modules/layout-guides/admin': path.resolve(process.cwd(), 'src', 'modules', 'layout-guides','admin', 'scss','admin.scss'),
@@ -23,8 +21,6 @@ module.exports = {
         'admin/css/controls/typography-presets/admin': path.resolve(process.cwd(), 'src', 'controls', 'typography-presets','admin', 'scss','admin.scss'),
 
         // JS entries for JavaScript compilation
-        // - JS ~ Admin ~ Loaded in the admin area
-        'admin/js/admin': path.resolve(process.cwd(), 'src', 'admin', 'js', 'admin.js'),
         // - JS ~ Module ~ Layout Guides
         'frontend/js/modules/layout-guides/base': path.resolve(process.cwd(), 'src', 'modules', 'layout-guides','frontend', 'js','base.js'),
         // - JS ~ Module ~ Menu Dividers

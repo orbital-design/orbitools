@@ -1,12 +1,11 @@
 /**
- * Category-filtered listing page. Phase 5.
+ * Category-filtered listing page.
  *
  * One tab per ModuleCategory — Blocks / Controls / Modules — each
  * renders this component with a different `category` prop. Shows a
  * grid of ModuleCards, each with an enable toggle and a Settings
- * deep-link. The toggleModule thunk writes the same orbitools_settings
- * option AdminKit reads, so the parallel-running AdminKit pages stay
- * in sync until Phase 7 retires that side entirely.
+ * deep-link. The toggleModule thunk writes orbitools_settings via the
+ * REST API.
  */
 import {
     Button,
