@@ -20,6 +20,7 @@ function NumberField({ field, value, onChange }: FieldProps): JSX.Element {
                 const parsed = typeof next === 'number' ? next : Number(next);
                 onChange(Number.isFinite(parsed) ? parsed : undefined);
             }}
+            __next40pxDefaultSize
             __nextHasNoMarginBottom
         />
     );

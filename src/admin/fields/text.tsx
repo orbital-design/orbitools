@@ -9,6 +9,7 @@ function TextField({ field, value, onChange }: FieldProps): JSX.Element {
             value={typeof value === 'string' ? value : ''}
             placeholder={field.placeholder}
             onChange={onChange}
+            __next40pxDefaultSize
             __nextHasNoMarginBottom
         />
     );

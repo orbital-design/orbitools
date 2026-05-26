@@ -3,7 +3,15 @@
  * the field stack. SettingsPage uses one of these per section
  * declared in the manifest (or a single un-titled one if no sections).
  */
-import { Card, CardHeader, CardBody, VStack } from '@wordpress/components';
+// VStack is only exported as `__experimentalVStack`; the plain
+// `VStack` alias is undefined and would render as <undefined />
+// (React #130).
+import {
+    Card,
+    CardHeader,
+    CardBody,
+    __experimentalVStack as VStack,
+} from '@wordpress/components';
 import type { ReactNode } from 'react';
 
 interface SettingsSectionProps {

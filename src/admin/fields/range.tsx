@@ -12,6 +12,7 @@ function RangeField({ field, value, onChange }: FieldProps): JSX.Element {
             max={field.max ?? 100}
             step={field.step ?? 1}
             onChange={(next) => onChange(next ?? undefined)}
+            __next40pxDefaultSize
             __nextHasNoMarginBottom
         />
     );

@@ -14,6 +14,7 @@ function SelectField({ field, value, onChange }: FieldProps): JSX.Element {
                 label: opt.label,
             }))}
             onChange={onChange}
+            __next40pxDefaultSize
             __nextHasNoMarginBottom
         />
     );

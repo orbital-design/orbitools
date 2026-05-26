@@ -8,7 +8,14 @@
  */
 import { useDispatch, useSelect } from '@wordpress/data';
 import { useEffect } from '@wordpress/element';
-import { Notice, VStack } from '@wordpress/components';
+import {
+    Notice,
+    Slot,
+    // VStack is only exported under the experimental name in
+    // @wordpress/components; importing it as plain `VStack` resolves
+    // to undefined at runtime and renders as <undefined /> (React #130).
+    __experimentalVStack as VStack,
+} from '@wordpress/components';
 import { AppChrome } from './AppChrome';
 import { LoadingState } from './LoadingState';
 import { SettingsSection } from './SettingsSection';
@@ -17,10 +24,10 @@ import { getFieldComponent } from '../fields/registry';
 import { evaluateShowIf } from '../lib/showIf';
 import { SLOTS } from '../lib/slots';
 import { STORE_KEY } from '../store';
-import { Slot } from '@wordpress/components';
 import type { FieldSchema, Module, ModuleSettings, SectionDescriptor } from '../types';
 
 interface StoreShape {
+    getModules: () => Module[];
     getModule: (slug: string) => Module | undefined;
     isLoadingModules: () => boolean;
     getSettings: (slug: string) => ModuleSettings | undefined;
@@ -41,6 +48,9 @@ export function SettingsPage({ slug }: SettingsPageProps): JSX.Element {
     const { module, settings, isLoading, errorMessage } = useSelect(
         (select) => {
             const store = select(STORE_KEY) as unknown as StoreShape;
+            // Touch getModules so its resolver fires when landing
+            // directly on a settings page (no dashboard pre-render).
+            store.getModules();
             return {
                 module: store.getModule(slug),
                 settings: store.getSettings(slug),

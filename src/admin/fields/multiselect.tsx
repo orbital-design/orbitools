@@ -22,6 +22,7 @@ function MultiSelectField({ field, value, onChange }: FieldProps): JSX.Element {
                 const next = tokensArray.map((t) => valueFor.get(t) ?? t);
                 onChange(next);
             }}
+            __next40pxDefaultSize
             __nextHasNoMarginBottom
         />
     );
