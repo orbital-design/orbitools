@@ -21,11 +21,47 @@ class Admin
 
         add_action('init', [$this, 'init_adminkit']);
         add_action('admin_enqueue_scripts', [$this, 'enqueue_scripts']);
+        // Phase 6: announce the legacy status of the AdminKit pages
+        // so admins on the older URLs know where the new admin lives.
+        add_action('admin_notices', [$this, 'render_legacy_notice']);
 
         // Module filters run at priority 10; ours run at 20 so module sections
         // are already in place when we assemble the final structure.
         add_filter('orbitools_adminkit_structure', [$this, 'configure_admin_structure'], 20);
         add_filter('orbitools_adminkit_fields', [$this, 'get_settings_config'], 20);
+    }
+
+    /**
+     * Print a "this is the legacy admin" notice on every AdminKit page.
+     *
+     * The new React admin (Orbitools_Core_Admin_React_Admin) became the
+     * default at Phase 6. AdminKit pages keep working until Phase 7
+     * deletes this class outright — for now they get a top-of-page
+     * notice pointing users to the replacement.
+     */
+    public function render_legacy_notice(): void
+    {
+        if (! \function_exists('get_current_screen')) {
+            return;
+        }
+        $screen = \get_current_screen();
+        if ($screen === null) {
+            return;
+        }
+        // AdminKit pages have screen IDs like 'settings_page_orbi-legacy'
+        // or 'settings_page_orbi-legacy-modules'. A prefix check covers
+        // the parent menu + every sub-page in one place.
+        if (\strpos($screen->id, 'orbi-legacy') === false) {
+            return;
+        }
+        $new_admin_url = \admin_url('admin.php?page=' . React_Admin::PAGE_SLUG);
+        \printf(
+            '<div class="notice notice-warning"><p><strong>%s</strong> %s <a href="%s">%s</a>.</p></div>',
+            \esc_html__('Legacy admin', 'orbitools'),
+            \esc_html__('This is the legacy Orbitools admin. The new admin is now the default at', 'orbitools'),
+            \esc_url($new_admin_url),
+            \esc_html__('Orbitools', 'orbitools')
+        );
     }
 
     /**
@@ -62,14 +98,18 @@ class Admin
         // React admin at ?page=orbitools-app. Phase 7 retires AdminKit
         // entirely; at that point this whole class is removed.
         AdminKit('orbi-legacy')->init(array(
-            'title' => __('Orbitools', 'orbitools'),
+            'title' => __('Orbitools (Legacy)', 'orbitools'),
             'description' => __('Advanced WordPress tools and utilities.', 'orbitools'),
             'hide_title_description' => true,
             'header_image' => ORBITOOLS_URL . 'build/media/orbitools-logo.svg',
             'header_bg_color' => '#32A3E2',
             'menu' => array(
                 'menu_type' => 'menu',
-                'menu_title' => 'OrbiTools',
+                // Phase 6: relabel so admins know this is the legacy
+                // surface. The React admin at toplevel `orbitools-app`
+                // is now the default; this AdminKit-driven set of
+                // pages disappears in Phase 7.
+                'menu_title' => 'Orbitools (Legacy)',
                 'position' => 0,
                 'parent' => 'options-general.php',
                 'capability' => 'manage_options',
