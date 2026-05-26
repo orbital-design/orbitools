@@ -1,11 +1,14 @@
 /**
  * Standard page wrapper used by every page in the admin app. Owns the
- * header, the main content well, and the top-level slot fills.
+ * header, the section nav, the main content well, and the top-level
+ * slot fills.
  */
 import { Slot } from '@wordpress/components';
 import { Flex } from '@wordpress/components';
 import type { ReactNode } from 'react';
 import { SLOTS } from '../lib/slots';
+import { useHashRoute } from '../lib/router';
+import { TopNav } from './TopNav';
 
 interface AppChromeProps {
     title: string;
@@ -14,6 +17,8 @@ interface AppChromeProps {
 }
 
 export function AppChrome({ title, actions, children }: AppChromeProps): JSX.Element {
+    const route = useHashRoute();
+
     return (
         <div className="orbitools-app">
             <header className="orbitools-app__header">
@@ -23,6 +28,7 @@ export function AppChrome({ title, actions, children }: AppChromeProps): JSX.Ele
                     <Slot name={SLOTS.APP_HEADER_ACTIONS} />
                 </Flex>
             </header>
+            <TopNav route={route} />
             <main className="orbitools-app__main">{children}</main>
         </div>
     );

@@ -1,55 +1,31 @@
 /**
- * Root component. Phase 2 shipped a placeholder dashboard; Phase 3
- * adds minimal hash routing so the manifest-driven SettingsPage is
- * reachable. Phase 4 hooks in the discovered admin-extension manifest
- * (a module's optional Page replaces the generic SettingsPage; its
- * optional Fills mount globally under SlotFillProvider). Phase 5 will
- * replace this with the full router and the real Dashboard / Modules
- * pages.
+ * Root component.
  *
- * Route table (hash-based):
- *   #                              → placeholder dashboard
- *   #settings/{slug}               → discovered[slug].Page (if any)
- *                                    else manifest-driven SettingsPage
+ * Phase 5 wires the real Dashboard + per-category pages and removes
+ * the Phase-2 placeholder. AppChrome owns the header + section nav;
+ * each routed page renders its own content well inside it.
+ *
+ * Route table (hash-based, see lib/router.ts):
+ *   #             → Dashboard
+ *   #blocks       → CategoryPage('blocks')
+ *   #controls     → CategoryPage('controls')
+ *   #modules      → CategoryPage('modules')
+ *   #settings/{X} → discovered[X].Page (if any) else SettingsPage
  */
-import { Slot, SlotFillProvider } from '@wordpress/components';
-import { useEffect, useState } from '@wordpress/element';
+import { SlotFillProvider } from '@wordpress/components';
 import { AppChrome } from './components/AppChrome';
-import { LoadingState } from './components/LoadingState';
+import { CategoryPage } from './components/CategoryPage';
+import { Dashboard } from './components/Dashboard';
 import { SettingsPage } from './components/SettingsPage';
-import { useModules } from './hooks/useModules';
-import { SLOTS } from './lib/slots';
+import { useHashRoute } from './lib/router';
 import { discovered } from './.generated/discovered';
+import type { ModuleCategory } from './types';
 
-interface Route {
-    name: 'dashboard' | 'settings';
-    slug?: string;
-}
-
-function parseHash(hash: string): Route {
-    const cleaned = hash.replace(/^#\/?/, '');
-    if (cleaned.startsWith('settings/')) {
-        const slug = cleaned.slice('settings/'.length).split(/[?&]/)[0];
-        if (slug !== undefined && slug !== '') {
-            return { name: 'settings', slug };
-        }
-    }
-    return { name: 'dashboard' };
-}
-
-function useHashRoute(): Route {
-    const [route, setRoute] = useState<Route>(() => parseHash(window.location.hash));
-
-    useEffect(() => {
-        const handler = (): void => {
-            setRoute(parseHash(window.location.hash));
-        };
-        window.addEventListener('hashchange', handler);
-        return () => window.removeEventListener('hashchange', handler);
-    }, []);
-
-    return route;
-}
+const CATEGORY_TITLES: Record<ModuleCategory, string> = {
+    blocks: 'Blocks',
+    controls: 'Controls',
+    modules: 'Modules',
+};
 
 export function App(): JSX.Element {
     const route = useHashRoute();
@@ -57,11 +33,15 @@ export function App(): JSX.Element {
     return (
         <SlotFillProvider>
             <DiscoveredFills />
-            {route.name === 'settings' && route.slug !== undefined ? (
+            {route.name === 'settings' ? (
                 <RoutedSettings slug={route.slug} />
+            ) : route.name === 'category' ? (
+                <AppChrome title={CATEGORY_TITLES[route.category]}>
+                    <CategoryPage category={route.category} />
+                </AppChrome>
             ) : (
                 <AppChrome title="Orbitools">
-                    <PlaceholderDashboard />
+                    <Dashboard />
                 </AppChrome>
             )}
         </SlotFillProvider>
@@ -99,53 +79,5 @@ function DiscoveredFills(): JSX.Element {
                 return <Fills key={slug} />;
             })}
         </>
-    );
-}
-
-function PlaceholderDashboard(): JSX.Element {
-    const { modules, isLoading, error } = useModules();
-
-    if (isLoading) {
-        return <LoadingState message="Loading modules…" />;
-    }
-
-    if (error !== null) {
-        return (
-            <div className="orbitools-error">
-                <p>Failed to load modules: {error}</p>
-            </div>
-        );
-    }
-
-    const enabledCount = modules.filter((m) => m.enabled).length;
-    const withSettings = modules.filter((m) => m.settings_schema.length > 0);
-
-    return (
-        <div className="orbitools-placeholder">
-            <p>
-                React admin shell is live. {enabledCount} of {modules.length} modules
-                enabled. Real pages land in Phase 5.
-            </p>
-            {withSettings.length > 0 && (
-                <>
-                    <p style={{ marginTop: 16 }}>
-                        Phase 3: modules with declared settings (click to open the
-                        manifest-driven SettingsPage):
-                    </p>
-                    <ul>
-                        {withSettings.map((m) => (
-                            <li key={m.slug}>
-                                <a href={`#settings/${m.slug}`}>{m.name}</a>{' '}
-                                <code>({m.slug})</code> — {m.settings_schema.length} field(s)
-                            </li>
-                        ))}
-                    </ul>
-                </>
-            )}
-            <div className="orbitools-placeholder__discovered" style={{ marginTop: 16 }}>
-                <p>Phase 4: discovered admin extensions (rendered via SlotFill):</p>
-                <Slot name={SLOTS.DASHBOARD_CARDS} />
-            </div>
-        </div>
     );
 }
