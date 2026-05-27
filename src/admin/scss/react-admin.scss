@@ -203,6 +203,110 @@
     color: #50575e;
 }
 
+/* ---------- Repeater field ---------- */
+//
+// Each row is a small bordered card containing the sub-fields. The
+// row head holds a derived label (from `row_label_field`) on the
+// left and a Remove button on the right. Add button sits at the
+// bottom, outside the rows.
+
+.orbitools-repeater {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+
+    &__empty {
+        margin: 0;
+        padding: 12px 16px;
+        font-size: 12px;
+        color: #757575;
+        background: #f6f7f7;
+        border: 1px dashed #c3c4c7;
+        border-radius: 4px;
+    }
+
+    &__rows {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    &__row {
+        background: #f6f7f7;
+        border: 1px solid #dcdcde;
+        border-radius: 6px;
+        overflow: hidden;
+    }
+
+    &__row-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 8px 12px 8px 16px;
+        background: #fff;
+        border-bottom: 1px solid #dcdcde;
+    }
+
+    &__row-heading {
+        font-size: 13px;
+        font-weight: 600;
+        color: #1d2327;
+    }
+
+    &__row-fields {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        padding: 16px;
+        background: #fff;
+    }
+
+    &__footer {
+        display: flex;
+    }
+}
+
+/* ---------- Media field ---------- */
+
+.orbitools-media-field {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+
+    &__preview {
+        width: 96px;
+        height: 96px;
+        object-fit: cover;
+        border: 1px solid #dcdcde;
+        border-radius: 4px;
+        background: #f6f7f7;
+    }
+
+    &__placeholder {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 96px;
+        height: 96px;
+        font-size: 11px;
+        color: #757575;
+        background: #f6f7f7;
+        border: 1px dashed #c3c4c7;
+        border-radius: 4px;
+        text-align: center;
+        padding: 8px;
+    }
+
+    &__actions {
+        display: flex;
+        gap: 8px;
+    }
+}
+
 /* ---------- Page layout primitive ---------- */
 
 // Shared vertical-stack layout used by every page. Top-level page
@@ -443,11 +547,71 @@
     }
 }
 
+/* ---------- Section sidebar (multi-section settings page) ---------- */
+//
+// Same shape as the category split but driven by component state
+// rather than URL. Buttons not links; sections within one page
+// don't deserve their own URL fragments.
+
+// Shared sidebar width so all two-column pages stay consistent — the
+// category-split (CategoryPage) and section-split (multi-section
+// settings) both consume this.
+:root {
+    --orbitools-sidebar-width: 260px;
+}
+
+.orbitools-section-split {
+    display: grid;
+    grid-template-columns: var(--orbitools-sidebar-width) 1fr;
+    gap: 24px;
+    align-items: start;
+
+    @media (max-width: 768px) {
+        grid-template-columns: 1fr;
+    }
+
+    &__sidebar {
+        background: #fff;
+        border: 1px solid #dcdcde;
+        border-radius: 6px;
+        overflow: hidden;
+    }
+
+    &__content {
+        background: #fff;
+        border: 1px solid #dcdcde;
+        border-radius: 6px;
+        padding: 24px 28px 32px;
+        min-width: 0;
+    }
+
+    &__content-header {
+        margin: 0 0 20px;
+        padding-bottom: 16px;
+        border-bottom: 1px solid #f0f0f1;
+    }
+
+    &__content-title {
+        margin: 0;
+        font-size: 16px;
+        font-weight: 600;
+        color: #1d2327;
+        line-height: 1.3;
+    }
+
+    &__content-description {
+        margin: 4px 0 0;
+        font-size: 13px;
+        color: #646970;
+        line-height: 1.5;
+    }
+}
+
 /* ---------- Category Settings page (two-column) ---------- */
 
 .orbitools-category-split {
     display: grid;
-    grid-template-columns: minmax(240px, 280px) 1fr;
+    grid-template-columns: var(--orbitools-sidebar-width) 1fr;
     gap: 24px;
     align-items: start;
 
@@ -559,6 +723,20 @@
 
     &__item:last-child &__link {
         border-bottom: 0;
+    }
+
+    // Reset native button styling when the link is rendered as a
+    // <button> (SectionSidebarLayout). The anchor variant in
+    // CategoryPage isn't affected — it keeps its own defaults.
+    button#{&}__link {
+        appearance: none;
+        background: transparent;
+        border-top: 0;
+        border-right: 0;
+        font-family: inherit;
+        text-align: left;
+        cursor: pointer;
+        width: 100%;
     }
 
     &__label {

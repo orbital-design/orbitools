@@ -2,6 +2,8 @@
 
 namespace Orbitools\Core\Admin;
 
+use Orbitools\Core\Pages\Theme_Pages_Registry;
+
 /**
  * React Admin
  *
@@ -76,6 +78,10 @@ final class React_Admin
 
         $asset = require $asset_file;
 
+        // Load WP's media library scripts so the `media` field type
+        // can open the standard "Select / upload media" modal.
+        \wp_enqueue_media();
+
         \wp_enqueue_script(
             self::SCRIPT_HANDLE,
             \plugins_url('build/admin/index.js', ORBITOOLS_FILE),
@@ -85,7 +91,8 @@ final class React_Admin
         );
 
         // Localise the bootstrap data the React app needs to talk to
-        // the REST API and resolve plugin-relative URLs.
+        // the REST API, resolve plugin-relative URLs, and render the
+        // theme-pages list without a REST round-trip on mount.
         \wp_add_inline_script(
             self::SCRIPT_HANDLE,
             'window.orbitools = ' . \wp_json_encode([
@@ -94,6 +101,7 @@ final class React_Admin
                 'adminUrl'   => \esc_url_raw(\admin_url()),
                 'pluginUrl'  => \esc_url_raw(\plugins_url('', ORBITOOLS_FILE)),
                 'version'    => ORBITOOLS_VERSION,
+                'themePages' => $this->collect_theme_pages(),
             ]) . ';',
             'before'
         );
@@ -111,6 +119,34 @@ final class React_Admin
             // Even with no app CSS, we still want wp-components' styles loaded.
             \wp_enqueue_style('wp-components');
         }
+    }
+
+    /**
+     * Same shape Theme_Pages_Controller returns over REST, sorted by
+     * position. Bootstrapped into window.orbitools.themePages so the
+     * TopNav can render pages on first paint with no roundtrip.
+     *
+     * @return array<int,array<string,mixed>>
+     */
+    private function collect_theme_pages(): array
+    {
+        $pages = Theme_Pages_Registry::instance()->get_pages();
+        $payload = [];
+        foreach ($pages as $page) {
+            $payload[] = [
+                'slug'            => $page->slug,
+                'label'           => $page->label,
+                'description'     => $page->description,
+                'icon'            => $page->icon,
+                'position'        => $page->position,
+                'sections'        => $page->sections,
+                'settings_schema' => $page->fields,
+            ];
+        }
+        \usort($payload, static function (array $a, array $b): int {
+            return $a['position'] <=> $b['position'];
+        });
+        return $payload;
     }
 
     /**

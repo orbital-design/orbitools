@@ -36,6 +36,9 @@ final class Module_Manifest
         'checkbox-group',
         'color',
         'range',
+        'media',
+        'page',
+        'repeater',
     ];
 
     public string $slug;

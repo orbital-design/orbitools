@@ -129,7 +129,73 @@ The React admin's per-module settings page is **auto-rendered from a `settings` 
 
 Stored option keys are `{slug}_{field_id}` (e.g. `example_show_grids`). The REST controller strips/adds the prefix; the React store and the field schema both speak slug-relative IDs.
 
-The 10 v1 field types: `text`, `textarea`, `number`, `toggle`, `select`, `multiselect`, `radio`, `checkbox-group`, `color`, `range`. Anything richer than `show_if` equality should route to a custom Page (see below) instead of trying to encode logic in the schema.
+The 13 v1 field types: `text`, `textarea`, `number`, `toggle`, `select`, `multiselect`, `radio`, `checkbox-group`, `color`, `range`, `media`, `page`, `repeater`. Anything richer than `show_if` equality should route to a custom Page (see below) instead of trying to encode logic in the schema.
+
+**`page`** stores a WP page ID; the field component fetches `/wp/v2/pages` and renders a select dropdown. Use for "pick a page" settings (e.g. a 404 page picker).
+
+**`repeater`** is a variable-length list of rows, each described by a `sub_fields` array that uses the same field schema as the top-level. Storage is `Array<Record<string, unknown>>`. Schema extras:
+
+```json
+{
+  "id": "social_links",
+  "type": "repeater",
+  "label": "Social Links",
+  "default": [],
+  "add_button_label": "Add social profile",
+  "row_label_field": "network",
+  "sub_fields": [
+    { "id": "network", "type": "select", "label": "Network", "default": "facebook", "options": [...] },
+    { "id": "url", "type": "text", "label": "URL", "default": "" }
+  ]
+}
+```
+
+`row_label_field` names the sub-field whose value labels each row's heading (looks up the select option's label automatically when applicable).
+
+**`wp_option` per-field binding.** Any field can declare `"wp_option": "blogname"` to read/write directly to that WordPress option instead of the `orbitools_settings` row. `Settings_Controller` honours the mapping for both module fields and theme-page fields — used so the built-in Site Settings page actually updates `blogname`, `blogdescription`, and `site_logo` (not just a private mirror). Use it sparingly; plugins reading `get_option('blogname')` is the use case.
+
+String values for options like `blogname`/`blogdescription` are HTML-entity-decoded on read by `Settings_Controller` because WP's `sanitize_option` runs `esc_html` on save for those keys — without the decode, `&` would round-trip as `&amp;` in the editor.
+
+### Theme pages (drop-in option pages for themes)
+
+Themes (or any other plugin) register top-level admin pages via the `orbitools/register_theme_pages` filter — same shape as `module.json`'s settings, plus a label / description / icon / position. The React admin slots them into the TopNav sorted by position; per-field values flow through the same `/orbitools/v1/settings/{slug}` endpoint modules use.
+
+```php
+add_filter('orbitools/register_theme_pages', function (array $pages): array {
+    $pages['my-theme'] = [
+        'slug'     => 'my-theme',
+        'label'    => __('Theme Options', 'my-theme'),
+        'position' => 20,                // Dashboard=0, Block/Control/Module Settings = 80/90/100
+        'sections' => [
+            ['id' => 'header', 'title' => 'Header'],
+        ],
+        'fields'   => [
+            [
+                'id'        => 'primary_color',
+                'type'      => 'color',
+                'label'     => 'Primary color',
+                'default'   => '#000',
+                'section'   => 'header',
+            ],
+            [
+                'id'        => 'logo',
+                'type'      => 'media',
+                'label'     => 'Logo',
+                'default'   => 0,
+                'section'   => 'header',
+                'wp_option' => 'site_logo',   // optional: bind to a WP option
+            ],
+        ],
+    ];
+    return $pages;
+});
+```
+
+Themes read values from PHP via `get_option('orbitools_settings')['{slug}_{field_id}']` (or via `get_option('blogname')` etc. for `wp_option`-bound fields).
+
+`inc/Core/Pages/Site_Settings_Page.php` is the built-in page that ships with the plugin — it's registered via the same filter at priority 5 so themes can override or augment it.
+
+**Section sidebar.** When a page (or module) declares 2+ sections, the React renderer automatically switches to a sidebar layout (sections on the left, active section's fields on the right). 0 or 1 sections render flat.
 
 ### Drop-a-file admin extensions
 

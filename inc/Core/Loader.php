@@ -3,6 +3,7 @@
 namespace Orbitools\Core;
 
 use Orbitools\Core\Admin\React_Admin;
+use Orbitools\Core\Pages\Site_Settings_Page;
 use Orbitools\Core\Rest\Rest_Server;
 use Orbitools\Core\Updater\Updater;
 
@@ -22,6 +23,7 @@ class Loader
     private React_Admin $react_admin;
     private Updater $updater;
     private Rest_Server $rest_server;
+    private Site_Settings_Page $site_settings_page;
 
     public function init(): void
     {
@@ -36,6 +38,11 @@ class Loader
 
         // Wire up non-render-blocking block CSS loading.
         Block_Style_Loader::init();
+
+        // Built-in theme page — hooks orbitools/register_theme_pages
+        // so the React admin discovers it through the same filter
+        // themes use to register their own pages.
+        $this->site_settings_page = new Site_Settings_Page();
 
         // Bootstrap the v3 REST API. The instance registers its own
         // routes on rest_api_init; Loader just keeps it alive.

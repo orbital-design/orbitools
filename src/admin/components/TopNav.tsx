@@ -1,16 +1,18 @@
 /**
- * Top-level navigation strip rendered inside AppChrome. Four anchors:
- * Dashboard, Blocks, Controls, Modules. Each pairs a small icon with
- * a label, RunCache-style, with a 2px primary-blue underline marking
+ * Top-level navigation strip rendered inside AppChrome. Renders the
+ * four built-in tabs plus any theme-registered pages, all merged
+ * into one list sorted by position. Each pairs a small icon with a
+ * label, RunCache-style, with a 2px primary-blue underline marking
  * the active tab.
  *
- * Active state on a settings page (`#settings/{slug}`) highlights the
- * tab matching the module's category — looked up in the store. While
- * modules are still loading, no tab is highlighted on settings routes.
+ * Active state on a `#settings/{slug}` route highlights the tab
+ * matching the module's category — looked up in the store. Theme
+ * pages route to `#pages/{slug}` and highlight via slug match.
  */
 import { useSelect } from '@wordpress/data';
 import { routes, type Route } from '../lib/router';
 import { STORE_KEY } from '../store';
+import { getThemePages } from '../lib/themePages';
 import type { Module, ModuleCategory } from '../types';
 
 interface TopNavProps {
@@ -21,6 +23,7 @@ interface NavItem {
     label: string;
     href: string;
     icon: () => JSX.Element;
+    position: number;
     matches: (r: Route, activeCategory: ModuleCategory | null) => boolean;
 }
 
@@ -119,17 +122,44 @@ function ModulesIcon(): JSX.Element {
     );
 }
 
-const items: NavItem[] = [
+// Lightweight icon for unrecognised theme-page `icon` strings. Page
+// authors can ship a dashicons handle or inline SVG via the manifest
+// — for v1 we just render a neutral fallback regardless and theme
+// authors can iterate later.
+function PageIcon(): JSX.Element {
+    return (
+        <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.75"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
+            focusable="false"
+        >
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+            <polyline points="14 2 14 8 20 8" />
+        </svg>
+    );
+}
+
+const builtins: NavItem[] = [
     {
         label: 'Dashboard',
         href: routes.dashboard(),
         icon: DashboardIcon,
+        position: 0,
         matches: (r) => r.name === 'dashboard',
     },
     {
         label: 'Block Settings',
         href: routes.category('blocks'),
         icon: BlocksIcon,
+        position: 80,
         matches: (r, cat) =>
             (r.name === 'category' && r.category === 'blocks') || cat === 'blocks',
     },
@@ -137,6 +167,7 @@ const items: NavItem[] = [
         label: 'Control Settings',
         href: routes.category('controls'),
         icon: ControlsIcon,
+        position: 90,
         matches: (r, cat) =>
             (r.name === 'category' && r.category === 'controls') || cat === 'controls',
     },
@@ -144,10 +175,31 @@ const items: NavItem[] = [
         label: 'Module Settings',
         href: routes.category('modules'),
         icon: ModulesIcon,
+        position: 100,
         matches: (r, cat) =>
             (r.name === 'category' && r.category === 'modules') || cat === 'modules',
     },
 ];
+
+/**
+ * Merge built-in tabs with theme-page tabs, sorted by position. Ties
+ * keep registration order so themes registering at the same position
+ * land in filter order.
+ */
+function buildNavItems(): NavItem[] {
+    const pageItems: NavItem[] = getThemePages().map((page) => ({
+        label: page.label,
+        href: routes.page(page.slug),
+        icon: PageIcon,
+        position: page.position,
+        matches: (r) => r.name === 'page' && r.slug === page.slug,
+    }));
+    const merged = [...builtins, ...pageItems];
+    return merged
+        .map((item, idx) => ({ item, idx }))
+        .sort((a, b) => a.item.position - b.item.position || a.idx - b.idx)
+        .map(({ item }) => item);
+}
 
 interface ModulesSelector {
     getModule: (slug: string) => Module | undefined;
@@ -164,6 +216,8 @@ export function TopNav({ route }: TopNavProps): JSX.Element {
         },
         [route]
     );
+
+    const items = buildNavItems();
 
     return (
         <nav className="orbitools-nav" aria-label="Orbitools sections">
