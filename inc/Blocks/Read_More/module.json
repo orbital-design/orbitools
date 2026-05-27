@@ -1,7 +1,7 @@
 {
   "$schema": "https://orbitools/schemas/module.v1.json",
   "slug": "read-more-block",
-  "name": "Read More Block",
+  "name": "Read More",
   "description": "Accordion like container for hiding and showing simple content",
   "version": "1.0.0",
   "category": "blocks",

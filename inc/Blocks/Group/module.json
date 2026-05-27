@@ -1,7 +1,7 @@
 {
   "$schema": "https://orbitools/schemas/module.v1.json",
   "slug": "group-block",
-  "name": "Group Block",
+  "name": "Group",
   "description": "Flexible layout container block for organizing other blocks with semantic HTML support.",
   "version": "1.0.0",
   "category": "blocks",

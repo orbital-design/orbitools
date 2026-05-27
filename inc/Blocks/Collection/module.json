@@ -1,7 +1,7 @@
 {
   "$schema": "https://orbitools/schemas/module.v1.json",
   "slug": "collection-block",
-  "name": "Collection Block",
+  "name": "Collection",
   "description": "Flexible layout container block for organizing content",
   "version": "1.0.0",
   "category": "blocks",

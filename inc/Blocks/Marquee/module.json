@@ -1,7 +1,7 @@
 {
   "$schema": "https://orbitools/schemas/module.v1.json",
   "slug": "marquee-block",
-  "name": "Marquee Block",
+  "name": "Marquee",
   "description": "Block for displaying scrolling content across both axis.",
   "version": "1.0.0",
   "category": "blocks",

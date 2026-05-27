@@ -6,14 +6,16 @@
  * hook that reads window.location.hash and updates on hashchange.
  *
  * Route table:
- *   #             → dashboard
- *   #blocks       → blocks category page
- *   #controls     → controls category page
- *   #modules      → modules category page (NOT all categories — just
- *                   the 'modules' category. The collision with the
- *                   broader 'module' concept is intentional: matches
- *                   the user-facing label.)
- *   #settings/X   → settings page for module slug X
+ *   #                  → dashboard
+ *   #blocks            → blocks category page (sidebar + first item)
+ *   #blocks/{slug}     → blocks page with {slug} selected in sidebar
+ *   #controls[/{slug}] → same, for controls
+ *   #modules[/{slug}]  → same, for the 'modules' category
+ *   #settings/{slug}   → standalone settings page (deep link)
+ *
+ * `#modules` refers to the 'modules' category specifically, not all
+ * categories — the collision with the broader 'module' concept is
+ * intentional and matches the user-facing label.
  *
  * Anything else falls back to dashboard.
  */
@@ -22,7 +24,7 @@ import type { ModuleCategory } from '../types';
 
 export type Route =
     | { name: 'dashboard' }
-    | { name: 'category'; category: ModuleCategory }
+    | { name: 'category'; category: ModuleCategory; slug?: string }
     | { name: 'settings'; slug: string };
 
 const CATEGORY_SLUGS: ModuleCategory[] = ['blocks', 'controls', 'modules'];
@@ -30,15 +32,20 @@ const CATEGORY_SLUGS: ModuleCategory[] = ['blocks', 'controls', 'modules'];
 export function parseHash(hash: string): Route {
     const cleaned = hash.replace(/^#\/?/, '');
 
-    if ((CATEGORY_SLUGS as string[]).includes(cleaned)) {
-        return { name: 'category', category: cleaned as ModuleCategory };
-    }
-
     if (cleaned.startsWith('settings/')) {
         const slug = cleaned.slice('settings/'.length).split(/[?&]/)[0];
         if (slug !== undefined && slug !== '') {
             return { name: 'settings', slug };
         }
+    }
+
+    const [head, tail] = cleaned.split('/', 2);
+    if (head !== undefined && (CATEGORY_SLUGS as string[]).includes(head)) {
+        return {
+            name: 'category',
+            category: head as ModuleCategory,
+            slug: tail !== undefined && tail !== '' ? tail : undefined,
+        };
     }
 
     return { name: 'dashboard' };
@@ -65,5 +72,6 @@ export function useHashRoute(): Route {
 export const routes = {
     dashboard: (): string => '#',
     category: (category: ModuleCategory): string => `#${category}`,
+    categoryItem: (category: ModuleCategory, slug: string): string => `#${category}/${slug}`,
     settings: (slug: string): string => `#settings/${slug}`,
 };
