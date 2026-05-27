@@ -32,6 +32,7 @@ const config = {
     },
     resolvers: {
         ...modulesSlice.resolvers,
+        ...settingsSlice.resolvers,
     },
     controls: {},
 };

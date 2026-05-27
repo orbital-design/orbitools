@@ -11,7 +11,8 @@
  *   #blocks/{slug}     → blocks page with {slug} selected in sidebar
  *   #controls[/{slug}] → same, for controls
  *   #modules[/{slug}]  → same, for the 'modules' category
- *   #settings/{slug}   → standalone settings page (deep link)
+ *   #pages/{slug}      → theme-registered page (or built-in Site Settings)
+ *   #settings/{slug}   → standalone module settings page (deep link)
  *
  * `#modules` refers to the 'modules' category specifically, not all
  * categories — the collision with the broader 'module' concept is
@@ -25,6 +26,7 @@ import type { ModuleCategory } from '../types';
 export type Route =
     | { name: 'dashboard' }
     | { name: 'category'; category: ModuleCategory; slug?: string }
+    | { name: 'page'; slug: string }
     | { name: 'settings'; slug: string };
 
 const CATEGORY_SLUGS: ModuleCategory[] = ['blocks', 'controls', 'modules'];
@@ -36,6 +38,13 @@ export function parseHash(hash: string): Route {
         const slug = cleaned.slice('settings/'.length).split(/[?&]/)[0];
         if (slug !== undefined && slug !== '') {
             return { name: 'settings', slug };
+        }
+    }
+
+    if (cleaned.startsWith('pages/')) {
+        const slug = cleaned.slice('pages/'.length).split(/[?&]/)[0];
+        if (slug !== undefined && slug !== '') {
+            return { name: 'page', slug };
         }
     }
 
@@ -73,5 +82,6 @@ export const routes = {
     dashboard: (): string => '#',
     category: (category: ModuleCategory): string => `#${category}`,
     categoryItem: (category: ModuleCategory, slug: string): string => `#${category}/${slug}`,
+    page: (slug: string): string => `#pages/${slug}`,
     settings: (slug: string): string => `#settings/${slug}`,
 };

@@ -13,3 +13,6 @@ import './radio';
 import './checkbox-group';
 import './color';
 import './range';
+import './media';
+import './page';
+import './repeater';

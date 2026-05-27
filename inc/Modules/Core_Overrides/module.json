@@ -1,0 +1,140 @@
+{
+  "$schema": "https://orbitools/schemas/module.v1.json",
+  "slug": "core-overrides",
+  "name": "Core Overrides",
+  "description": "Hide built-in WordPress admin pages that the site doesn't need.",
+  "version": "1.0.0",
+  "category": "modules",
+  "class": "\\Orbitools\\Modules\\Core_Overrides\\Core_Overrides",
+  "default_enabled": false,
+  "requires": {
+    "php": ">=7.4",
+    "wp": ">=5.0"
+  },
+  "sections": [
+    {
+      "id": "settings_pages",
+      "title": "Settings Pages",
+      "description": "Toggle off pages under the WP admin Settings menu."
+    },
+    {
+      "id": "tools_pages",
+      "title": "Tools Pages",
+      "description": "Toggle off pages under the WP admin Tools menu."
+    }
+  ],
+  "settings": [
+    {
+      "id": "disable_general",
+      "type": "toggle",
+      "label": "Disable General",
+      "description": "options-general.php",
+      "default": false,
+      "section": "settings_pages"
+    },
+    {
+      "id": "disable_writing",
+      "type": "toggle",
+      "label": "Disable Writing",
+      "description": "options-writing.php",
+      "default": false,
+      "section": "settings_pages"
+    },
+    {
+      "id": "disable_connectors",
+      "type": "toggle",
+      "label": "Disable Connectors",
+      "description": "options-connectors.php (added in WP 7.0).",
+      "default": false,
+      "section": "settings_pages"
+    },
+    {
+      "id": "disable_reading",
+      "type": "toggle",
+      "label": "Disable Reading",
+      "description": "options-reading.php",
+      "default": false,
+      "section": "settings_pages"
+    },
+    {
+      "id": "disable_discussion",
+      "type": "toggle",
+      "label": "Disable Discussion",
+      "description": "options-discussion.php",
+      "default": false,
+      "section": "settings_pages"
+    },
+    {
+      "id": "disable_media",
+      "type": "toggle",
+      "label": "Disable Media",
+      "description": "options-media.php",
+      "default": false,
+      "section": "settings_pages"
+    },
+    {
+      "id": "disable_permalinks",
+      "type": "toggle",
+      "label": "Disable Permalinks",
+      "description": "options-permalink.php",
+      "default": false,
+      "section": "settings_pages"
+    },
+    {
+      "id": "disable_privacy",
+      "type": "toggle",
+      "label": "Disable Privacy",
+      "description": "options-privacy.php",
+      "default": false,
+      "section": "settings_pages"
+    },
+    {
+      "id": "disable_available_tools",
+      "type": "toggle",
+      "label": "Disable Available Tools",
+      "description": "tools.php",
+      "default": false,
+      "section": "tools_pages"
+    },
+    {
+      "id": "disable_import",
+      "type": "toggle",
+      "label": "Disable Import",
+      "description": "import.php",
+      "default": false,
+      "section": "tools_pages"
+    },
+    {
+      "id": "disable_export",
+      "type": "toggle",
+      "label": "Disable Export",
+      "description": "export.php",
+      "default": false,
+      "section": "tools_pages"
+    },
+    {
+      "id": "disable_site_health",
+      "type": "toggle",
+      "label": "Disable Site Health",
+      "description": "site-health.php",
+      "default": false,
+      "section": "tools_pages"
+    },
+    {
+      "id": "disable_export_personal_data",
+      "type": "toggle",
+      "label": "Disable Export Personal Data",
+      "description": "export-personal-data.php",
+      "default": false,
+      "section": "tools_pages"
+    },
+    {
+      "id": "disable_erase_personal_data",
+      "type": "toggle",
+      "label": "Disable Erase Personal Data",
+      "description": "erase-personal-data.php",
+      "default": false,
+      "section": "tools_pages"
+    }
+  ]
+}

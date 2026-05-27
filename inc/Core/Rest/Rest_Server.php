@@ -34,5 +34,6 @@ final class Rest_Server
         (new Modules_Controller())->register_routes();
         (new Settings_Controller())->register_routes();
         (new Field_Types_Controller())->register_routes();
+        (new Theme_Pages_Controller())->register_routes();
     }
 }

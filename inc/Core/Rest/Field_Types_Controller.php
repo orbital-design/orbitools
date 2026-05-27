@@ -85,6 +85,9 @@ final class Field_Types_Controller extends WP_REST_Controller
             'checkbox-group' => \__('Checkbox group', 'orbitools'),
             'color'          => \__('Color', 'orbitools'),
             'range'          => \__('Range', 'orbitools'),
+            'media'          => \__('Media', 'orbitools'),
+            'page'           => \__('Page picker', 'orbitools'),
+            'repeater'       => \__('Repeater', 'orbitools'),
         ];
         return $labels[$type] ?? $type;
     }

@@ -1,564 +1,213 @@
-# Orbitools WordPress Plugin
+# Orbitools
 
-A comprehensive WordPress plugin providing advanced layout blocks, responsive controls, and typography management for modern WordPress themes.
+A WordPress plugin that ships a React-based admin shell, a manifest-driven module system, and an extensible theme-pages API — plus the Gutenberg blocks, editor-side controls, and site-wide modules our themes use.
 
-## 🚀 Features
+This README is the high-level orientation. **[`CLAUDE.md`](CLAUDE.md) is the working contract for anyone (human or otherwise) touching the codebase** — read that before editing.
 
-### Layout Blocks System
-- **Collection Block**: Container for organizing content layouts
-- **Entry Block**: Individual content items with flexible sizing
-- **Spacer Block**: Responsive spacing control with breakpoint support
-- **Read More Block**: Collapsible content container with customizable toggle button
+## What's in here
 
-### Responsive Design System
-- Breakpoint-based controls (sm: 810px, md: 1080px, lg: 1360px, xl: 1600px)
-- Theme.json integration for consistent spacing values
-- CSS utility class generation for responsive behavior
+### React admin (`?page=orbitools`)
 
-### Typography Presets
-- Centralized typography management
-- Theme-configurable font presets
-- Gutenberg editor integration
+- Full-width chrome with a top-level tab nav: **Dashboard** + per-category settings pages (Block / Control / Module Settings) + theme-registered pages
+- Two-column drill-downs for each category — vertical list of items on the left, manifest-rendered settings on the right
+- Auto-switches to a section-sidebar layout when a settings page declares 2+ sections
+- Built on `@wordpress/components`; no external UI library
 
-### Security Features
-- OWASP Top 10 compliance
-- Package integrity verification with SHA256 checksums
-- Comprehensive security logging system
-- Input sanitization and capability checks
+### REST API at `/wp-json/orbitools/v1/`
 
-## 📁 Project Structure
+- `modules`, `modules/{slug}/enabled`, `settings/{slug}`, `field-types`, `theme-pages`
+- Auth: `manage_options` + the standard `wp_rest` nonce
+- Full reference in [`inc/Core/Rest/README.md`](inc/Core/Rest/README.md)
 
-```
+### Module system
+
+- One `module.json` + one PHP class per module — both auto-discovered, no central registration list
+- Settings UI generated from the manifest's `settings` array (13 field types: text, textarea, number, toggle, select, multiselect, radio, checkbox-group, color, range, media, page, repeater)
+- Categories: `blocks` / `controls` / `modules` — drives where the module surfaces in the React admin
+- Disabled modules cost zero — class is never autoloaded
+
+### Theme pages — drop-in option pages for themes
+
+Themes (or other plugins) register top-level admin pages via the `orbitools/register_theme_pages` filter. Same field-schema shape modules use, plus a per-field `wp_option` binding for the cases where a field should read/write a WordPress core option directly (`blogname`, `blogdescription`, `site_logo`, etc.).
+
+The plugin ships its own **Site Settings** page through this same public API — dogfooding the contract. Sections: Site, Header, Footer, Socials, Defaults.
+
+See `CLAUDE.md` § "Theme pages" for the full registration shape.
+
+## What ships out of the box
+
+### Built-in blocks (`inc/Blocks/`)
+
+- **Collection** — container for layouts (row / 5-col / 12-col grid systems)
+- **Entry** — content item within a Collection
+- **Group** — flexible layout container with semantic HTML support
+- **Marquee** — scrolling content on either axis
+- **Query Loop** — high-performance custom-template query loop (see [Query Loop customization hooks](#query-loop-block-template-system))
+- **Read More** — collapsible content container with customisable icon ([Read More icon hook](#read-more-block-icon-customization))
+- **Spacer** — responsive spacing using `theme.json` sizes
+
+### Built-in controls (`inc/Controls/`)
+
+- **Typography Presets** — preset-based typography control via `theme.json` ([module README](inc/Controls/Typography_Presets/README.md))
+- **Spacings** — responsive spacing helpers
+- **Aspect Ratio** — responsive aspect-ratio controls
+
+### Built-in modules (`inc/Modules/`)
+
+- **Layout Guides** — visual grid + ruler overlays for development ([module README](inc/Modules/Layout_Guides/README.md))
+- **Analytics** — GA4 + GTM integration, consent mode, custom events ([module README](inc/Modules/Analytics/README.md))
+- **User Avatars** — local avatar uploads, optional Gravatar disable
+- **Menu Dividers** — visual dividers in WP nav menus
+- **Menu Groups** — grouped menu items
+- **Toolbar FAB** — floating action button toolbar
+- **Core Overrides** — hide built-in WP admin pages (Settings → Connectors / Site Health / etc.) the site doesn't need
+
+## Project structure
+
+```text
 orbitools/
-├── src/blocks/                    # WordPress Gutenberg blocks
-│   ├── collection/               # Collection container block
-│   ├── entry/                   # Entry item block  
-│   ├── spacer/                  # Responsive spacer block
-│   ├── read-more/               # Collapsible content block
-│   └── utils/                   # Shared utilities
-│       ├── responsive-controls.tsx  # Responsive control system
-│       └── config-reader.ts        # Configuration management
-├── modules/                      # Plugin modules
-│   ├── Layout_Blocks/           # Block registration
-│   └── Typography_Presets/      # Typography system
-├── config/                      # Configuration files
-│   └── defaults.json            # Plugin default settings
-├── build/                       # Compiled assets
-└── webpack.*.js                 # Build configuration
+├── inc/
+│   ├── Blocks/         # Gutenberg blocks
+│   ├── Controls/       # Editor-side controls
+│   ├── Modules/        # Site-wide features
+│   └── Core/
+│       ├── Abstracts/  # Module_Base etc.
+│       ├── Admin/      # React_Admin (mounts the React app)
+│       ├── Module/     # Module_Manifest (parses module.json)
+│       ├── Pages/      # Theme_Pages_Registry + Site_Settings_Page
+│       ├── Rest/       # REST controllers
+│       └── Helpers/    # Settings_Manager, Asset_Manager, etc.
+├── src/
+│   ├── admin/          # React admin (TypeScript + @wordpress/components)
+│   ├── blocks/         # Block source (TSX / SCSS)
+│   ├── controls/       # Editor-control source
+│   ├── modules/        # Module-specific frontend assets
+│   └── frontend/       # Site-wide frontend assets
+├── build/              # Compiled assets (gitignored)
+├── scripts/            # Build helpers (discovery scan, version bump, release)
+└── webpack.*.js        # Three build configs: blocks / assets / admin
 ```
 
-## 🛠 Development
+PSR-4 autoload: `Orbitools\\` → `inc/`.
 
-### Building the Plugin
+## Development
+
 ```bash
-# Install dependencies
-npm install
+npm install                # one-time setup
+npm run build              # build everything (blocks + assets + admin)
+npm run dev                # parallel watch for all three configs
 
-# Build all assets
-npm run build
+# Targeted builds:
+npm run build:blocks       # Gutenberg blocks bundle
+npm run build:assets       # frontend + per-module assets
+npm run build:admin        # React admin bundle
 
-# Build only blocks
-npm run build:blocks
-
-# Build only assets  
-npm run build:assets
+npm run typecheck          # tsc --noEmit
 ```
 
-### Block Development
-Each block follows WordPress standards:
-- `block.json` - Block metadata and registration
-- `index.tsx` - Block registration and imports
-- `edit.tsx` - Editor interface
-- `save.tsx` - Frontend output
-- `*.scss` - Styling (editor and frontend)
+> **Heads up:** `build/` is gitignored. On a fresh checkout (or after a clean), run `npm run build` once before activating the plugin — otherwise the React admin and per-module frontend assets will 404. The Layout Guides module's frontend assets specifically come from `build:assets`, so re-run that whenever frontend module sources change.
 
-### Configuration System
-The plugin uses a hierarchical configuration system:
-1. **Theme config**: `/wp-content/themes/[theme]/config/orbitools.json` (priority)
-2. **Plugin defaults**: `/config/defaults.json` (fallback)
+### Adding a module
 
-## 🎨 Block Usage
+Drop a folder under `inc/Blocks/` / `inc/Controls/` / `inc/Modules/`. Three artifacts:
 
-### Collection Block
-Container for organizing layouts with different systems:
-- **Row Layout**: Horizontal arrangement
-- **Grid Layout**: 5-column or 12-column systems
-- **Responsive**: Different layouts per breakpoint
+1. **`module.json`** — manifest with `slug`, `name`, `description`, `version`, `category`, `class`, `default_enabled`, optional `settings` + `sections` arrays
+2. **`{Name}.php`** — class extending `Orbitools\Core\Abstracts\Module_Base` (implements `get_slug`, `get_name`, `get_description`, `init`)
+3. Frontend assets if needed under `src/{category}/{slug}/`
 
-### Entry Block  
-Individual content items within Collections:
-- **Column Width**: Custom sizing in grid layouts
-- **Spacing Controls**: Theme-based gap sizing
-- **Content**: Supports all WordPress blocks
+`Module_Manager` scans on every request — no central registration list to update. Disabled modules are never autoloaded.
 
-### Spacer Block
-Responsive spacing with theme integration:
-- **Height Control**: Uses theme.json spacing values
-- **Responsive**: Different heights per breakpoint  
-- **Special Values**: Default, None, [Theme Sizes], Fill
-- **Output**: Single `<div>` with height CSS classes
+Full architecture notes in `CLAUDE.md` § "v2 Module Architecture".
 
-### Read More Block
-Collapsible content container with smooth animations:
-- **Button Text**: Customizable open/close text states
-- **Icon Options**: None, Chevron, Arrow, or Plus icons
-- **Animations**: Smooth slide transitions with proper accessibility
-- **Spacing Controls**: Orbitools padding and gap controls on inner content
-- **Accessibility**: Full ARIA support with proper attributes
-
-## 🔧 Technical Details
-
-### WordPress Integration
-- **WordPress 6.0+**: Modern block editor features
-- **Theme.json Support**: Automatic spacing and typography integration
-- **PHP 8.0+**: Modern PHP features and performance
-
-### Build System
-- **Webpack**: Asset compilation and optimization
-- **TypeScript**: Type-safe development
-- **SCSS**: Advanced styling capabilities
-- **WordPress Scripts**: Standard WordPress build tools
-
-### Security
-- **Nonce Verification**: All AJAX requests protected
-- **Capability Checks**: Proper permission validation
-- **Input Sanitization**: All user input cleaned
-- **Package Verification**: SHA256 integrity checks for updates
-
-### Customization Hooks
-
-#### Read More Block Icon Customization
-Filter to customize or add new icon types for the Read More block:
+### Adding a theme page
 
 ```php
-// In your theme's functions.php or plugin
+add_filter('orbitools/register_theme_pages', function (array $pages): array {
+    $pages['my-page'] = [
+        'slug'     => 'my-page',
+        'label'    => __('My Page', 'my-theme'),
+        'position' => 20,      // Dashboard=0, Block/Control/Module Settings = 80/90/100
+        'sections' => [['id' => 'general', 'title' => 'General']],
+        'fields'   => [
+            [
+                'id' => 'site_title',
+                'type' => 'text',
+                'label' => 'Site Title',
+                'default' => '',
+                'section' => 'general',
+                'wp_option' => 'blogname',   // optional: bind read/write to a WP option
+            ],
+        ],
+    ];
+    return $pages;
+});
+```
+
+Settings persist in `orbitools_settings` under `{slug}_{field_id}` keys (or in the bound WP option for `wp_option`-flagged fields).
+
+## Customisation hooks
+
+### Read More block icon customization
+
+Override or add icon types for the Read More block:
+
+```php
 add_filter('orbitools/read_more/icons', function($icons) {
-    // Override existing icons
     $icons['chevron'] = '<span class="custom-chevron">→</span>';
-    
-    // Add new icon types
-    $icons['heart'] = '<span class="custom-heart">♥</span>';
-    $icons['star'] = '<span class="custom-star">★</span>';
-    
-    // Use Font Awesome or other icon fonts
-    $icons['arrow'] = '<i class="fas fa-arrow-down"></i>';
-    
+    $icons['heart']   = '<span class="custom-heart">♥</span>';
+    $icons['arrow']   = '<i class="fas fa-arrow-down"></i>';
     return $icons;
 });
 ```
 
-**Icon Requirements:**
-- Icons should be wrapped in a `<span>` with appropriate classes
-- Use `currentColor` for SVG stroke/fill to inherit theme colors
-- Icons will automatically rotate on toggle (add CSS transitions as needed)
-- All HTML will be properly escaped for security
+Icons should use `currentColor` for SVG strokes/fills to inherit theme colors. All HTML is escaped on output.
 
-#### Query Loop Block Template System
-The Query Loop block supports custom templates through a high-performance function-based system. Templates are registered via WordPress filters and called directly without file includes or output buffering.
+### Query Loop block template system
 
-##### Creating Custom Templates
-
-**1. Define Template Functions**
-Create template functions in your theme's `functions.php` or plugin:
+Custom templates are registered via the `orbitools/query_loop/available_templates` filter and called directly (no file includes or output buffering). Each template function receives `($post, $layout_type, $columns)`.
 
 ```php
-/**
- * Custom Query Loop Template Function
- * 
- * @param WP_Post $post The post object to render
- * @param string $layout_type Layout type ('grid', 'list', etc.)
- * @param string $columns Number of columns (for grid layouts)
- * @return string Rendered HTML for the post item
- */
 function orbitools_query_loop_template_my_custom($post, $layout_type, $columns) {
-    $html = '<article class="my-custom-template" data-post-id="' . $post->ID . '" data-template="my-custom">';
-    
-    // Featured image
-    if (has_post_thumbnail($post->ID)) {
-        $html .= '<div class="custom-image">';
-        $html .= '<a href="' . esc_url(get_permalink($post->ID)) . '">';
-        $html .= get_the_post_thumbnail($post->ID, 'medium');
-        $html .= '</a>';
-        $html .= '</div>';
-    }
-    
-    // Content
-    $html .= '<div class="custom-content">';
+    $html  = '<article class="my-custom" data-template="my-custom">';
     $html .= '<h3><a href="' . esc_url(get_permalink($post->ID)) . '">';
     $html .= esc_html(get_the_title($post->ID));
     $html .= '</a></h3>';
-    $html .= '<p>' . esc_html(wp_trim_words(get_the_excerpt($post->ID), 30)) . '</p>';
-    $html .= '</div>';
-    
     $html .= '</article>';
-    
     return $html;
 }
-```
 
-**2. Register Templates with OrbiTools**
-Use the filter hook to make templates available in the editor:
-
-```php
 add_filter('orbitools/query_loop/available_templates', function($templates, $layout_type) {
-    
-    // Register template for grid layout only
-    if (function_exists('orbitools_query_loop_template_my_custom')) {
-        $templates['my-custom'] = [
-            'label' => 'My Custom Template',
-            'description' => 'Custom template with special styling',
-            'callback' => 'orbitools_query_loop_template_my_custom',
-            'layouts' => ['grid'] // Only available for grid layout
-        ];
-    }
-    
-    // Register template for all layout types
-    if (function_exists('orbitools_query_loop_template_universal')) {
-        $templates['universal'] = [
-            'label' => 'Universal Template',
-            'description' => 'Works with any layout type',
-            'callback' => 'orbitools_query_loop_template_universal',
-            'layouts' => ['grid', 'list'] // Available for both layouts
-        ];
-    }
-    
+    $templates['my-custom'] = [
+        'label'       => 'My Custom Template',
+        'description' => 'Custom template with special styling',
+        'callback'    => 'orbitools_query_loop_template_my_custom',
+        'layouts'     => ['grid'], // optional — restrict to specific layout types
+    ];
     return $templates;
 }, 10, 2);
 ```
 
-##### Template Registration Parameters
+Layout types: `'grid'` (with `columns` of `'2'` / `'3'` / `'4'` / `'5'`) or `'list'`. Omit the `layouts` key to make a template available in every layout.
 
-**Required Parameters:**
-- **`label`**: Display name shown in the editor dropdown
-- **`description`**: Brief description of the template's purpose
-- **`callback`**: Function name or callable that renders the template
+**Always `esc_html` / `esc_url` / `esc_attr` your output** — template HTML is echoed directly.
 
-**Optional Parameters:**
-- **`layouts`**: Array of layout types this template supports (`['grid', 'list']`). If omitted, assumes all layouts are supported.
+## Requirements
 
-**Examples:**
-```php
-$templates['my-template'] = [
-    'label' => 'My Template',
-    'description' => 'Custom template description',
-    'callback' => 'my_template_function_name',
-    'layouts' => ['grid'] // Only show for grid layouts
-];
+- WordPress 6.4+
+- PHP 7.4+
+- For development: Node 18+, npm
 
-// Function can be any name - no naming restrictions!
-function my_template_function_name($post, $layout_type) {
-    // Template implementation
-}
-```
+## Security
 
-##### Layout Filtering
+- Nonce-protected REST and AJAX
+- Capability checks on every write
+- Input sanitisation at the boundary
+- SHA256 verification on auto-updates
 
-Templates are automatically filtered based on the current layout type:
-- Templates with `'layouts' => ['grid']` only appear in grid layout dropdowns
-- Templates with `'layouts' => ['list']` only appear in list layout dropdowns  
-- Templates with `'layouts' => ['grid', 'list']` appear in both
-- Templates without `layouts` parameter appear in all layouts
+## License
 
-##### Template Function Parameters
-
-All template functions receive three parameters:
-
-```php
-function orbitools_query_loop_template_example($post, $layout_type, $columns) {
-    // $post: WP_Post object - the current post being rendered
-    // $layout_type: string - 'grid', 'list', etc.
-    // $columns: string - number of columns for grid layouts ('2', '3', '4', '5')
-}
-```
-
-**$post Object:**
-- Access post data: `$post->ID`, `$post->post_title`, `$post->post_content`
-- Use WordPress functions: `get_the_title($post->ID)`, `get_permalink($post->ID)`
-- Check post meta: `get_post_meta($post->ID, 'key', true)`
-
-**$layout_type String:**
-- `'grid'` - Grid layout with columns
-- `'list'` - List layout (single column)
-- Custom layout types from theme/plugin extensions
-
-**$columns String:**
-- `'2'`, `'3'`, `'4'`, `'5'` - Number of columns for grid layouts
-- Always provided, even for list layouts (defaults to '3')
-- Use for responsive styling or conditional layout logic
-
-##### Layout-Specific Templates
-
-Restrict templates to specific layout types for better organization:
-
-```php
-add_filter('orbitools/query_loop/available_templates', function($templates, $layout_type) {
-    
-    // Grid-only template
-    if ($layout_type === 'grid') {
-        $templates['magazine-grid'] = [
-            'label' => 'Magazine Grid',
-            'description' => 'Magazine-style grid cards',
-            'type' => 'function',
-            'metadata' => [...]
-        ];
-    }
-    
-    // List-only template
-    if ($layout_type === 'list') {
-        $templates['timeline-list'] = [
-            'label' => 'Timeline List',
-            'description' => 'Timeline-style list items',
-            'type' => 'function',
-            'metadata' => [...]
-        ];
-    }
-    
-    return $templates;
-}, 10, 2);
-```
-
-##### Advanced Template Features
-
-**Conditional Styling:**
-```php
-function orbitools_query_loop_template_adaptive($post, $layout_type, $template_data) {
-    $base_class = 'adaptive-template';
-    $layout_class = $base_class . '--' . $layout_type;
-    
-    $html = '<article class="' . $base_class . ' ' . $layout_class . '">';
-    
-    // Different content based on layout
-    if ($layout_type === 'grid') {
-        // Compact grid content
-        $html .= '<div class="grid-content">...</div>';
-    } else {
-        // Detailed list content
-        $html .= '<div class="list-content">...</div>';
-    }
-    
-    $html .= '</article>';
-    return $html;
-}
-```
-
-**Post Type Specific Logic:**
-```php
-function orbitools_query_loop_template_versatile($post, $layout_type, $template_data) {
-    $post_type = get_post_type($post->ID);
-    
-    $html = '<article class="versatile-template versatile-template--' . $post_type . '">';
-    
-    switch ($post_type) {
-        case 'post':
-            // Blog post specific content
-            $html .= '<div class="post-meta">By ' . get_the_author_meta('display_name', $post->post_author) . '</div>';
-            break;
-        case 'page':
-            // Page specific content
-            $html .= '<div class="page-type">Page</div>';
-            break;
-        case 'product':
-            // Custom post type content
-            $price = get_post_meta($post->ID, '_price', true);
-            if ($price) {
-                $html .= '<div class="product-price">$' . esc_html($price) . '</div>';
-            }
-            break;
-    }
-    
-    // Common content for all post types
-    $html .= '<h3><a href="' . esc_url(get_permalink($post->ID)) . '">';
-    $html .= esc_html(get_the_title($post->ID));
-    $html .= '</a></h3>';
-    
-    $html .= '</article>';
-    return $html;
-}
-```
-
-##### Template Security & Best Practices
-
-**Always Escape Output:**
-```php
-// ✅ Correct - escaped output
-$html .= '<h3>' . esc_html(get_the_title($post->ID)) . '</h3>';
-$html .= '<a href="' . esc_url(get_permalink($post->ID)) . '">';
-$html .= '<img src="' . esc_attr($image_url) . '" alt="' . esc_attr($alt_text) . '">';
-
-// ❌ Wrong - unescaped output (security risk)
-$html .= '<h3>' . get_the_title($post->ID) . '</h3>';
-```
-
-**Performance Considerations:**
-```php
-// ✅ Good - minimal database queries
-function orbitools_query_loop_template_efficient($post, $layout_type, $template_data) {
-    // Use data already available in $post object
-    $title = $post->post_title;
-    $content = $post->post_content;
-    
-    // Batch meta queries if needed
-    $meta_keys = ['key1', 'key2', 'key3'];
-    $meta_values = get_post_meta($post->ID);
-    
-    return $html;
-}
-
-// ❌ Avoid - excessive function calls
-function orbitools_query_loop_template_slow($post, $layout_type, $template_data) {
-    // Each get_the_* function may trigger additional queries
-    $title = get_the_title($post->ID);
-    $excerpt = get_the_excerpt($post->ID);
-    $date = get_the_date('', $post->ID);
-    // ... multiple individual meta calls
-}
-```
-
-**Error Handling:**
-```php
-function orbitools_query_loop_template_safe($post, $layout_type, $template_data) {
-    // Validate post object
-    if (!$post || !isset($post->ID)) {
-        return '<article class="error">Invalid post data</article>';
-    }
-    
-    // Check for required meta
-    $featured_text = get_post_meta($post->ID, '_featured_text', true);
-    if (!$featured_text) {
-        $featured_text = 'No featured text available';
-    }
-    
-    // Safe thumbnail check
-    $thumbnail = '';
-    if (has_post_thumbnail($post->ID)) {
-        $thumbnail = get_the_post_thumbnail($post->ID, 'medium');
-    }
-    
-    return $html;
-}
-```
-
-##### Testing Templates
-
-1. **Create and register** your template function
-2. **Build the plugin**: `npm run build`
-3. **Add Query Loop block** to a page/post
-4. **Select your template** from the Results Settings dropdown
-5. **Preview changes** in editor and frontend
-6. **Test with different post types** and content variations
-
-##### Complete Example: Magazine Template
-
-```php
-/**
- * Magazine-style template with image overlay
- */
-function orbitools_query_loop_template_magazine_hero($post, $layout_type, $template_data) {
-    $html = '<article class="magazine-hero" data-post-id="' . $post->ID . '" data-template="magazine-hero">';
-    
-    // Background image container
-    if (has_post_thumbnail($post->ID)) {
-        $image_url = get_the_post_thumbnail_url($post->ID, 'large');
-        $html .= '<div class="magazine-hero__background" style="background-image: url(' . esc_url($image_url) . ');">';
-    } else {
-        $html .= '<div class="magazine-hero__background magazine-hero__background--no-image">';
-    }
-    
-    // Overlay content
-    $html .= '<div class="magazine-hero__overlay">';
-    $html .= '<div class="magazine-hero__content">';
-    
-    // Category badge
-    if (get_post_type($post->ID) === 'post') {
-        $categories = get_the_category($post->ID);
-        if (!empty($categories)) {
-            $html .= '<span class="magazine-hero__category">' . esc_html($categories[0]->name) . '</span>';
-        }
-    }
-    
-    // Title
-    $html .= '<h3 class="magazine-hero__title">';
-    $html .= '<a href="' . esc_url(get_permalink($post->ID)) . '">';
-    $html .= esc_html(get_the_title($post->ID));
-    $html .= '</a>';
-    $html .= '</h3>';
-    
-    // Excerpt
-    $excerpt = wp_trim_words(get_the_excerpt($post->ID), 20);
-    $html .= '<p class="magazine-hero__excerpt">' . esc_html($excerpt) . '</p>';
-    
-    // Meta information
-    $html .= '<div class="magazine-hero__meta">';
-    $html .= '<time class="magazine-hero__date">' . esc_html(get_the_date('M j, Y', $post->ID)) . '</time>';
-    
-    if (get_post_type($post->ID) === 'post') {
-        $html .= '<span class="magazine-hero__author">by ' . esc_html(get_the_author_meta('display_name', $post->post_author)) . '</span>';
-    }
-    $html .= '</div>';
-    
-    $html .= '</div>'; // content
-    $html .= '</div>'; // overlay
-    $html .= '</div>'; // background
-    $html .= '</article>';
-    
-    return $html;
-}
-
-// Register the template
-add_filter('orbitools/query_loop/available_templates', function($templates, $layout_type) {
-    if (function_exists('orbitools_query_loop_template_magazine_hero')) {
-        $templates['magazine-hero'] = [
-            'label' => 'Magazine Hero',
-            'description' => 'Hero-style cards with image backgrounds and overlay text',
-            'type' => 'function',
-            'metadata' => [
-                'Template Name' => 'Magazine Hero',
-                'Description' => 'Perfect for featured content and blog posts',
-                'Author' => 'Your Theme',
-                'Version' => '1.0.0',
-                'Supports' => ['featured-images', 'excerpts', 'categories', 'authors', 'dates']
-            ]
-        ];
-    }
-    return $templates;
-}, 10, 2);
-```
-
-This template system provides maximum flexibility while maintaining excellent performance through direct function calls and proper WordPress integration.
-
-## 📚 Development Notes
-
-**Important**: See `CLAUDE.md` for detailed development guidelines, patterns, and lessons learned. This file contains crucial information about:
-
-- Systematic API change procedures
-- WordPress block development patterns  
-- Common pitfalls and how to avoid them
-- Quality assurance checklists
-- Technical implementation details
-
-### Key Development Rules
-1. **Systematic Changes**: When fixing core APIs, update ALL instances across the codebase
-2. **Consistent Patterns**: Use established patterns for `useSettings`, responsive controls, etc.
-3. **Test Thoroughly**: Verify all related functionality, not just new features
-4. **Clean Codebase**: Remove unused files and maintain consistent structure
-
-## 🐛 Troubleshooting
-
-### Common Issues
-1. **Spacing Controls Missing**: Check `useSettings('spacing.spacingSizes')` format (string, not array)
-2. **Build Errors**: Ensure all files are properly imported and TypeScript types are correct
-3. **Block Not Showing**: Verify webpack config and PHP registration in `Layout_Blocks.php`
-
-### Debug Steps
-1. Check browser console for JavaScript errors
-2. Verify build output in `/build/blocks/` directory
-3. Confirm block registration in WordPress admin
-4. Test with default theme to isolate theme conflicts
-
-## 📄 License
-
-This plugin is proprietary software developed for specific WordPress implementations.
+Proprietary — developed for Orbital Design's WordPress implementations.
 
 ---
 
-*For detailed development guidelines and technical patterns, always refer to `CLAUDE.md` before making changes.*
+For development guidelines, architectural decisions, and the foot-guns we've already hit, see `CLAUDE.md`.

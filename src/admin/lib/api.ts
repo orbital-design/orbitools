@@ -6,7 +6,7 @@
  * window.orbitools.
  */
 import apiFetch from '@wordpress/api-fetch';
-import type { Module, ModuleSettings } from '../types';
+import type { Module, ModuleSettings, ThemePageInfo } from '../types';
 
 interface OrbitoolsBootstrap {
     restUrl: string;
@@ -14,6 +14,7 @@ interface OrbitoolsBootstrap {
     adminUrl: string;
     pluginUrl: string;
     version: string;
+    themePages?: ThemePageInfo[];
 }
 
 declare global {

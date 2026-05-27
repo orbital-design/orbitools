@@ -1,33 +1,18 @@
 /**
- * Generic, manifest-driven settings page.
+ * Generic, manifest-driven module settings page.
  *
- * SettingsPage = AppChrome wrapper + ModuleSettingsBody. The body is
- * exported separately so CategoryPage can embed it inside its
- * two-column layout without nesting a second chrome.
- *
- * Reads the target module + its current settings from the store,
- * groups its declared fields by section, evaluates show_if to filter,
- * and renders each field via the registry. PATCH on change is wired
- * to the settings slice's optimistic updateSetting thunk.
+ * SettingsPage = AppChrome wrapper + ModuleSettingsBody. The body
+ * resolves data from the store and hands it to SettingsRenderer for
+ * the actual rendering. CategoryPage embeds ModuleSettingsBody
+ * directly inside its two-column layout (no second chrome).
  */
 import { useDispatch, useSelect } from '@wordpress/data';
-import {
-    Notice,
-    Slot,
-    // VStack is only exported under the experimental name in
-    // @wordpress/components; importing it as plain `VStack` resolves
-    // to undefined at runtime and renders as <undefined /> (React #130).
-    __experimentalVStack as VStack,
-} from '@wordpress/components';
+import { Notice } from '@wordpress/components';
 import { AppChrome } from './AppChrome';
 import { LoadingState } from './LoadingState';
-import { SettingsSection } from './SettingsSection';
-import { FieldFallback } from './FieldFallback';
-import { getFieldComponent } from '../fields/registry';
-import { evaluateShowIf } from '../lib/showIf';
-import { SLOTS } from '../lib/slots';
+import { SettingsRenderer } from './SettingsRenderer';
 import { STORE_KEY } from '../store';
-import type { FieldSchema, Module, ModuleSettings, SectionDescriptor } from '../types';
+import type { Module, ModuleSettings } from '../types';
 
 interface StoreShape {
     getModules: () => Module[];
@@ -124,9 +109,7 @@ export function ModuleSettingsBody({ slug }: SettingsPageProps): JSX.Element {
         );
     }
 
-    const currentSettings: ModuleSettings = settings ?? {};
     const fields = module.settings_schema ?? [];
-
     if (fields.length === 0) {
         return (
             <Notice status="info" isDismissible={false}>
@@ -135,72 +118,13 @@ export function ModuleSettingsBody({ slug }: SettingsPageProps): JSX.Element {
         );
     }
 
-    const visibleFields = fields.filter((f) => evaluateShowIf(f.show_if, currentSettings));
-    const grouped = groupBySection(visibleFields, module.sections);
-
     return (
-        <>
-            <Slot name={SLOTS.settingsBefore(slug)} />
-            <VStack spacing={4}>
-                {grouped.map((group) => (
-                    <SettingsSection
-                        key={group.section?.id ?? '__default__'}
-                        title={group.section?.title}
-                        description={group.section?.description}
-                    >
-                        {group.fields.map((field) => {
-                            const Component = getFieldComponent(String(field.type));
-                            const fieldValue =
-                                currentSettings[field.id] !== undefined
-                                    ? currentSettings[field.id]
-                                    : field.default;
-                            if (Component === null) {
-                                return <FieldFallback key={field.id} field={field} />;
-                            }
-                            return (
-                                <Component
-                                    key={field.id}
-                                    field={field}
-                                    value={fieldValue}
-                                    onChange={(next) => updateSetting(slug, field.id, next)}
-                                />
-                            );
-                        })}
-                    </SettingsSection>
-                ))}
-            </VStack>
-            <Slot name={SLOTS.settingsAfter(slug)} />
-        </>
+        <SettingsRenderer
+            slug={slug}
+            fields={fields}
+            sections={module.sections}
+            settings={settings ?? {}}
+            onChange={(key, value) => updateSetting(slug, key, value)}
+        />
     );
-}
-
-interface FieldGroup {
-    section: SectionDescriptor | null;
-    fields: FieldSchema[];
-}
-
-function groupBySection(fields: FieldSchema[], sections: SectionDescriptor[]): FieldGroup[] {
-    if (sections.length === 0) {
-        return [{ section: null, fields }];
-    }
-
-    const groups: FieldGroup[] = sections.map((s) => ({ section: s, fields: [] }));
-    const fallback: FieldGroup = { section: null, fields: [] };
-    const sectionIds = new Set(sections.map((s) => s.id));
-
-    for (const field of fields) {
-        if (field.section !== undefined && sectionIds.has(field.section)) {
-            const group = groups.find((g) => g.section?.id === field.section);
-            if (group !== undefined) {
-                group.fields.push(field);
-                continue;
-            }
-        }
-        fallback.fields.push(field);
-    }
-
-    if (fallback.fields.length > 0) {
-        groups.push(fallback);
-    }
-    return groups.filter((g) => g.fields.length > 0);
 }

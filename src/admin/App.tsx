@@ -1,15 +1,15 @@
 /**
  * Root component.
  *
- * Phase 5 wires the real Dashboard + per-category pages and removes
- * the Phase-2 placeholder. AppChrome owns the header + section nav;
- * each routed page renders its own content well inside it.
+ * AppChrome owns the header + section nav; each routed page renders
+ * its own content well inside it.
  *
  * Route table (hash-based, see lib/router.ts):
  *   #             → Dashboard
  *   #blocks       → CategoryPage('blocks')
  *   #controls     → CategoryPage('controls')
  *   #modules      → CategoryPage('modules')
+ *   #pages/{X}    → ThemePage (theme-registered or built-in Site Settings)
  *   #settings/{X} → discovered[X].Page (if any) else SettingsPage
  */
 import { SlotFillProvider } from '@wordpress/components';
@@ -17,8 +17,10 @@ import { AppChrome } from './components/AppChrome';
 import { CategoryPage } from './components/CategoryPage';
 import { Dashboard } from './components/Dashboard';
 import { SettingsPage } from './components/SettingsPage';
+import { ThemePage } from './components/ThemePage';
 import { useHashRoute } from './lib/router';
 import { discovered } from './.generated/discovered';
+import { getThemePage } from './lib/themePages';
 import type { ModuleCategory } from './types';
 
 const CATEGORY_TITLES: Record<ModuleCategory, string> = {
@@ -35,6 +37,10 @@ export function App(): JSX.Element {
             <DiscoveredFills />
             {route.name === 'settings' ? (
                 <RoutedSettings slug={route.slug} />
+            ) : route.name === 'page' ? (
+                <AppChrome title={getThemePage(route.slug)?.label ?? 'Page'}>
+                    <ThemePage slug={route.slug} />
+                </AppChrome>
             ) : route.name === 'category' ? (
                 <AppChrome title={CATEGORY_TITLES[route.category]}>
                     <CategoryPage category={route.category} selectedSlug={route.slug} />

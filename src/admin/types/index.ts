@@ -15,7 +15,10 @@ export type FieldType =
     | 'radio'
     | 'checkbox-group'
     | 'color'
-    | 'range';
+    | 'range'
+    | 'media'
+    | 'page'
+    | 'repeater';
 
 export interface FieldOption {
     value: string | number;
@@ -100,3 +103,20 @@ export interface ModuleExtension {
 }
 
 export type ModulePage = (props: { slug: string }) => JSX.Element;
+
+/**
+ * Theme-registered top-level page metadata, delivered via the
+ * `window.orbitools.themePages` bootstrap (see React_Admin.php). The
+ * field schema follows the same FieldSchema contract modules use,
+ * with the optional `wp_option` per-field binding that
+ * Settings_Controller honours server-side.
+ */
+export interface ThemePageInfo {
+    slug: string;
+    label: string;
+    description: string;
+    icon: string;
+    position: number;
+    sections: SectionDescriptor[];
+    settings_schema: FieldSchema[];
+}
