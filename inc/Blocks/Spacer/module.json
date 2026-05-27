@@ -1,7 +1,7 @@
 {
   "$schema": "https://orbitools/schemas/module.v1.json",
   "slug": "spacer-block",
-  "name": "Spacer Block",
+  "name": "Spacer",
   "description": "Responsive spacing block with height controls",
   "version": "1.0.0",
   "category": "blocks",

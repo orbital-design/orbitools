@@ -1,7 +1,7 @@
 {
   "$schema": "https://orbitools/schemas/module.v1.json",
   "slug": "entry-block",
-  "name": "Entry Block",
+  "name": "Entry",
   "description": "Individual content item block for use within collections",
   "version": "1.0.0",
   "category": "blocks",

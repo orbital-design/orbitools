@@ -22,9 +22,9 @@ import { discovered } from './.generated/discovered';
 import type { ModuleCategory } from './types';
 
 const CATEGORY_TITLES: Record<ModuleCategory, string> = {
-    blocks: 'Blocks',
-    controls: 'Controls',
-    modules: 'Modules',
+    blocks: 'Block Settings',
+    controls: 'Control Settings',
+    modules: 'Module Settings',
 };
 
 export function App(): JSX.Element {
@@ -37,7 +37,7 @@ export function App(): JSX.Element {
                 <RoutedSettings slug={route.slug} />
             ) : route.name === 'category' ? (
                 <AppChrome title={CATEGORY_TITLES[route.category]}>
-                    <CategoryPage category={route.category} />
+                    <CategoryPage category={route.category} selectedSlug={route.slug} />
                 </AppChrome>
             ) : (
                 <AppChrome title="Orbitools">

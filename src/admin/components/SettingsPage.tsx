@@ -1,13 +1,16 @@
 /**
  * Generic, manifest-driven settings page.
  *
+ * SettingsPage = AppChrome wrapper + ModuleSettingsBody. The body is
+ * exported separately so CategoryPage can embed it inside its
+ * two-column layout without nesting a second chrome.
+ *
  * Reads the target module + its current settings from the store,
  * groups its declared fields by section, evaluates show_if to filter,
  * and renders each field via the registry. PATCH on change is wired
  * to the settings slice's optimistic updateSetting thunk.
  */
 import { useDispatch, useSelect } from '@wordpress/data';
-import { useEffect } from '@wordpress/element';
 import {
     Notice,
     Slot,
@@ -44,12 +47,50 @@ interface SettingsPageProps {
     slug: string;
 }
 
+/**
+ * Standalone settings page — used by the `#settings/{slug}` route.
+ * Wraps the body in AppChrome with the module name (or a fallback
+ * loading/not-found title).
+ */
 export function SettingsPage({ slug }: SettingsPageProps): JSX.Element {
+    const { module, isLoading } = useSelect(
+        (select) => {
+            const store = select(STORE_KEY) as unknown as StoreShape;
+            store.getModules();
+            return {
+                module: store.getModule(slug),
+                isLoading: store.isLoadingModules(),
+            };
+        },
+        [slug]
+    );
+
+    let title = 'Module Settings';
+    if (isLoading && module === undefined) {
+        title = 'Loading…';
+    } else if (module === undefined) {
+        title = 'Module not found';
+    } else {
+        title = module.name;
+    }
+
+    return (
+        <AppChrome title={title}>
+            <ModuleSettingsBody slug={slug} />
+        </AppChrome>
+    );
+}
+
+/**
+ * Chrome-less body — renders the manifest-driven fields, or one of
+ * the loading / not-found / error / no-settings states. Designed to
+ * be embedded inside another page (CategoryPage's right pane) or
+ * inside SettingsPage's own AppChrome.
+ */
+export function ModuleSettingsBody({ slug }: SettingsPageProps): JSX.Element {
     const { module, settings, isLoading, errorMessage } = useSelect(
         (select) => {
             const store = select(STORE_KEY) as unknown as StoreShape;
-            // Touch getModules so its resolver fires when landing
-            // directly on a settings page (no dashboard pre-render).
             store.getModules();
             return {
                 module: store.getModule(slug),
@@ -63,37 +104,23 @@ export function SettingsPage({ slug }: SettingsPageProps): JSX.Element {
 
     const { updateSetting } = useDispatch(STORE_KEY) as unknown as StoreDispatch;
 
-    // Touch the settings selector once so its resolver kicks off.
-    useEffect(() => {
-        // useSelect above already triggers the resolver via getSettings.
-        // No-op effect; kept for clarity should we later add side effects.
-    }, [slug]);
-
     if (isLoading && module === undefined) {
-        return (
-            <AppChrome title="Loading…">
-                <LoadingState message="Loading module settings…" />
-            </AppChrome>
-        );
+        return <LoadingState message="Loading module settings…" />;
     }
 
     if (module === undefined) {
         return (
-            <AppChrome title="Module not found">
-                <Notice status="error" isDismissible={false}>
-                    No module is registered with the slug <code>{slug}</code>.
-                </Notice>
-            </AppChrome>
+            <Notice status="error" isDismissible={false}>
+                No module is registered with the slug <code>{slug}</code>.
+            </Notice>
         );
     }
 
     if (errorMessage !== null && errorMessage !== undefined && settings === undefined) {
         return (
-            <AppChrome title={module.name}>
-                <Notice status="error" isDismissible={false}>
-                    Failed to load settings: {errorMessage}
-                </Notice>
-            </AppChrome>
+            <Notice status="error" isDismissible={false}>
+                Failed to load settings: {errorMessage}
+            </Notice>
         );
     }
 
@@ -102,11 +129,9 @@ export function SettingsPage({ slug }: SettingsPageProps): JSX.Element {
 
     if (fields.length === 0) {
         return (
-            <AppChrome title={module.name}>
-                <Notice status="info" isDismissible={false}>
-                    This module has no settings.
-                </Notice>
-            </AppChrome>
+            <Notice status="info" isDismissible={false}>
+                This module has no settings.
+            </Notice>
         );
     }
 
@@ -114,7 +139,7 @@ export function SettingsPage({ slug }: SettingsPageProps): JSX.Element {
     const grouped = groupBySection(visibleFields, module.sections);
 
     return (
-        <AppChrome title={module.name}>
+        <>
             <Slot name={SLOTS.settingsBefore(slug)} />
             <VStack spacing={4}>
                 {grouped.map((group) => (
@@ -145,7 +170,7 @@ export function SettingsPage({ slug }: SettingsPageProps): JSX.Element {
                 ))}
             </VStack>
             <Slot name={SLOTS.settingsAfter(slug)} />
-        </AppChrome>
+        </>
     );
 }
 
