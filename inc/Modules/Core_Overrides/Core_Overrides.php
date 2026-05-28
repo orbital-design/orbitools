@@ -89,6 +89,29 @@ final class Core_Overrides extends Module_Base
             \add_action('admin_init', [$this, 'redirect_posts_screens']);
             \add_action('init', [$this, 'unregister_post_tag']);
         }
+
+        // "Disable Customizer" — patterned on the customizer-disabler
+        // plugin by Johannes Siipola (GPL-2.0+), itself based on
+        // Customizer Remove All Parts by Petersen & Wilkerson. Three
+        // prongs: deny the `customize` capability (kills the menu
+        // entry + toolbar shortcut), stop the customizer scripts
+        // from being enqueued, and wp_die on any direct hit of
+        // customize.php.
+        if ($this->is_setting_on('disable_customizer')) {
+            \add_filter('map_meta_cap', [$this, 'deny_customize_cap'], 10, 2);
+            \add_action('admin_init', [$this, 'unhook_customizer']);
+            \add_action('load-customize.php', [$this, 'block_customize_screen']);
+        }
+
+        // "Disable widgets" — same shape as the Customizer block:
+        // strip the menu entry, hard-block the URL, and remove the
+        // Customizer's Widgets panel (still relevant when only
+        // widgets are disabled, not the whole Customizer).
+        if ($this->is_setting_on('disable_widgets')) {
+            \add_action('admin_menu', [$this, 'remove_widgets_menu'], 999);
+            \add_action('load-widgets.php', [$this, 'block_widgets_screen']);
+            \add_action('customize_register', [$this, 'remove_customizer_widgets_panel'], 20);
+        }
     }
 
     public function apply_overrides(): void
@@ -171,6 +194,78 @@ final class Core_Overrides extends Module_Base
     public function unregister_post_tag(): void
     {
         \unregister_taxonomy_for_object_type('post_tag', 'post');
+    }
+
+    /**
+     * Replace the `customize` capability with WP's standard
+     * denial sentinel for every user, killing the Customizer menu
+     * entry, admin-bar shortcut, and any other UI gated on
+     * current_user_can('customize').
+     *
+     * @param array<int,string> $caps
+     * @param string            $cap
+     * @return array<int,string>
+     */
+    public function deny_customize_cap(array $caps, string $cap): array
+    {
+        if ($cap === 'customize') {
+            return ['do_not_allow'];
+        }
+        return $caps;
+    }
+
+    /**
+     * Strip the customizer scripts/styles from any admin page that
+     * would otherwise enqueue them. `_wp_customize_include` runs
+     * on plugins_loaded and has already fired by the time
+     * admin_init does — kept here for symmetry with the upstream
+     * customizer-disabler plugin's belt-and-braces approach.
+     */
+    public function unhook_customizer(): void
+    {
+        \remove_action('plugins_loaded', '_wp_customize_include', 10);
+        \remove_action('admin_enqueue_scripts', '_wp_customize_loader_settings', 11);
+    }
+
+    /**
+     * Hard-block any direct hit on /wp-admin/customize.php — covers
+     * bookmarks, deep links, and anything that bypassed the
+     * capability-stripped menu entry.
+     */
+    public function block_customize_screen(): void
+    {
+        \wp_die(\esc_html__('The Customizer is disabled on this site.', 'orbitools'));
+    }
+
+    /**
+     * Remove the Appearance → Widgets submenu item.
+     */
+    public function remove_widgets_menu(): void
+    {
+        \remove_submenu_page('themes.php', 'widgets.php');
+    }
+
+    /**
+     * Hard-block direct hits on /wp-admin/widgets.php — same
+     * reasoning as the Customizer's load-customize.php block.
+     */
+    public function block_widgets_screen(): void
+    {
+        \wp_die(\esc_html__('Widgets are disabled on this site.', 'orbitools'));
+    }
+
+    /**
+     * Remove the Customizer's "Widgets" panel. Only relevant when
+     * the Customizer itself is still enabled (otherwise this
+     * action never fires).
+     *
+     * @param \WP_Customize_Manager $wp_customize
+     */
+    public function remove_customizer_widgets_panel($wp_customize): void
+    {
+        if (method_exists($wp_customize, 'remove_panel')) {
+            $wp_customize->remove_panel('widgets');
+        }
     }
 
     private function is_setting_on(string $key): bool
