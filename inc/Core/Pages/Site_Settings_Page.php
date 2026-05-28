@@ -42,6 +42,35 @@ final class Site_Settings_Page
         \add_action('update_option_site_logo', [$this, 'mirror_site_logo_to_theme_mod'], 10, 2);
         \add_action('add_option_site_logo', [$this, 'mirror_added_site_logo_to_theme_mod'], 10, 2);
         \add_action('delete_option_site_logo', [$this, 'remove_custom_logo_theme_mod']);
+
+        // Bootstrap: catch any site_logo value that was saved
+        // before the actions above were registered (or after a
+        // value-unchanged short-circuit in update_option). Runs
+        // once per request at init priority 20; a no-op when the
+        // two surfaces are already in sync.
+        \add_action('init', [$this, 'bootstrap_site_logo_sync'], 20);
+    }
+
+    /**
+     * One-shot reconciliation of site_logo → custom_logo theme_mod.
+     * Reads the raw `theme_mods_{theme}` option so we compare the
+     * actual stored value (not the filtered one — WP's
+     * `theme_mod_custom_logo` filter would always make site_logo
+     * look like the current custom_logo and hide the mismatch).
+     */
+    public function bootstrap_site_logo_sync(): void
+    {
+        $site_logo = (int) \get_option('site_logo');
+        if ($site_logo <= 0) {
+            return;
+        }
+        $stylesheet = \get_stylesheet();
+        $mods       = \get_option('theme_mods_' . $stylesheet, []);
+        $raw        = is_array($mods) && isset($mods['custom_logo']) ? (int) $mods['custom_logo'] : 0;
+        if ($raw === $site_logo) {
+            return;
+        }
+        \set_theme_mod('custom_logo', $site_logo);
     }
 
     /**
