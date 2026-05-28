@@ -27,10 +27,13 @@ final class Orbital_Login extends Module_Base
     // Brand constants — hardcoded on purpose so every Orbital site
     // renders the same login screen. If you find yourself wanting
     // to vary one of these per-site, add a setting instead.
-    private const LOGO_URL    = 'https://orbital.co.uk';
-    private const LOGO_TITLE  = 'Orbital';
-    private const HEADLINE    = 'Nice to see you again';
-    private const FOOTER_TEXT = '© Orbital';
+    private const LOGO_URL           = 'https://orbital.co.uk';
+    private const LOGO_TITLE         = 'Orbital';
+    private const HEADLINE           = 'Nice to see you again';
+    private const FOOTER_LEFT_LABEL  = 'Built by Orbital';
+    private const FOOTER_LEFT_URL    = 'https://orbital.co.uk';
+    private const FOOTER_RIGHT_LABEL = 'Powered by WordPress';
+    private const FOOTER_RIGHT_URL   = 'https://wordpress.org';
 
     /**
      * Cookie name prefix for the "remember last user" feature. The
@@ -64,7 +67,9 @@ final class Orbital_Login extends Module_Base
 
     public function init(): void
     {
-        \add_action('login_enqueue_scripts', [$this, 'enqueue_login_styles']);
+        // Priority 100 so we run *after* WP enqueues its own login
+        // stylesheets — gives us a real handle to dequeue.
+        \add_action('login_enqueue_scripts', [$this, 'enqueue_login_styles'], 100);
         // Brand chrome — fixed across all Orbital sites.
         \add_action('login_head', [$this, 'render_inline_vars']);
         \add_filter('login_message', [$this, 'prepend_headline']);
@@ -84,10 +89,22 @@ final class Orbital_Login extends Module_Base
 
     public function enqueue_login_styles(): void
     {
+        // Strip WP's default login stylesheets so we render from a
+        // blank slate. Dequeueing dependencies (forms/buttons) too,
+        // because they bleed into the form chrome (input widths,
+        // button paddings, focus rings) and force us into a
+        // specificity arms race. Dashicons stays — we use it for
+        // the show/hide password glyph.
+        \wp_dequeue_style('login');
+        \wp_dequeue_style('forms');
+        \wp_dequeue_style('buttons');
+        \wp_dequeue_style('wp-admin');
+        \wp_dequeue_style('colors');
+
         \wp_enqueue_style(
             'orbitools-orbital-login',
             ORBITOOLS_URL . 'build/admin/css/modules/orbital-login/login.css',
-            [],
+            ['dashicons'],
             ORBITOOLS_VERSION
         );
     }
@@ -123,15 +140,16 @@ final class Orbital_Login extends Module_Base
     }
 
     /**
-     * Render the form-card footer (just the copyright, bottom-right).
-     * Done via login_footer because the element sits outside #login
-     * so it can hug the bottom edge of the right column.
+     * Render the form-card footer (two attribution links pinned to
+     * the bottom of the right column). Done via login_footer because
+     * the element sits outside #login so it can hug the bottom edge
+     * of the card without participating in #login's flex layout.
      */
     public function render_static_chrome(): void
     {
         echo '<div class="orbital-login__card-footer">';
-        echo '<span class="orbital-login__card-footer-left"></span>';
-        echo '<span class="orbital-login__card-footer-right">' . \esc_html(self::FOOTER_TEXT) . '</span>';
+        echo '<a class="orbital-login__card-footer-left" href="' . \esc_url(self::FOOTER_LEFT_URL) . '" target="_blank" rel="noopener noreferrer">' . \esc_html(self::FOOTER_LEFT_LABEL) . '</a>';
+        echo '<a class="orbital-login__card-footer-right" href="' . \esc_url(self::FOOTER_RIGHT_URL) . '" target="_blank" rel="noopener noreferrer">' . \esc_html(self::FOOTER_RIGHT_LABEL) . '</a>';
         echo "</div>\n";
     }
 

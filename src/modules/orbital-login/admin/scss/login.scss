@@ -33,14 +33,111 @@ $bp-single-col: 880px;
 }
 
 // -----------------------------------------------------------------
-// Layout
+// Reset
 // -----------------------------------------------------------------
+//
+// The PHP side dequeues WP's `login` / `forms` / `buttons` /
+// `wp-admin` / `colors` stylesheets, so this file owns every
+// visible style. Everything below scopes to `.login` (or html/body)
+// to stay confined to the login screen — we don't want this reset
+// leaking into the wider admin via the colour-scheme stylesheet.
 
-html, body.login {
+html,
+body.login {
     height: 100%;
     margin: 0;
     padding: 0;
 }
+
+body.login {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+        Oxygen, Ubuntu, Cantarell, "Helvetica Neue", Arial, sans-serif;
+    font-size: 14px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+body.login *,
+body.login *::before,
+body.login *::after {
+    box-sizing: border-box;
+}
+
+body.login h1,
+body.login h2,
+body.login h3,
+body.login h4,
+body.login h5,
+body.login h6,
+body.login p {
+    margin: 0;
+    font-weight: normal;
+}
+
+body.login a {
+    color: $orb-blue;
+    text-decoration: none;
+
+    &:hover,
+    &:focus {
+        color: $orb-blue-hover;
+    }
+}
+
+body.login form {
+    margin: 0;
+}
+
+body.login input,
+body.login button,
+body.login select,
+body.login textarea {
+    color: inherit;
+    font: inherit;
+    margin: 0;
+}
+
+body.login button {
+    background: transparent;
+    border: 0;
+    padding: 0;
+    cursor: pointer;
+}
+
+// Replicate WP's .hide-if-no-js / .hide-if-js helpers — WP's
+// no-js → js body class swap relies on these to hide JS-only
+// chrome before scripts boot. We lose them when the login
+// stylesheet is dequeued, so re-declare them here.
+body.no-js .hide-if-no-js,
+body.login.no-js .hide-if-no-js {
+    display: none;
+}
+
+body.js .hide-if-js,
+body.login.js .hide-if-js {
+    display: none;
+}
+
+// Visually-hidden helper, used by WP for screen-reader-only text
+// (e.g. on the show/hide password button).
+body.login .screen-reader-text {
+    border: 0;
+    clip: rect(1px, 1px, 1px, 1px);
+    -webkit-clip-path: inset(50%);
+    clip-path: inset(50%);
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    padding: 0;
+    position: absolute;
+    width: 1px;
+    word-wrap: normal !important;
+}
+
+// -----------------------------------------------------------------
+// Layout
+// -----------------------------------------------------------------
 
 body.login {
     background: $orb-card-bg;
@@ -58,19 +155,45 @@ body.login::before {
     background-color: $orb-navy;
     background-image: var(--orb-login-hero);
     background-size: cover;
-    background-position: center;
+    background-position: left center;
     background-repeat: no-repeat;
 }
 
 // Right column: WP's standard #login wrapper, repurposed as the
-// form card.
+// form card. A flex column at full viewport height so notices can
+// hug the top of the card while the rest of the form gets vertically
+// centered in the remaining space (via the two auto margins below).
 #login {
     grid-column: 2;
     width: 100%;
     max-width: none;
-    padding: 56px 48px;
+    min-height: 100vh;
+    padding: 32px 48px;
     box-sizing: border-box;
-    align-self: center;
+    display: flex;
+    flex-direction: column;
+}
+
+// Notices float above the logo. WP renders them between the
+// headline and the form by default; negative order pops them to
+// the top of the card without restructuring the DOM.
+#login_error,
+.login .message,
+.login .notice {
+    order: -1;
+}
+
+// Auto-margin pair that vertically centres everything between
+// the (notice) top edge of the card and the very last child
+// (.privacy-policy-page-link / #backtoblog). The notices stay at
+// the top because their `order: -1` puts them before the
+// auto-margin gap; .language-switcher is a sibling of #login (not
+// a child), so :last-child here is always a real visible element.
+#login > h1 {
+    margin-top: auto;
+}
+#login > *:last-child {
+    margin-bottom: auto;
 }
 
 @media (max-width: $bp-single-col) {
@@ -129,6 +252,24 @@ body.login::before {
     margin: 0;
 }
 
+// Vertical rhythm between form rows. With WP's stylesheet dequeued
+// every `<p>` and `<div>` row defaults to margin: 0 (from our
+// reset), so we declare the gap explicitly here. .forgetmenot and
+// .submit own their own margins below.
+#loginform > p,
+#loginform > .user-pass-wrap,
+#registerform > p,
+#lostpasswordform > p {
+    margin-bottom: 14px;
+}
+
+#loginform > p.submit,
+#loginform > p:last-child,
+#registerform > p:last-child,
+#lostpasswordform > p:last-child {
+    margin-bottom: 0;
+}
+
 // Show form labels (WP visually hides them by default).
 .login form label[for="user_login"],
 .login form label[for="user_pass"],
@@ -138,6 +279,95 @@ body.login::before {
     font-size: 13px;
     font-weight: 500;
     margin-bottom: 6px;
+}
+
+// Hide Edge / legacy IE reveal + clear buttons inside the password
+// input — they'd otherwise collide with our styled `.wp-hide-pw`
+// button. WP normally suppresses these in forms.css; we lose the
+// rule when we dequeue.
+.login input::-ms-reveal,
+.login input::-ms-clear {
+    display: none;
+}
+
+// Padding so the typed password doesn't slide under the eye button.
+.login .wp-pwd input[type="text"],
+.login .wp-pwd input[type="password"] {
+    padding-right: 2.5rem;
+}
+
+// Use a monospace font on the password field so visually-similar
+// characters are easier to distinguish when shown.
+.login input.password-input {
+    font-family: Consolas, Monaco, "Courier New", monospace;
+}
+
+// Dashicon sizing inside the show/hide button — without WP's
+// forms.css the dashicon defaults to the font's 20px glyph but
+// loses its layout box, which throws off centring.
+.login .wp-hide-pw .dashicons {
+    width: 20px;
+    height: 20px;
+    font-size: 20px;
+    line-height: 1;
+    vertical-align: middle;
+}
+
+// Caps Lock warning. `wp-admin/js/user-profile.js`
+// (enqueued on wp-login.php since WP 6.x) injects
+//   <div id="caps-warning" class="caps-warning">…</div>
+// into `.wp-pwd` and toggles visibility via jQuery .show()/.hide()
+// on keydown. WP relies on a `display: none` rule in forms.css to
+// keep it hidden until needed; we lose that when we dequeue, so
+// the arrow icon sits visible until the field is interacted with.
+// Re-declare hide-by-default + lightly branded shown state.
+.wp-pwd #caps-warning,
+.wp-pwd .caps-warning {
+    display: none; // jQuery .show() will override with inline display
+    position: relative;
+    background: #fff7d6;
+    border: 1px solid #f0c33c;
+    border-radius: 4px;
+    color: $orb-navy;
+    font-size: 12px;
+    line-height: 1.4;
+    padding: 6px 10px;
+    margin-top: 8px;
+}
+
+.wp-pwd .caps-icon {
+    display: inline-flex;
+    justify-content: center;
+    width: 16px;
+    height: 16px;
+    margin-right: 6px;
+    vertical-align: middle;
+}
+
+.wp-pwd .caps-warning-text {
+    vertical-align: middle;
+}
+
+// Shake animation on a failed login (`form.shake` is added by
+// inline JS in wp-login.php on auth errors). Match the WP feel
+// but with a tighter amplitude.
+.login form.shake {
+    animation: orbital-login-shake 0.2s cubic-bezier(.19, .49, .38, .79) both;
+    animation-iteration-count: 3;
+    transform: translateX(0);
+}
+
+@keyframes orbital-login-shake {
+    25%  { transform: translateX(-10px); }
+    75%  { transform: translateX( 10px); }
+    100% { transform: translateX( 0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .login form.shake {
+        animation: none;
+        transform: none;
+    }
 }
 
 // Inputs.
@@ -170,10 +400,6 @@ body.login::before {
 
 // Password wrapper — WP nests the input + show/hide button in
 // .wp-pwd. Keep them stacked horizontally, eye on the right.
-.login .user-pass-wrap {
-    margin-bottom: 8px;
-}
-
 .login .wp-pwd {
     position: relative;
 }
@@ -216,7 +442,7 @@ body.login::before {
     align-items: center;
     display: flex;
     justify-content: space-between;
-    margin: 16px 0 20px;
+    margin: 0 0 20px;
     font-size: 13px;
     color: $orb-navy;
 
@@ -454,12 +680,17 @@ body.login::before {
     }
 }
 
-.orbital-login__card-footer-left {
-    color: $orb-text-muted;
-}
-
+.orbital-login__card-footer-left,
 .orbital-login__card-footer-right {
     color: $orb-text-muted;
+    text-decoration: none;
+    transition: color 120ms ease;
+
+    &:hover,
+    &:focus {
+        color: $orb-blue;
+        text-decoration: underline;
+    }
 }
 
 // -----------------------------------------------------------------
