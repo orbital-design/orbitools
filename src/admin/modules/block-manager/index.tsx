@@ -10,14 +10,15 @@
 import { useEffect, useMemo, useState } from '@wordpress/element';
 import { useDispatch, useSelect } from '@wordpress/data';
 import {
-    Dashicon,
     Notice,
+    Panel,
     PanelBody,
     SearchControl,
     ToggleControl,
 } from '@wordpress/components';
 import apiFetch from '@wordpress/api-fetch';
 import { STORE_KEY } from '../../store';
+import { BlockIcon } from '../../components/BlockIcon';
 import type {
     ModuleExtension,
     ModulePage,
@@ -148,39 +149,44 @@ const Page: ModulePage = ({ slug }) => {
 
     return (
         <div className="orbitools-block-manager">
-            <p className="orbitools-block-manager__summary">
-                <strong>{total}</strong> blocks registered ·{' '}
-                <strong>{disabledCount}</strong> disabled
-            </p>
-            <SearchControl
-                label="Filter blocks"
-                value={search}
-                onChange={setSearch}
-                __nextHasNoMarginBottom
-            />
-            {categoryOrder.length === 0 && (
+            <div className="orbitools-block-manager__title-panel">
+                <p className="orbitools-block-manager__summary">
+                    <strong>{total}</strong> blocks registered ·{' '}
+                    <strong>{disabledCount}</strong> disabled
+                </p>
+                <SearchControl
+                    label="Filter blocks"
+                    value={search}
+                    onChange={setSearch}
+                    __nextHasNoMarginBottom
+                />
+            </div>
+            {categoryOrder.length === 0 ? (
                 <Notice status="info" isDismissible={false}>
                     No blocks match the current filter.
                 </Notice>
+            ) : (
+                <Panel className="orbitools-section-stack">
+                    {categoryOrder.map((category) => (
+                        <PanelBody
+                            key={category}
+                            title={`${CATEGORY_LABELS[category] ?? category} (${grouped[category].length})`}
+                            initialOpen
+                        >
+                            <ul className="orbitools-item-grid">
+                                {grouped[category].map((block) => (
+                                    <BlockRow
+                                        key={block.name}
+                                        block={block}
+                                        enabled={!disabled.includes(block.name)}
+                                        onChange={(next) => toggle(block.name, next)}
+                                    />
+                                ))}
+                            </ul>
+                        </PanelBody>
+                    ))}
+                </Panel>
             )}
-            {categoryOrder.map((category) => (
-                <PanelBody
-                    key={category}
-                    title={`${CATEGORY_LABELS[category] ?? category} (${grouped[category].length})`}
-                    initialOpen
-                >
-                    <div className="orbitools-block-manager__list">
-                        {grouped[category].map((block) => (
-                            <BlockRow
-                                key={block.name}
-                                block={block}
-                                enabled={!disabled.includes(block.name)}
-                                onChange={(next) => toggle(block.name, next)}
-                            />
-                        ))}
-                    </div>
-                </PanelBody>
-            ))}
         </div>
     );
 };
@@ -193,55 +199,31 @@ interface BlockRowProps {
 
 function BlockRow({ block, enabled, onChange }: BlockRowProps): JSX.Element {
     return (
-        <div className="orbitools-block-manager__row">
-            <div className="orbitools-block-manager__icon" aria-hidden="true">
-                <BlockIcon icon={block.icon} />
-            </div>
-            <div className="orbitools-block-manager__meta">
-                <div className="orbitools-block-manager__title">{block.title}</div>
-                <div className="orbitools-block-manager__name">
-                    <code>{block.name}</code>
+        <li className="orbitools-item-grid__cell">
+            <div className="orbitools-item-card">
+                <div className="orbitools-item-card__head">
+                    <span className="orbitools-item-card__icon" aria-hidden="true">
+                        <BlockIcon icon={block.icon} />
+                    </span>
+                    <h3 className="orbitools-item-card__title">{block.title}</h3>
+                    <span className="orbitools-item-card__toggle">
+                        <ToggleControl
+                            label=""
+                            checked={enabled}
+                            onChange={onChange}
+                            __nextHasNoMarginBottom
+                        />
+                    </span>
                 </div>
+                <p className="orbitools-item-card__name">
+                    <code>{block.name}</code>
+                </p>
                 {block.description !== '' && (
-                    <div className="orbitools-block-manager__desc">{block.description}</div>
+                    <p className="orbitools-item-card__description">{block.description}</p>
                 )}
             </div>
-            <div className="orbitools-block-manager__toggle">
-                <ToggleControl
-                    label={enabled ? 'Enabled' : 'Disabled'}
-                    checked={enabled}
-                    onChange={onChange}
-                    __nextHasNoMarginBottom
-                />
-            </div>
-        </div>
+        </li>
     );
-}
-
-interface BlockIconProps {
-    icon: string | null;
-}
-
-/**
- * Render whatever WP gave us as the block icon. Three shapes:
- *   - inline SVG markup ("<svg…")
- *   - dashicon slug ("format-image")
- *   - null → generic placeholder
- */
-function BlockIcon({ icon }: BlockIconProps): JSX.Element {
-    if (icon === null || icon === '') {
-        return <Dashicon icon="block-default" />;
-    }
-    if (icon.trim().startsWith('<svg')) {
-        return (
-            <span
-                className="orbitools-block-manager__svg"
-                // eslint-disable-next-line react/no-danger
-                dangerouslySetInnerHTML={{ __html: icon }}
-            />
-        );
-    }
-    return <Dashicon icon={icon as Parameters<typeof Dashicon>[0]['icon']} />;
 }
 
 const extension: ModuleExtension = { Page };

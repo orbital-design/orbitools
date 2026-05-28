@@ -193,6 +193,7 @@ final class Modules_Controller extends WP_REST_Controller
                 'category'           => $manifest->category,
                 'default_enabled'    => $manifest->default_enabled,
                 'enabled'            => $manager->is_enabled($slug),
+                'icon'               => $manifest->category === 'blocks' ? $this->resolve_block_icon($manifest->slug) : null,
                 'has_custom_page'    => false, // Phase 4 populates from discovery manifest.
                 'has_dashboard_card' => false, // Phase 4 populates from discovery manifest.
                 'requires'           => (object) $manifest->requires,
@@ -210,6 +211,7 @@ final class Modules_Controller extends WP_REST_Controller
             'category'           => 'modules',
             'default_enabled'    => false,
             'enabled'            => $manager->is_enabled($slug),
+            'icon'               => null,
             'has_custom_page'    => false,
             'has_dashboard_card' => false,
             'requires'           => (object) [],
@@ -341,5 +343,31 @@ final class Modules_Controller extends WP_REST_Controller
             $out[] = $prepared;
         }
         return $out;
+    }
+
+    /**
+     * Resolve the dashicon-or-SVG icon for a block-category module.
+     * Convention: module slug `xxx-block` ⇄ block name `orb/xxx`.
+     * Looks the block up in WP_Block_Type_Registry and returns
+     * whatever block.json gave it; null when the block isn't
+     * registered (module disabled) or has no icon.
+     */
+    private function resolve_block_icon(string $module_slug): ?string
+    {
+        // Strip the conventional `-block` suffix, then try the
+        // `orb/` and `orbital/` namespaces — both are recognised
+        // across the Orbital site fleet.
+        $stem = preg_replace('/-block$/', '', $module_slug);
+        if (!is_string($stem) || $stem === '') {
+            return null;
+        }
+        $registry = \WP_Block_Type_Registry::get_instance();
+        foreach (['orb/' . $stem, 'orbital/' . $stem] as $name) {
+            $type = $registry->get_registered($name);
+            if ($type !== null && is_string($type->icon ?? null) && $type->icon !== '') {
+                return $type->icon;
+            }
+        }
+        return null;
     }
 }

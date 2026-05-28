@@ -22,6 +22,100 @@ if (!defined('ABSPATH')) {
  */
 final class Block_Manager extends Module_Base
 {
+    /**
+     * Fallback dashicon names for core blocks whose `icon` field is
+     * set in JS (not block.json), so PHP's WP_Block_Type::$icon is
+     * null. Covers the common content/media/design/theme blocks;
+     * anything else falls through to `block-default`.
+     */
+    private const CORE_ICON_FALLBACKS = [
+        // Text
+        'core/paragraph'         => 'editor-paragraph',
+        'core/heading'           => 'heading',
+        'core/list'              => 'editor-ul',
+        'core/list-item'         => 'editor-ul',
+        'core/quote'             => 'editor-quote',
+        'core/pullquote'         => 'format-quote',
+        'core/code'              => 'editor-code',
+        'core/preformatted'      => 'editor-paragraph',
+        'core/verse'             => 'editor-paragraph',
+        'core/details'           => 'editor-justify',
+        'core/footnotes'         => 'editor-justify',
+        'core/freeform'          => 'editor-kitchensink',
+
+        // Media
+        'core/image'             => 'format-image',
+        'core/gallery'           => 'format-gallery',
+        'core/audio'             => 'format-audio',
+        'core/video'             => 'format-video',
+        'core/file'              => 'media-document',
+        'core/media-text'        => 'format-gallery',
+        'core/cover'             => 'cover-image',
+
+        // Design
+        'core/buttons'           => 'button',
+        'core/button'            => 'button',
+        'core/columns'           => 'columns',
+        'core/column'            => 'columns',
+        'core/group'             => 'category',
+        'core/row'               => 'editor-alignleft',
+        'core/stack'             => 'menu',
+        'core/separator'         => 'minus',
+        'core/spacer'            => 'image-flip-vertical',
+        'core/page-break'        => 'editor-break',
+        'core/more'              => 'editor-insertmore',
+        'core/nextpage'          => 'editor-insertmore',
+
+        // Widgets / utility
+        'core/table'             => 'editor-table',
+        'core/shortcode'         => 'shortcode',
+        'core/html'              => 'html',
+        'core/block'             => 'block-default',
+        'core/pattern'           => 'layout',
+        'core/missing'           => 'warning',
+        'core/embed'             => 'embed-generic',
+
+        // Post / site
+        'core/post-title'        => 'editor-bold',
+        'core/post-content'      => 'media-text',
+        'core/post-excerpt'      => 'editor-paragraph',
+        'core/post-date'         => 'clock',
+        'core/post-author'       => 'admin-users',
+        'core/post-featured-image' => 'format-image',
+        'core/post-comments'     => 'admin-comments',
+        'core/post-navigation-link' => 'arrow-right-alt',
+        'core/read-more'         => 'editor-paragraph',
+        'core/site-logo'         => 'format-image',
+        'core/site-title'        => 'admin-site',
+        'core/site-tagline'      => 'editor-paragraph',
+
+        // Navigation
+        'core/navigation'        => 'menu',
+        'core/navigation-link'   => 'admin-links',
+        'core/navigation-submenu' => 'admin-links',
+        'core/home-link'         => 'admin-home',
+        'core/page-list'         => 'admin-page',
+        'core/loginout'          => 'admin-users',
+
+        // Query / archives
+        'core/query'             => 'loop',
+        'core/post-template'     => 'list-view',
+        'core/post-terms'        => 'tag',
+        'core/term-description'  => 'editor-paragraph',
+        'core/archives'          => 'archive',
+        'core/calendar'          => 'calendar-alt',
+        'core/categories'        => 'category',
+        'core/tag-cloud'         => 'tag',
+        'core/latest-comments'   => 'admin-comments',
+        'core/latest-posts'      => 'admin-post',
+        'core/comments'          => 'admin-comments',
+        'core/rss'               => 'rss',
+        'core/search'            => 'search',
+        'core/social-links'      => 'share',
+        'core/social-link'       => 'share',
+        'core/template-part'     => 'layout',
+    ];
+
     public function get_slug(): string
     {
         return 'block-manager';
@@ -98,7 +192,15 @@ final class Block_Manager extends Module_Base
         $registered = \WP_Block_Type_Registry::get_instance()->get_all_registered();
         $blocks = [];
         foreach ($registered as $name => $type) {
-            $blocks[] = $this->serialise_block((string) $name, $type);
+            $name_str = (string) $name;
+            // Skip Orbital-namespaced blocks — they each have their
+            // own settings page in this same Blocks tab, so showing
+            // them here would be a second place to flip the same
+            // switch.
+            if ($this->is_orbital_block($name_str)) {
+                continue;
+            }
+            $blocks[] = $this->serialise_block($name_str, $type);
         }
         // Stable order: by category then title.
         usort($blocks, static function (array $a, array $b): int {
@@ -106,6 +208,16 @@ final class Block_Manager extends Module_Base
             return $cmp !== 0 ? $cmp : strcmp($a['title'], $b['title']);
         });
         return new \WP_REST_Response(['blocks' => $blocks]);
+    }
+
+    /**
+     * Our blocks register under `orb/` or `orbital/` — both prefixes
+     * are recognised by the theme's allow-list and by every existing
+     * site. Matching both keeps history-compatible installs covered.
+     */
+    private function is_orbital_block(string $name): bool
+    {
+        return strpos($name, 'orb/') === 0 || strpos($name, 'orbital/') === 0;
     }
 
     /**
@@ -118,22 +230,24 @@ final class Block_Manager extends Module_Base
             'title'       => is_string($type->title ?? null) && $type->title !== '' ? $type->title : $name,
             'category'    => is_string($type->category ?? null) && $type->category !== '' ? $type->category : 'uncategorized',
             'description' => is_string($type->description ?? null) ? $type->description : '',
-            'icon'        => $this->serialise_icon($type),
+            'icon'        => $this->serialise_icon($name, $type),
         ];
     }
 
     /**
-     * Return the icon as a string if WP has one in a serialisable
-     * form (dashicon slug or inline SVG). Otherwise null and the UI
-     * uses a generic placeholder.
+     * Return the icon as a string if we can — block.json's `icon`
+     * field (dashicon slug or inline SVG markup) when WP gave us
+     * one, our hardcoded fallback map for core blocks whose icons
+     * live in JS-only registration, or null for the UI to use a
+     * generic placeholder.
      */
-    private function serialise_icon(\WP_Block_Type $type): ?string
+    private function serialise_icon(string $name, \WP_Block_Type $type): ?string
     {
         $icon = $type->icon ?? null;
         if (is_string($icon) && $icon !== '') {
             return $icon;
         }
-        return null;
+        return self::CORE_ICON_FALLBACKS[$name] ?? null;
     }
 
     /**

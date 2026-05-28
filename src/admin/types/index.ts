@@ -70,6 +70,13 @@ export interface Module {
     category: ModuleCategory;
     default_enabled: boolean;
     enabled: boolean;
+    /**
+     * Dashicon slug ("format-image") or inline SVG markup
+     * ("<svg…>…</svg>"). Populated only for category='blocks'
+     * modules — the controller resolves it from the registered
+     * block's icon. Null when no icon is available.
+     */
+    icon: string | null;
     has_custom_page: boolean;
     has_dashboard_card: boolean;
     requires: Record<string, string>;

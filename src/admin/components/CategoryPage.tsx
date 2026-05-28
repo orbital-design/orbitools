@@ -21,6 +21,8 @@ import { useDispatch } from '@wordpress/data';
 import { useModules } from '../hooks/useModules';
 import { LoadingState } from './LoadingState';
 import { ModuleSettingsBody } from './SettingsPage';
+import { BlockIcon } from './BlockIcon';
+import { discovered } from '../.generated/discovered';
 import { routes } from '../lib/router';
 import { STORE_KEY } from '../store';
 import type { Module, ModuleCategory } from '../types';
@@ -134,7 +136,7 @@ export function CategoryPage({ category, selectedSlug }: CategoryPageProps): JSX
                                     {activeItem.description}
                                 </p>
                             </header>
-                            <ModuleSettingsBody slug={activeSlug} />
+                            <CategoryItemBody slug={activeSlug} />
                         </>
                     ) : (
                         <div className="orbitools-category-split__empty">
@@ -145,6 +147,20 @@ export function CategoryPage({ category, selectedSlug }: CategoryPageProps): JSX
             </div>
         </div>
     );
+}
+
+/**
+ * Render whichever body the module wants — its discovered custom
+ * Page if it ships one, the auto-rendered settings otherwise. Same
+ * shape as App.tsx's RoutedSettings; the category and standalone
+ * routes need to behave identically when a custom Page exists.
+ */
+function CategoryItemBody({ slug }: { slug: string }): JSX.Element {
+    const CustomPage = discovered[slug]?.Page;
+    if (CustomPage !== undefined) {
+        return <CustomPage slug={slug} />;
+    }
+    return <ModuleSettingsBody slug={slug} />;
 }
 
 interface SidebarRowProps {
@@ -172,7 +188,16 @@ function SidebarRow({ module: mod, active, category, onToggle }: SidebarRowProps
             />
         </span>
     );
-    const label = <span className="orbitools-sidebar-list__label">{mod.name}</span>;
+    const label = (
+        <span className="orbitools-sidebar-list__label">
+            {category === 'blocks' && (
+                <span className="orbitools-sidebar-list__icon" aria-hidden="true">
+                    <BlockIcon icon={mod.icon} />
+                </span>
+            )}
+            <span className="orbitools-sidebar-list__label-text">{mod.name}</span>
+        </span>
+    );
 
     if (!mod.enabled) {
         // Disabled rows aren't navigable — render a non-link span
