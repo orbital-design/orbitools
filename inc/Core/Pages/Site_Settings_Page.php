@@ -49,6 +49,24 @@ final class Site_Settings_Page
         // once per request at init priority 20; a no-op when the
         // two surfaces are already in sync.
         \add_action('init', [$this, 'bootstrap_site_logo_sync'], 20);
+
+        // Make sure the Customizer's Site Identity panel actually
+        // exposes the Logo control. Themes are responsible for
+        // calling add_theme_support('custom-logo') themselves;
+        // some don't, in which case the Customizer never registers
+        // the control at all and the user has nowhere to manage
+        // the logo outside our admin. Priority 99 runs after any
+        // theme-declared support so we don't trample on args
+        // (height, width, CSS classes) themes care about.
+        \add_action('after_setup_theme', [$this, 'ensure_custom_logo_support'], 99);
+    }
+
+    public function ensure_custom_logo_support(): void
+    {
+        if (\current_theme_supports('custom-logo')) {
+            return;
+        }
+        \add_theme_support('custom-logo');
     }
 
     /**
