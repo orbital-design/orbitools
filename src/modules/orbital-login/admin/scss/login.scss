@@ -1,12 +1,13 @@
 /**
  * Orbital Login — wp-login.php restyle.
  *
- * Targets the stock WP login markup (no body class changes), so it
- * works regardless of WP version. Colours come from the Orbital
- * brand palette and match the Orbital admin colour scheme module.
+ * Two-column layout: hero photo on the left, white card with the
+ * Orbital wordmark + form on the right. All colours come from the
+ * Orbital brand palette; copy + hero image are driven by module
+ * settings exposed as CSS variables on `:root` from PHP.
  *
- *   #1d303a — navy base
- *   #32a3e2 — Orbital blue (links, primary button, focus ring)
+ *   #1d303a — navy base (hero gradient, headings, labels)
+ *   #32a3e2 — Orbital blue (primary button, focus ring, links)
  *   #ffffff — card surface
  */
 
@@ -14,54 +15,129 @@ $orb-navy:        #1d303a;
 $orb-navy-dark:   #111c22;
 $orb-blue:        #32a3e2;
 $orb-blue-hover:  #1f98db;
-$orb-text-muted:  #bbc1c4;
+$orb-text-muted:  #6b7a85;
+$orb-border:      #d3dade;
 $orb-card-bg:     #ffffff;
 
-// Orbital logo, embedded so the CSS file is self-contained. Fill is
-// forced to white via the encoded fill="%23fff".
-$orb-logo: "data:image/svg+xml;utf8,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20322%20322'%20fill='none'%3E%3Cpath%20fill='%23fff'%20fill-rule='evenodd'%20d='M71.096%2027.45A160.999%20160.999%200%200%201%20160.369.013%20159.624%20159.624%200%200%201%20275.03%2046.53a159.612%20159.612%200%200%201%2046.964%20114.477%20160.99%20160.99%200%200%201-99.242%20148.678A160.999%20160.999%200%200%201%203.171%20192.798%20160.99%20160.99%200%200%201%2071.096%2027.45Zm45.655%20198.564a78.138%2078.138%200%200%200%2043.409%2013.167%2078.22%2078.22%200%200%200%2078.134-78.132%2078.133%2078.133%200%201%200-121.543%2064.965Zm149.52-151.706c0%2012.54-10.166%2022.705-22.706%2022.705-12.539%200-22.705-10.166-22.705-22.705%200-12.54%2010.166-22.705%2022.705-22.705%2012.54%200%2022.706%2010.165%2022.706%2022.705Z'%20clip-rule='evenodd'/%3E%3C/svg%3E";
+// Width of the right-hand form card. The hero takes the rest.
+$card-width: 480px;
+
+// Breakpoint below which we collapse to one column.
+$bp-single-col: 880px;
+
+// Defaults for the CSS variables PHP sets per-site. Keeps the page
+// usable even if PHP forgets to emit them.
+:root {
+    --orb-login-wordmark: none;
+    --orb-login-hero: linear-gradient(135deg, #{$orb-navy} 0%, #{$orb-blue} 100%);
+}
+
+// -----------------------------------------------------------------
+// Layout
+// -----------------------------------------------------------------
+
+html, body.login {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+}
 
 body.login {
-    background: $orb-navy;
-    color: #fff;
+    background: $orb-card-bg;
+    color: $orb-navy;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) $card-width;
+    min-height: 100vh;
 }
 
+// Hero column. background-image is a CSS var so PHP can swap it to
+// whatever the user uploaded without rebuilding the stylesheet.
+body.login::before {
+    content: '';
+    grid-column: 1;
+    background-color: $orb-navy;
+    background-image: var(--orb-login-hero);
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+// Right column: WP's standard #login wrapper, repurposed as the
+// form card.
 #login {
-    padding: 8% 0 0;
-    width: 360px;
+    grid-column: 2;
+    width: 100%;
+    max-width: none;
+    padding: 56px 48px;
+    box-sizing: border-box;
+    align-self: center;
 }
 
-// Logo block — swap WP mark for the Orbital logo.
+@media (max-width: $bp-single-col) {
+    body.login {
+        grid-template-columns: 1fr;
+    }
+    body.login::before {
+        display: none;
+    }
+    #login {
+        grid-column: 1;
+        padding: 40px 24px;
+    }
+}
+
+// -----------------------------------------------------------------
+// Wordmark (h1 logo)
+// -----------------------------------------------------------------
+
 #login h1 a,
 .login h1 a {
-    background-image: url($orb-logo);
+    background-image: var(--orb-login-wordmark);
     background-size: contain;
-    background-position: center center;
+    background-position: left center;
     background-repeat: no-repeat;
-    width: 96px;
-    height: 96px;
-    margin: 0 auto 24px;
+    width: 140px;
+    height: 38px;
+    margin: 0 0 32px;
     text-indent: -9999px;
     outline: none;
 }
 
-// White card containing the form.
+// -----------------------------------------------------------------
+// Headline (h2 injected via login_message)
+// -----------------------------------------------------------------
+
+.orbital-login__headline {
+    color: $orb-navy;
+    font-size: 24px;
+    font-weight: 700;
+    line-height: 1.25;
+    margin: 0 0 24px;
+}
+
+// -----------------------------------------------------------------
+// Form card
+// -----------------------------------------------------------------
+
 #loginform,
 #registerform,
 #lostpasswordform {
-    background: $orb-card-bg;
+    background: transparent;
     border: none;
-    border-radius: 8px;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
-    padding: 32px 28px 24px;
-    margin-top: 16px;
+    box-shadow: none;
+    padding: 0;
+    margin: 0;
 }
 
-// Field labels + helper text.
-.login form label,
-.login .forgetmenot label {
+// Show form labels (WP visually hides them by default).
+.login form label[for="user_login"],
+.login form label[for="user_pass"],
+.login form .user-pass-wrap label[for="user_pass"] {
     color: $orb-navy;
+    display: block;
+    font-size: 13px;
     font-weight: 500;
+    margin-bottom: 6px;
 }
 
 // Inputs.
@@ -70,99 +146,163 @@ body.login {
 .login input[type="password"],
 .login input[type="email"] {
     background: #f7f9fa;
-    border: 1px solid #d3dade;
-    border-radius: 4px;
+    border: 1px solid $orb-border;
+    border-radius: 6px;
     color: $orb-navy;
-    font-size: 16px;
-    padding: 8px 10px;
+    font-size: 15px;
+    line-height: 1.4;
+    padding: 10px 12px;
+    width: 100%;
+    box-sizing: border-box;
     box-shadow: none;
     transition: border-color 120ms ease, box-shadow 120ms ease;
 
+    &::placeholder {
+        color: $orb-text-muted;
+    }
+
     &:focus {
         border-color: $orb-blue;
-        box-shadow: 0 0 0 2px rgba(50, 163, 226, 0.25);
+        box-shadow: 0 0 0 3px rgba(50, 163, 226, 0.18);
         outline: none;
     }
 }
 
-// Primary action button.
-.wp-core-ui .button-primary,
-.login .button-primary {
-    background: $orb-blue;
-    border-color: $orb-blue;
-    color: #fff;
-    text-shadow: none;
+// Password wrapper — WP nests the input + show/hide button in
+// .wp-pwd. Keep them stacked horizontally, eye on the right.
+.login .user-pass-wrap {
+    margin-bottom: 8px;
+}
+
+.login .wp-pwd {
+    position: relative;
+}
+
+.login .wp-pwd .button.wp-hide-pw {
+    background: none;
+    border: none;
+    color: $orb-text-muted;
+    padding: 0;
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    height: 32px;
+    width: 32px;
+    min-width: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     box-shadow: none;
-    border-radius: 4px;
-    font-weight: 600;
-    height: auto;
-    padding: 8px 16px;
-    transition: background-color 120ms ease, border-color 120ms ease;
 
     &:hover,
     &:focus {
-        background: $orb-blue-hover;
-        border-color: $orb-blue-hover;
-        color: #fff;
-        box-shadow: 0 0 0 2px rgba(50, 163, 226, 0.35);
+        color: $orb-blue;
+        background: none;
+        box-shadow: none;
     }
 
-    &:active {
-        background: $orb-blue-hover;
-        border-color: $orb-blue-hover;
+    &:focus-visible {
+        outline: 2px solid $orb-blue;
+        outline-offset: 2px;
     }
 }
 
-// Nav links beneath the form ("Lost your password?", "← Back…").
-.login #nav,
-.login #backtoblog {
-    text-align: center;
+// -----------------------------------------------------------------
+// Remember Me as a toggle switch, with Forgot Password inline
+// -----------------------------------------------------------------
+
+.login .forgetmenot {
+    align-items: center;
+    display: flex;
+    justify-content: space-between;
+    margin: 16px 0 20px;
+    font-size: 13px;
+    color: $orb-navy;
+
+    label {
+        align-items: center;
+        cursor: pointer;
+        display: inline-flex;
+        gap: 10px;
+        font-size: 13px;
+    }
+
+    // Hide the native checkbox; restyle via the label.
+    input[type="checkbox"] {
+        appearance: none;
+        background: #e3e8eb;
+        border: none;
+        border-radius: 999px;
+        cursor: pointer;
+        flex-shrink: 0;
+        height: 20px;
+        margin: 0;
+        position: relative;
+        transition: background 120ms ease;
+        width: 36px;
+
+        &::before {
+            background: #fff;
+            border-radius: 50%;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+            content: '';
+            height: 16px;
+            left: 2px;
+            position: absolute;
+            top: 2px;
+            transition: transform 120ms ease;
+            width: 16px;
+        }
+
+        &:checked {
+            background: $orb-blue;
+        }
+
+        &:checked::before {
+            transform: translateX(16px);
+        }
+
+        &:focus-visible {
+            outline: 2px solid $orb-blue;
+            outline-offset: 2px;
+        }
+    }
+}
+
+// "Lost your password?" — WP renders this as a separate #nav block
+// below the form. We move it visually into the .forgetmenot row
+// using a negative top margin so it sits to the right of "Remember
+// me" without needing JS to reparent the element.
+.login #nav {
+    color: $orb-text-muted;
+    font-size: 13px;
+    margin: -52px 0 0;
     padding: 0;
-    margin: 16px 0 0;
+    text-align: right;
 
     a {
-        color: rgba(255, 255, 255, 0.75);
+        color: $orb-blue;
         text-shadow: none;
 
         &:hover,
         &:focus {
-            color: #fff;
+            color: $orb-blue-hover;
             text-decoration: underline;
         }
     }
 }
 
-// Language switcher footer.
-.login .language-switcher {
+// "← Go to {site}" sits below #nav. Re-floor its margin since #nav
+// is shifted upward.
+.login #backtoblog {
     margin-top: 24px;
-
-    select {
-        background: rgba(255, 255, 255, 0.08);
-        color: #fff;
-        border-color: rgba(255, 255, 255, 0.15);
-    }
-}
-
-// Messages (success, error, info) — keep WP semantics, brand the
-// outline colours.
-.login .message,
-.login .notice {
-    border-left-color: $orb-blue;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
-}
-
-// "Remember me" checkbox.
-.login .forgetmenot {
-    color: $orb-navy;
-}
-
-// Privacy policy link (WP 4.9.6+).
-.login .privacy-policy-page-link {
     text-align: center;
-    margin-top: 24px;
+    padding: 0;
 
     a {
-        color: rgba(255, 255, 255, 0.6);
+        color: $orb-text-muted;
+        text-shadow: none;
 
         &:hover,
         &:focus {
@@ -171,19 +311,182 @@ body.login {
     }
 }
 
-// "Welcome back, {name}" banner injected by the remember-last-user
-// feature. Sits above the (password-only) login form.
-.orbital-login__welcome {
-    margin: 0 0 16px;
-    text-align: center;
+// -----------------------------------------------------------------
+// Primary button
+// -----------------------------------------------------------------
+
+.wp-core-ui .button-primary,
+.login .button-primary {
+    background: $orb-blue;
+    border: none;
+    border-radius: 6px;
+    box-shadow: none;
     color: #fff;
+    font-size: 15px;
+    font-weight: 600;
+    height: auto;
+    margin: 0;
+    padding: 12px 16px;
+    text-shadow: none;
+    text-transform: none;
+    transition: background-color 120ms ease, box-shadow 120ms ease;
+    width: 100%;
+
+    &:hover,
+    &:focus {
+        background: $orb-blue-hover;
+        box-shadow: 0 4px 12px rgba(50, 163, 226, 0.25);
+        color: #fff;
+        outline: none;
+    }
+
+    &:active {
+        background: $orb-blue-hover;
+    }
+
+    &:focus-visible {
+        outline: 2px solid $orb-blue;
+        outline-offset: 2px;
+    }
+}
+
+// Submit row wrapper — kill WP's float layout.
+.login form .submit {
+    margin: 0;
+    padding: 0;
+}
+
+// -----------------------------------------------------------------
+// Messages (errors, notices)
+// -----------------------------------------------------------------
+
+.login .message,
+.login .notice,
+.login #login_error {
+    background: #fff;
+    border-left: 4px solid $orb-blue;
+    border-radius: 6px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+    color: $orb-navy;
+    margin: 0 0 16px;
+    padding: 12px 16px;
+}
+
+.login #login_error {
+    border-left-color: #d63638;
+}
+
+// -----------------------------------------------------------------
+// Language switcher / privacy link
+// -----------------------------------------------------------------
+
+.login .language-switcher {
+    margin-top: 32px;
+
+    select {
+        background: #fff;
+        color: $orb-navy;
+        border: 1px solid $orb-border;
+        border-radius: 6px;
+    }
+}
+
+.login .privacy-policy-page-link {
+    margin-top: 16px;
+    text-align: center;
+
+    a {
+        color: $orb-text-muted;
+
+        &:hover,
+        &:focus {
+            color: $orb-blue;
+        }
+    }
+}
+
+// -----------------------------------------------------------------
+// Hero photo credit (absolute over the left column)
+// -----------------------------------------------------------------
+
+.orbital-login__hero-credit {
+    color: rgba(255, 255, 255, 0.75);
+    font-size: 11px;
+    left: 24px;
+    letter-spacing: 0.02em;
+    position: fixed;
+    bottom: 20px;
+    z-index: 1;
+
+    a {
+        color: rgba(255, 255, 255, 0.85);
+        text-decoration: underline;
+        text-decoration-color: rgba(255, 255, 255, 0.4);
+
+        &:hover,
+        &:focus {
+            color: #fff;
+            text-decoration-color: #fff;
+        }
+    }
+
+    @media (max-width: $bp-single-col) {
+        display: none;
+    }
+}
+
+// -----------------------------------------------------------------
+// Form card footer (absolute over the right column)
+// -----------------------------------------------------------------
+
+.orbital-login__card-footer {
+    align-items: center;
+    bottom: 20px;
+    box-sizing: border-box;
+    color: $orb-text-muted;
+    display: flex;
+    font-size: 12px;
+    justify-content: space-between;
+    padding: 0 48px;
+    position: fixed;
+    right: 0;
+    width: $card-width;
+    z-index: 1;
+
+    @media (max-width: $bp-single-col) {
+        padding: 0 24px;
+        position: static;
+        width: auto;
+        margin-top: 32px;
+    }
+}
+
+.orbital-login__card-footer-left {
+    color: $orb-text-muted;
+}
+
+.orbital-login__card-footer-right {
+    color: $orb-text-muted;
+}
+
+// -----------------------------------------------------------------
+// "Welcome back, {name}" banner (remember-last-user feature)
+// -----------------------------------------------------------------
+
+.orbital-login__welcome {
+    background: #f7f9fa;
+    border: 1px solid $orb-border;
+    border-radius: 6px;
+    margin: 0 0 16px;
+    padding: 14px 16px;
+    text-align: center;
 }
 
 .orbital-login__welcome-greeting {
-    margin: 0;
-    font-size: 18px;
+    color: $orb-navy;
+    font-size: 15px;
     line-height: 1.4;
-    color: #fff;
+    margin: 0;
 
     strong {
         color: $orb-blue;
@@ -194,11 +497,11 @@ body.login {
 .orbital-login__not-you {
     background: none;
     border: 0;
-    color: rgba(255, 255, 255, 0.6);
+    color: $orb-text-muted;
     cursor: pointer;
-    font-size: 13px;
-    margin-top: 8px;
-    padding: 4px 8px;
+    font-size: 12px;
+    margin-top: 4px;
+    padding: 2px 6px;
     text-decoration: underline;
 
     &:hover,
