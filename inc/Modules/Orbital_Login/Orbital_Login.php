@@ -29,7 +29,6 @@ final class Orbital_Login extends Module_Base
     // to vary one of these per-site, add a setting instead.
     private const LOGO_URL           = 'https://orbital.co.uk';
     private const LOGO_TITLE         = 'Orbital';
-    private const HEADLINE           = 'Nice to see you again';
     private const FOOTER_LEFT_LABEL  = 'Built by Orbital';
     private const FOOTER_LEFT_URL    = 'https://orbital.co.uk';
     private const FOOTER_RIGHT_LABEL = 'Powered by WordPress';
@@ -72,7 +71,6 @@ final class Orbital_Login extends Module_Base
         \add_action('login_enqueue_scripts', [$this, 'enqueue_login_styles'], 100);
         // Brand chrome — fixed across all Orbital sites.
         \add_action('login_head', [$this, 'render_inline_vars']);
-        \add_filter('login_message', [$this, 'prepend_headline']);
         \add_action('login_footer', [$this, 'render_static_chrome']);
         \add_filter('login_headerurl', [$this, 'filter_login_headerurl']);
         \add_filter('login_headertext', [$this, 'filter_login_headertext']);
@@ -129,21 +127,13 @@ final class Orbital_Login extends Module_Base
     }
 
     /**
-     * Prepend the brand headline above whatever login_message would
-     * otherwise render (errors, action notices, etc.). The headline
-     * is an h2 so it complements the existing h1 logo without
-     * displacing assistive-tech landmarks.
-     */
-    public function prepend_headline(string $message): string
-    {
-        return '<h2 class="orbital-login__headline">' . \esc_html(self::HEADLINE) . '</h2>' . $message;
-    }
-
-    /**
      * Render the form-card footer (two attribution links pinned to
-     * the bottom of the right column). Done via login_footer because
-     * the element sits outside #login so it can hug the bottom edge
-     * of the card without participating in #login's flex layout.
+     * the bottom of the right column) and a tiny DOM tweak that
+     * reparents the "Lost your password?" link into the Remember-Me
+     * row so flex gap spaces them as one inline group.
+     *
+     * Both bits live on login_footer because the form has to be in
+     * the DOM by then.
      */
     public function render_static_chrome(): void
     {
@@ -151,6 +141,21 @@ final class Orbital_Login extends Module_Base
         echo '<a class="orbital-login__card-footer-left" href="' . \esc_url(self::FOOTER_LEFT_URL) . '" target="_blank" rel="noopener noreferrer">' . \esc_html(self::FOOTER_LEFT_LABEL) . '</a>';
         echo '<a class="orbital-login__card-footer-right" href="' . \esc_url(self::FOOTER_RIGHT_URL) . '" target="_blank" rel="noopener noreferrer">' . \esc_html(self::FOOTER_RIGHT_LABEL) . '</a>';
         echo "</div>\n";
+
+        // Move the lost-password link inline with the Remember-Me
+        // row. CSS hides the empty #nav `<p>` left behind.
+        ?>
+<script>
+(function () {
+    var forgetmenot = document.querySelector('.login .forgetmenot');
+    var nav         = document.getElementById('nav');
+    var navLink     = nav ? nav.querySelector('a') : null;
+    if (forgetmenot && navLink) {
+        forgetmenot.appendChild(navLink);
+    }
+}());
+</script>
+        <?php
     }
 
     public function filter_login_headerurl(): string
@@ -247,9 +252,16 @@ final class Orbital_Login extends Module_Base
         $first_name = \trim((string) \get_user_meta($user->ID, 'first_name', true));
         $greeting   = $first_name !== '' ? $first_name : $display;
 
+        // 2× the rendered size for HiDPI. Routes through
+        // pre_get_avatar_data so the User_Avatars module (if
+        // enabled) returns the user's local upload; otherwise
+        // Gravatar / mystery-person.
+        $avatar_url = \get_avatar_url($user->ID, ['size' => 112]);
+
         $payload = [
             'login'   => $user->user_login,
             'name'    => $greeting,
+            'avatar'  => is_string($avatar_url) ? $avatar_url : '',
             'cookie'  => $cookie_name,
             'path'    => \SITECOOKIEPATH,
             'domain'  => \COOKIE_DOMAIN,
@@ -278,6 +290,17 @@ final class Orbital_Login extends Module_Base
     // Prepend the welcome banner.
     var banner = document.createElement('div');
     banner.className = 'orbital-login__welcome';
+
+    if (data.avatar) {
+        var avatar = document.createElement('img');
+        avatar.className = 'orbital-login__welcome-avatar';
+        avatar.src = data.avatar;
+        avatar.alt = '';
+        avatar.width = 56;
+        avatar.height = 56;
+        banner.appendChild(avatar);
+    }
+
     var hi = document.createElement('p');
     hi.className = 'orbital-login__welcome-greeting';
     hi.appendChild(document.createTextNode('Welcome back, '));

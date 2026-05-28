@@ -174,14 +174,10 @@ body.login::before {
     flex-direction: column;
 }
 
-// Notices float above the logo. WP renders them between the
-// headline and the form by default; negative order pops them to
-// the top of the card without restructuring the DOM.
-#login_error,
-.login .message,
-.login .notice {
-    order: -1;
-}
+// Notices stay in their natural DOM position — WP renders them
+// between the wordmark and the form, which puts them inside the
+// auto-margin-centred group along with the rest of the form
+// chrome (rather than floating alone at the top of the card).
 
 // Auto-margin pair that vertically centres everything between
 // the (notice) top edge of the card and the very last child
@@ -213,29 +209,38 @@ body.login::before {
 // Wordmark (h1 logo)
 // -----------------------------------------------------------------
 
-#login h1 a,
-.login h1 a {
-    background-image: var(--orb-login-wordmark);
-    background-size: contain;
-    background-position: left center;
-    background-repeat: no-repeat;
-    width: 140px;
-    height: 38px;
-    margin: 0 0 32px;
-    text-indent: -9999px;
-    outline: none;
+#login h1,
+.login h1 {
+    text-align: center;
 }
 
-// -----------------------------------------------------------------
-// Headline (h2 injected via login_message)
-// -----------------------------------------------------------------
-
-.orbital-login__headline {
-    color: $orb-navy;
-    font-size: 24px;
-    font-weight: 700;
-    line-height: 1.25;
-    margin: 0 0 24px;
+// Wordmark is drawn as a CSS mask rather than a background-image
+// so its fill colour comes from `background-color` — the SVG's
+// own `fill="#1D303A"` becomes irrelevant. Default to the Orbital
+// blue (matches the primary button); override
+// `--orb-login-wordmark-color` to re-theme.
+#login h1 a,
+.login h1 a {
+    background-color: var(--orb-login-wordmark-color, #{$orb-blue});
+    // Force alpha masking — `match-source` defaults to luminance
+    // for SVGs in some engines, which would hide the dark-fill
+    // wordmark entirely.
+    mask-image: var(--orb-login-wordmark);
+    mask-mode: alpha;
+    mask-size: contain;
+    mask-position: center;
+    mask-repeat: no-repeat;
+    -webkit-mask-image: var(--orb-login-wordmark);
+    -webkit-mask-size: contain;
+    -webkit-mask-position: center;
+    -webkit-mask-repeat: no-repeat;
+    // Preserve the wordmark's native 324:88 aspect ratio.
+    width: 260px;
+    height: 71px;
+    display: block;
+    margin: 0 auto 40px;
+    text-indent: -9999px;
+    outline: none;
 }
 
 // -----------------------------------------------------------------
@@ -441,15 +446,31 @@ body.login::before {
 .login .forgetmenot {
     align-items: center;
     display: flex;
-    justify-content: space-between;
+    justify-content: flex-start;
+    gap: 16px;
     margin: 0 0 20px;
     font-size: 13px;
     color: $orb-navy;
+
+    // "Lost your password?" link, reparented into this row by
+    // login_footer JS. Stays left-aligned next to the toggle with
+    // the flex gap providing the spacing.
+    a {
+        color: $orb-blue;
+        text-decoration: none;
+
+        &:hover,
+        &:focus {
+            color: $orb-blue-hover;
+            text-decoration: underline;
+        }
+    }
 
     label {
         align-items: center;
         cursor: pointer;
         display: inline-flex;
+        flex: 1;
         gap: 10px;
         font-size: 13px;
     }
@@ -496,31 +517,15 @@ body.login::before {
     }
 }
 
-// "Lost your password?" — WP renders this as a separate #nav block
-// below the form. We move it visually into the .forgetmenot row
-// using a negative top margin so it sits to the right of "Remember
-// me" without needing JS to reparent the element.
+// `#nav` is the WP wrapper that originally held the "Lost your
+// password?" link; we move the link into the .forgetmenot row via
+// JS (see render_dom_tweaks in PHP), so the empty `<p>` left
+// behind gets hidden.
 .login #nav {
-    color: $orb-text-muted;
-    font-size: 13px;
-    margin: -52px 0 0;
-    padding: 0;
-    text-align: right;
-
-    a {
-        color: $orb-blue;
-        text-shadow: none;
-
-        &:hover,
-        &:focus {
-            color: $orb-blue-hover;
-            text-decoration: underline;
-        }
-    }
+    display: none;
 }
 
-// "← Go to {site}" sits below #nav. Re-floor its margin since #nav
-// is shifted upward.
+// "← Go to {site}" link.
 .login #backtoblog {
     margin-top: 24px;
     text-align: center;
@@ -589,16 +594,19 @@ body.login::before {
 .login .message,
 .login .notice,
 .login #login_error {
-    background: #fff;
-    border-left: 4px solid $orb-blue;
-    border-radius: 6px;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+    background: #f7f9fa;
+    border-left: 3px solid $orb-blue;
+    border-radius: 4px;
+    box-shadow: none;
     color: $orb-navy;
+    font-size: 13px;
+    line-height: 1.45;
     margin: 0 0 16px;
-    padding: 12px 16px;
+    padding: 10px 14px;
 }
 
 .login #login_error {
+    background: #fef0f0;
     border-left-color: #d63638;
 }
 
@@ -698,12 +706,24 @@ body.login::before {
 // -----------------------------------------------------------------
 
 .orbital-login__welcome {
+    align-items: center;
     background: #f7f9fa;
     border: 1px solid $orb-border;
     border-radius: 6px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
     margin: 0 0 16px;
-    padding: 14px 16px;
+    padding: 16px;
     text-align: center;
+}
+
+.orbital-login__welcome-avatar {
+    border-radius: 50%;
+    display: block;
+    height: 56px;
+    object-fit: cover;
+    width: 56px;
 }
 
 .orbital-login__welcome-greeting {

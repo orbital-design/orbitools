@@ -2,7 +2,7 @@
   "$schema": "https://orbitools/schemas/module.v1.json",
   "slug": "user-avatars",
   "name": "User Avatars",
-  "description": "Local avatar uploads and Gravatar management for WordPress users.",
+  "description": "Local avatar uploads (via Media Library) and Gravatar management. The picker itself lives on Users → Profile / Edit User, not in this admin.",
   "version": "1.0.0",
   "category": "modules",
   "class": "\\Orbitools\\Modules\\User_Avatars\\User_Avatars",
@@ -16,37 +16,15 @@
       "id": "local_avatars_enabled",
       "type": "toggle",
       "label": "Enable local avatars",
-      "description": "Allow users to upload local avatar images instead of using Gravatar.",
+      "description": "Adds a Media Library avatar picker to each user's profile page. A saved local avatar overrides Gravatar.",
       "default": true
     },
     {
       "id": "disable_gravatar",
       "type": "toggle",
       "label": "Disable Gravatar",
-      "description": "Disable Gravatar integration completely. When enabled, all Gravatar functionality will be removed.",
+      "description": "Replace any avatar URL that would otherwise hit gravatar.com with a blank silhouette. Use on sites that don't want to leak hashed user emails to Automattic.",
       "default": false
-    },
-    {
-      "id": "allowed_filetypes",
-      "type": "checkbox-group",
-      "label": "Allowed file types",
-      "description": "Image file types that can be uploaded for local avatars.",
-      "default": ["jpg|jpeg|jpe", "gif", "png"],
-      "options": [
-        { "value": "jpg|jpeg|jpe", "label": "JPG / JPEG" },
-        { "value": "gif",          "label": "GIF" },
-        { "value": "png",          "label": "PNG" }
-      ]
-    },
-    {
-      "id": "max_file_size",
-      "type": "number",
-      "label": "Max file size (KB)",
-      "description": "Maximum upload size for avatars in KB. Recommended: 2048 KB (2 MB).",
-      "default": 2048,
-      "min": 100,
-      "max": 10240,
-      "step": 1
     }
   ]
 }
