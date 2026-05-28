@@ -3,6 +3,7 @@
 namespace Orbitools\Core;
 
 use Orbitools\Core\Admin\React_Admin;
+use Orbitools\Core\Blocks\Block_Asset_Filter;
 use Orbitools\Core\Pages\Site_Settings_Page;
 use Orbitools\Core\Rest\Rest_Server;
 use Orbitools\Core\Updater\Updater;
@@ -24,6 +25,7 @@ class Loader
     private Updater $updater;
     private Rest_Server $rest_server;
     private Site_Settings_Page $site_settings_page;
+    private Block_Asset_Filter $block_asset_filter;
 
     public function init(): void
     {
@@ -43,6 +45,11 @@ class Loader
         // so the React admin discovers it through the same filter
         // themes use to register their own pages.
         $this->site_settings_page = new Site_Settings_Page();
+
+        // Honour per-block disable-asset toggles surfaced via the
+        // module settings. Hooks block_type_metadata to strip the
+        // matching keys from block.json before WP registers them.
+        $this->block_asset_filter = new Block_Asset_Filter();
 
         // Bootstrap the v3 REST API. The instance registers its own
         // routes on rest_api_init; Loader just keeps it alive.

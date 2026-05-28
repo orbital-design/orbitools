@@ -141,6 +141,7 @@ final class React_Admin
                 'position'        => $page->position,
                 'sections'        => $page->sections,
                 'settings_schema' => $page->fields,
+                'section_layout'  => $page->section_layout,
             ];
         }
         \usort($payload, static function (array $a, array $b): int {

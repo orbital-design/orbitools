@@ -53,6 +53,15 @@ export interface SectionDescriptor {
     description?: string;
 }
 
+/**
+ * Layout the React admin uses when a settings page has 2+ sections.
+ *   - 'sidebar' (default) — vertical tab list on the left, active
+ *     section's fields on the right.
+ *   - 'stacked' — each section as its own collapsible card.
+ * Single-section pages ignore this and render flat.
+ */
+export type SectionLayout = 'sidebar' | 'stacked';
+
 export interface Module {
     slug: string;
     name: string;
@@ -66,6 +75,7 @@ export interface Module {
     requires: Record<string, string>;
     sections: SectionDescriptor[];
     settings_schema: FieldSchema[];
+    section_layout: SectionLayout;
 }
 
 /**
@@ -119,4 +129,5 @@ export interface ThemePageInfo {
     position: number;
     sections: SectionDescriptor[];
     settings_schema: FieldSchema[];
+    section_layout: SectionLayout;
 }
