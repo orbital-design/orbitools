@@ -2,122 +2,22 @@
   "$schema": "https://orbitools/schemas/module.v1.json",
   "slug": "orbital-login",
   "name": "Orbital Login",
-  "description": "Restyle the wp-login.php screen with the Orbital brand — two-column layout, hero image on the left, white card with the form on the right.",
+  "description": "Restyle wp-login.php with the Orbital brand. The visual treatment is fixed so every Orbital site looks the same; only behavioural shortcuts are configurable.",
   "version": "1.0.0",
   "category": "modules",
   "class": "\\Orbitools\\Modules\\Orbital_Login\\Orbital_Login",
   "default_enabled": false,
-  "section_layout": "stacked",
   "requires": {
     "php": ">=7.4",
     "wp": ">=5.0"
   },
-  "sections": [
-    {
-      "id": "branding",
-      "title": "Branding",
-      "description": "Where the logo links and what title it carries."
-    },
-    {
-      "id": "hero",
-      "title": "Hero image",
-      "description": "The big photo on the left half of the screen."
-    },
-    {
-      "id": "form",
-      "title": "Form copy",
-      "description": "Headline text above the login fields."
-    },
-    {
-      "id": "footer",
-      "title": "Footer",
-      "description": "Two slots at the bottom of the form card."
-    },
-    {
-      "id": "behaviour",
-      "title": "Behaviour",
-      "description": "Optional UX shortcuts."
-    }
-  ],
   "settings": [
-    {
-      "id": "logo_url",
-      "type": "text",
-      "label": "Logo link URL",
-      "description": "Where the login logo links to. Leave blank to keep the WordPress default (wordpress.org).",
-      "default": "https://orbital.co.uk",
-      "placeholder": "https://orbital.co.uk",
-      "section": "branding"
-    },
-    {
-      "id": "logo_title",
-      "type": "text",
-      "label": "Logo title attribute",
-      "description": "Title text on the login logo link. Leave blank to keep the WordPress default (\"Powered by WordPress\").",
-      "default": "Orbital",
-      "placeholder": "Orbital",
-      "section": "branding"
-    },
-    {
-      "id": "hero_image",
-      "type": "media",
-      "label": "Hero image",
-      "description": "Background image for the left half of the login screen. Leave blank to use a brand gradient.",
-      "default": 0,
-      "section": "hero"
-    },
-    {
-      "id": "hero_credit_text",
-      "type": "text",
-      "label": "Photo credit text",
-      "description": "Shown at the bottom-left of the hero. Leave blank to hide.",
-      "default": "",
-      "placeholder": "Photo by …",
-      "section": "hero"
-    },
-    {
-      "id": "hero_credit_url",
-      "type": "text",
-      "label": "Photo credit link",
-      "description": "If both text and link are set, the credit becomes a link. Leave blank for plain text.",
-      "default": "",
-      "placeholder": "https://…",
-      "section": "hero"
-    },
-    {
-      "id": "headline",
-      "type": "text",
-      "label": "Headline",
-      "description": "Greeting shown above the login form. Leave blank to hide.",
-      "default": "Nice to see you again",
-      "placeholder": "Nice to see you again",
-      "section": "form"
-    },
-    {
-      "id": "footer_left",
-      "type": "text",
-      "label": "Footer left text",
-      "description": "Bottom-left corner of the form card. Plain text only.",
-      "default": "",
-      "placeholder": "@orbital",
-      "section": "footer"
-    },
-    {
-      "id": "footer_right",
-      "type": "text",
-      "label": "Footer right text",
-      "description": "Bottom-right corner of the form card. Plain text only.",
-      "default": "© Orbital",
-      "placeholder": "© Orbital",
-      "section": "footer"
-    },
     {
       "id": "remember_last_user",
       "type": "toggle",
       "label": "Remember the last user on this device",
       "description": "After a successful login, store the username in a per-device cookie (30 days). On the next visit to wp-login.php, greet the user by name, hide the username field, and ask only for the password. Tradeoff: anyone with access to the browser learns a valid username. A 'Not you?' link clears the cookie. Password is always required — this is purely a UX shortcut.",
-      "default": false,
-      "section": "behaviour"
+      "default": false
     }
   ]
 }
