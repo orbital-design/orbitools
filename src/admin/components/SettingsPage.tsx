@@ -125,6 +125,7 @@ export function ModuleSettingsBody({ slug }: SettingsPageProps): JSX.Element {
             sections={module.sections}
             settings={settings ?? {}}
             onChange={(key, value) => updateSetting(slug, key, value)}
+            sectionLayout={module.section_layout}
         />
     );
 }

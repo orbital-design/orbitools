@@ -560,6 +560,63 @@
     --orbitools-sidebar-width: 260px;
 }
 
+/* ---------- Multi-section settings: stacked collapsible cards ---------- */
+//
+// Opt-in via `"section_layout": "stacked"` on the module manifest
+// or theme page. Each section renders as its own card stacked on
+// the gray admin background, RunCache-style — not collapsible
+// regions within a shared white container.
+//
+// When the stack is rendered inside CategoryPage's content pane
+// (which is normally a white bordered card), `:has()` drops that
+// outer chrome so the inner cards aren't sitting on white.
+
+// When the right-pane content uses the stacked layout, drop the
+// pane's own white chrome so each section card reads as its own
+// container. The item's name + description header gets its OWN
+// card so it doesn't sit naked on the gray; it's spaced apart
+// from the first accordion below.
+.orbitools-category-split__content:has(.orbitools-section-stack) {
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+    padding: 0;
+
+    .orbitools-category-split__content-header {
+        background: #fff;
+        border: 1px solid #dcdcde;
+        border-radius: 6px;
+        padding: 16px 20px;
+        margin-bottom: 16px;
+        border-bottom: 1px solid #dcdcde;
+    }
+}
+
+.orbitools-section-stack {
+    background: transparent;
+    border: 0;
+
+    // Each PanelBody is its own self-contained card.
+    .components-panel__body {
+        background: #fff;
+        border: 1px solid #dcdcde;
+        border-radius: 6px;
+        margin-bottom: 16px;
+        overflow: hidden;
+
+        &:last-child {
+            margin-bottom: 0;
+        }
+    }
+
+    &__description {
+        margin: 0 0 16px;
+        font-size: 13px;
+        color: #646970;
+        line-height: 1.5;
+    }
+}
+
 .orbitools-section-split {
     display: grid;
     grid-template-columns: var(--orbitools-sidebar-width) 1fr;
@@ -635,7 +692,7 @@
     }
 
     &__content-header {
-        margin: 0 0 20px;
+        margin: 0;
         padding-bottom: 16px;
         border-bottom: 1px solid #f0f0f1;
     }

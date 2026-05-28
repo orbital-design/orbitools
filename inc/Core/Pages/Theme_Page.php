@@ -25,6 +25,7 @@ final class Theme_Page
     public string $description;
     public string $icon;
     public int $position;
+    public string $section_layout;
 
     /** @var array<int,array<string,mixed>> */
     public array $sections;
@@ -37,13 +38,27 @@ final class Theme_Page
      */
     private function __construct(array $config)
     {
-        $this->slug        = (string) $config['slug'];
-        $this->label       = (string) $config['label'];
-        $this->description = (string) ($config['description'] ?? '');
-        $this->icon        = (string) ($config['icon'] ?? '');
-        $this->position    = (int) ($config['position'] ?? 50);
-        $this->sections    = is_array($config['sections'] ?? null) ? $config['sections'] : [];
-        $this->fields      = is_array($config['fields'] ?? null) ? $config['fields'] : [];
+        $this->slug           = (string) $config['slug'];
+        $this->label          = (string) $config['label'];
+        $this->description    = (string) ($config['description'] ?? '');
+        $this->icon           = (string) ($config['icon'] ?? '');
+        $this->position       = (int) ($config['position'] ?? 50);
+        $this->sections       = is_array($config['sections'] ?? null) ? $config['sections'] : [];
+        $this->fields         = is_array($config['fields'] ?? null) ? $config['fields'] : [];
+        $this->section_layout = self::normalise_section_layout($config['section_layout'] ?? null);
+    }
+
+    /**
+     * Coerce a raw section_layout value to one of the supported
+     * layouts ('sidebar' or 'stacked'), defaulting to 'sidebar'.
+     */
+    private static function normalise_section_layout($raw): string
+    {
+        $allowed = ['sidebar', 'stacked'];
+        if (is_string($raw) && in_array($raw, $allowed, true)) {
+            return $raw;
+        }
+        return 'sidebar';
     }
 
     /**

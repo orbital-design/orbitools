@@ -95,6 +95,7 @@ export function ThemePage({ slug }: ThemePageProps): JSX.Element {
                     sections={page.sections}
                     settings={settings ?? {}}
                     onChange={(key, value) => updateSetting(slug, key, value)}
+                    sectionLayout={page.section_layout}
                 />
             )}
         </div>

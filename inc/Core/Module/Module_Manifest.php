@@ -67,6 +67,15 @@ final class Module_Manifest
      */
     public array $settings;
 
+    /**
+     * Layout the React admin uses when the settings page has 2+
+     * sections. Recognised values: 'sidebar' (default — vertical
+     * tab list on the left, active section's fields on the right)
+     * and 'stacked' (each section as its own collapsible card).
+     * Single-section pages ignore this and render flat.
+     */
+    public string $section_layout;
+
     public string $source_path;
 
     /**
@@ -151,9 +160,23 @@ final class Module_Manifest
         $m->requires        = is_array($data['requires'] ?? null) ? $data['requires'] : [];
         $m->sections        = is_array($data['sections'] ?? null) ? array_values($data['sections']) : [];
         $m->settings        = is_array($data['settings'] ?? null) ? array_values($data['settings']) : [];
+        $m->section_layout  = self::normalise_section_layout($data['section_layout'] ?? null);
         $m->source_path     = $source;
 
         return $m;
+    }
+
+    /**
+     * Coerce a raw section_layout value to one of the supported
+     * options, defaulting to 'sidebar' when omitted or unknown.
+     */
+    private static function normalise_section_layout($raw): string
+    {
+        $allowed = ['sidebar', 'stacked'];
+        if (is_string($raw) && in_array($raw, $allowed, true)) {
+            return $raw;
+        }
+        return 'sidebar';
     }
 
     /**

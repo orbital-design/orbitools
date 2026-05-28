@@ -62,6 +62,7 @@ final class Theme_Pages_Controller extends WP_REST_Controller
                 'position'        => $page->position,
                 'sections'        => $page->sections,
                 'settings_schema' => $page->fields,
+                'section_layout'  => $page->section_layout,
             ];
         }
 

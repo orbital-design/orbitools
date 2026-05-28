@@ -17,6 +17,8 @@
  */
 import { useState } from '@wordpress/element';
 import {
+    Panel,
+    PanelBody,
     Slot,
     __experimentalVStack as VStack,
 } from '@wordpress/components';
@@ -25,7 +27,12 @@ import { FieldFallback } from './FieldFallback';
 import { getFieldComponent } from '../fields/registry';
 import { evaluateShowIf } from '../lib/showIf';
 import { SLOTS } from '../lib/slots';
-import type { FieldSchema, ModuleSettings, SectionDescriptor } from '../types';
+import type {
+    FieldSchema,
+    ModuleSettings,
+    SectionDescriptor,
+    SectionLayout,
+} from '../types';
 
 interface SettingsRendererProps {
     slug: string;
@@ -33,6 +40,7 @@ interface SettingsRendererProps {
     sections: SectionDescriptor[];
     settings: ModuleSettings;
     onChange: (key: string, value: unknown) => void;
+    sectionLayout?: SectionLayout;
 }
 
 export function SettingsRenderer({
@@ -41,6 +49,7 @@ export function SettingsRenderer({
     sections,
     settings,
     onChange,
+    sectionLayout = 'sidebar',
 }: SettingsRendererProps): JSX.Element {
     const visibleFields = fields.filter((f) => evaluateShowIf(f.show_if, settings));
     const grouped = groupBySection(visibleFields, sections);
@@ -62,6 +71,19 @@ export function SettingsRenderer({
                 />
             );
         });
+
+    // Stacked layout applies regardless of section count — even one
+    // section becomes a collapsible card. Sidebar layout needs 2+
+    // sections to make sense and falls back to flat below.
+    if (sectionLayout === 'stacked' && grouped.length >= 1 && grouped[0].section !== null) {
+        return (
+            <>
+                <Slot name={SLOTS.settingsBefore(slug)} />
+                <StackedSectionsLayout grouped={grouped} renderFields={renderFields} />
+                <Slot name={SLOTS.settingsAfter(slug)} />
+            </>
+        );
+    }
 
     if (grouped.length >= 2) {
         return (
@@ -151,6 +173,39 @@ function SectionSidebarLayout({
                 <VStack spacing={4}>{renderFields(activeGroup.fields)}</VStack>
             </section>
         </div>
+    );
+}
+
+/**
+ * `stacked` layout — each section renders as its own collapsible
+ * PanelBody, stacked vertically. All open by default; the user
+ * collapses what they don't want to see. Modelled on RunCache's
+ * "stacked cards per concern" pattern.
+ */
+function StackedSectionsLayout({
+    grouped,
+    renderFields,
+}: SectionSidebarLayoutProps): JSX.Element {
+    return (
+        <Panel className="orbitools-section-stack">
+            {grouped.map((group) => {
+                const id = group.section?.id ?? '__default__';
+                return (
+                    <PanelBody
+                        key={id}
+                        title={group.section?.title ?? 'General'}
+                        initialOpen={true}
+                    >
+                        {group.section?.description !== undefined && (
+                            <p className="orbitools-section-stack__description">
+                                {group.section.description}
+                            </p>
+                        )}
+                        <VStack spacing={4}>{renderFields(group.fields)}</VStack>
+                    </PanelBody>
+                );
+            })}
+        </Panel>
     );
 }
 

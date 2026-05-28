@@ -162,6 +162,29 @@ final class Modules_Controller extends WP_REST_Controller
         $manifest = $manager->get_manifest($slug);
 
         if ($manifest !== null) {
+            // For block-category modules, append the standard
+            // asset-disable toggles so every block exposes the same
+            // four switches without each manifest having to declare
+            // them. Block_Asset_Filter reads the matching keys.
+            // We also force section_layout = 'stacked' so block
+            // settings render as collapsible cards regardless of
+            // section count.
+            $manifest_settings = $manifest->settings;
+            $manifest_sections = $manifest->sections;
+            $section_layout    = $manifest->section_layout;
+            if ($manifest->category === 'blocks') {
+                $manifest_settings = array_merge(
+                    $manifest_settings,
+                    self::asset_toggles_for_blocks()
+                );
+                $manifest_sections = array_merge($manifest_sections, [[
+                    'id'          => 'assets',
+                    'title'       => 'Assets',
+                    'description' => 'Skip individual block assets if the theme provides its own.',
+                ]]);
+                $section_layout = 'stacked';
+            }
+
             return [
                 'slug'               => $manifest->slug,
                 'name'               => \__($manifest->name, 'orbitools'),
@@ -173,8 +196,9 @@ final class Modules_Controller extends WP_REST_Controller
                 'has_custom_page'    => false, // Phase 4 populates from discovery manifest.
                 'has_dashboard_card' => false, // Phase 4 populates from discovery manifest.
                 'requires'           => (object) $manifest->requires,
-                'sections'           => $this->prepare_sections($manifest->sections),
-                'settings_schema'    => $this->prepare_settings_schema($manifest->settings),
+                'sections'           => $this->prepare_sections($manifest_sections),
+                'settings_schema'    => $this->prepare_settings_schema($manifest_settings),
+                'section_layout'     => $section_layout,
             ];
         }
 
@@ -191,6 +215,7 @@ final class Modules_Controller extends WP_REST_Controller
             'requires'           => (object) [],
             'sections'           => [],
             'settings_schema'    => [],
+            'section_layout'     => 'sidebar',
         ];
     }
 
@@ -230,6 +255,55 @@ final class Modules_Controller extends WP_REST_Controller
      * @param array<int,array<string,mixed>> $fields
      * @return array<int,array<string,mixed>>
      */
+    /**
+     * Standard asset-disable toggles appended to every `blocks`-
+     * category module's settings_schema. Block_Asset_Filter reads
+     * the resulting `{slug}_disable_…` settings to short-circuit
+     * the block's manifest asset keys at registration time.
+     *
+     * Public + static so other code (e.g. tests, the manifest
+     * validator) can ask for the same shape without duplicating it.
+     *
+     * @return array<int,array<string,mixed>>
+     */
+    public static function asset_toggles_for_blocks(): array
+    {
+        return [
+            [
+                'id'          => 'disable_frontend_css',
+                'type'        => 'toggle',
+                'label'       => 'Disable frontend CSS',
+                'description' => "Skip enqueueing this block's frontend style asset (block.json `style`/`viewStyle`).",
+                'default'     => false,
+                'section'     => 'assets',
+            ],
+            [
+                'id'          => 'disable_frontend_js',
+                'type'        => 'toggle',
+                'label'       => 'Disable frontend JS',
+                'description' => "Skip enqueueing this block's frontend script asset (block.json `script`/`viewScript`).",
+                'default'     => false,
+                'section'     => 'assets',
+            ],
+            [
+                'id'          => 'disable_editor_css',
+                'type'        => 'toggle',
+                'label'       => 'Disable editor CSS',
+                'description' => "Skip enqueueing this block's editor style asset (block.json `editorStyle`).",
+                'default'     => false,
+                'section'     => 'assets',
+            ],
+            [
+                'id'          => 'disable_editor_js',
+                'type'        => 'toggle',
+                'label'       => 'Disable editor JS',
+                'description' => "Skip enqueueing this block's editor script asset (block.json `editorScript`).",
+                'default'     => false,
+                'section'     => 'assets',
+            ],
+        ];
+    }
+
     private function prepare_settings_schema(array $fields): array
     {
         $out = [];
