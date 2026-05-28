@@ -39,24 +39,24 @@
       "id": "disable_posts",
       "type": "toggle",
       "label": "Disable posts entirely",
-      "description": "Removes the Posts admin menu, the '+ New → Post' admin bar item, unregisters the post_tag taxonomy from posts, and bounces any post / category / tag editing screen back to the dashboard. Use on sites that only use custom post types.",
-      "default": false,
+      "description": "Removes the Posts admin menu, the '+ New → Post' admin bar item, unregisters the post_tag taxonomy from posts, and bounces any post / category / tag editing screen back to the dashboard. Use on sites that only use custom post types. (Default on — Orbital sites never use the default blog.)",
+      "default": true,
       "section": "content"
     },
     {
       "id": "disable_customizer",
       "type": "toggle",
       "label": "Disable the Customizer",
-      "description": "Removes the Customizer entirely — the admin menu entry, the toolbar shortcut, and direct customize.php access. Use on sites whose chrome is managed via theme code, theme.json, or our Site Settings page.",
-      "default": false,
+      "description": "Removes the Customizer entirely — the admin menu entry, the toolbar shortcut, and direct customize.php access. Use on sites whose chrome is managed via theme code, theme.json, or our Site Settings page. (Default on — Orbital sites don't use the Customizer.)",
+      "default": true,
       "section": "admin_features"
     },
     {
       "id": "disable_widgets",
       "type": "toggle",
       "label": "Disable widgets",
-      "description": "Hides the Appearance → Widgets menu, blocks direct widgets.php access, and removes the Customizer's Widgets panel. Block themes and most modern designs don't use widgets; turn this on to keep the admin tidy.",
-      "default": false,
+      "description": "Hides the Appearance → Widgets menu, blocks direct widgets.php access, and removes the Customizer's Widgets panel. Block themes and most modern designs don't use widgets; turn this on to keep the admin tidy. (Default on — Orbital sites don't use widgets.)",
+      "default": true,
       "section": "admin_features"
     },
     {

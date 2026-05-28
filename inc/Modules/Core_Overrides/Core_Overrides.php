@@ -83,7 +83,7 @@ final class Core_Overrides extends Module_Base
         // `post` post type's editorial surface. Absorbed from the
         // dream-and-leap-sage theme's BlogDisabledServiceProvider so
         // any Orbitools-using site can opt in without theme code.
-        if ($this->is_setting_on('disable_posts')) {
+        if ($this->is_setting_on('disable_posts', true)) {
             \add_action('admin_menu', [$this, 'remove_posts_menu']);
             \add_action('admin_bar_menu', [$this, 'remove_posts_admin_bar_node'], 999);
             \add_action('admin_init', [$this, 'redirect_posts_screens']);
@@ -97,7 +97,7 @@ final class Core_Overrides extends Module_Base
         // entry + toolbar shortcut), stop the customizer scripts
         // from being enqueued, and wp_die on any direct hit of
         // customize.php.
-        if ($this->is_setting_on('disable_customizer')) {
+        if ($this->is_setting_on('disable_customizer', true)) {
             \add_filter('map_meta_cap', [$this, 'deny_customize_cap'], 10, 2);
             \add_action('admin_init', [$this, 'unhook_customizer']);
             \add_action('load-customize.php', [$this, 'block_customize_screen']);
@@ -107,7 +107,7 @@ final class Core_Overrides extends Module_Base
         // strip the menu entry, hard-block the URL, and remove the
         // Customizer's Widgets panel (still relevant when only
         // widgets are disabled, not the whole Customizer).
-        if ($this->is_setting_on('disable_widgets')) {
+        if ($this->is_setting_on('disable_widgets', true)) {
             \add_action('admin_menu', [$this, 'remove_widgets_menu'], 999);
             \add_action('load-widgets.php', [$this, 'block_widgets_screen']);
             \add_action('customize_register', [$this, 'remove_customizer_widgets_panel'], 20);
@@ -268,10 +268,21 @@ final class Core_Overrides extends Module_Base
         }
     }
 
-    private function is_setting_on(string $key): bool
+    /**
+     * Read a toggle out of the orbitools_settings row. The `$default`
+     * argument matches the field's manifest default — when the user
+     * hasn't saved anything yet, we want the server-side check to
+     * line up with what the React form renders. (Most toggles default
+     * off, but a few opt-out switches like `disable_posts` ship with
+     * `default: true`.)
+     */
+    private function is_setting_on(string $key, bool $default = false): bool
     {
         $settings = \get_option('orbitools_settings', []);
         $full_key = $this->get_slug() . '_' . $key;
+        if (!array_key_exists($full_key, $settings)) {
+            return $default;
+        }
         return !empty($settings[$full_key]);
     }
 }
