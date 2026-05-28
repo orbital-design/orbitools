@@ -1,0 +1,30 @@
+{
+  "$schema": "https://orbitools/schemas/module.v1.json",
+  "slug": "orbital-login",
+  "name": "Orbital Login",
+  "description": "Restyle the wp-login.php screen with the Orbital brand — navy backdrop, white card, blue primary button, Orbital logo in place of the WordPress mark.",
+  "version": "1.0.0",
+  "category": "modules",
+  "class": "\\Orbitools\\Modules\\Orbital_Login\\Orbital_Login",
+  "default_enabled": false,
+  "requires": {
+    "php": ">=7.4",
+    "wp": ">=5.0"
+  },
+  "settings": [
+    {
+      "id": "logo_links_home",
+      "type": "toggle",
+      "label": "Point logo link at the site home",
+      "description": "Replace the default wordpress.org link on the login logo with home_url().",
+      "default": true
+    },
+    {
+      "id": "use_site_name_as_logo_text",
+      "type": "toggle",
+      "label": "Use the site name as logo title",
+      "description": "Sets the login logo's title attribute to the WordPress site name instead of \"Powered by WordPress\".",
+      "default": true
+    }
+  ]
+}

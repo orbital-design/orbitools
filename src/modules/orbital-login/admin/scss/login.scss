@@ -1,0 +1,172 @@
+/**
+ * Orbital Login — wp-login.php restyle.
+ *
+ * Targets the stock WP login markup (no body class changes), so it
+ * works regardless of WP version. Colours come from the Orbital
+ * brand palette and match the Orbital admin colour scheme module.
+ *
+ *   #1d303a — navy base
+ *   #32a3e2 — Orbital blue (links, primary button, focus ring)
+ *   #ffffff — card surface
+ */
+
+$orb-navy:        #1d303a;
+$orb-navy-dark:   #111c22;
+$orb-blue:        #32a3e2;
+$orb-blue-hover:  #1f98db;
+$orb-text-muted:  #bbc1c4;
+$orb-card-bg:     #ffffff;
+
+// Orbital logo, embedded so the CSS file is self-contained. Fill is
+// forced to white via the encoded fill="%23fff".
+$orb-logo: "data:image/svg+xml;utf8,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20322%20322'%20fill='none'%3E%3Cpath%20fill='%23fff'%20fill-rule='evenodd'%20d='M71.096%2027.45A160.999%20160.999%200%200%201%20160.369.013%20159.624%20159.624%200%200%201%20275.03%2046.53a159.612%20159.612%200%200%201%2046.964%20114.477%20160.99%20160.99%200%200%201-99.242%20148.678A160.999%20160.999%200%200%201%203.171%20192.798%20160.99%20160.99%200%200%201%2071.096%2027.45Zm45.655%20198.564a78.138%2078.138%200%200%200%2043.409%2013.167%2078.22%2078.22%200%200%200%2078.134-78.132%2078.133%2078.133%200%201%200-121.543%2064.965Zm149.52-151.706c0%2012.54-10.166%2022.705-22.706%2022.705-12.539%200-22.705-10.166-22.705-22.705%200-12.54%2010.166-22.705%2022.705-22.705%2012.54%200%2022.706%2010.165%2022.706%2022.705Z'%20clip-rule='evenodd'/%3E%3C/svg%3E";
+
+body.login {
+    background: $orb-navy;
+    color: #fff;
+}
+
+#login {
+    padding: 8% 0 0;
+    width: 360px;
+}
+
+// Logo block — swap WP mark for the Orbital logo.
+#login h1 a,
+.login h1 a {
+    background-image: url($orb-logo);
+    background-size: contain;
+    background-position: center center;
+    background-repeat: no-repeat;
+    width: 96px;
+    height: 96px;
+    margin: 0 auto 24px;
+    text-indent: -9999px;
+    outline: none;
+}
+
+// White card containing the form.
+#loginform,
+#registerform,
+#lostpasswordform {
+    background: $orb-card-bg;
+    border: none;
+    border-radius: 8px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
+    padding: 32px 28px 24px;
+    margin-top: 16px;
+}
+
+// Field labels + helper text.
+.login form label,
+.login .forgetmenot label {
+    color: $orb-navy;
+    font-weight: 500;
+}
+
+// Inputs.
+.login form .input,
+.login input[type="text"],
+.login input[type="password"],
+.login input[type="email"] {
+    background: #f7f9fa;
+    border: 1px solid #d3dade;
+    border-radius: 4px;
+    color: $orb-navy;
+    font-size: 16px;
+    padding: 8px 10px;
+    box-shadow: none;
+    transition: border-color 120ms ease, box-shadow 120ms ease;
+
+    &:focus {
+        border-color: $orb-blue;
+        box-shadow: 0 0 0 2px rgba(50, 163, 226, 0.25);
+        outline: none;
+    }
+}
+
+// Primary action button.
+.wp-core-ui .button-primary,
+.login .button-primary {
+    background: $orb-blue;
+    border-color: $orb-blue;
+    color: #fff;
+    text-shadow: none;
+    box-shadow: none;
+    border-radius: 4px;
+    font-weight: 600;
+    height: auto;
+    padding: 8px 16px;
+    transition: background-color 120ms ease, border-color 120ms ease;
+
+    &:hover,
+    &:focus {
+        background: $orb-blue-hover;
+        border-color: $orb-blue-hover;
+        color: #fff;
+        box-shadow: 0 0 0 2px rgba(50, 163, 226, 0.35);
+    }
+
+    &:active {
+        background: $orb-blue-hover;
+        border-color: $orb-blue-hover;
+    }
+}
+
+// Nav links beneath the form ("Lost your password?", "← Back…").
+.login #nav,
+.login #backtoblog {
+    text-align: center;
+    padding: 0;
+    margin: 16px 0 0;
+
+    a {
+        color: rgba(255, 255, 255, 0.75);
+        text-shadow: none;
+
+        &:hover,
+        &:focus {
+            color: #fff;
+            text-decoration: underline;
+        }
+    }
+}
+
+// Language switcher footer.
+.login .language-switcher {
+    margin-top: 24px;
+
+    select {
+        background: rgba(255, 255, 255, 0.08);
+        color: #fff;
+        border-color: rgba(255, 255, 255, 0.15);
+    }
+}
+
+// Messages (success, error, info) — keep WP semantics, brand the
+// outline colours.
+.login .message,
+.login .notice {
+    border-left-color: $orb-blue;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+}
+
+// "Remember me" checkbox.
+.login .forgetmenot {
+    color: $orb-navy;
+}
+
+// Privacy policy link (WP 4.9.6+).
+.login .privacy-policy-page-link {
+    text-align: center;
+    margin-top: 24px;
+
+    a {
+        color: rgba(255, 255, 255, 0.6);
+
+        &:hover,
+        &:focus {
+            color: $orb-blue;
+        }
+    }
+}

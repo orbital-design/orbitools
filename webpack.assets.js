@@ -16,6 +16,10 @@ module.exports = {
         'admin/css/modules/menu-dividers/admin': path.resolve(process.cwd(), 'src', 'modules', 'menu-dividers','admin', 'scss','admin.scss'),
         // - SCSS ~ Module ~ Menu Groups
         'admin/css/modules/menu-groups/admin': path.resolve(process.cwd(), 'src', 'modules', 'menu-groups','admin', 'scss','admin.scss'),
+        // - SCSS ~ Module ~ Orbital Login (wp-login.php restyle)
+        'admin/css/modules/orbital-login/login': path.resolve(process.cwd(), 'src', 'modules', 'orbital-login','admin', 'scss','login.scss'),
+        // - SCSS ~ Module ~ Orbital Colour Scheme (admin colour scheme; pre-compiled CSS wrapped in .scss so webpack just re-emits it)
+        'admin/css/modules/orbital-colour-scheme/orbital': path.resolve(process.cwd(), 'src', 'modules', 'orbital-colour-scheme','admin', 'scss','orbital.scss'),
         // - SCSS ~ Controls ~ Typography Presets
         'admin/css/controls/typography-presets/admin': path.resolve(process.cwd(), 'src', 'controls', 'typography-presets','admin', 'scss','admin.scss'),
 
