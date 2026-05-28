@@ -296,10 +296,14 @@ final class Orbital_Login extends Module_Base
         avatar.className = 'orbital-login__welcome-avatar';
         avatar.src = data.avatar;
         avatar.alt = '';
-        avatar.width = 56;
-        avatar.height = 56;
+        avatar.width = 64;
+        avatar.height = 64;
         banner.appendChild(avatar);
     }
+
+    // Right column: greeting + "Not you?" stacked.
+    var textCol = document.createElement('div');
+    textCol.className = 'orbital-login__welcome-text';
 
     var hi = document.createElement('p');
     hi.className = 'orbital-login__welcome-greeting';
@@ -307,7 +311,7 @@ final class Orbital_Login extends Module_Base
     var strong = document.createElement('strong');
     strong.textContent = data.name;
     hi.appendChild(strong);
-    banner.appendChild(hi);
+    textCol.appendChild(hi);
 
     var notYou = document.createElement('button');
     notYou.type = 'button';
@@ -331,7 +335,9 @@ final class Orbital_Login extends Module_Base
         // login flow with an empty form.
         window.location.href = window.location.pathname;
     });
-    banner.appendChild(notYou);
+    textCol.appendChild(notYou);
+
+    banner.appendChild(textCol);
 
     form.parentNode.insertBefore(banner, form);
 

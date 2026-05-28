@@ -138,7 +138,7 @@ final class User_Avatars extends Module_Base
                             </button>
                         </div>
                         <p class="description">
-                            <?php echo \esc_html__('Pick any image from the Media Library. If unset, Gravatar (or the configured fallback) is used.', 'orbitools'); ?>
+                            <?php echo \esc_html__('Pick any image from the Media Library. If unset, Gravatar is used.', 'orbitools'); ?>
                         </p>
                     </div>
                     <?php \wp_nonce_field(self::NONCE_ACTION, self::NONCE_FIELD, false); ?>
@@ -197,6 +197,14 @@ final class User_Avatars extends Module_Base
      */
     public function filter_avatar_data(array $args, $id_or_email): array
     {
+        // Respect `force_default` — callers (notably the profile
+        // picker rendering its placeholder for the Remove button)
+        // explicitly want WP's generic avatar, not the user's
+        // saved one.
+        if (!empty($args['force_default'])) {
+            return $args;
+        }
+
         $user_id = $this->resolve_user_id($id_or_email);
         if ($user_id === 0) {
             return $args;
