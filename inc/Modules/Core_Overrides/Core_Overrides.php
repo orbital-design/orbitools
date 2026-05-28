@@ -64,12 +64,12 @@ final class Core_Overrides extends Module_Base
 
     public function get_name(): string
     {
-        return \__('Core Overrides', 'orbitools');
+        return \__('Core Cleanup', 'orbitools');
     }
 
     public function get_description(): string
     {
-        return \__('Hide built-in WordPress admin pages that the site doesn\'t need.', 'orbitools');
+        return \__('Strip out built-in WordPress pages and post types the site doesn\'t use.', 'orbitools');
     }
 
     public function init(): void
@@ -78,6 +78,17 @@ final class Core_Overrides extends Module_Base
         // submenu pages; otherwise remove_submenu_page() may run
         // before the entry exists and silently no-op.
         \add_action('admin_menu', [$this, 'apply_overrides'], 999);
+
+        // "Disable posts entirely" — wholesale removal of the default
+        // `post` post type's editorial surface. Absorbed from the
+        // dream-and-leap-sage theme's BlogDisabledServiceProvider so
+        // any Orbitools-using site can opt in without theme code.
+        if ($this->is_setting_on('disable_posts')) {
+            \add_action('admin_menu', [$this, 'remove_posts_menu']);
+            \add_action('admin_bar_menu', [$this, 'remove_posts_admin_bar_node'], 999);
+            \add_action('admin_init', [$this, 'redirect_posts_screens']);
+            \add_action('init', [$this, 'unregister_post_tag']);
+        }
     }
 
     public function apply_overrides(): void
@@ -90,6 +101,76 @@ final class Core_Overrides extends Module_Base
                 \remove_submenu_page($parent, $child);
             }
         }
+    }
+
+    /**
+     * Drop the top-level "Posts" admin menu (All Posts / Add New /
+     * Categories / Tags all under it).
+     */
+    public function remove_posts_menu(): void
+    {
+        \remove_menu_page('edit.php');
+    }
+
+    /**
+     * Remove the "+ New → Post" item from the admin bar.
+     *
+     * @param \WP_Admin_Bar $admin_bar
+     */
+    public function remove_posts_admin_bar_node($admin_bar): void
+    {
+        if ($admin_bar instanceof \WP_Admin_Bar) {
+            $admin_bar->remove_node('new-post');
+        }
+    }
+
+    /**
+     * Bounce any admin request that would land on a `post` / `category`
+     * / `post_tag` editing screen back to the dashboard. Capability-
+     * gated to edit_posts so subscribers can't hit redirect loops.
+     * Other post types and taxonomies pass through unchanged.
+     */
+    public function redirect_posts_screens(): void
+    {
+        if (!\is_admin() || !\current_user_can('edit_posts')) {
+            return;
+        }
+
+        global $pagenow;
+
+        if ($pagenow === 'edit.php' || $pagenow === 'post-new.php') {
+            $post_type = isset($_GET['post_type']) ? \sanitize_key((string) $_GET['post_type']) : 'post';
+            if ($post_type === 'post') {
+                \wp_safe_redirect(\admin_url());
+                exit;
+            }
+            return;
+        }
+
+        if ($pagenow === 'post.php' && isset($_GET['post'], $_GET['action']) && $_GET['action'] === 'edit') {
+            if (\get_post_type((int) $_GET['post']) === 'post') {
+                \wp_safe_redirect(\admin_url());
+                exit;
+            }
+            return;
+        }
+
+        if ($pagenow === 'edit-tags.php' || $pagenow === 'term.php') {
+            $taxonomy = isset($_GET['taxonomy']) ? \sanitize_key((string) $_GET['taxonomy']) : '';
+            if (in_array($taxonomy, ['category', 'post_tag'], true)) {
+                \wp_safe_redirect(\admin_url());
+                exit;
+            }
+        }
+    }
+
+    /**
+     * Detach post_tag from the `post` object type so even if posts
+     * sneak back in, the tag pane stays gone.
+     */
+    public function unregister_post_tag(): void
+    {
+        \unregister_taxonomy_for_object_type('post_tag', 'post');
     }
 
     private function is_setting_on(string $key): bool
