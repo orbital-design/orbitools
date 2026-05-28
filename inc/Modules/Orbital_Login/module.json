@@ -13,18 +13,27 @@
   },
   "settings": [
     {
-      "id": "logo_links_home",
-      "type": "toggle",
-      "label": "Point logo link at the site home",
-      "description": "Replace the default wordpress.org link on the login logo with home_url().",
-      "default": true
+      "id": "logo_url",
+      "type": "text",
+      "label": "Logo link URL",
+      "description": "Where the login logo links to. Leave blank to keep the WordPress default (wordpress.org).",
+      "default": "https://orbital.co.uk",
+      "placeholder": "https://orbital.co.uk"
     },
     {
-      "id": "use_site_name_as_logo_text",
+      "id": "logo_title",
+      "type": "text",
+      "label": "Logo title attribute",
+      "description": "Title text on the login logo link. Leave blank to keep the WordPress default (\"Powered by WordPress\").",
+      "default": "Orbital",
+      "placeholder": "Orbital"
+    },
+    {
+      "id": "remember_last_user",
       "type": "toggle",
-      "label": "Use the site name as logo title",
-      "description": "Sets the login logo's title attribute to the WordPress site name instead of \"Powered by WordPress\".",
-      "default": true
+      "label": "Remember the last user on this device",
+      "description": "After a successful login, store the username in a per-device cookie (30 days). On the next visit to wp-login.php, greet the user by name, hide the username field, and ask only for the password. Tradeoff: anyone with access to the browser learns a valid username. A 'Not you?' link clears the cookie. Password is always required — this is purely a UX shortcut.",
+      "default": false
     }
   ]
 }

@@ -170,3 +170,40 @@ body.login {
         }
     }
 }
+
+// "Welcome back, {name}" banner injected by the remember-last-user
+// feature. Sits above the (password-only) login form.
+.orbital-login__welcome {
+    margin: 0 0 16px;
+    text-align: center;
+    color: #fff;
+}
+
+.orbital-login__welcome-greeting {
+    margin: 0;
+    font-size: 18px;
+    line-height: 1.4;
+    color: #fff;
+
+    strong {
+        color: $orb-blue;
+        font-weight: 600;
+    }
+}
+
+.orbital-login__not-you {
+    background: none;
+    border: 0;
+    color: rgba(255, 255, 255, 0.6);
+    cursor: pointer;
+    font-size: 13px;
+    margin-top: 8px;
+    padding: 4px 8px;
+    text-decoration: underline;
+
+    &:hover,
+    &:focus {
+        color: $orb-blue;
+        outline: none;
+    }
+}
