@@ -162,9 +162,15 @@ final class Settings_Controller extends WP_REST_Controller
         }
 
         // Persist the wp_option side first — these are independent of
-        // the orbitools_settings row, no batching benefit.
+        // the orbitools_settings row, no batching benefit. A literal
+        // null is the "delete this" sentinel (e.g. a media field's
+        // Remove button); anything else goes through update_option.
         foreach ($wp_option_writes as $option_name => $value) {
-            \update_option($option_name, $value);
+            if ($value === null) {
+                \delete_option($option_name);
+            } else {
+                \update_option($option_name, $value);
+            }
         }
 
         // Persist the orbitools_settings side.

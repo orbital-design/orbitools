@@ -31,6 +31,61 @@ final class Site_Settings_Page
     public function __construct()
     {
         \add_filter('orbitools/register_theme_pages', [$this, 'register'], 5);
+
+        // WP auto-syncs custom_logo (theme_mod) → site_logo
+        // (option) via _sync_custom_logo_to_site_logo on
+        // pre_set_theme_mod_custom_logo, but does NOT sync the
+        // other direction. When the React admin writes to the
+        // site_logo option, the Customizer's Site Identity panel
+        // (which reads the custom_logo theme_mod) stays empty.
+        // Mirror in our direction so both surfaces stay in step.
+        \add_action('update_option_site_logo', [$this, 'mirror_site_logo_to_theme_mod'], 10, 2);
+        \add_action('add_option_site_logo', [$this, 'mirror_added_site_logo_to_theme_mod'], 10, 2);
+        \add_action('delete_option_site_logo', [$this, 'remove_custom_logo_theme_mod']);
+    }
+
+    /**
+     * @param mixed $old_value
+     * @param mixed $new_value
+     */
+    public function mirror_site_logo_to_theme_mod($old_value, $new_value): void
+    {
+        if ((int) $old_value === (int) $new_value) {
+            return;
+        }
+        $this->set_or_remove_custom_logo($new_value);
+    }
+
+    /**
+     * @param string $option
+     * @param mixed  $value
+     */
+    public function mirror_added_site_logo_to_theme_mod($option, $value): void
+    {
+        $this->set_or_remove_custom_logo($value);
+    }
+
+    public function remove_custom_logo_theme_mod(): void
+    {
+        \remove_theme_mod('custom_logo');
+    }
+
+    /**
+     * @param mixed $value
+     */
+    private function set_or_remove_custom_logo($value): void
+    {
+        $id = (int) $value;
+        if ($id <= 0) {
+            \remove_theme_mod('custom_logo');
+            return;
+        }
+        // set_theme_mod triggers `pre_set_theme_mod_custom_logo` →
+        // `_sync_custom_logo_to_site_logo` → `update_option('site_logo')`.
+        // No loop: update_option short-circuits when the value
+        // hasn't changed (we just set it to this same value), so
+        // our update_option_site_logo hook above doesn't re-fire.
+        \set_theme_mod('custom_logo', $id);
     }
 
     /**
