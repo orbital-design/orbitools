@@ -28,6 +28,17 @@
         return;
     }
 
+    // App mode: when the layout is wrapped in a `body > #app`
+    // element (the convention on every Orbital site, plus
+    // Sage / Bedrock / our own builds) we flip to a different
+    // animation — the toolbar stays put, #app slides down to
+    // reveal it. Marker class on <body> lets the CSS pick the
+    // right pair of transitions.
+    var app = document.body.querySelector(':scope > #app');
+    if (app !== null) {
+        document.body.classList.add('orbitools-toolbar-reveal--app-mode');
+    }
+
     var zone = document.createElement('div');
     zone.className = 'orbitools-toolbar-reveal__zone';
     zone.setAttribute('aria-hidden', 'true');
@@ -52,7 +63,7 @@
         // Cursor re-entered the page somewhere else — user is back
         // in normal browsing, hide the toolbar.
         disarmRecapture();
-        bar.classList.remove(REVEAL_CLASS);
+        document.body.classList.remove(REVEAL_CLASS);
     }
 
     function show() {
@@ -61,7 +72,7 @@
             hideTimer = null;
         }
         disarmRecapture();
-        bar.classList.add(REVEAL_CLASS);
+        document.body.classList.add(REVEAL_CLASS);
     }
 
     function scheduleHide() {
@@ -75,7 +86,7 @@
             if (bar.matches(':hover') || bar.matches(':focus-within')) {
                 return;
             }
-            bar.classList.remove(REVEAL_CLASS);
+            document.body.classList.remove(REVEAL_CLASS);
         }, HIDE_DELAY_MS);
     }
 
@@ -95,4 +106,10 @@
     bar.addEventListener('mouseenter', show);
     zone.addEventListener('mouseleave', handleMouseLeave);
     bar.addEventListener('mouseleave', handleMouseLeave);
+
+    // Keyboard support — tabbing into a link inside the bar reveals
+    // it; tabbing out schedules the hide (which the scheduler will
+    // then re-check via `:focus-within`).
+    bar.addEventListener('focusin', show);
+    bar.addEventListener('focusout', scheduleHide);
 }());

@@ -1,27 +1,37 @@
 /**
  * Toolbar Reveal — frontend styles.
  *
- * Pulls the admin toolbar off-screen by default and reveals it on
- * cursor hover near the top, on keyboard focus, or permanently on
- * touch devices (no hover capability).
+ * Two modes, picked by JS on init:
+ *
+ *   Default — the toolbar itself slides down from above. Cheap,
+ *   works on every theme.
+ *
+ *   App mode — added by JS when `body > #app` is present (the
+ *   convention Sage / Bedrock / our own builds follow). The
+ *   toolbar stays fixed in place; the #app wrapper slides DOWN
+ *   to reveal it. Feels more like part of the page than a
+ *   floating overlay.
+ *
+ * Both modes are driven by a single `--visible` class on <body>
+ * so the rest of the JS doesn't care which animation is active.
  */
+
+// -----------------------------------------------------------------
+// Default mode — slide the bar itself
+// -----------------------------------------------------------------
 
 #wpadminbar {
     transform: translateY(-100%);
     transition: transform 220ms cubic-bezier(.4, 0, .2, 1);
     will-change: transform;
-
-    // Revealed when the JS hover-zone fires OR when any focusable
-    // child inside the bar gains focus (keyboard-only users still
-    // get to the toolbar via Tab).
-    &.orbitools-toolbar-reveal--visible,
-    &:focus-within {
-        transform: translateY(0);
-    }
 }
 
-// On touch-only devices there's no cursor to trigger the hover
-// zone, so keep the toolbar permanently visible.
+body.orbitools-toolbar-reveal--visible #wpadminbar {
+    transform: translateY(0);
+}
+
+// Touch-only devices have no cursor to trigger the hover zone, so
+// keep the toolbar permanently visible there.
 @media (hover: none) {
     #wpadminbar {
         transform: translateY(0);
@@ -52,4 +62,36 @@ html {
     right: 0;
     top: 0;
     z-index: 99998;
+}
+
+// -----------------------------------------------------------------
+// App mode — slide #app down, leave the toolbar fixed behind it
+// -----------------------------------------------------------------
+
+body.orbitools-toolbar-reveal--app-mode {
+    // Cancel the default off-screen position: the toolbar sits at
+    // top:0 normally and gets covered by #app.
+    #wpadminbar {
+        transform: none;
+    }
+
+    #app {
+        position: relative;
+        // Above the toolbar (which is z-index 99999) so #app
+        // physically covers it until it slides down.
+        z-index: 100000;
+        transform: translateY(0);
+        transition: transform 220ms cubic-bezier(.4, 0, .2, 1);
+        will-change: transform;
+    }
+
+    &.orbitools-toolbar-reveal--visible #app {
+        // Standard WP toolbar height; matches the desktop / mobile
+        // breakpoint WP uses for its own `html { margin-top }`.
+        transform: translateY(32px);
+
+        @media screen and (max-width: 782px) {
+            transform: translateY(46px);
+        }
+    }
 }
