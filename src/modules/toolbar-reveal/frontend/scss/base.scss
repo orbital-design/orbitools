@@ -22,7 +22,7 @@
 
 #wpadminbar {
     transform: translateY(-100%);
-    transition: transform 220ms cubic-bezier(.4, 0, .2, 1);
+    transition: transform 360ms cubic-bezier(.16, 1, .3, 1);
     will-change: transform;
 }
 
@@ -82,7 +82,7 @@ body.orbitools-toolbar-reveal--app-mode {
         // physically covers it until it slides down.
         z-index: 100000;
         transform: translateY(0);
-        transition: transform 220ms cubic-bezier(.4, 0, .2, 1);
+        transition: transform 360ms cubic-bezier(.16, 1, .3, 1);
         will-change: transform;
     }
 
