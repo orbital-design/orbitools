@@ -350,13 +350,15 @@ final class Modules_Controller extends WP_REST_Controller
      * Convention: module slug `xxx-block` ⇄ block name `orb/xxx`.
      *
      * Looks in three places in order:
-     *   1. The Block Manager's editor-side icon cache (the only
-     *      place where React-element icons from registerBlockType
-     *      actually exist as serialised SVG)
-     *   2. WP_Block_Type_Registry — block.json's icon field
-     *      (string or {src,…} object), present when the module is
-     *      enabled and the block has registered
-     *   3. null when neither has anything
+     *   1. The Block Manager's editor-side icon cache (covers
+     *      React-element icons that block.json doesn't carry).
+     *   2. WP_Block_Type_Registry — block.json's icon field via
+     *      the live registration. Only present when the module is
+     *      enabled (disabled modules don't register their block).
+     *   3. The build/blocks/{stem}/block.json file directly —
+     *      catches modules that are disabled in this admin (and
+     *      therefore aren't in the registry) but still have the
+     *      block.json on disk.
      *
      * The cache is populated on every block editor page load
      * (see Block_Manager::enqueue_icon_collector), so once a user
@@ -388,16 +390,51 @@ final class Modules_Controller extends WP_REST_Controller
             if ($type === null) {
                 continue;
             }
-            $icon = $type->icon ?? null;
-            if (is_string($icon) && $icon !== '') {
+            $icon = $this->extract_icon_string($type->icon ?? null);
+            if ($icon !== null) {
                 return $icon;
             }
-            if (is_array($icon) && isset($icon['src']) && is_string($icon['src']) && $icon['src'] !== '') {
-                return $icon['src'];
+        }
+
+        // Filesystem fallback — read build/blocks/{stem}/block.json
+        // directly. Handles the case where the module is disabled
+        // (so the block isn't in the registry) but a user is still
+        // looking at the dashboard card and wants to see the icon.
+        $path = ORBITOOLS_DIR . 'build/blocks/' . $stem . '/block.json';
+        if (file_exists($path)) {
+            $contents = @file_get_contents($path);
+            if (is_string($contents)) {
+                $data = json_decode($contents, true);
+                if (is_array($data) && isset($data['icon'])) {
+                    $icon = $this->extract_icon_string($data['icon']);
+                    if ($icon !== null) {
+                        return $icon;
+                    }
+                }
             }
-            if (is_object($icon) && isset($icon->src) && is_string($icon->src) && $icon->src !== '') {
-                return $icon->src;
-            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Unwrap whatever shape block.json's `icon` field is in (string,
+     * `{src, background, foreground}` array, or a WP_Block_Type_Icon
+     * -style object) to a plain string we can render. Null when the
+     * shape doesn't yield one.
+     *
+     * @param mixed $icon
+     */
+    private function extract_icon_string($icon): ?string
+    {
+        if (is_string($icon) && $icon !== '') {
+            return $icon;
+        }
+        if (is_array($icon) && isset($icon['src']) && is_string($icon['src']) && $icon['src'] !== '') {
+            return $icon['src'];
+        }
+        if (is_object($icon) && isset($icon->src) && is_string($icon->src) && $icon->src !== '') {
+            return $icon->src;
         }
         return null;
     }
