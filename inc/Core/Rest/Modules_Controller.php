@@ -348,9 +348,20 @@ final class Modules_Controller extends WP_REST_Controller
     /**
      * Resolve the dashicon-or-SVG icon for a block-category module.
      * Convention: module slug `xxx-block` ⇄ block name `orb/xxx`.
-     * Looks the block up in WP_Block_Type_Registry and returns
-     * whatever block.json gave it; null when the block isn't
-     * registered (module disabled) or has no icon.
+     *
+     * Looks in three places in order:
+     *   1. The Block Manager's editor-side icon cache (the only
+     *      place where React-element icons from registerBlockType
+     *      actually exist as serialised SVG)
+     *   2. WP_Block_Type_Registry — block.json's icon field
+     *      (string or {src,…} object), present when the module is
+     *      enabled and the block has registered
+     *   3. null when neither has anything
+     *
+     * The cache is populated on every block editor page load
+     * (see Block_Manager::enqueue_icon_collector), so once a user
+     * has opened the editor once on this site, our dashboard /
+     * sidebar / block manager all draw from the same source.
      */
     private function resolve_block_icon(string $module_slug): ?string
     {
@@ -361,11 +372,31 @@ final class Modules_Controller extends WP_REST_Controller
         if (!is_string($stem) || $stem === '') {
             return null;
         }
+
+        $cached = \get_transient('orbitools_block_icons');
+        if (is_array($cached)) {
+            foreach (['orb/' . $stem, 'orbital/' . $stem] as $name) {
+                if (isset($cached[$name]) && is_string($cached[$name]) && $cached[$name] !== '') {
+                    return $cached[$name];
+                }
+            }
+        }
+
         $registry = \WP_Block_Type_Registry::get_instance();
         foreach (['orb/' . $stem, 'orbital/' . $stem] as $name) {
             $type = $registry->get_registered($name);
-            if ($type !== null && is_string($type->icon ?? null) && $type->icon !== '') {
-                return $type->icon;
+            if ($type === null) {
+                continue;
+            }
+            $icon = $type->icon ?? null;
+            if (is_string($icon) && $icon !== '') {
+                return $icon;
+            }
+            if (is_array($icon) && isset($icon['src']) && is_string($icon['src']) && $icon['src'] !== '') {
+                return $icon['src'];
+            }
+            if (is_object($icon) && isset($icon->src) && is_string($icon->src) && $icon->src !== '') {
+                return $icon->src;
             }
         }
         return null;
