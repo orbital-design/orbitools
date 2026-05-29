@@ -16,7 +16,17 @@
 
 const defaultConfig = require('@wordpress/scripts/config/webpack.config');
 const path = require('path');
+const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 const { run: discover } = require('./scripts/discover-admin-extensions');
+
+// @wordpress/scripts ships a CleanWebpackPlugin in its default
+// plugin list that wipes the entire output dir regardless of
+// `output.clean` on the webpack config. Filter it out so
+// build:admin coexists with build:blocks / build:assets siblings
+// under build/.
+const filteredPlugins = (defaultConfig.plugins || []).filter(
+    (plugin) => !(plugin instanceof CleanWebpackPlugin),
+);
 
 class DiscoverAdminExtensionsPlugin {
     apply(compiler) {
@@ -58,7 +68,7 @@ module.exports = {
         },
     },
     plugins: [
-        ...((defaultConfig.plugins) || []),
+        ...filteredPlugins,
         new DiscoverAdminExtensionsPlugin(),
     ],
 };

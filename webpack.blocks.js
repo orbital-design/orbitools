@@ -1,10 +1,18 @@
 const defaultConfig = require('@wordpress/scripts/config/webpack.config');
 const path = require('path');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
+const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 
-// Filter out the default CopyWebpackPlugin to avoid duplicates
+// Filter out:
+//  - the default CopyWebpackPlugin (we register our own block.json
+//    copies below)
+//  - the default CleanWebpackPlugin (wipes the whole build/ dir
+//    regardless of output.clean, which nukes the admin / assets
+//    bundles every time we rebuild blocks)
 const filteredPlugins = defaultConfig.plugins.filter(
-    plugin => !(plugin instanceof CopyWebpackPlugin)
+    (plugin) =>
+        !(plugin instanceof CopyWebpackPlugin) &&
+        !(plugin instanceof CleanWebpackPlugin),
 );
 
 // Standard WordPress block entries
@@ -31,6 +39,16 @@ const blockEntries = {
 module.exports = {
     ...defaultConfig,
     entry: blockEntries,
+    output: {
+        ...(defaultConfig.output || {}),
+        // Don't clean. The assets + admin bundles share build/
+        // (each writes to its own subdir), and running
+        // `npm run build:blocks` in isolation shouldn't wipe
+        // sibling output left by build:admin / build:assets.
+        // @wordpress/scripts' default sets clean: true, which is
+        // what nuked the admin bundle when we rebuilt blocks alone.
+        clean: false,
+    },
     plugins: [
         ...filteredPlugins,
         new CopyWebpackPlugin({

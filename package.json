@@ -5,9 +5,9 @@
   "main": "build/index.js",
   "scripts": {
     "build": "npm run build:blocks && npm run build:assets && npm run build:admin",
-    "build:blocks": "wp-scripts build --config webpack.blocks.js",
+    "build:blocks": "NODE_ENV=production webpack --config webpack.blocks.js",
     "build:assets": "webpack --config webpack.assets.js",
-    "build:admin": "wp-scripts build --config webpack.admin.js",
+    "build:admin": "NODE_ENV=production webpack --config webpack.admin.js",
     "start": "wp-scripts start --config webpack.blocks.js",
     "start:blocks": "wp-scripts start --config webpack.blocks.js",
     "start:assets": "webpack --config webpack.assets.js --watch",
