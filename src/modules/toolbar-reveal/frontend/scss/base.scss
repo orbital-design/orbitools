@@ -1,26 +1,24 @@
 /**
  * Toolbar Reveal — frontend styles.
  *
- * Two modes, picked by JS on init:
+ * Single animation pattern across both modes: the toolbar slides
+ * in from above. App mode (added by JS when `body > #app` is
+ * present) adds a second simultaneous slide on `#app` so the
+ * incoming toolbar lands into a gap rather than overlaying page
+ * content — gives the same "slide to reveal" feel without the
+ * z-index fight a "hidden behind #app" model causes when the
+ * site has its own fixed header.
  *
- *   Default — the toolbar itself slides down from above. Cheap,
- *   works on every theme.
- *
- *   App mode — added by JS when `body > #app` is present (the
- *   convention Sage / Bedrock / our own builds follow). The
- *   toolbar stays fixed in place; the #app wrapper slides DOWN
- *   to reveal it. Feels more like part of the page than a
- *   floating overlay.
- *
- * Both modes are driven by a single `--visible` class on <body>
- * so the rest of the JS doesn't care which animation is active.
+ * The whole thing is driven by a single `--visible` class on
+ * <body>, set by the JS on hover / keyboard focus.
  */
 
-// -----------------------------------------------------------------
-// Default mode — slide the bar itself
-// -----------------------------------------------------------------
-
 #wpadminbar {
+    // Force the toolbar above every reasonably-zindexed site
+    // header. WP's own value is 99999; we go three orders higher
+    // so any plugin / theme using "very high" values doesn't
+    // accidentally cover us.
+    z-index: 9999999 !important;
     transform: translateY(-100%);
     transition: transform 360ms cubic-bezier(.16, 1, .3, 1);
     will-change: transform;
@@ -50,10 +48,9 @@ html {
 }
 
 // Invisible strip across the top of the viewport that captures the
-// `mouseenter` we use to slide the bar in. Has to outrank both the
-// toolbar (99999) AND the #app wrapper used in app mode (100000),
-// otherwise mouseing into the top corner just hits #app and the
-// reveal never triggers.
+// `mouseenter` we use to slide the bar in. One order higher than
+// the toolbar so the zone keeps catching events even when the
+// toolbar is fully revealed.
 .orbitools-toolbar-reveal__zone {
     background: transparent;
     height: 6px;
@@ -62,37 +59,23 @@ html {
     position: fixed;
     right: 0;
     top: 0;
-    z-index: 100001;
+    z-index: 99999999;
 }
 
 // -----------------------------------------------------------------
-// App mode — slide #app down, leave the toolbar fixed behind it
+// App mode — slide #app down in lockstep with the bar coming in
 // -----------------------------------------------------------------
 
-body.orbitools-toolbar-reveal--app-mode {
-    // Cancel the default off-screen position: the toolbar sits at
-    // top:0 normally and gets covered by #app.
-    #wpadminbar {
-        transform: none;
-    }
+body.orbitools-toolbar-reveal--app-mode #app {
+    transform: translateY(0);
+    transition: transform 360ms cubic-bezier(.16, 1, .3, 1);
+    will-change: transform;
+}
 
-    #app {
-        position: relative;
-        // Above the toolbar (which is z-index 99999) so #app
-        // physically covers it until it slides down.
-        z-index: 100000;
-        transform: translateY(0);
-        transition: transform 360ms cubic-bezier(.16, 1, .3, 1);
-        will-change: transform;
-    }
+body.orbitools-toolbar-reveal--app-mode.orbitools-toolbar-reveal--visible #app {
+    transform: translateY(32px);
 
-    &.orbitools-toolbar-reveal--visible #app {
-        // Standard WP toolbar height; matches the desktop / mobile
-        // breakpoint WP uses for its own `html { margin-top }`.
-        transform: translateY(32px);
-
-        @media screen and (max-width: 782px) {
-            transform: translateY(46px);
-        }
+    @media screen and (max-width: 782px) {
+        transform: translateY(46px);
     }
 }
