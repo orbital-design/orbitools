@@ -35,6 +35,7 @@ interface BlockInfo {
 
 interface BlocksResponse {
     blocks: BlockInfo[];
+    cache_populated: boolean;
 }
 
 interface StoreShape {
@@ -60,6 +61,7 @@ const Page: ModulePage = ({ slug }) => {
     const [blocks, setBlocks] = useState<BlockInfo[] | null>(null);
     const [fetchError, setFetchError] = useState<string | null>(null);
     const [search, setSearch] = useState<string>('');
+    const [cachePopulated, setCachePopulated] = useState<boolean>(true);
 
     const settings = useSelect(
         (select) => (select(STORE_KEY) as unknown as StoreShape).getSettings(slug),
@@ -81,6 +83,7 @@ const Page: ModulePage = ({ slug }) => {
             .then((res) => {
                 if (!cancelled) {
                     setBlocks(res.blocks);
+                    setCachePopulated(res.cache_populated);
                 }
             })
             .catch((err: unknown) => {
@@ -161,6 +164,13 @@ const Page: ModulePage = ({ slug }) => {
                     __nextHasNoMarginBottom
                 />
             </div>
+            {!cachePopulated && (
+                <Notice status="info" isDismissible={false}>
+                    Most block icons live only in JavaScript and aren't visible
+                    to PHP. Open the post / page editor on this site once and
+                    they'll be cached for use here.
+                </Notice>
+            )}
             {categoryOrder.length === 0 ? (
                 <Notice status="info" isDismissible={false}>
                     No blocks match the current filter.

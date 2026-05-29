@@ -13,9 +13,19 @@ if (!defined('ABSPATH')) {
  *
  * Walks `WP_Block_Type_Registry` and exposes the result via REST so
  * the React admin can present an "enable / disable per block"
- * picker. A simple `disabled` setting (array of block names) is
- * subtracted from `allowed_block_types_all` so the editor inserter
- * actually respects the choices.
+ * picker. A `disabled` setting (array of block names) is subtracted
+ * from `allowed_block_types_all` so the editor inserter actually
+ * respects the choices.
+ *
+ * Icon resolution: most core blocks register their icon in JS
+ * (registerBlockType in their editor script) — PHP can't see those.
+ * We work around it by tapping into the editor itself: every time
+ * a real block editor loads, an inline script reads
+ * wp.blocks.getBlockTypes(), serialises each icon via
+ * wp.element.renderToString(), and POSTs the lot to
+ * /orbitools/v1/block-icons, which stores them in a transient. The
+ * Block Manager then overlays the cached icons on top of whatever
+ * PHP's WP_Block_Type::$icon provides.
  *
  * @package Orbitools
  * @since   3.3.0
@@ -23,98 +33,12 @@ if (!defined('ABSPATH')) {
 final class Block_Manager extends Module_Base
 {
     /**
-     * Fallback dashicon names for core blocks whose `icon` field is
-     * set in JS (not block.json), so PHP's WP_Block_Type::$icon is
-     * null. Covers the common content/media/design/theme blocks;
-     * anything else falls through to `block-default`.
+     * Transient holding block name → serialised SVG/dashicon-name
+     * string, written by the editor-side collector script. No
+     * expiry: every editor load refreshes it, and the file stays
+     * fresh by virtue of normal editing activity.
      */
-    private const CORE_ICON_FALLBACKS = [
-        // Text
-        'core/paragraph'         => 'editor-paragraph',
-        'core/heading'           => 'heading',
-        'core/list'              => 'editor-ul',
-        'core/list-item'         => 'editor-ul',
-        'core/quote'             => 'editor-quote',
-        'core/pullquote'         => 'format-quote',
-        'core/code'              => 'editor-code',
-        'core/preformatted'      => 'editor-paragraph',
-        'core/verse'             => 'editor-paragraph',
-        'core/details'           => 'editor-justify',
-        'core/footnotes'         => 'editor-justify',
-        'core/freeform'          => 'editor-kitchensink',
-
-        // Media
-        'core/image'             => 'format-image',
-        'core/gallery'           => 'format-gallery',
-        'core/audio'             => 'format-audio',
-        'core/video'             => 'format-video',
-        'core/file'              => 'media-document',
-        'core/media-text'        => 'format-gallery',
-        'core/cover'             => 'cover-image',
-
-        // Design
-        'core/buttons'           => 'button',
-        'core/button'            => 'button',
-        'core/columns'           => 'columns',
-        'core/column'            => 'columns',
-        'core/group'             => 'category',
-        'core/row'               => 'editor-alignleft',
-        'core/stack'             => 'menu',
-        'core/separator'         => 'minus',
-        'core/spacer'            => 'image-flip-vertical',
-        'core/page-break'        => 'editor-break',
-        'core/more'              => 'editor-insertmore',
-        'core/nextpage'          => 'editor-insertmore',
-
-        // Widgets / utility
-        'core/table'             => 'editor-table',
-        'core/shortcode'         => 'shortcode',
-        'core/html'              => 'html',
-        'core/block'             => 'block-default',
-        'core/pattern'           => 'layout',
-        'core/missing'           => 'warning',
-        'core/embed'             => 'embed-generic',
-
-        // Post / site
-        'core/post-title'        => 'editor-bold',
-        'core/post-content'      => 'media-text',
-        'core/post-excerpt'      => 'editor-paragraph',
-        'core/post-date'         => 'clock',
-        'core/post-author'       => 'admin-users',
-        'core/post-featured-image' => 'format-image',
-        'core/post-comments'     => 'admin-comments',
-        'core/post-navigation-link' => 'arrow-right-alt',
-        'core/read-more'         => 'editor-paragraph',
-        'core/site-logo'         => 'format-image',
-        'core/site-title'        => 'admin-site',
-        'core/site-tagline'      => 'editor-paragraph',
-
-        // Navigation
-        'core/navigation'        => 'menu',
-        'core/navigation-link'   => 'admin-links',
-        'core/navigation-submenu' => 'admin-links',
-        'core/home-link'         => 'admin-home',
-        'core/page-list'         => 'admin-page',
-        'core/loginout'          => 'admin-users',
-
-        // Query / archives
-        'core/query'             => 'loop',
-        'core/post-template'     => 'list-view',
-        'core/post-terms'        => 'tag',
-        'core/term-description'  => 'editor-paragraph',
-        'core/archives'          => 'archive',
-        'core/calendar'          => 'calendar-alt',
-        'core/categories'        => 'category',
-        'core/tag-cloud'         => 'tag',
-        'core/latest-comments'   => 'admin-comments',
-        'core/latest-posts'      => 'admin-post',
-        'core/comments'          => 'admin-comments',
-        'core/rss'               => 'rss',
-        'core/search'            => 'search',
-        'core/social-links'      => 'share',
-        'core/social-link'       => 'share',
-        'core/template-part'     => 'layout',
-    ];
+    private const ICON_CACHE_KEY = 'orbitools_block_icons';
 
     public function get_slug(): string
     {
@@ -138,6 +62,10 @@ final class Block_Manager extends Module_Base
         // subtract our deny list from whatever they hand us.
         \add_filter('allowed_block_types_all', [$this, 'filter_allowed_blocks'], 100, 2);
         \add_action('rest_api_init', [$this, 'register_rest_routes']);
+        // Drop the icon-collector inline script into every block
+        // editor page (post.php, site editor, widgets, etc.) so the
+        // cache stays fresh.
+        \add_action('enqueue_block_editor_assets', [$this, 'enqueue_icon_collector']);
     }
 
     /**
@@ -185,29 +113,143 @@ final class Block_Manager extends Module_Base
                 },
             ],
         ]);
+        \register_rest_route('orbitools/v1', '/block-icons', [
+            [
+                'methods'             => 'POST',
+                'callback'            => [$this, 'rest_save_icons'],
+                // Editor permission, since this fires from inside
+                // the block editor on a normal post-edit pageload.
+                'permission_callback' => function () {
+                    return \current_user_can('edit_posts');
+                },
+            ],
+        ]);
     }
 
     public function rest_list_blocks(): \WP_REST_Response
     {
-        $registered = \WP_Block_Type_Registry::get_instance()->get_all_registered();
-        $blocks = [];
+        $registered   = \WP_Block_Type_Registry::get_instance()->get_all_registered();
+        $cached_icons = $this->get_cached_icons();
+        $blocks       = [];
         foreach ($registered as $name => $type) {
             $name_str = (string) $name;
-            // Skip Orbital-namespaced blocks — they each have their
-            // own settings page in this same Blocks tab, so showing
-            // them here would be a second place to flip the same
-            // switch.
             if ($this->is_orbital_block($name_str)) {
                 continue;
             }
-            $blocks[] = $this->serialise_block($name_str, $type);
+            $blocks[] = $this->serialise_block($name_str, $type, $cached_icons);
         }
         // Stable order: by category then title.
         usort($blocks, static function (array $a, array $b): int {
             $cmp = strcmp($a['category'], $b['category']);
             return $cmp !== 0 ? $cmp : strcmp($a['title'], $b['title']);
         });
-        return new \WP_REST_Response(['blocks' => $blocks]);
+        return new \WP_REST_Response([
+            'blocks'          => $blocks,
+            // Lets the UI nudge the user to open the editor once
+            // when nothing's been cached yet.
+            'cache_populated' => !empty($cached_icons),
+        ]);
+    }
+
+    /**
+     * Receive the icon dump from the editor-side collector and
+     * store it in a transient. Replaces wholesale rather than
+     * merging — last editor load wins, which keeps the cache in
+     * sync with whatever blocks are actually registered now.
+     */
+    public function rest_save_icons(\WP_REST_Request $request): \WP_REST_Response
+    {
+        $payload = $request->get_param('icons');
+        if (!is_array($payload)) {
+            return new \WP_REST_Response(['saved' => 0]);
+        }
+        $clean = [];
+        foreach ($payload as $name => $svg) {
+            if (!is_string($name) || $name === '' || !is_string($svg) || $svg === '') {
+                continue;
+            }
+            // Cap individual icon size at 16KB so a runaway SVG
+            // can't bloat the option indefinitely.
+            if (strlen($svg) > 16384) {
+                continue;
+            }
+            $clean[$name] = $svg;
+        }
+        if (!empty($clean)) {
+            // TTL 0 = no expiry; rewritten on every editor load.
+            \set_transient(self::ICON_CACHE_KEY, $clean, 0);
+        }
+        return new \WP_REST_Response(['saved' => count($clean)]);
+    }
+
+    /**
+     * Inline JS dropped into block editor pages. Reads the JS-side
+     * block registry (the only place where most core block icons
+     * actually live — PHP's WP_Block_Type::$icon is null for them)
+     * and POSTs an icon map to our REST endpoint.
+     *
+     * Uses `wp.element.renderToString` to serialise React-element
+     * icons to SVG markup we can store and re-render later.
+     */
+    public function enqueue_icon_collector(): void
+    {
+        $bootstrap = \wp_json_encode([
+            'url'   => \esc_url_raw(\rest_url('orbitools/v1/block-icons')),
+            'nonce' => \wp_create_nonce('wp_rest'),
+        ]);
+        if (!is_string($bootstrap)) {
+            return;
+        }
+
+        // The script runs after wp-blocks loads. We delay collection
+        // by 1.5s to give late-registering blocks (some plugins
+        // register on `init` or later) a chance to land in the
+        // registry before we snapshot it.
+        $script = <<<JS
+(function () {
+    if (typeof wp === 'undefined' || !wp.blocks || !wp.element || !wp.apiFetch) {
+        return;
+    }
+    var data = {$bootstrap};
+    var collect = function () {
+        var types = wp.blocks.getBlockTypes();
+        var icons = {};
+        types.forEach(function (type) {
+            var icon = type && type.icon;
+            if (!icon) { return; }
+            try {
+                if (typeof icon === 'string') {
+                    icons[type.name] = icon;
+                    return;
+                }
+                if (icon.src) {
+                    if (typeof icon.src === 'string') {
+                        icons[type.name] = icon.src;
+                    } else {
+                        icons[type.name] = wp.element.renderToString(icon.src);
+                    }
+                    return;
+                }
+                icons[type.name] = wp.element.renderToString(icon);
+            } catch (e) {
+                // Skip icons that can't be serialised.
+            }
+        });
+        wp.apiFetch({
+            path: 'orbitools/v1/block-icons',
+            method: 'POST',
+            data: { icons: icons }
+        }).catch(function () { /* best-effort cache */ });
+    };
+    if (wp.domReady) {
+        wp.domReady(function () { setTimeout(collect, 1500); });
+    } else {
+        setTimeout(collect, 2000);
+    }
+}());
+JS;
+
+        \wp_add_inline_script('wp-blocks', $script, 'after');
     }
 
     /**
@@ -221,33 +263,65 @@ final class Block_Manager extends Module_Base
     }
 
     /**
+     * @param array<string,string> $cached_icons
      * @return array<string,mixed>
      */
-    private function serialise_block(string $name, \WP_Block_Type $type): array
+    private function serialise_block(string $name, \WP_Block_Type $type, array $cached_icons): array
     {
         return [
             'name'        => $name,
             'title'       => is_string($type->title ?? null) && $type->title !== '' ? $type->title : $name,
             'category'    => is_string($type->category ?? null) && $type->category !== '' ? $type->category : 'uncategorized',
             'description' => is_string($type->description ?? null) ? $type->description : '',
-            'icon'        => $this->serialise_icon($name, $type),
+            // Editor-cache wins; PHP's block.json icon (string OR
+            // the {src,background,foreground} object form) is the
+            // fallback. We do NOT keep a hardcoded core-block icon
+            // map any more — those guesses were wrong often enough
+            // to create more confusion than they cured.
+            'icon'        => $cached_icons[$name] ?? $this->serialise_icon($type),
         ];
     }
 
     /**
-     * Return the icon as a string if we can — block.json's `icon`
-     * field (dashicon slug or inline SVG markup) when WP gave us
-     * one, our hardcoded fallback map for core blocks whose icons
-     * live in JS-only registration, or null for the UI to use a
-     * generic placeholder.
+     * Return the icon as a string if we can:
+     *   - block.json's `icon` as a dashicon slug ("format-image") or
+     *     inline SVG markup ("<svg…")
+     *   - block.json's `icon` as the object form `{src, background,
+     *     foreground}` — we extract `src` when it's a string
+     * null when the icon is a React element / non-serialisable;
+     * the editor cache (above) covers those.
      */
-    private function serialise_icon(string $name, \WP_Block_Type $type): ?string
+    private function serialise_icon(\WP_Block_Type $type): ?string
     {
         $icon = $type->icon ?? null;
         if (is_string($icon) && $icon !== '') {
             return $icon;
         }
-        return self::CORE_ICON_FALLBACKS[$name] ?? null;
+        if (is_array($icon) && isset($icon['src']) && is_string($icon['src']) && $icon['src'] !== '') {
+            return $icon['src'];
+        }
+        if (is_object($icon) && isset($icon->src) && is_string($icon->src) && $icon->src !== '') {
+            return $icon->src;
+        }
+        return null;
+    }
+
+    /**
+     * @return array<string,string>
+     */
+    private function get_cached_icons(): array
+    {
+        $cached = \get_transient(self::ICON_CACHE_KEY);
+        if (!is_array($cached)) {
+            return [];
+        }
+        $out = [];
+        foreach ($cached as $name => $svg) {
+            if (is_string($name) && $name !== '' && is_string($svg) && $svg !== '') {
+                $out[$name] = $svg;
+            }
+        }
+        return $out;
     }
 
     /**
