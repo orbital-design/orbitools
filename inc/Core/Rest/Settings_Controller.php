@@ -118,6 +118,11 @@ final class Settings_Controller extends WP_REST_Controller
             $stripped[$field_id] = $value;
         }
 
+        // Let modules inject defaults for unset keys (e.g. the
+        // Block Manager's curated default disable list). The
+        // filter only fills holes — stored keys win.
+        $stripped = \apply_filters('orbitools/settings_defaults', $stripped, $slug);
+
         // (object) cast ensures empty results serialise as `{}` not `[]`.
         return new WP_REST_Response((object) $stripped);
     }

@@ -6,7 +6,7 @@
   "version": "1.0.0",
   "category": "blocks",
   "class": "\\Orbitools\\Modules\\Block_Manager\\Block_Manager",
-  "default_enabled": false,
+  "default_enabled": true,
   "requires": {
     "php": ">=7.4",
     "wp": ">=5.0"

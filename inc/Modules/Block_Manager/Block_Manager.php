@@ -40,6 +40,102 @@ final class Block_Manager extends Module_Base
      */
     private const ICON_CACHE_KEY = 'orbitools_block_icons';
 
+    /**
+     * Default deny-list for Orbital sites — curated from an actual
+     * production install (2026-05-29). These are the blocks we
+     * never use across the fleet, so on a fresh install with the
+     * Block Manager module enabled they start off disabled and
+     * the user only has to flip on the handful they want.
+     *
+     * Stored in orbitools_settings as `block-manager_disabled`
+     * once the user touches anything; until then we just serve
+     * this list at the API boundary so the UI reflects them as
+     * disabled. Override by toggling any block back ON and saving.
+     */
+    private const DEFAULT_DISABLED = [
+        'core/buttons',
+        'core/button',
+        'core/column',
+        'core/columns',
+        'core/comment-template',
+        'core/home-link',
+        'core/navigation-link',
+        'core/group',
+        'core/more',
+        'core/navigation-overlay-close',
+        'core/nextpage',
+        'core/navigation-submenu',
+        'core/spacer',
+        'core/text-columns',
+        'core/embed',
+        'core/audio',
+        'core/cover',
+        'core/footnotes',
+        'core/math',
+        'core/verse',
+        'core/preformatted',
+        'core/pullquote',
+        'core/post-author',
+        'core/breadcrumbs',
+        'core/comment-content',
+        'core/comment-date',
+        'core/rss',
+        'core/legacy-widget',
+        'core/search',
+        'core/latest-comments',
+        'core/archives',
+        'core/calendar',
+        'core/latest-posts',
+        'core/page-list-item',
+        'core/tag-cloud',
+        'core/widget-group',
+        'core/post-comments',
+        'core/terms-query',
+        'core/term-template',
+        'core/term-name',
+        'core/term-description',
+        'core/term-count',
+        'core/template-part',
+        'core/read-more',
+        'core/query-total',
+        'core/query-title',
+        'core/query',
+        'core/query-pagination-previous',
+        'core/post-navigation-link',
+        'core/post-template',
+        'core/post-terms',
+        'core/query-pagination',
+        'core/query-pagination-numbers',
+        'core/query-no-results',
+        'core/loginout',
+        'core/navigation',
+        'core/query-pagination-next',
+        'core/post-excerpt',
+        'core/post-date',
+        'core/post-featured-image',
+        'core/post-content',
+        'core/comments-title',
+        'core/comments-pagination-previous',
+        'core/comments-pagination-next',
+        'core/post-comments-count',
+        'core/post-comments-form',
+        'core/comments-pagination-numbers',
+        'core/comments-pagination',
+        'core/post-comments-link',
+        'core/comments',
+        'core/comment-reply-link',
+        'core/comment-edit-link',
+        'core/comment-author-name',
+        'core/video',
+        'core/gallery',
+        'core/categories',
+        'core/page-list',
+        'core/accordion',
+        'core/accordion-heading',
+        'core/accordion-panel',
+        'core/accordion-item',
+    ];
+
     public function get_slug(): string
     {
         return 'block-manager';
@@ -66,6 +162,30 @@ final class Block_Manager extends Module_Base
         // editor page (post.php, site editor, widgets, etc.) so the
         // cache stays fresh.
         \add_action('enqueue_block_editor_assets', [$this, 'enqueue_icon_collector']);
+        // Inject our default deny-list into the settings response
+        // when the user hasn't saved anything yet, so the React UI
+        // renders those toggles as already-off on a fresh install.
+        \add_filter('orbitools/settings_defaults', [$this, 'apply_default_disabled'], 10, 2);
+    }
+
+    /**
+     * Apply the curated default deny-list when the user hasn't
+     * stored anything yet. As soon as they save (even an empty
+     * list), the stored value wins.
+     *
+     * @param array<string,mixed> $settings
+     * @param string              $slug
+     * @return array<string,mixed>
+     */
+    public function apply_default_disabled(array $settings, string $slug): array
+    {
+        if ($slug !== $this->get_slug()) {
+            return $settings;
+        }
+        if (!array_key_exists('disabled', $settings)) {
+            $settings['disabled'] = self::DEFAULT_DISABLED;
+        }
+        return $settings;
     }
 
     /**
@@ -325,11 +445,19 @@ JS;
     }
 
     /**
+     * Read the user's disabled list, falling back to our curated
+     * default when nothing's been stored yet. Pass `null` as the
+     * sentinel so we can distinguish "never saved" from "saved an
+     * empty list" (the latter should disable nothing).
+     *
      * @return array<int,string>
      */
     private function get_disabled_blocks(): array
     {
-        $value = $this->get_setting('disabled', []);
+        $value = $this->get_setting('disabled', null);
+        if ($value === null) {
+            return self::DEFAULT_DISABLED;
+        }
         if (!is_array($value)) {
             return [];
         }
