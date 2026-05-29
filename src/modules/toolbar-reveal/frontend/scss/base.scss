@@ -50,9 +50,10 @@ html {
 }
 
 // Invisible strip across the top of the viewport that captures the
-// `mouseenter` we use to slide the bar in. Sits above page content
-// but below the toolbar itself (which already runs at z-index
-// 99999) so a visible bar still wins for actual clicks.
+// `mouseenter` we use to slide the bar in. Has to outrank both the
+// toolbar (99999) AND the #app wrapper used in app mode (100000),
+// otherwise mouseing into the top corner just hits #app and the
+// reveal never triggers.
 .orbitools-toolbar-reveal__zone {
     background: transparent;
     height: 6px;
@@ -61,7 +62,7 @@ html {
     position: fixed;
     right: 0;
     top: 0;
-    z-index: 99998;
+    z-index: 100001;
 }
 
 // -----------------------------------------------------------------
