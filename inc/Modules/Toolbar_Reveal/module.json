@@ -1,0 +1,14 @@
+{
+  "$schema": "https://orbitools/schemas/module.v1.json",
+  "slug": "toolbar-reveal",
+  "name": "Toolbar Reveal",
+  "description": "Hide the WordPress admin toolbar on the frontend by default; slide it down when the cursor reaches the top of the page. Mutually exclusive with the Toolbar FAB module.",
+  "version": "1.0.0",
+  "category": "modules",
+  "class": "\\Orbitools\\Modules\\Toolbar_Reveal\\Toolbar_Reveal",
+  "default_enabled": false,
+  "requires": {
+    "php": ">=7.4",
+    "wp": ">=5.0"
+  }
+}

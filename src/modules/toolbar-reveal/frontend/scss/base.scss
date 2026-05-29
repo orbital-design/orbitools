@@ -1,0 +1,55 @@
+/**
+ * Toolbar Reveal — frontend styles.
+ *
+ * Pulls the admin toolbar off-screen by default and reveals it on
+ * cursor hover near the top, on keyboard focus, or permanently on
+ * touch devices (no hover capability).
+ */
+
+#wpadminbar {
+    transform: translateY(-100%);
+    transition: transform 220ms cubic-bezier(.4, 0, .2, 1);
+    will-change: transform;
+
+    // Revealed when the JS hover-zone fires OR when any focusable
+    // child inside the bar gains focus (keyboard-only users still
+    // get to the toolbar via Tab).
+    &.orbitools-toolbar-reveal--visible,
+    &:focus-within {
+        transform: translateY(0);
+    }
+}
+
+// On touch-only devices there's no cursor to trigger the hover
+// zone, so keep the toolbar permanently visible.
+@media (hover: none) {
+    #wpadminbar {
+        transform: translateY(0);
+    }
+}
+
+// Reclaim the page real estate WP normally reserves for the
+// toolbar — we don't want a 32px / 46px white strip sitting under
+// the (now hidden) bar.
+html {
+    margin-top: 0 !important;
+
+    @media screen and (max-width: 782px) {
+        margin-top: 0 !important;
+    }
+}
+
+// Invisible strip across the top of the viewport that captures the
+// `mouseenter` we use to slide the bar in. Sits above page content
+// but below the toolbar itself (which already runs at z-index
+// 99999) so a visible bar still wins for actual clicks.
+.orbitools-toolbar-reveal__zone {
+    background: transparent;
+    height: 6px;
+    left: 0;
+    pointer-events: auto;
+    position: fixed;
+    right: 0;
+    top: 0;
+    z-index: 99998;
+}

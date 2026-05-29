@@ -12,6 +12,8 @@ module.exports = {
         'admin/css/editor': path.resolve(process.cwd(), 'src', 'admin', 'scss', 'editor.scss'),
         // - SCSS ~ Module ~ Layout Guides
         'frontend/css/modules/layout-guides/base': path.resolve(process.cwd(), 'src', 'modules', 'layout-guides','frontend', 'scss','base.scss'),
+        // - SCSS ~ Module ~ Toolbar Reveal (slide-in admin bar on the frontend)
+        'frontend/css/modules/toolbar-reveal/base': path.resolve(process.cwd(), 'src', 'modules', 'toolbar-reveal','frontend', 'scss','base.scss'),
         // - SCSS ~ Module ~ Menu Dividers
         'admin/css/modules/menu-dividers/admin': path.resolve(process.cwd(), 'src', 'modules', 'menu-dividers','admin', 'scss','admin.scss'),
         // - SCSS ~ Module ~ Menu Groups
@@ -26,6 +28,8 @@ module.exports = {
         // JS entries for JavaScript compilation
         // - JS ~ Module ~ Layout Guides
         'frontend/js/modules/layout-guides/base': path.resolve(process.cwd(), 'src', 'modules', 'layout-guides','frontend', 'js','base.js'),
+        // - JS ~ Module ~ Toolbar Reveal
+        'frontend/js/modules/toolbar-reveal/base': path.resolve(process.cwd(), 'src', 'modules', 'toolbar-reveal','frontend', 'js','base.js'),
         // - JS ~ Module ~ Menu Dividers
         'admin/js/modules/menu-dividers/admin': path.resolve(process.cwd(), 'src', 'modules', 'menu-dividers','admin', 'js','admin.js'),
         'admin/js/modules/menu-dividers/processor': path.resolve(process.cwd(), 'src', 'modules', 'menu-dividers','admin', 'js','processor.js'),
