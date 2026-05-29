@@ -50,8 +50,20 @@
         }, HIDE_DELAY_MS);
     }
 
+    function handleMouseLeave(event) {
+        // If the cursor left through the *top* edge of the viewport
+        // (URL bar, tab strip, browser chrome) keep the toolbar
+        // visible — the user almost always comes straight back, and
+        // having the bar vanish out from under a planned click is
+        // worse than briefly leaving it up.
+        if (event.clientY <= 0) {
+            return;
+        }
+        scheduleHide();
+    }
+
     zone.addEventListener('mouseenter', show);
     bar.addEventListener('mouseenter', show);
-    zone.addEventListener('mouseleave', scheduleHide);
-    bar.addEventListener('mouseleave', scheduleHide);
+    zone.addEventListener('mouseleave', handleMouseLeave);
+    bar.addEventListener('mouseleave', handleMouseLeave);
 }());
