@@ -120,8 +120,8 @@ final class Post_Templates extends Module_Base
         \add_action('init', [$this, 'register_pattern_categories']);
         \add_action('init', [$this, 'register_empty_templates'], 20);
         \add_action('set_object_terms', [$this, 'apply_template_on_type_change'], 10, 6);
-        \add_action('enqueue_block_editor_assets', [$this, 'enqueue_editor_script']);
-        \add_action('admin_enqueue_scripts', [$this, 'enqueue_admin_styles']);
+        \add_action('enqueue_block_editor_assets', [$this, 'enqueue_modal_assets']);
+        \add_action('admin_enqueue_scripts', [$this, 'enqueue_column_styles']);
         \add_action('wp_ajax_orbitools_pt_get_template', [$this, 'ajax_get_template']);
 
         foreach ($this->by_taxonomy as $tax => $cfg) {
@@ -608,7 +608,7 @@ final class Post_Templates extends Module_Base
      * Enqueue the post-template-loader script when the editor opens for
      * a configured CPT.
      */
-    public function enqueue_editor_script(): void
+    public function enqueue_modal_assets(): void
     {
         global $post;
 
@@ -666,7 +666,7 @@ final class Post_Templates extends Module_Base
     /**
      * Load the taxonomy list column styles on the relevant edit-tags screens only.
      */
-    public function enqueue_admin_styles(string $hook): void
+    public function enqueue_column_styles(string $hook): void
     {
         if ($hook !== 'edit-tags.php' && $hook !== 'term.php') {
             return;
