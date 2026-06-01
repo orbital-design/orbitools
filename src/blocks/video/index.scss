@@ -145,7 +145,7 @@
             }
 
             a {
-                color: inherit;
+                color: #1d303a; // Orbital navy
                 text-decoration: underline;
 
                 &:hover {
@@ -165,12 +165,12 @@
         object-fit: cover;
         border: 0;
 
-        background: #000;
+        background: #1d303a; // Orbital navy
 
         // Ensure controls are accessible
         &[controls] {
             object-fit: contain;
-            background: #000;
+            background: #1d303a;
         }
     }
 
@@ -183,7 +183,7 @@
         justify-content: center;
         gap: 0.5rem;
         background: #f0f0f0;
-        color: rgba(0, 0, 0, 0.4);
+        color: rgba(29, 48, 58, 0.4); // Orbital navy @ 40%
 
         i {
             font-size: 2.5rem;
