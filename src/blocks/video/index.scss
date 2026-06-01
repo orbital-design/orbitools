@@ -1,13 +1,10 @@
 /**
  * Video Block — frontend styles.
  *
- * Ported 1:1 from the dream-and-leap theme's
- * blocks/video/src/scss/_frontend.scss. Theme abstracts resolved to
- * their underlying CSS variables (`clr('navy')` → `var(--wp--preset--color--navy)`,
- * `spacing('4')` → `var(--wp--preset--spacing--4)`, `b-radius('md')`
- * → `var(--border-radius-md, …)`) with sane fallbacks so the block
- * still styles on sites that don't ship those tokens. Mixin
- * expansions (`aspect(…)`, `typo-preset-body-sm()`) are inlined.
+ * Theme-agnostic — no theme.json `--wp--preset--*` references. Any
+ * colour / typography / radius / shadow that's expected to come
+ * from the theme is either set via the editor (border-radius,
+ * shadow via block supports) or left alone for the theme to style.
  */
 
 // Main video block container
@@ -62,7 +59,7 @@
         }
 
         &:focus-visible {
-            outline: 3px solid var(--wp--preset--color--white, #fff);
+            outline: 3px solid #fff;
             outline-offset: -3px;
         }
     }
@@ -119,7 +116,7 @@
         width: 100%;
         height: 100%;
 
-        background: var(--wp--preset--color--soft-grey, #f0f0f0);
+        background: #f0f0f0;
 
         // Embed (YouTube, Vimeo, etc.)
         iframe,
@@ -139,8 +136,8 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            background: var(--wp--preset--color--soft-grey, #f0f0f0);
-            padding: var(--wp--preset--spacing--4, 1rem);
+            background: #f0f0f0;
+            padding: 1rem;
 
             p {
                 margin: 0;
@@ -148,7 +145,7 @@
             }
 
             a {
-                color: var(--wp--preset--color--navy, #1d303a);
+                color: inherit;
                 text-decoration: underline;
 
                 &:hover {
@@ -168,12 +165,12 @@
         object-fit: cover;
         border: 0;
 
-        background: var(--wp--preset--color--navy, #1d303a);
+        background: #000;
 
         // Ensure controls are accessible
         &[controls] {
             object-fit: contain;
-            background: var(--wp--preset--color--navy, #1d303a);
+            background: #000;
         }
     }
 
@@ -184,12 +181,9 @@
         flex-direction: column;
         align-items: center;
         justify-content: center;
-        gap: var(--wp--preset--spacing--2, 0.5rem);
-        background: var(--wp--preset--color--soft-grey, #f0f0f0);
-        // Theme uses `rgba(clr('navy', true), 0.4)` — the `true` flag
-        // returns the raw colour so it can be passed to rgba(). Navy
-        // is #1d303a → rgb(29, 48, 58) at 40% alpha.
-        color: rgba(29, 48, 58, 0.4);
+        gap: 0.5rem;
+        background: #f0f0f0;
+        color: rgba(0, 0, 0, 0.4);
 
         i {
             font-size: 2.5rem;
@@ -197,14 +191,8 @@
 
         p {
             margin: 0;
-            // typo-preset-body-sm() expansion — pulls from theme.json
-            // typography presets, with fallbacks so the styling is
-            // identical on the theme and degrades gracefully elsewhere.
-            font-family: var(--wp--preset--font-family--outfit, inherit);
             font-size: clamp(1rem, 0.9511rem + 0.2174vw, 1.125rem);
             line-height: 1.45;
-            letter-spacing: 0;
-            font-weight: 300;
         }
     }
 }
