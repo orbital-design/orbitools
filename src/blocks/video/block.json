@@ -3,7 +3,7 @@
     "apiVersion": 3,
     "name": "orb/video",
     "title": "Video",
-    "category": "theme",
+    "category": "media",
     "description": "Embed a YouTube or Vimeo video, paste any embeddable URL, or upload a file.",
     "keywords": ["video", "media", "embed", "youtube", "vimeo"],
     "textdomain": "orbitools",
