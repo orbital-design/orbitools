@@ -1,0 +1,14 @@
+{
+  "$schema": "https://orbitools/schemas/module.v1.json",
+  "slug": "post-templates",
+  "name": "Post Templates",
+  "description": "Auto-load synced block patterns when creating posts of configured CPTs, plus optional per-taxonomy archive templates. Themes register their CPT/taxonomy pairs via the `orbitools/post_templates/configs` filter.",
+  "version": "1.0.0",
+  "category": "modules",
+  "class": "\\Orbitools\\Modules\\Post_Templates\\Post_Templates",
+  "default_enabled": false,
+  "requires": {
+    "php": ">=7.4",
+    "wp": ">=5.0"
+  }
+}
