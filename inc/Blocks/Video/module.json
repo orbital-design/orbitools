@@ -1,0 +1,14 @@
+{
+  "$schema": "https://orbitools/schemas/module.v1.json",
+  "slug": "video-block",
+  "name": "Video",
+  "description": "Embed a YouTube or Vimeo video, paste any embeddable URL, or upload a file. Privacy-friendly facade with click-to-play.",
+  "version": "1.0.0",
+  "category": "blocks",
+  "class": "\\Orbitools\\Blocks\\Video\\Video",
+  "default_enabled": false,
+  "requires": {
+    "php": ">=7.4",
+    "wp": ">=5.0"
+  }
+}

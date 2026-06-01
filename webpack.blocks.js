@@ -34,6 +34,9 @@ const blockEntries = {
     'blocks/marquee/frontend': path.resolve(process.cwd(), 'src', 'blocks', 'marquee', 'frontend.js'),
     'blocks/group/index': path.resolve(process.cwd(), 'src', 'blocks', 'group', 'index.tsx'),
     'blocks/group/editor': path.resolve(process.cwd(), 'src', 'blocks', 'group', 'editor.scss'),
+    'blocks/video/index': path.resolve(process.cwd(), 'src', 'blocks', 'video', 'index.tsx'),
+    'blocks/video/editor': path.resolve(process.cwd(), 'src', 'blocks', 'video', 'editor.scss'),
+    'blocks/video/frontend': path.resolve(process.cwd(), 'src', 'blocks', 'video', 'frontend.js'),
 };
 
 module.exports = {
@@ -80,6 +83,10 @@ module.exports = {
                 {
                     from: 'src/blocks/group/block.json',
                     to: 'blocks/group/block.json',
+                },
+                {
+                    from: 'src/blocks/video/block.json',
+                    to: 'blocks/video/block.json',
                 },
             ],
         }),

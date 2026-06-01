@@ -1,0 +1,51 @@
+{
+    "$schema": "https://schemas.wp.org/trunk/block.json",
+    "apiVersion": 3,
+    "name": "orb/video",
+    "title": "Video",
+    "category": "theme",
+    "description": "Embed a YouTube or Vimeo video, paste any embeddable URL, or upload a file.",
+    "keywords": ["video", "media", "embed", "youtube", "vimeo"],
+    "textdomain": "orbitools",
+    "attributes": {
+        "videoUrl": { "type": "string", "default": "" },
+
+        "mp4Id": { "type": "number" },
+        "mp4Url": { "type": "string", "default": "" },
+        "webmId": { "type": "number" },
+        "webmUrl": { "type": "string", "default": "" },
+
+        "posterId": { "type": "number" },
+        "posterUrl": { "type": "string", "default": "" },
+
+        "aspectRatio": { "type": "string", "default": "16-9" },
+
+        "autoplay": { "type": "boolean", "default": false },
+        "loop": { "type": "boolean", "default": false },
+        "muted": { "type": "boolean", "default": true },
+        "controls": { "type": "boolean", "default": true },
+        "playsinline": { "type": "boolean", "default": true },
+
+        "ytDisableRelated": { "type": "boolean", "default": true },
+        "ytModestBranding": { "type": "boolean", "default": true },
+        "ytPauseOnScroll": { "type": "boolean", "default": true },
+        "ytPauseOthers": { "type": "boolean", "default": true },
+
+        "vimeoHideTitle": { "type": "boolean", "default": true },
+        "vimeoHideByline": { "type": "boolean", "default": true },
+        "vimeoHidePortrait": { "type": "boolean", "default": true },
+        "vimeoPauseOnScroll": { "type": "boolean", "default": true }
+    },
+    "supports": {
+        "align": ["wide", "full"],
+        "anchor": true,
+        "customClassName": true,
+        "html": false,
+        "inserter": true,
+        "multiple": true,
+        "reusable": true
+    },
+    "editorScript": "file:./index.js",
+    "editorStyle": "file:./editor.css",
+    "viewScript": "file:./frontend.js"
+}

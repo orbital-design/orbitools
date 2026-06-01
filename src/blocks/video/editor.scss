@@ -1,0 +1,69 @@
+/**
+ * Video Block — editor-side overrides.
+ *
+ * Ported 1:1 from the dream-and-leap theme's
+ * blocks/video/src/scss/_editor.scss. The frontend stylesheet
+ * (index.scss) is already loaded in the editor by WP, so this file
+ * only adds the editor-specific tweaks: sidebar file rows,
+ * truncated file names, the reset button row, the poster thumb,
+ * and the canvas pointer-event suppression so editors can select
+ * the block instead of starting playback.
+ */
+
+$elem_class: 'orb-video';
+
+// Sidebar file-upload rows — name + Replace + Remove buttons aligned.
+.#{$elem_class}__file-row {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: var(--wp--preset--spacing--2, 0.5rem);
+}
+
+// Truncate long file names so they don't push the buttons out of view.
+.#{$elem_class}__file-name {
+    flex: 1;
+    min-width: 0;
+    font-size: 12px;
+    color: rgba(30, 30, 30, 0.62);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+// Reset / Replace video button sits below the source controls.
+.#{$elem_class}__reset {
+    margin-top: var(--wp--preset--spacing--4, 1rem);
+    padding-top: var(--wp--preset--spacing--3, 0.75rem);
+    border-top: 1px solid #ddd;
+}
+
+// Poster image thumb in the sidebar.
+.#{$elem_class}__poster-thumb {
+    width: 48px;
+    height: 27px; // 16:9
+    object-fit: cover;
+    border-radius: 2px;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+// Block in the canvas — disable YT/Vimeo facade clicks + iframe
+// pointer events in the editor so editors can select the block
+// instead of starting playback.
+.#{$elem_class} {
+    .#{$elem_class}__facade,
+    .#{$elem_class}__embed {
+        pointer-events: none;
+    }
+
+    .#{$elem_class}__placeholder {
+        min-height: 120px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: var(--wp--preset--spacing--4, 1rem);
+        background: var(--wp--preset--color--soft-grey, #f0f0f0);
+        color: rgba(30, 30, 30, 0.62);
+        text-align: center;
+    }
+}
