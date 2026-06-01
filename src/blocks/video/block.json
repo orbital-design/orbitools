@@ -43,7 +43,9 @@
         "html": false,
         "inserter": true,
         "multiple": true,
-        "reusable": true
+        "reusable": true,
+        "border": { "radius": true },
+        "shadow": true
     },
     "editorScript": "file:./index.js",
     "editorStyle": "file:./editor.css",
