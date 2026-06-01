@@ -22,9 +22,6 @@ if (!defined('ABSPATH')) {
  * touch devices — where there's no hover state — the bar stays
  * permanently visible.
  *
- * Mutually exclusive with the `toolbar-fab` module, which replaces
- * the toolbar entirely. Enable one or the other, not both.
- *
  * @package Orbitools
  * @since   3.3.0
  */

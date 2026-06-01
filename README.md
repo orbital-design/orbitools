@@ -59,7 +59,7 @@ See `CLAUDE.md` § "Theme pages" for the full registration shape.
 - **User Avatars** — local avatar uploads, optional Gravatar disable
 - **Menu Dividers** — visual dividers in WP nav menus
 - **Menu Groups** — grouped menu items
-- **Toolbar FAB** — floating action button toolbar
+- **Toolbar Reveal** — hide the admin toolbar on the frontend until the cursor reaches the top of the page
 - **Core Overrides** — hide built-in WP admin pages (Settings → Connectors / Site Health / etc.) the site doesn't need
 
 ## Project structure

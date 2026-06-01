@@ -22,6 +22,7 @@ final class Migrations
     public static function run(): void
     {
         self::maybe_run_slug_migration();
+        self::maybe_drop_toolbar_fab();
     }
 
     /**
@@ -55,8 +56,7 @@ final class Migrations
             'menu_groups_enabled'        => 'menu-groups_enabled',
             'user_avatars_enabled'       => 'user-avatars_enabled',
             'layout_guides_enabled'      => 'layout-guides_enabled',
-            // analytics_enabled, toolbar-fab_enabled — slugs already match,
-            // no migration needed.
+            // analytics_enabled — slug already matches, no migration needed.
         ];
 
         $settings = \get_option('orbitools_settings', []);
@@ -87,6 +87,27 @@ final class Migrations
 
         // Mark migration complete. autoload=false: only read once at the
         // top of Loader::init() per request, no point paying the autoload tax.
+        \update_option($flag_option, '1', false);
+    }
+
+    /**
+     * Drop the stored `toolbar-fab_enabled` key after the Toolbar FAB
+     * module was removed in favour of Toolbar Reveal.
+     */
+    private static function maybe_drop_toolbar_fab(): void
+    {
+        $flag_option = 'orbitools_drop_toolbar_fab_done';
+
+        if (\get_option($flag_option)) {
+            return;
+        }
+
+        $settings = \get_option('orbitools_settings', []);
+        if (is_array($settings) && array_key_exists('toolbar-fab_enabled', $settings)) {
+            unset($settings['toolbar-fab_enabled']);
+            \update_option('orbitools_settings', $settings);
+        }
+
         \update_option($flag_option, '1', false);
     }
 }
