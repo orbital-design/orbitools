@@ -2,7 +2,7 @@
   "$schema": "https://orbitools/schemas/module.v1.json",
   "slug": "post-templates",
   "name": "Post Templates",
-  "description": "Auto-load synced block patterns when creating posts of configured CPTs, plus optional per-taxonomy archive templates. Themes register their CPT/taxonomy pairs via the `orbitools/post_templates/configs` filter.",
+  "description": "Auto-load synced block patterns when creating posts of configured CPTs, plus optional per-taxonomy archive templates.",
   "version": "1.0.0",
   "category": "modules",
   "class": "\\Orbitools\\Modules\\Post_Templates\\Post_Templates",
@@ -10,5 +10,40 @@
   "requires": {
     "php": ">=7.4",
     "wp": ">=5.0"
-  }
+  },
+  "settings": [
+    {
+      "id": "configs",
+      "type": "repeater",
+      "label": "CPT / taxonomy pairs",
+      "description": "Each row wires one custom post type to a taxonomy. Post Templates registers synced-pattern categories for the pair, surfaces the picker on the taxonomy term edit screen, and (for posts of the CPT) prompts the editor modal when a new post still has the placeholder block. Themes can add more pairs in code via the `orbitools/post_templates/configs` filter — UI rows + filter rows are merged.",
+      "default": [],
+      "add_button_label": "Add CPT / taxonomy pair",
+      "row_label_field": "label",
+      "row_label_prefix": "Pair:",
+      "sub_fields": [
+        {
+          "id": "label",
+          "type": "text",
+          "label": "Label",
+          "description": "Human-facing singular name (e.g. \"Resource\"). Used in column headers, the editor modal title, and pattern category names.",
+          "default": ""
+        },
+        {
+          "id": "post_type",
+          "type": "post-type",
+          "label": "Post type",
+          "description": "The custom post type this pairing applies to.",
+          "default": ""
+        },
+        {
+          "id": "taxonomy",
+          "type": "taxonomy",
+          "label": "Taxonomy",
+          "description": "The taxonomy whose terms map to template patterns.",
+          "default": ""
+        }
+      ]
+    }
+  ]
 }

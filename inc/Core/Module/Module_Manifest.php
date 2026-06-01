@@ -38,6 +38,8 @@ final class Module_Manifest
         'range',
         'media',
         'page',
+        'post-type',
+        'taxonomy',
         'repeater',
     ];
 

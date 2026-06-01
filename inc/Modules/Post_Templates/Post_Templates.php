@@ -25,14 +25,18 @@ if (!defined('ABSPATH')) {
  *                             that themes render on that term's archive
  *                             page via {@see ::get_archive_template_id()}.
  *
- * Themes register the CPT/taxonomy pairs they want this for via the
- * `orbitools/post_templates/configs` filter:
+ * Pairs come from two sources, in this order:
  *
- *     add_filter('orbitools/post_templates/configs', function ($configs) {
- *         $configs[] = ['post_type' => 'resources', 'taxonomy' => 'resource-type', 'label' => 'Resource'];
- *         $configs[] = ['post_type' => 'insights',  'taxonomy' => 'insight-type',  'label' => 'Insight'];
- *         return $configs;
- *     });
+ *   1. The repeater on the module's settings page (stored under the
+ *      `post-templates_configs` key in `orbitools_settings`).
+ *   2. The `orbitools/post_templates/configs` filter, which receives the
+ *      UI-stored rows as its initial value — themes can add to (or
+ *      override) them in code by returning a modified array:
+ *
+ *          add_filter('orbitools/post_templates/configs', function ($configs) {
+ *              $configs[] = ['post_type' => 'resources', 'taxonomy' => 'resource-type', 'label' => 'Resource'];
+ *              return $configs;
+ *          });
  *
  * Ported from the dream-and-leap theme's `Logger\Post_Templates\Component`.
  *
@@ -74,7 +78,8 @@ final class Post_Templates extends Module_Base
 
     public function init(): void
     {
-        $configs = (array) \apply_filters('orbitools/post_templates/configs', []);
+        $stored  = self::stored_configs();
+        $configs = (array) \apply_filters('orbitools/post_templates/configs', $stored);
 
         foreach ($configs as $cfg) {
             if (!is_array($cfg)) {
@@ -558,7 +563,8 @@ final class Post_Templates extends Module_Base
             $taxonomy = $queried->taxonomy;
         }
 
-        $configs  = (array) \apply_filters('orbitools/post_templates/configs', []);
+        $stored   = self::stored_configs();
+        $configs  = (array) \apply_filters('orbitools/post_templates/configs', $stored);
         $meta_key = null;
 
         foreach ($configs as $cfg) {
@@ -722,6 +728,46 @@ final class Post_Templates extends Module_Base
     // =========================================================================
     // Helpers (private)
     // =========================================================================
+
+    /**
+     * Read the UI-stored configs out of `orbitools_settings`. Filters
+     * out rows missing any of the three required keys so downstream
+     * code can assume well-formed entries.
+     *
+     * Static so {@see ::get_archive_template_id()} can use it without
+     * an instance.
+     *
+     * @return array<int, array{post_type: string, taxonomy: string, label: string}>
+     */
+    private static function stored_configs(): array
+    {
+        $settings = \get_option('orbitools_settings', []);
+        if (!is_array($settings)) {
+            return [];
+        }
+
+        $rows = $settings['post-templates_configs'] ?? [];
+        if (!is_array($rows)) {
+            return [];
+        }
+
+        $out = [];
+        foreach ($rows as $row) {
+            if (!is_array($row)) {
+                continue;
+            }
+            $pt    = isset($row['post_type']) ? (string) $row['post_type'] : '';
+            $tax   = isset($row['taxonomy'])  ? (string) $row['taxonomy']  : '';
+            $label = isset($row['label'])     ? (string) $row['label']     : '';
+
+            if ($pt === '' || $tax === '' || $label === '') {
+                continue;
+            }
+
+            $out[] = ['post_type' => $pt, 'taxonomy' => $tax, 'label' => $label];
+        }
+        return $out;
+    }
 
     private function has_placeholder_content(int $post_id, string $placeholder_class): bool
     {
