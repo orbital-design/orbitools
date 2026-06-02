@@ -213,24 +213,11 @@
 // Repeater layout follows the Core Cleanup stacked-section pattern:
 // a plain header card with title + description, then a Panel whose
 // PanelBody children are each their own bordered card, then a naked
-// Add button. Stripping the outer SettingsSection chrome lets these
-// cards sit on the gray admin background instead of inside a white
-// container.
-
-// Drop the wrapping SettingsSection's card chrome when it contains a
-// repeater, so the repeater's own header/PanelBody cards aren't
-// nested inside a white panel.
-.orbitools-settings-section:has(.orbitools-repeater) {
-    background: transparent;
-    border: 0;
-    border-radius: 0;
-    box-shadow: none;
-
-    > .components-card__body,
-    > .components-card-body {
-        padding: 0;
-    }
-}
+// Add button. The CategoryPage right-pane white chrome is stripped
+// via `:has(.orbitools-repeater)` higher up (next to the existing
+// `:has(.orbitools-section-stack)` rule), and SettingsRenderer skips
+// the SettingsSection wrapper for repeater-only field groups — so
+// the repeater's own cards land directly on the gray admin background.
 
 .orbitools-repeater {
     // Header card: title + description, sits on the gray.
@@ -633,7 +620,8 @@
 // container. The item's name + description header gets its OWN
 // card so it doesn't sit naked on the gray; it's spaced apart
 // from the first accordion below.
-.orbitools-category-split__content:has(.orbitools-section-stack) {
+.orbitools-category-split__content:has(.orbitools-section-stack),
+.orbitools-category-split__content:has(.orbitools-repeater) {
     background: transparent;
     border: 0;
     border-radius: 0;
