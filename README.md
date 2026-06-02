@@ -61,6 +61,7 @@ See `CLAUDE.md` § "Theme pages" for the full registration shape.
 - **Menu Groups** — grouped menu items
 - **Toolbar Reveal** — hide the admin toolbar on the frontend until the cursor reaches the top of the page
 - **Post Templates** — auto-load synced block patterns for configured CPTs and per-taxonomy archive templates (themes wire pairs via the `orbitools/post_templates/configs` filter)
+- **Upload Guard** — block theme `.zip` uploads on `local` environments so a stray drag-and-drop can't clobber in-progress theme work
 - **Core Overrides** — hide built-in WP admin pages (Settings → Connectors / Site Health / etc.) the site doesn't need
 
 ## Project structure

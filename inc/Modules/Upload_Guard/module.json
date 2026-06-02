@@ -1,0 +1,14 @@
+{
+  "$schema": "https://orbitools/schemas/module.v1.json",
+  "slug": "upload-guard",
+  "name": "Upload Guard",
+  "description": "Blocks theme .zip uploads on local environments so a stray drag-and-drop into Appearance → Themes → Upload Theme can't clobber in-progress theme work. No-op on any environment other than `local` (set via WP's WP_ENVIRONMENT_TYPE), so it's safe to leave enabled in production.",
+  "version": "1.0.0",
+  "category": "modules",
+  "class": "\\Orbitools\\Modules\\Upload_Guard\\Upload_Guard",
+  "default_enabled": false,
+  "requires": {
+    "php": ">=7.4",
+    "wp": ">=5.0"
+  }
+}
