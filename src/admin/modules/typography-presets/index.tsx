@@ -6,23 +6,20 @@
  * Page in place of the generic SettingsPage when the standalone
  * settings route resolves to this slug.
  *
- * The richer preset-list management UI lives later; for now the
- * Page just frames the manifest-driven fields with an info notice.
+ * For now this just defers to the manifest-driven fields. The
+ * richer preset-list management UI will replace this body when it
+ * lands — but the file still needs to exist so the discovery
+ * pipeline keeps the slot wired up for that future work.
+ *
+ * Renders `ModuleSettingsBody`, not `SettingsPage`: the parent
+ * CategoryPage / standalone route already provides AppChrome, so
+ * mounting `SettingsPage` here would render the whole admin chrome
+ * (header, tabs) a second time inside its own content pane.
  */
-import { Notice } from '@wordpress/components';
-import { SettingsPage } from '../../components/SettingsPage';
+import { ModuleSettingsBody } from '../../components/SettingsPage';
 import type { ModuleExtension, ModulePage } from '../../types';
 
-const Page: ModulePage = ({ slug }) => (
-    <>
-        <Notice status="info" isDismissible={false}>
-            Custom Typography Presets page (mounted via the discovery
-            pipeline). Manifest-driven fields render below; the
-            preset-list UI lands in a follow-up.
-        </Notice>
-        <SettingsPage slug={slug} />
-    </>
-);
+const Page: ModulePage = ({ slug }) => <ModuleSettingsBody slug={slug} />;
 
 const extension: ModuleExtension = { Page };
 export default extension;
