@@ -6,7 +6,7 @@
   "version": "1.0.0",
   "category": "modules",
   "class": "\\Orbitools\\Modules\\Upload_Guard\\Upload_Guard",
-  "default_enabled": false,
+  "default_enabled": true,
   "requires": {
     "php": ">=7.4",
     "wp": ">=5.0"
