@@ -210,14 +210,32 @@
 // left and a Remove button on the right. Add button sits at the
 // bottom, outside the rows.
 
-// Single Card with bordered sections: CardHeader (title + description),
-// one CardBody per row, CardFooter (add button). The WP Card primitives
-// draw the dividers; we just style the row internals.
+// Repeater layout follows the Core Cleanup stacked-section pattern:
+// a plain header card with title + description, then a Panel whose
+// PanelBody children are each their own bordered card, then a naked
+// Add button. Stripping the outer SettingsSection chrome lets these
+// cards sit on the gray admin background instead of inside a white
+// container.
+
+// Drop the wrapping SettingsSection's card chrome when it contains a
+// repeater, so the repeater's own header/PanelBody cards aren't
+// nested inside a white panel.
+.orbitools-settings-section:has(.orbitools-repeater) {
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+
+    > .components-card__body,
+    > .components-card-body {
+        padding: 0;
+    }
+}
+
 .orbitools-repeater {
+    // Header card: title + description, sits on the gray.
     &__header {
-        display: flex;
-        flex-direction: column;
-        gap: 6px;
+        // Uses the WP Card defaults; just style the inner content.
     }
 
     &__title {
@@ -228,55 +246,42 @@
     }
 
     &__description {
-        margin: 0;
+        margin: 6px 0 0;
         font-size: 13px;
         color: #50575e;
         line-height: 1.5;
     }
 
-    // Row header bar (chevron, clickable heading, remove button).
-    // Sits at the top of each CardBody.
-    &__row-head {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-    }
-
-    &__toggle {
-        flex: 0 0 auto;
-    }
-
-    // The heading is a real <button> so the collapse toggle is
-    // keyboard-reachable — strip default button chrome so it reads
-    // as a clickable label rather than a styled button.
-    &__row-heading-button {
-        flex: 1 1 auto;
-        text-align: left;
+    // Each PanelBody = its own self-contained bordered card, identical
+    // to the stacked-section layout the Core Cleanup page uses.
+    &__rows {
         background: transparent;
         border: 0;
-        padding: 0;
-        margin: 0;
-        font: inherit;
-        font-size: 13px;
-        font-weight: 600;
-        color: #1d2327;
-        cursor: pointer;
 
-        &:focus-visible {
-            outline: 2px solid #3858e9;
-            outline-offset: 2px;
-            border-radius: 2px;
+        .components-panel__body {
+            background: #fff;
+            border: 1px solid #dcdcde;
+            border-radius: 6px;
+            margin-bottom: 12px;
+            overflow: hidden;
+
+            &:last-child {
+                margin-bottom: 0;
+            }
         }
     }
 
-    &__remove {
-        flex: 0 0 auto;
+    // Remove button sits at the bottom of an expanded row's content.
+    &__row-actions {
+        display: flex;
+        justify-content: flex-end;
+        margin-top: 8px;
+        padding-top: 16px;
+        border-top: 1px solid #f0f0f1;
     }
 
-    // Sub-fields shown when a row is expanded — pushed down a little
-    // so they're visually nested under the row-head bar.
-    &__row-fields {
-        margin-top: 16px;
+    &__footer {
+        display: flex;
     }
 }
 
