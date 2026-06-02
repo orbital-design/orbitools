@@ -225,6 +225,18 @@
         // Uses the WP Card defaults; just style the inner content.
     }
 
+    // Container for the row cards + Add button. The left border + left
+    // padding visually mark this stack as belonging to the header card
+    // above, without putting the whole thing in a panel.
+    &__children {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        margin-left: 20px;
+        padding-left: 20px;
+        border-left: 2px solid #c3c4c7;
+    }
+
     &__title {
         margin: 0;
         font-size: 14px;

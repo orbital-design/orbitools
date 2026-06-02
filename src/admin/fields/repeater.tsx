@@ -137,60 +137,62 @@ function RepeaterField({ field, value, onChange }: FieldProps): JSX.Element {
                 </CardHeader>
             </Card>
 
-            {rows.length > 0 && (
-                <Panel className="orbitools-repeater__rows">
-                    {rows.map((row, idx) => (
-                        <PanelBody
-                            key={idx}
-                            title={rowHeading(row, idx, subFields, labelField, labelPrefix)}
-                            initialOpen={openRows.has(idx)}
-                        >
-                            <VStack spacing={3}>
-                                {subFields.map((sf) => {
-                                    // Per-row show_if — evaluated against the row's
-                                    // own values, not the top-level settings.
-                                    if (
-                                        !evaluateShowIf(
-                                            sf.show_if as Record<string, unknown> | undefined,
-                                            row,
-                                        )
-                                    ) {
-                                        return null;
-                                    }
-                                    const SubComponent = getFieldComponent(String(sf.type));
-                                    const subValue =
-                                        row[sf.id] !== undefined ? row[sf.id] : sf.default;
-                                    if (SubComponent === null) {
-                                        return <FieldFallback key={sf.id} field={sf} />;
-                                    }
-                                    return (
-                                        <SubComponent
-                                            key={sf.id}
-                                            field={sf}
-                                            value={subValue}
-                                            onChange={(v) => updateRow(idx, sf.id, v)}
-                                        />
-                                    );
-                                })}
-                                <div className="orbitools-repeater__row-actions">
-                                    <Button
-                                        variant="tertiary"
-                                        isDestructive
-                                        onClick={() => removeRow(idx)}
-                                    >
-                                        Remove
-                                    </Button>
-                                </div>
-                            </VStack>
-                        </PanelBody>
-                    ))}
-                </Panel>
-            )}
+            <div className="orbitools-repeater__children">
+                {rows.length > 0 && (
+                    <Panel className="orbitools-repeater__rows">
+                        {rows.map((row, idx) => (
+                            <PanelBody
+                                key={idx}
+                                title={rowHeading(row, idx, subFields, labelField, labelPrefix)}
+                                initialOpen={openRows.has(idx)}
+                            >
+                                <VStack spacing={3}>
+                                    {subFields.map((sf) => {
+                                        // Per-row show_if — evaluated against the row's
+                                        // own values, not the top-level settings.
+                                        if (
+                                            !evaluateShowIf(
+                                                sf.show_if as Record<string, unknown> | undefined,
+                                                row,
+                                            )
+                                        ) {
+                                            return null;
+                                        }
+                                        const SubComponent = getFieldComponent(String(sf.type));
+                                        const subValue =
+                                            row[sf.id] !== undefined ? row[sf.id] : sf.default;
+                                        if (SubComponent === null) {
+                                            return <FieldFallback key={sf.id} field={sf} />;
+                                        }
+                                        return (
+                                            <SubComponent
+                                                key={sf.id}
+                                                field={sf}
+                                                value={subValue}
+                                                onChange={(v) => updateRow(idx, sf.id, v)}
+                                            />
+                                        );
+                                    })}
+                                    <div className="orbitools-repeater__row-actions">
+                                        <Button
+                                            variant="tertiary"
+                                            isDestructive
+                                            onClick={() => removeRow(idx)}
+                                        >
+                                            Remove
+                                        </Button>
+                                    </div>
+                                </VStack>
+                            </PanelBody>
+                        ))}
+                    </Panel>
+                )}
 
-            <div className="orbitools-repeater__footer">
-                <Button variant="primary" onClick={addRow}>
-                    {addButtonLabel}
-                </Button>
+                <div className="orbitools-repeater__footer">
+                    <Button variant="primary" onClick={addRow}>
+                        {addButtonLabel}
+                    </Button>
+                </div>
             </div>
         </VStack>
     );
