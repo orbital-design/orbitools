@@ -18,6 +18,7 @@
 import { BaseControl, Button } from '@wordpress/components';
 import { registerFieldType, type FieldProps, getFieldComponent } from './registry';
 import { FieldFallback } from '../components/FieldFallback';
+import { evaluateShowIf } from '../lib/showIf';
 import type { FieldSchema } from '../types';
 
 function defaultsRow(subFields: FieldSchema[]): Record<string, unknown> {
@@ -110,6 +111,17 @@ function RepeaterField({ field, value, onChange }: FieldProps): JSX.Element {
                                 </div>
                                 <div className="orbitools-repeater__row-fields">
                                     {subFields.map((sf) => {
+                                        // Evaluate per-row show_if against the row's own values,
+                                        // not the top-level settings — a sub-field's `show_if`
+                                        // gates it on other sub-fields in the same row.
+                                        if (
+                                            !evaluateShowIf(
+                                                sf.show_if as Record<string, unknown> | undefined,
+                                                row,
+                                            )
+                                        ) {
+                                            return null;
+                                        }
                                         const SubComponent = getFieldComponent(String(sf.type));
                                         const subValue =
                                             row[sf.id] !== undefined ? row[sf.id] : sf.default;

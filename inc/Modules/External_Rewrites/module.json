@@ -1,0 +1,111 @@
+{
+  "$schema": "https://orbitools/schemas/module.v1.json",
+  "slug": "external-rewrites",
+  "name": "External Rewrites",
+  "description": "Per-rule exclusion + 301 engine for archival CPT posts whose canonical home has moved off WordPress. Each rule targets every post in a (post type × taxonomy × term) intersection and can hide them from Yoast XML sitemaps, 301 single posts to a chosen destination, 301 the term archive, or hide the term itself from the sitemap.",
+  "version": "1.0.0",
+  "category": "modules",
+  "class": "\\Orbitools\\Modules\\External_Rewrites\\External_Rewrites",
+  "default_enabled": false,
+  "requires": {
+    "php": ">=7.4",
+    "wp": ">=5.0"
+  },
+  "settings": [
+    {
+      "id": "rules",
+      "type": "repeater",
+      "label": "Rewrite rules",
+      "description": "Each row targets one (post type × taxonomy × term) intersection. The module is a no-op until at least one rule is added. Yoast sitemap features only apply when Yoast SEO is active.",
+      "default": [],
+      "add_button_label": "Add rewrite rule",
+      "row_label_field": "label",
+      "row_label_prefix": "Rule:",
+      "sub_fields": [
+        {
+          "id": "label",
+          "type": "text",
+          "label": "Label",
+          "description": "Short human-facing name (e.g. \"Training resources → external archive\"). Used as the row heading on this screen.",
+          "default": ""
+        },
+        {
+          "id": "post_type",
+          "type": "post-type",
+          "label": "Post type",
+          "description": "CPT whose posts the rule applies to.",
+          "default": ""
+        },
+        {
+          "id": "taxonomy",
+          "type": "taxonomy",
+          "label": "Taxonomy",
+          "description": "Taxonomy on that CPT that classifies the affected posts.",
+          "default": ""
+        },
+        {
+          "id": "term",
+          "type": "text",
+          "label": "Term slug",
+          "description": "Slug of the taxonomy term to match.",
+          "default": ""
+        },
+        {
+          "id": "sitemap",
+          "type": "toggle",
+          "label": "Hide matching posts from Yoast sitemap",
+          "default": false
+        },
+        {
+          "id": "exclude_term",
+          "type": "toggle",
+          "label": "Hide the term itself from Yoast sitemap",
+          "default": false
+        },
+        {
+          "id": "redirect",
+          "type": "toggle",
+          "label": "301 single posts",
+          "description": "Redirect individual posts in the matched set to the destination below.",
+          "default": false
+        },
+        {
+          "id": "term_archive",
+          "type": "toggle",
+          "label": "301 the term archive page",
+          "description": "Redirect the taxonomy term archive URL to the destination below.",
+          "default": false
+        },
+        {
+          "id": "redirect_target",
+          "type": "select",
+          "label": "Redirect destination",
+          "description": "Where the 301s above point.",
+          "default": "term_archive",
+          "options": [
+            { "value": "term_archive", "label": "The term archive page (for single posts only)" },
+            { "value": "post_type_archive", "label": "The CPT archive page" },
+            { "value": "page", "label": "A specific WordPress page" },
+            { "value": "url", "label": "A specific URL" }
+          ]
+        },
+        {
+          "id": "redirect_page",
+          "type": "page",
+          "label": "Destination page",
+          "description": "Pick the page to redirect to.",
+          "default": 0,
+          "show_if": { "redirect_target": "page" }
+        },
+        {
+          "id": "redirect_url",
+          "type": "text",
+          "label": "Destination URL",
+          "description": "Full URL, including scheme.",
+          "default": "",
+          "show_if": { "redirect_target": "url" }
+        }
+      ]
+    }
+  ]
+}
