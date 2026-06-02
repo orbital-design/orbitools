@@ -210,7 +210,16 @@
 // left and a Remove button on the right. Add button sits at the
 // bottom, outside the rows.
 
+// Single Card with bordered sections: CardHeader (title + description),
+// one CardBody per row, CardFooter (add button). The WP Card primitives
+// draw the dividers; we just style the row internals.
 .orbitools-repeater {
+    &__header {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
     &__title {
         margin: 0;
         font-size: 14px;
@@ -225,19 +234,8 @@
         line-height: 1.5;
     }
 
-    &__empty {
-        margin: 0;
-        padding: 12px 16px;
-        font-size: 12px;
-        color: #757575;
-        background: #f6f7f7;
-        border: 1px dashed #c3c4c7;
-        border-radius: 4px;
-    }
-
-    // Row header is laid out by the WP Card; we just need the inner
-    // arrangement: chevron, clickable heading (flex-grows to fill),
-    // remove button.
+    // Row header bar (chevron, clickable heading, remove button).
+    // Sits at the top of each CardBody.
     &__row-head {
         display: flex;
         align-items: center;
@@ -248,9 +246,9 @@
         flex: 0 0 auto;
     }
 
-    // The heading is a real <button> so it's keyboard-accessible
-    // — strip the default button chrome so it reads as a clickable
-    // label rather than a styled button.
+    // The heading is a real <button> so the collapse toggle is
+    // keyboard-reachable — strip default button chrome so it reads
+    // as a clickable label rather than a styled button.
     &__row-heading-button {
         flex: 1 1 auto;
         text-align: left;
@@ -275,8 +273,10 @@
         flex: 0 0 auto;
     }
 
-    &__footer {
-        display: flex;
+    // Sub-fields shown when a row is expanded — pushed down a little
+    // so they're visually nested under the row-head bar.
+    &__row-fields {
+        margin-top: 16px;
     }
 }
 

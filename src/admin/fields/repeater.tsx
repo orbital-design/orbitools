@@ -25,6 +25,7 @@ import {
     Card,
     CardHeader,
     CardBody,
+    CardFooter,
     __experimentalVStack as VStack,
 } from '@wordpress/components';
 import { useState } from '@wordpress/element';
@@ -131,91 +132,85 @@ function RepeaterField({ field, value, onChange }: FieldProps): JSX.Element {
     };
 
     return (
-        <VStack spacing={4} className="orbitools-repeater">
-            <Card className="orbitools-repeater__header-card">
-                <CardHeader>
+        <Card className="orbitools-repeater">
+            <CardHeader>
+                <div className="orbitools-repeater__header">
                     <h3 className="orbitools-repeater__title">{field.label}</h3>
-                </CardHeader>
-                {field.description !== undefined && field.description !== '' && (
-                    <CardBody>
+                    {field.description !== undefined && field.description !== '' && (
                         <p className="orbitools-repeater__description">{field.description}</p>
+                    )}
+                </div>
+            </CardHeader>
+
+            {rows.map((row, idx) => {
+                const open = isOpen(idx);
+                return (
+                    <CardBody key={idx} className="orbitools-repeater__row">
+                        <div className="orbitools-repeater__row-head">
+                            <Button
+                                icon={open ? chevronUp : chevronDown}
+                                label={open ? 'Collapse' : 'Expand'}
+                                onClick={() => toggleRow(idx)}
+                                className="orbitools-repeater__toggle"
+                            />
+                            <button
+                                type="button"
+                                className="orbitools-repeater__row-heading-button"
+                                onClick={() => toggleRow(idx)}
+                            >
+                                {rowHeading(row, idx, subFields, labelField, labelPrefix)}
+                            </button>
+                            <Button
+                                variant="tertiary"
+                                isDestructive
+                                onClick={() => removeRow(idx)}
+                                className="orbitools-repeater__remove"
+                            >
+                                Remove
+                            </Button>
+                        </div>
+                        {open && (
+                            <div className="orbitools-repeater__row-fields">
+                                <VStack spacing={3}>
+                                    {subFields.map((sf) => {
+                                        // Per-row show_if — evaluated against the row's
+                                        // own values, not the top-level settings.
+                                        if (
+                                            !evaluateShowIf(
+                                                sf.show_if as Record<string, unknown> | undefined,
+                                                row,
+                                            )
+                                        ) {
+                                            return null;
+                                        }
+                                        const SubComponent = getFieldComponent(String(sf.type));
+                                        const subValue =
+                                            row[sf.id] !== undefined ? row[sf.id] : sf.default;
+                                        if (SubComponent === null) {
+                                            return <FieldFallback key={sf.id} field={sf} />;
+                                        }
+                                        return (
+                                            <SubComponent
+                                                key={sf.id}
+                                                field={sf}
+                                                value={subValue}
+                                                onChange={(v) => updateRow(idx, sf.id, v)}
+                                            />
+                                        );
+                                    })}
+                                </VStack>
+                            </div>
+                        )}
                     </CardBody>
-                )}
-            </Card>
+                );
+            })}
 
-            {rows.length === 0 ? (
-                <p className="orbitools-repeater__empty">No items yet.</p>
-            ) : (
-                rows.map((row, idx) => {
-                    const open = isOpen(idx);
-                    return (
-                        <Card key={idx} className="orbitools-repeater__row-card">
-                            <CardHeader className="orbitools-repeater__row-head">
-                                <Button
-                                    icon={open ? chevronUp : chevronDown}
-                                    label={open ? 'Collapse' : 'Expand'}
-                                    onClick={() => toggleRow(idx)}
-                                    className="orbitools-repeater__toggle"
-                                />
-                                <button
-                                    type="button"
-                                    className="orbitools-repeater__row-heading-button"
-                                    onClick={() => toggleRow(idx)}
-                                >
-                                    {rowHeading(row, idx, subFields, labelField, labelPrefix)}
-                                </button>
-                                <Button
-                                    variant="tertiary"
-                                    isDestructive
-                                    onClick={() => removeRow(idx)}
-                                    className="orbitools-repeater__remove"
-                                >
-                                    Remove
-                                </Button>
-                            </CardHeader>
-                            {open && (
-                                <CardBody>
-                                    <VStack spacing={3}>
-                                        {subFields.map((sf) => {
-                                            // Per-row show_if — evaluated against the row's
-                                            // own values, not the top-level settings.
-                                            if (
-                                                !evaluateShowIf(
-                                                    sf.show_if as Record<string, unknown> | undefined,
-                                                    row,
-                                                )
-                                            ) {
-                                                return null;
-                                            }
-                                            const SubComponent = getFieldComponent(String(sf.type));
-                                            const subValue =
-                                                row[sf.id] !== undefined ? row[sf.id] : sf.default;
-                                            if (SubComponent === null) {
-                                                return <FieldFallback key={sf.id} field={sf} />;
-                                            }
-                                            return (
-                                                <SubComponent
-                                                    key={sf.id}
-                                                    field={sf}
-                                                    value={subValue}
-                                                    onChange={(v) => updateRow(idx, sf.id, v)}
-                                                />
-                                            );
-                                        })}
-                                    </VStack>
-                                </CardBody>
-                            )}
-                        </Card>
-                    );
-                })
-            )}
-
-            <div className="orbitools-repeater__footer">
+            <CardFooter>
                 <Button variant="secondary" onClick={addRow}>
                     {addButtonLabel}
                 </Button>
-            </div>
-        </VStack>
+            </CardFooter>
+        </Card>
     );
 }
 
