@@ -211,9 +211,19 @@
 // bottom, outside the rows.
 
 .orbitools-repeater {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
+    &__title {
+        margin: 0;
+        font-size: 14px;
+        font-weight: 600;
+        color: #1d2327;
+    }
+
+    &__description {
+        margin: 0;
+        font-size: 13px;
+        color: #50575e;
+        line-height: 1.5;
+    }
 
     &__empty {
         margin: 0;
@@ -225,44 +235,44 @@
         border-radius: 4px;
     }
 
-    &__rows {
-        margin: 0;
-        padding: 0;
-        list-style: none;
-        display: flex;
-        flex-direction: column;
-        gap: 12px;
-    }
-
-    &__row {
-        background: #f6f7f7;
-        border: 1px solid #dcdcde;
-        border-radius: 6px;
-        overflow: hidden;
-    }
-
+    // Row header is laid out by the WP Card; we just need the inner
+    // arrangement: chevron, clickable heading (flex-grows to fill),
+    // remove button.
     &__row-head {
         display: flex;
         align-items: center;
-        justify-content: space-between;
-        gap: 12px;
-        padding: 8px 12px 8px 16px;
-        background: #fff;
-        border-bottom: 1px solid #dcdcde;
+        gap: 8px;
     }
 
-    &__row-heading {
+    &__toggle {
+        flex: 0 0 auto;
+    }
+
+    // The heading is a real <button> so it's keyboard-accessible
+    // — strip the default button chrome so it reads as a clickable
+    // label rather than a styled button.
+    &__row-heading-button {
+        flex: 1 1 auto;
+        text-align: left;
+        background: transparent;
+        border: 0;
+        padding: 0;
+        margin: 0;
+        font: inherit;
         font-size: 13px;
         font-weight: 600;
         color: #1d2327;
+        cursor: pointer;
+
+        &:focus-visible {
+            outline: 2px solid #3858e9;
+            outline-offset: 2px;
+            border-radius: 2px;
+        }
     }
 
-    &__row-fields {
-        display: flex;
-        flex-direction: column;
-        gap: 12px;
-        padding: 16px;
-        background: #fff;
+    &__remove {
+        flex: 0 0 auto;
     }
 
     &__footer {

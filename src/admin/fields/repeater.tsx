@@ -9,13 +9,26 @@
  * by sub-field id. Empty repeaters store `[]` and the theme just
  * doesn't render anything for them.
  *
+ * Layout: the field's label + description render in a dedicated
+ * Card at the top; each row gets its own collapsible Card below.
+ * Newly-added rows open by default; existing rows start collapsed
+ * so a long list stays scannable.
+ *
  * Schema (extends FieldSchema):
  *   sub_fields:        FieldSchema[]     // shape of each row
  *   add_button_label?: string            // defaults to "Add row"
  *   row_label_field?:  string            // sub-field id to use as the row heading
  *   row_label_prefix?: string            // prepended to the row heading ("Row 1: …")
  */
-import { BaseControl, Button } from '@wordpress/components';
+import {
+    Button,
+    Card,
+    CardHeader,
+    CardBody,
+    __experimentalVStack as VStack,
+} from '@wordpress/components';
+import { useState } from '@wordpress/element';
+import { chevronDown, chevronUp } from '@wordpress/icons';
 import { registerFieldType, type FieldProps, getFieldComponent } from './registry';
 import { FieldFallback } from '../components/FieldFallback';
 import { evaluateShowIf } from '../lib/showIf';
@@ -69,6 +82,26 @@ function RepeaterField({ field, value, onChange }: FieldProps): JSX.Element {
     const labelPrefix =
         typeof field.row_label_prefix === 'string' ? field.row_label_prefix : undefined;
 
+    // Open/closed state per row index. Existing rows start collapsed for
+    // scannability; addRow() opens the new index immediately so the user
+    // doesn't have to click to start filling it in. removeRow() compacts
+    // the set so indices above the removed row shift down with the data.
+    const [openRows, setOpenRows] = useState<Set<number>>(new Set());
+
+    const isOpen = (idx: number): boolean => openRows.has(idx);
+
+    const toggleRow = (idx: number): void => {
+        setOpenRows((prev) => {
+            const next = new Set(prev);
+            if (next.has(idx)) {
+                next.delete(idx);
+            } else {
+                next.add(idx);
+            }
+            return next;
+        });
+    };
+
     const updateRow = (rowIdx: number, key: string, val: unknown): void => {
         const next = rows.slice();
         next[rowIdx] = { ...next[rowIdx], [key]: val };
@@ -76,79 +109,113 @@ function RepeaterField({ field, value, onChange }: FieldProps): JSX.Element {
     };
 
     const removeRow = (rowIdx: number): void => {
+        setOpenRows((prev) => {
+            const next = new Set<number>();
+            prev.forEach((i) => {
+                if (i < rowIdx) next.add(i);
+                else if (i > rowIdx) next.add(i - 1);
+            });
+            return next;
+        });
         onChange(rows.filter((_, i) => i !== rowIdx));
     };
 
     const addRow = (): void => {
+        const newIdx = rows.length;
+        setOpenRows((prev) => {
+            const next = new Set(prev);
+            next.add(newIdx);
+            return next;
+        });
         onChange([...rows, defaultsRow(subFields)]);
     };
 
     return (
-        <BaseControl
-            id={field.id}
-            label={field.label}
-            help={field.description}
-            __nextHasNoMarginBottom
-        >
-            <div className="orbitools-repeater">
-                {rows.length === 0 ? (
-                    <p className="orbitools-repeater__empty">No items yet.</p>
-                ) : (
-                    <ul className="orbitools-repeater__rows">
-                        {rows.map((row, idx) => (
-                            <li key={idx} className="orbitools-repeater__row">
-                                <div className="orbitools-repeater__row-head">
-                                    <span className="orbitools-repeater__row-heading">
-                                        {rowHeading(row, idx, subFields, labelField, labelPrefix)}
-                                    </span>
-                                    <Button
-                                        variant="tertiary"
-                                        isDestructive
-                                        onClick={() => removeRow(idx)}
-                                    >
-                                        Remove
-                                    </Button>
-                                </div>
-                                <div className="orbitools-repeater__row-fields">
-                                    {subFields.map((sf) => {
-                                        // Evaluate per-row show_if against the row's own values,
-                                        // not the top-level settings — a sub-field's `show_if`
-                                        // gates it on other sub-fields in the same row.
-                                        if (
-                                            !evaluateShowIf(
-                                                sf.show_if as Record<string, unknown> | undefined,
-                                                row,
-                                            )
-                                        ) {
-                                            return null;
-                                        }
-                                        const SubComponent = getFieldComponent(String(sf.type));
-                                        const subValue =
-                                            row[sf.id] !== undefined ? row[sf.id] : sf.default;
-                                        if (SubComponent === null) {
-                                            return <FieldFallback key={sf.id} field={sf} />;
-                                        }
-                                        return (
-                                            <SubComponent
-                                                key={sf.id}
-                                                field={sf}
-                                                value={subValue}
-                                                onChange={(v) => updateRow(idx, sf.id, v)}
-                                            />
-                                        );
-                                    })}
-                                </div>
-                            </li>
-                        ))}
-                    </ul>
+        <VStack spacing={4} className="orbitools-repeater">
+            <Card className="orbitools-repeater__header-card">
+                <CardHeader>
+                    <h3 className="orbitools-repeater__title">{field.label}</h3>
+                </CardHeader>
+                {field.description !== undefined && field.description !== '' && (
+                    <CardBody>
+                        <p className="orbitools-repeater__description">{field.description}</p>
+                    </CardBody>
                 )}
-                <div className="orbitools-repeater__footer">
-                    <Button variant="secondary" onClick={addRow}>
-                        {addButtonLabel}
-                    </Button>
-                </div>
+            </Card>
+
+            {rows.length === 0 ? (
+                <p className="orbitools-repeater__empty">No items yet.</p>
+            ) : (
+                rows.map((row, idx) => {
+                    const open = isOpen(idx);
+                    return (
+                        <Card key={idx} className="orbitools-repeater__row-card">
+                            <CardHeader className="orbitools-repeater__row-head">
+                                <Button
+                                    icon={open ? chevronUp : chevronDown}
+                                    label={open ? 'Collapse' : 'Expand'}
+                                    onClick={() => toggleRow(idx)}
+                                    className="orbitools-repeater__toggle"
+                                />
+                                <button
+                                    type="button"
+                                    className="orbitools-repeater__row-heading-button"
+                                    onClick={() => toggleRow(idx)}
+                                >
+                                    {rowHeading(row, idx, subFields, labelField, labelPrefix)}
+                                </button>
+                                <Button
+                                    variant="tertiary"
+                                    isDestructive
+                                    onClick={() => removeRow(idx)}
+                                    className="orbitools-repeater__remove"
+                                >
+                                    Remove
+                                </Button>
+                            </CardHeader>
+                            {open && (
+                                <CardBody>
+                                    <VStack spacing={3}>
+                                        {subFields.map((sf) => {
+                                            // Per-row show_if — evaluated against the row's
+                                            // own values, not the top-level settings.
+                                            if (
+                                                !evaluateShowIf(
+                                                    sf.show_if as Record<string, unknown> | undefined,
+                                                    row,
+                                                )
+                                            ) {
+                                                return null;
+                                            }
+                                            const SubComponent = getFieldComponent(String(sf.type));
+                                            const subValue =
+                                                row[sf.id] !== undefined ? row[sf.id] : sf.default;
+                                            if (SubComponent === null) {
+                                                return <FieldFallback key={sf.id} field={sf} />;
+                                            }
+                                            return (
+                                                <SubComponent
+                                                    key={sf.id}
+                                                    field={sf}
+                                                    value={subValue}
+                                                    onChange={(v) => updateRow(idx, sf.id, v)}
+                                                />
+                                            );
+                                        })}
+                                    </VStack>
+                                </CardBody>
+                            )}
+                        </Card>
+                    );
+                })
+            )}
+
+            <div className="orbitools-repeater__footer">
+                <Button variant="secondary" onClick={addRow}>
+                    {addButtonLabel}
+                </Button>
             </div>
-        </BaseControl>
+        </VStack>
     );
 }
 
