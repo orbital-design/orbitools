@@ -41,10 +41,52 @@ import { FieldFallback } from '../components/FieldFallback';
 import { evaluateShowIf } from '../lib/showIf';
 import type { FieldSchema } from '../types';
 
+/**
+ * Resolve a sub-field's value, honouring its `default_from` directive
+ * if present — looks up the named sibling's current value and
+ * substitutes the option label when the sibling is a `select`. Used
+ * both at row creation (to seed the value) and when a linked field
+ * changes (to keep the dependent in sync until the user customizes
+ * it). Returns the field's static `default` when there's nothing to
+ * derive from.
+ */
+function resolveValueFromLinked(
+    field: FieldSchema,
+    row: Record<string, unknown>,
+    subFields: FieldSchema[],
+): unknown {
+    const fromId = (field as { default_from?: unknown }).default_from;
+    if (typeof fromId !== 'string' || fromId === '') {
+        return field.default;
+    }
+    const raw = row[fromId];
+    if (raw === undefined || raw === null || raw === '') {
+        return field.default;
+    }
+    const sibling = subFields.find((sf) => sf.id === fromId);
+    if (sibling !== undefined && Array.isArray(sibling.options)) {
+        const opt = sibling.options.find((o) => String(o.value) === String(raw));
+        if (opt !== undefined) {
+            return opt.label;
+        }
+    }
+    return raw;
+}
+
 function defaultsRow(subFields: FieldSchema[]): Record<string, unknown> {
     const row: Record<string, unknown> = {};
+    // First pass: seed the static defaults so `default_from` lookups
+    // in the second pass have something to read.
     for (const sf of subFields) {
         row[sf.id] = sf.default;
+    }
+    // Second pass: any field with `default_from` derives its initial
+    // value from the linked sibling.
+    for (const sf of subFields) {
+        const fromId = (sf as { default_from?: unknown }).default_from;
+        if (typeof fromId === 'string' && fromId !== '') {
+            row[sf.id] = resolveValueFromLinked(sf, row, subFields);
+        }
     }
     return row;
 }
@@ -98,7 +140,33 @@ function RepeaterField({ field, value, onChange }: FieldProps): JSX.Element {
 
     const updateRow = (rowIdx: number, key: string, val: unknown): void => {
         const next = rows.slice();
-        next[rowIdx] = { ...next[rowIdx], [key]: val };
+        const prevRow = next[rowIdx] ?? {};
+        const updatedRow: Record<string, unknown> = { ...prevRow, [key]: val };
+
+        // After the primary update, propagate to any dependent fields
+        // (`default_from: key`). We only overwrite the dependent when
+        // its current value still matches what `key`'s *previous* value
+        // would have resolved to — i.e. the user hasn't customized it
+        // since the row was created or the last sync. Once a user types
+        // anything else, the link breaks and the field stays put.
+        for (const sf of subFields) {
+            const fromId = (sf as { default_from?: unknown }).default_from;
+            if (fromId !== key) {
+                continue;
+            }
+            const prevResolved = resolveValueFromLinked(sf, prevRow, subFields);
+            const dependentCurrent = prevRow[sf.id];
+            const isUntouched =
+                dependentCurrent === undefined ||
+                dependentCurrent === '' ||
+                dependentCurrent === sf.default ||
+                dependentCurrent === prevResolved;
+            if (isUntouched) {
+                updatedRow[sf.id] = resolveValueFromLinked(sf, updatedRow, subFields);
+            }
+        }
+
+        next[rowIdx] = updatedRow;
         onChange(next);
     };
 

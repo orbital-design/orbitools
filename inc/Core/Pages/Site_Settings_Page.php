@@ -345,7 +345,7 @@ final class Site_Settings_Page
                 'label'           => \__('Label override', 'orbitools'),
                 'description'     => \__('Optional. Leave blank to use the network\'s default label.', 'orbitools'),
                 'default'         => '',
-                'placeholder_from' => 'network',
+                'default_from'    => 'network',
             ],
             [
                 'id'      => 'enabled',
@@ -383,7 +383,7 @@ final class Site_Settings_Page
                 'label'           => \__('Link title', 'orbitools'),
                 'description'     => \__('Used for aria-label / title attributes. e.g. "Connect with us on LinkedIn".', 'orbitools'),
                 'default'         => '',
-                'placeholder_from' => 'network',
+                'default_from'    => 'network',
             ],
         ];
     }
