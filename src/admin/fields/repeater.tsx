@@ -43,12 +43,21 @@ import type { FieldSchema } from '../types';
 
 /**
  * Resolve a sub-field's value, honouring its `default_from` directive
- * if present — looks up the named sibling's current value and
- * substitutes the option label when the sibling is a `select`. Used
- * both at row creation (to seed the value) and when a linked field
- * changes (to keep the dependent in sync until the user customizes
- * it). Returns the field's static `default` when there's nothing to
- * derive from.
+ * if present. Resolution order, given a linked sibling whose current
+ * value is `raw`:
+ *
+ *   1. `field.default_map[raw]` — explicit per-value override declared
+ *      on the dependent field. Used when defaults need to differ per
+ *      sibling value (e.g. "Share on Facebook" vs "Share on X").
+ *   2. The sibling's matching `option.label` when the sibling is a
+ *      `select`.
+ *   3. The raw sibling value itself.
+ *   4. The dependent field's static `default` when nothing else
+ *      applies (sibling unset, no map entry, no option match).
+ *
+ * Called both at row creation (to seed the value) and when a linked
+ * field changes (to keep the dependent in sync until the user
+ * customizes it).
  */
 function resolveValueFromLinked(
     field: FieldSchema,
@@ -62,6 +71,13 @@ function resolveValueFromLinked(
     const raw = row[fromId];
     if (raw === undefined || raw === null || raw === '') {
         return field.default;
+    }
+    const map = (field as { default_map?: unknown }).default_map;
+    if (map !== null && typeof map === 'object' && !Array.isArray(map)) {
+        const hit = (map as Record<string, unknown>)[String(raw)];
+        if (typeof hit === 'string') {
+            return hit;
+        }
     }
     const sibling = subFields.find((sf) => sf.id === fromId);
     if (sibling !== undefined && Array.isArray(sibling.options)) {

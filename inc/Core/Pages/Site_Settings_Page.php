@@ -340,12 +340,13 @@ final class Site_Settings_Page
                 'options' => $this->network_options(),
             ],
             [
-                'id'              => 'label',
-                'type'            => 'text',
-                'label'           => \__('Label override', 'orbitools'),
-                'description'     => \__('Optional. Leave blank to use the network\'s default label.', 'orbitools'),
-                'default'         => '',
-                'default_from'    => 'network',
+                'id'           => 'label',
+                'type'         => 'text',
+                'label'        => \__('Share button text', 'orbitools'),
+                'description'  => \__('Displayed on the share button. Auto-fills from the chosen network — edit to customise.', 'orbitools'),
+                'default'      => '',
+                'default_from' => 'network',
+                'default_map'  => $this->share_link_defaults(),
             ],
             [
                 'id'      => 'enabled',
@@ -353,6 +354,31 @@ final class Site_Settings_Page
                 'label'   => \__('Enabled', 'orbitools'),
                 'default' => true,
             ],
+        ];
+    }
+
+    /**
+     * Per-network default text for the Share Links "Share button text"
+     * field. Each entry overrides the auto-fill that would otherwise
+     * resolve to the network's option label.
+     *
+     * @return array<string,string>
+     */
+    private function share_link_defaults(): array
+    {
+        return [
+            'facebook'  => \__('Share on Facebook', 'orbitools'),
+            'twitter'   => \__('Share on X', 'orbitools'),
+            'linkedin'  => \__('Share on LinkedIn', 'orbitools'),
+            'instagram' => \__('Share on Instagram', 'orbitools'),
+            'youtube'   => \__('Share on YouTube', 'orbitools'),
+            'tiktok'    => \__('Share on TikTok', 'orbitools'),
+            'pinterest' => \__('Share on Pinterest', 'orbitools'),
+            'mastodon'  => \__('Share on Mastodon', 'orbitools'),
+            'threads'   => \__('Share on Threads', 'orbitools'),
+            'whatsapp'  => \__('Share on WhatsApp', 'orbitools'),
+            'email'     => \__('Share via Email', 'orbitools'),
+            'copy-link' => \__('Copy link', 'orbitools'),
         ];
     }
 
@@ -378,13 +404,42 @@ final class Site_Settings_Page
                 'placeholder' => 'https://',
             ],
             [
-                'id'              => 'label',
-                'type'            => 'text',
-                'label'           => \__('Link title', 'orbitools'),
-                'description'     => \__('Used for aria-label / title attributes. e.g. "Connect with us on LinkedIn".', 'orbitools'),
-                'default'         => '',
-                'default_from'    => 'network',
+                'id'           => 'label',
+                'type'         => 'text',
+                'label'        => \__('Link title', 'orbitools'),
+                'description'  => \__('Used for aria-label / title attributes on the social icon link. Auto-fills from the chosen network — edit to customise.', 'orbitools'),
+                'default'      => '',
+                'default_from' => 'network',
+                'default_map'  => $this->social_link_defaults(),
             ],
+        ];
+    }
+
+    /**
+     * Per-network default text for the Social Links "Link title"
+     * field. Phrasing differs from the share-link defaults: a Social
+     * Link is a profile pointer, so we want "Follow us on …" rather
+     * than "Share on …" — and Email / Copy link don't really apply
+     * to the social-profile use case, but we cover them anyway in
+     * case the user enables one.
+     *
+     * @return array<string,string>
+     */
+    private function social_link_defaults(): array
+    {
+        return [
+            'facebook'  => \__('Follow us on Facebook', 'orbitools'),
+            'twitter'   => \__('Follow us on X', 'orbitools'),
+            'linkedin'  => \__('Connect with us on LinkedIn', 'orbitools'),
+            'instagram' => \__('Follow us on Instagram', 'orbitools'),
+            'youtube'   => \__('Subscribe to us on YouTube', 'orbitools'),
+            'tiktok'    => \__('Follow us on TikTok', 'orbitools'),
+            'pinterest' => \__('Follow us on Pinterest', 'orbitools'),
+            'mastodon'  => \__('Follow us on Mastodon', 'orbitools'),
+            'threads'   => \__('Follow us on Threads', 'orbitools'),
+            'whatsapp'  => \__('Message us on WhatsApp', 'orbitools'),
+            'email'     => \__('Email us', 'orbitools'),
+            'copy-link' => \__('Copy link', 'orbitools'),
         ];
     }
 
