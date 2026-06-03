@@ -45,6 +45,29 @@ interface Bundle {
     stripped_keys: string[];
 }
 
+/**
+ * Tools UI scope buckets. Each checkbox the user sees on Export /
+ * Import corresponds to one of these.
+ *
+ * ────────────────────────────────────────────────────────────
+ *   IMPORTANT — keep this union + the two records below in sync
+ *   with `ModuleCategory`. A new module category that doesn't
+ *   land here is silently unreachable from the Tools UI: the
+ *   modules show up in the bundle but the user can never tick
+ *   their category, so their settings get dropped during the
+ *   client-side filter.
+ *
+ *   The matching enforcement points:
+ *     - `ModuleCategory` (`src/admin/types/index.ts`)
+ *     - `Module_Manifest::ALLOWED_CATEGORIES` (PHP)
+ *     - `CATEGORY_TITLES` (`src/admin/App.tsx`)
+ *     - `CATEGORY_META` (`src/admin/components/CategoryPage.tsx`)
+ *     - `categoryIcon` (`src/admin/components/category-icons.tsx`)
+ *
+ *   See CLAUDE.md → "Tools (Import / Export)" for the wider
+ *   contract.
+ * ────────────────────────────────────────────────────────────
+ */
 type SelectionKey = 'category:blocks' | 'category:editor' | 'category:controls' | 'category:modules' | 'theme-pages';
 
 const SELECTION_LABELS: Record<SelectionKey, string> = {

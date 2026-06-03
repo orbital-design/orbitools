@@ -215,7 +215,72 @@ export default extension;
 
 ### Routing
 
-Hash-based, no router dependency. See `src/admin/lib/router.ts` for the full table — `#`, `#blocks`, `#controls`, `#modules`, `#settings/{slug}`. `routes.X()` is the single constructor; never hand-build hash strings elsewhere.
+Hash-based, no router dependency. See `src/admin/lib/router.ts` for the full table — `#`, `#blocks`, `#controls`, `#modules`, `#editor`, `#tools`, `#settings/{slug}`. `routes.X()` is the single constructor; never hand-build hash strings elsewhere.
+
+## 🛠 Tools (Import / Export) — **READ THIS BEFORE ADDING / REMOVING THINGS**
+
+The `Tools` top-level tab (`#tools`) lets users dump the plugin's configuration as a JSON bundle and restore it on another install. **Every change to the schema surface has implications for this — when you touch any of the items below, also touch the matching Tools moving part.**
+
+The flow:
+
+```
+   ┌─────────────────────────────────────────────────────────┐
+   │ orbitools_settings = { '{slug}_{field_id}' => value }   │
+   │                                                          │
+   │            ↓ Tools_Controller::export()                  │
+   │            walks every module manifest + theme page,     │
+   │            blanks `page` / `media` field values, ships:  │
+   │                                                          │
+   │      { version, exported_at, source,                     │
+   │        modules: [{slug,name,category}, …],               │
+   │        theme_pages: [{slug,label}, …],                   │
+   │        settings: { … keys filtered by slug … },          │
+   │        stripped_keys: [ … ] }                            │
+   │                                                          │
+   │            ↑ Tools_Controller::import()                  │
+   │            merges incoming `settings` into the option    │
+   │            (slug-whitelist filters first if requested).  │
+   └─────────────────────────────────────────────────────────┘
+```
+
+### When you add things
+
+- **New module (block / control / modules / editor)** — picked up automatically. The export iterates `Module_Manager::get_manifests()` so the slug, category, settings schema, and current values all flow through without manual work. Its `{slug}_enabled` and `{slug}_{field_id}` keys land under the right category on the UI checkbox grid.
+
+- **New theme page** — same deal; the export walks `apply_filters('orbitools/register_theme_pages', [])` so any page registered through the standard filter is already in scope.
+
+- **New field type that stores a WordPress entity ID (page picker, attachment, term, comment, user, etc.)** — **YOU MUST ADD IT TO `Tools_Controller::ENTITY_FIELD_TYPES`**. Otherwise the values get shipped verbatim to the export bundle and break on the destination site. The constant currently holds `['page', 'media']`. The strip walker handles nesting (a `page` field inside a `repeater` sub_field is found recursively), so the only step is the constant addition.
+
+- **New module category** (peer to `blocks` / `controls` / `editor` / `modules`) — three pieces:
+    1. `Module_Manifest::FIELD_TYPES`-style `ALLOWED_CATEGORIES` in `inc/Core/Module/Module_Manifest.php`.
+    2. `ModuleCategory` TS union + the matching `CATEGORY_TITLES` / `CATEGORY_META` / `CATEGORY_SLUGS` / `categoryIcon` records (search `category-icons.tsx`, `App.tsx`, `CategoryPage.tsx`, `router.ts`).
+    3. `SELECTION_LABELS` / `SELECTION_ORDER` in `src/admin/components/ToolsPage.tsx` — the Tools UI hardcodes a `category:<id>` SelectionKey union, **so a new category must be added or its modules will silently be unreachable from the Export / Import checkbox grid**.
+
+### When you remove things
+
+- **Removing a module or theme page** — its `{slug}_*` keys may linger in `orbitools_settings` (orphans). Add a one-shot migration in `inc/Core/Migrations.php` to clean them out (the existing `maybe_drop_toolbar_fab` is a worked example). Otherwise an export will keep shipping dead data and an import will keep restoring it.
+
+- **Renaming a slug** — never rename a `get_slug()` value or a theme page slug. The settings keys are stored against it; existing installs would silently get a new module with no toggle state and the old toggle key would orphan. Same rule as the v2 slug migration described in the module architecture section above.
+
+### What does NOT round-trip
+
+- **Fields with `wp_option` binding** — these write directly to the named WP option (`blogname`, `blogdescription`, `site_logo`) rather than `orbitools_settings`. They are deliberately out of scope for Tools; site identity / branding values aren't expected to transfer. If you ever need them to, the export needs an `options` section keyed by `wp_option` name and the import needs the matching `update_option` loop.
+
+- **Entity IDs (page / media)** — blanked on export by design (page ID 47 on site A is a totally different page on site B). The export payload's `stripped_keys` array surfaces which fields were blanked so the UI can prompt the user to re-pick them on the destination site.
+
+### Process discipline
+
+When you open a PR that touches:
+- `Module_Manifest::ALLOWED_CATEGORIES`
+- `ModuleCategory` TS union
+- A new field type that stores an entity ID
+- A field-schema change that introduces new `sub_fields`
+- A module's `get_slug()` value (don't do this — see above)
+- A theme page's `slug`
+- `Tools_Controller::ENTITY_FIELD_TYPES` or `Tools_Controller::*_index()`
+- `ToolsPage`'s `SelectionKey` / `SELECTION_ORDER` / `SELECTION_LABELS`
+
+…explicitly note in the PR description how you verified the Tools round-trip still works (or why it doesn't apply). Tools is the kind of feature that breaks quietly — an export looks fine until you import it on a fresh site and discover half the modules are missing.
 
 ### Store
 

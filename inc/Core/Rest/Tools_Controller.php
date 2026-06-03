@@ -35,6 +35,19 @@ final class Tools_Controller extends WP_REST_Controller
     /**
      * Field types that store a WordPress entity ID and therefore
      * shouldn't transfer between installs.
+     *
+     * ────────────────────────────────────────────────────────────
+     *   IMPORTANT — keep this in sync when adding new field types.
+     *   Any field whose value is a WP entity ID (post, attachment,
+     *   term, user, comment, …) MUST appear here, or its values
+     *   ride the export verbatim and break on the destination
+     *   site. The repeater walker recurses into sub_fields so
+     *   nesting is handled automatically; the only thing you have
+     *   to remember is the type slug.
+     *
+     *   See CLAUDE.md → "Tools (Import / Export)" for the wider
+     *   contract.
+     * ────────────────────────────────────────────────────────────
      */
     private const ENTITY_FIELD_TYPES = ['page', 'media'];
 
