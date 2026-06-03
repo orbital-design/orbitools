@@ -659,7 +659,12 @@
     background: transparent;
     border: 0;
 
-    .components-panel__body {
+    // Only the *direct* PanelBody children get promoted to bordered
+    // cards. Without the child combinator, a module whose body
+    // rendered its own nested Panel (e.g. a stacked-section layout)
+    // would have its inner PanelBodies styled as cards too — and
+    // they'd visually nest inside the aggregate's own card.
+    > .components-panel__body {
         background: #fff;
         border: 1px solid #dcdcde;
         border-radius: 6px;
@@ -668,6 +673,39 @@
 
         &:last-child {
             margin-bottom: 0;
+        }
+    }
+
+    // Inside the aggregate's PanelBody, the block's body might
+    // render a SettingsSection — which is itself a Card. Strip its
+    // chrome so the section title + fields read as plain content
+    // inside the aggregate card, not a card-in-card.
+    //
+    // We strip both the BEM-with-double-underscore and the
+    // single-hyphen variants of `components-card-{body,header}` to
+    // cover any WP version drift in the class names.
+    .orbitools-settings-section.components-card {
+        background: transparent;
+        border: 0;
+        box-shadow: none;
+        border-radius: 0;
+    }
+
+    .orbitools-settings-section {
+        .components-card-header,
+        .components-card__header {
+            background: transparent;
+            border-bottom: 1px solid #f0f0f1;
+            padding-left: 0;
+            padding-right: 0;
+            padding-top: 0;
+        }
+
+        .components-card-body,
+        .components-card__body {
+            padding-left: 0;
+            padding-right: 0;
+            padding-bottom: 0;
         }
     }
 }
