@@ -63,6 +63,8 @@ See `CLAUDE.md` § "Theme pages" for the full registration shape.
 - **Post Templates** — auto-load synced block patterns for configured CPTs and per-taxonomy archive templates (themes wire pairs via the `orbitools/post_templates/configs` filter)
 - **Upload Guard** — block theme `.zip` uploads on `local` environments so a stray drag-and-drop can't clobber in-progress theme work
 - **External Rewrites** — per-rule exclusion + 301 engine for CPT posts whose canonical home has moved off WordPress (Yoast sitemap exclusions + single-post / term-archive redirects)
+- **Editor Settings** *(Editor tab)* — trim down the block editor: kill marketplace surfaces (Block Directory, remote patterns, Openverse, Font Library), tighten defaults, drop the wp-elements-* classes + core-block-supports inline CSS we don't use
+- **Block Manager** *(Editor tab)* — toggle which blocks appear in the editor inserter
 - **Core Overrides** — hide built-in WP admin pages (Settings → Connectors / Site Health / etc.) the site doesn't need
 
 ## Project structure

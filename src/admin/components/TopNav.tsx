@@ -75,6 +75,27 @@ function BlocksIcon(): JSX.Element {
     );
 }
 
+function EditorIcon(): JSX.Element {
+    return (
+        <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.75"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
+            focusable="false"
+        >
+            <path d="M12 20h9" />
+            <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z" />
+        </svg>
+    );
+}
+
 function ControlsIcon(): JSX.Element {
     return (
         <svg
@@ -162,6 +183,14 @@ const builtins: NavItem[] = [
         position: 80,
         matches: (r, cat) =>
             (r.name === 'category' && r.category === 'blocks') || cat === 'blocks',
+    },
+    {
+        label: 'Editor Settings',
+        href: routes.category('editor'),
+        icon: EditorIcon,
+        position: 85,
+        matches: (r, cat) =>
+            (r.name === 'category' && r.category === 'editor') || cat === 'editor',
     },
     {
         label: 'Control Settings',

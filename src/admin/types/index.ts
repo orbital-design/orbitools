@@ -3,7 +3,7 @@
  * mirror the shapes documented in inc/Core/Rest/README.md.
  */
 
-export type ModuleCategory = 'blocks' | 'controls' | 'modules';
+export type ModuleCategory = 'blocks' | 'controls' | 'modules' | 'editor';
 
 export type FieldType =
     | 'text'

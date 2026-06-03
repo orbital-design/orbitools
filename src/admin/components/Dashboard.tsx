@@ -27,6 +27,7 @@ import type { Module, ModuleCategory } from '../types';
 
 const CATEGORIES: { id: ModuleCategory; label: string }[] = [
     { id: 'blocks', label: 'Blocks' },
+    { id: 'editor', label: 'Editor' },
     { id: 'controls', label: 'Controls' },
     { id: 'modules', label: 'Modules' },
 ];

@@ -141,7 +141,7 @@ final class Module_Manifest
             }
         }
 
-        $allowed_categories = ['blocks', 'controls', 'modules'];
+        $allowed_categories = ['blocks', 'controls', 'modules', 'editor'];
         if (!in_array($data['category'], $allowed_categories, true)) {
             throw new RuntimeException(sprintf(
                 "Module manifest in %s has invalid category '%s'; expected one of: %s",

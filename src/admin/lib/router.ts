@@ -29,7 +29,7 @@ export type Route =
     | { name: 'page'; slug: string }
     | { name: 'settings'; slug: string };
 
-const CATEGORY_SLUGS: ModuleCategory[] = ['blocks', 'controls', 'modules'];
+const CATEGORY_SLUGS: ModuleCategory[] = ['blocks', 'controls', 'modules', 'editor'];
 
 export function parseHash(hash: string): Route {
     const cleaned = hash.replace(/^#\/?/, '');

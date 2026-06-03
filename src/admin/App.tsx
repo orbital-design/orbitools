@@ -26,6 +26,7 @@ import type { ModuleCategory } from './types';
 const CATEGORY_TITLES: Record<ModuleCategory, string> = {
     blocks: 'Block Settings',
     controls: 'Control Settings',
+    editor: 'Editor Settings',
     modules: 'Module Settings',
 };
 
