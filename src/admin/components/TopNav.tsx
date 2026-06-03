@@ -52,29 +52,6 @@ function DashboardIcon(): JSX.Element {
     );
 }
 
-function BlocksIcon(): JSX.Element {
-    return (
-        <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="20"
-            height="20"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.75"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            aria-hidden="true"
-            focusable="false"
-        >
-            <rect width="7" height="7" x="3" y="3" rx="1" />
-            <rect width="7" height="7" x="14" y="3" rx="1" />
-            <rect width="7" height="7" x="14" y="14" rx="1" />
-            <rect width="7" height="7" x="3" y="14" rx="1" />
-        </svg>
-    );
-}
-
 function EditorIcon(): JSX.Element {
     return (
         <svg
@@ -92,31 +69,6 @@ function EditorIcon(): JSX.Element {
         >
             <path d="M12 20h9" />
             <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z" />
-        </svg>
-    );
-}
-
-function ControlsIcon(): JSX.Element {
-    return (
-        <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="20"
-            height="20"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.75"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            aria-hidden="true"
-            focusable="false"
-        >
-            <line x1="21" y1="6" x2="3" y2="6" />
-            <line x1="21" y1="12" x2="3" y2="12" />
-            <line x1="21" y1="18" x2="3" y2="18" />
-            <circle cx="9" cy="6" r="2" fill="currentColor" />
-            <circle cx="15" cy="12" r="2" fill="currentColor" />
-            <circle cx="7" cy="18" r="2" fill="currentColor" />
         </svg>
     );
 }
@@ -177,28 +129,20 @@ const builtins: NavItem[] = [
         matches: (r) => r.name === 'dashboard',
     },
     {
-        label: 'Block Settings',
-        href: routes.category('blocks'),
-        icon: BlocksIcon,
-        position: 80,
-        matches: (r, cat) =>
-            (r.name === 'category' && r.category === 'blocks') || cat === 'blocks',
-    },
-    {
+        // Block Settings + Control Settings are no longer top-level
+        // tabs — they live as virtual entries inside the Editor tab's
+        // sidebar (see CategoryPage's editor-specific branch). The
+        // legacy `#blocks` / `#controls` routes still work for any
+        // bookmarks pointing at them.
         label: 'Editor Settings',
         href: routes.category('editor'),
         icon: EditorIcon,
         position: 85,
         matches: (r, cat) =>
-            (r.name === 'category' && r.category === 'editor') || cat === 'editor',
-    },
-    {
-        label: 'Control Settings',
-        href: routes.category('controls'),
-        icon: ControlsIcon,
-        position: 90,
-        matches: (r, cat) =>
-            (r.name === 'category' && r.category === 'controls') || cat === 'controls',
+            (r.name === 'category' && (r.category === 'editor' || r.category === 'blocks' || r.category === 'controls')) ||
+            cat === 'editor' ||
+            cat === 'blocks' ||
+            cat === 'controls',
     },
     {
         label: 'Module Settings',

@@ -16,7 +16,7 @@
  * The toggleModule thunk writes orbitools_settings via the REST API;
  * each sidebar row carries a small toggle as an at-a-glance affordance.
  */
-import { Notice, ToggleControl } from '@wordpress/components';
+import { Notice, Panel, PanelBody, ToggleControl } from '@wordpress/components';
 import { useDispatch } from '@wordpress/data';
 import { useModules } from '../hooks/useModules';
 import { LoadingState } from './LoadingState';
@@ -46,9 +46,9 @@ const CATEGORY_META: Record<
         description: 'Custom Gutenberg blocks shipped with Orbitools.',
     },
     editor: {
-        label: 'Editor',
-        singular: 'editor setting',
-        description: 'Block editor cleanup and behaviour tweaks.',
+        label: 'Editor Settings',
+        singular: 'item',
+        description: 'Block editor cleanup, Block Manager, and the settings for every enabled Orbital block + control.',
     },
     controls: {
         label: 'Controls',
@@ -61,6 +61,47 @@ const CATEGORY_META: Record<
         description: 'Site-wide features and integrations.',
     },
 };
+
+/**
+ * Virtual sidebar entries injected into the Editor tab. These don't
+ * correspond to a module — they aggregate every enabled module of
+ * another category into a single stacked-PanelBody view in the
+ * content pane.
+ */
+const VIRTUAL_ENTRIES: ReadonlyArray<{
+    slug: string;
+    name: string;
+    description: string;
+    aggregate: ModuleCategory;
+}> = [
+    {
+        slug: 'orbital-blocks',
+        name: 'Orbital Blocks',
+        description: 'Settings for every Orbital block currently enabled on the Dashboard.',
+        aggregate: 'blocks',
+    },
+    {
+        slug: 'orbital-controls',
+        name: 'Orbital Controls',
+        description: 'Settings for every Orbital control currently enabled on the Dashboard.',
+        aggregate: 'controls',
+    },
+];
+
+interface VirtualItem {
+    kind: 'virtual';
+    slug: string;
+    name: string;
+    description: string;
+    aggregate: ModuleCategory;
+}
+
+interface ModuleItem {
+    kind: 'module';
+    module: Module;
+}
+
+type SidebarItem = ModuleItem | VirtualItem;
 
 export function CategoryPage({ category, selectedSlug }: CategoryPageProps): JSX.Element {
     const { modules, isLoading, error } = useModules();
@@ -78,9 +119,20 @@ export function CategoryPage({ category, selectedSlug }: CategoryPageProps): JSX
         );
     }
 
-    const items = modules
+    const moduleItems: ModuleItem[] = modules
         .filter((m) => m.category === category)
-        .sort((a, b) => a.name.localeCompare(b.name));
+        .sort((a, b) => a.name.localeCompare(b.name))
+        .map((module) => ({ kind: 'module' as const, module }));
+
+    // Editor tab additionally surfaces virtual entries for the merged
+    // Blocks + Controls categories so they live alongside Editor
+    // Settings / Block Manager in the same sidebar.
+    const virtualItems: VirtualItem[] =
+        category === 'editor'
+            ? VIRTUAL_ENTRIES.map((v) => ({ kind: 'virtual' as const, ...v }))
+            : [];
+
+    const items: SidebarItem[] = [...moduleItems, ...virtualItems];
 
     const meta = CATEGORY_META[category];
 
@@ -98,16 +150,18 @@ export function CategoryPage({ category, selectedSlug }: CategoryPageProps): JSX
         );
     }
 
+    const findItem = (slug: string | undefined): SidebarItem | undefined => {
+        if (slug === undefined) return undefined;
+        return items.find((it) =>
+            it.kind === 'module' ? it.module.slug === slug : it.slug === slug,
+        );
+    };
     // No auto-selection: the right pane stays in placeholder state
     // until the user picks an item from the sidebar. If the URL
     // names an item that doesn't exist in this category we also
     // fall through to the placeholder.
-    const activeSlug =
-        selectedSlug !== undefined && items.some((m) => m.slug === selectedSlug)
-            ? selectedSlug
-            : undefined;
-    const activeItem =
-        activeSlug !== undefined ? items.find((m) => m.slug === activeSlug) : undefined;
+    const activeItem = findItem(selectedSlug);
+    const activeSlug = activeItem !== undefined ? selectedSlug : undefined;
 
     return (
         <div className="orbitools-page">
@@ -119,15 +173,29 @@ export function CategoryPage({ category, selectedSlug }: CategoryPageProps): JSX
             <div className="orbitools-category-split">
                 <aside className="orbitools-category-split__sidebar" aria-label={`${meta.label} list`}>
                     <ul className="orbitools-sidebar-list">
-                        {items.map((mod) => (
-                            <SidebarRow
-                                key={mod.slug}
-                                module={mod}
-                                active={mod.slug === activeSlug}
-                                category={category}
-                                onToggle={(next) => toggleModule(mod.slug, next)}
-                            />
-                        ))}
+                        {items.map((it) => {
+                            const slug = it.kind === 'module' ? it.module.slug : it.slug;
+                            const active = slug === activeSlug;
+                            if (it.kind === 'module') {
+                                return (
+                                    <SidebarRow
+                                        key={slug}
+                                        module={it.module}
+                                        active={active}
+                                        category={category}
+                                        onToggle={(next) => toggleModule(it.module.slug, next)}
+                                    />
+                                );
+                            }
+                            return (
+                                <VirtualSidebarRow
+                                    key={slug}
+                                    item={it}
+                                    active={active}
+                                    category={category}
+                                />
+                            );
+                        })}
                     </ul>
                 </aside>
                 <section className="orbitools-category-split__content">
@@ -135,13 +203,24 @@ export function CategoryPage({ category, selectedSlug }: CategoryPageProps): JSX
                         <>
                             <header className="orbitools-category-split__content-header">
                                 <h3 className="orbitools-category-split__content-title">
-                                    {activeItem.name}
+                                    {activeItem.kind === 'module'
+                                        ? activeItem.module.name
+                                        : activeItem.name}
                                 </h3>
                                 <p className="orbitools-category-split__content-description">
-                                    {activeItem.description}
+                                    {activeItem.kind === 'module'
+                                        ? activeItem.module.description
+                                        : activeItem.description}
                                 </p>
                             </header>
-                            <CategoryItemBody slug={activeSlug} />
+                            {activeItem.kind === 'module' ? (
+                                <CategoryItemBody slug={activeSlug} />
+                            ) : (
+                                <AggregateModulesPanel
+                                    aggregate={activeItem.aggregate}
+                                    allModules={modules}
+                                />
+                            )}
                         </>
                     ) : (
                         <div className="orbitools-category-split__empty">
@@ -166,6 +245,76 @@ function CategoryItemBody({ slug }: { slug: string }): JSX.Element {
         return <CustomPage slug={slug} />;
     }
     return <ModuleSettingsBody slug={slug} />;
+}
+
+/**
+ * Stacked-PanelBody view of every enabled module in a given category.
+ * Used by the Editor tab's "Orbital Blocks" + "Orbital Controls"
+ * virtual sidebar entries — clicking either renders all enabled items
+ * in that category as collapsible panels in the right pane.
+ *
+ * Modules with no settings_schema still get a row so users can see
+ * what's enabled; the body just shows the description in that case.
+ */
+function AggregateModulesPanel({
+    aggregate,
+    allModules,
+}: {
+    aggregate: ModuleCategory;
+    allModules: Module[];
+}): JSX.Element {
+    const enabled = allModules
+        .filter((m) => m.category === aggregate && m.enabled)
+        .sort((a, b) => a.name.localeCompare(b.name));
+
+    if (enabled.length === 0) {
+        return (
+            <Notice status="info" isDismissible={false}>
+                Nothing enabled yet. Enable {aggregate === 'blocks' ? 'blocks' : 'controls'}{' '}
+                from the Dashboard and they'll appear here.
+            </Notice>
+        );
+    }
+
+    return (
+        <Panel className="orbitools-aggregate-panel">
+            {enabled.map((mod) => (
+                <PanelBody key={mod.slug} title={mod.name} initialOpen={false}>
+                    <CategoryItemBody slug={mod.slug} />
+                </PanelBody>
+            ))}
+        </Panel>
+    );
+}
+
+interface VirtualSidebarRowProps {
+    item: VirtualItem;
+    active: boolean;
+    category: ModuleCategory;
+}
+
+function VirtualSidebarRow({
+    item,
+    active,
+    category,
+}: VirtualSidebarRowProps): JSX.Element {
+    return (
+        <li className="orbitools-sidebar-list__item">
+            <a
+                className={
+                    active
+                        ? 'orbitools-sidebar-list__link orbitools-sidebar-list__link--active'
+                        : 'orbitools-sidebar-list__link'
+                }
+                href={routes.categoryItem(category, item.slug)}
+                aria-current={active ? 'page' : undefined}
+            >
+                <span className="orbitools-sidebar-list__label">
+                    <span className="orbitools-sidebar-list__label-text">{item.name}</span>
+                </span>
+            </a>
+        </li>
+    );
 }
 
 interface SidebarRowProps {
