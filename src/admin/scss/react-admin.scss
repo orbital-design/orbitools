@@ -210,20 +210,16 @@
 // left and a Remove button on the right. Add button sits at the
 // bottom, outside the rows.
 
-// Repeater layout follows the Core Cleanup stacked-section pattern:
-// a plain header card with title + description, then a Panel whose
-// PanelBody children are each their own bordered card, then a naked
-// Add button. The CategoryPage right-pane white chrome is stripped
-// via `:has(.orbitools-repeater)` higher up (next to the existing
-// `:has(.orbitools-section-stack)` rule), and SettingsRenderer skips
-// the SettingsSection wrapper for repeater-only field groups — so
-// the repeater's own cards land directly on the gray admin background.
+// Repeater layout: a plain header card with title + description,
+// then a Panel whose PanelBody children are each their own bordered
+// row card, then a naked Add button. The PanelBody-as-card chrome
+// lives in the unified rule (`.orbitools-section-stack,
+// .orbitools-aggregate-panel, .orbitools-repeater__rows`); this
+// block only owns the repeater-specific bits.
 
 .orbitools-repeater {
-    // Header card: title + description, sits on the gray.
-    &__header {
-        // Uses the WP Card defaults; just style the inner content.
-    }
+    // Header card: title + description, sits on the gray surface
+    // via the parent SettingsRenderer's bare-section rendering.
 
     // Container for the row cards + Add button. The left border + left
     // padding visually mark this stack as belonging to the header card
@@ -249,25 +245,6 @@
         font-size: 13px;
         color: #50575e;
         line-height: 1.5;
-    }
-
-    // Each PanelBody = its own self-contained bordered card, identical
-    // to the stacked-section layout the Core Cleanup page uses.
-    &__rows {
-        background: transparent;
-        border: 0;
-
-        .components-panel__body {
-            background: #fff;
-            border: 1px solid #dcdcde;
-            border-radius: 6px;
-            margin-bottom: 12px;
-            overflow: hidden;
-
-            &:last-child {
-                margin-bottom: 0;
-            }
-        }
     }
 
     // Remove button sits at the bottom of an expanded row's content.
@@ -614,75 +591,70 @@
 // settings) both consume this.
 :root {
     --orbitools-sidebar-width: 260px;
+
+    // Card primitive — every white-on-gray "card" surface uses these
+    // tokens. Tweaking them changes every settings card in one place.
+    --orbitools-card-bg: #fff;
+    --orbitools-card-border-color: #dcdcde;
+    --orbitools-card-border: 1px solid var(--orbitools-card-border-color);
+    --orbitools-card-radius: 6px;
+    --orbitools-card-padding: 16px 20px;
+
+    // Standard gap between stacked sections.
+    --orbitools-section-gap: 16px;
 }
 
-/* ---------- Multi-section settings: stacked collapsible cards ---------- */
-//
-// Opt-in via `"section_layout": "stacked"` on the module manifest
-// or theme page. Each section renders as its own card stacked on
-// the gray admin background, RunCache-style — not collapsible
-// regions within a shared white container.
-//
-// When the stack is rendered inside CategoryPage's content pane
-// (which is normally a white bordered card), `:has()` drops that
-// outer chrome so the inner cards aren't sitting on white.
-
-// When the right-pane content uses the stacked layout, drop the
-// pane's own white chrome so each section card reads as its own
-// container. The item's name + description header gets its OWN
-// card so it doesn't sit naked on the gray; it's spaced apart
-// from the first accordion below.
-.orbitools-category-split__content:has(.orbitools-section-stack),
-.orbitools-category-split__content:has(.orbitools-aggregate-panel),
-.orbitools-category-split__content:has(.orbitools-repeater) {
-    background: transparent;
-    border: 0;
-    border-radius: 0;
-    padding: 0;
-
-    .orbitools-category-split__content-header {
-        background: #fff;
-        border: 1px solid #dcdcde;
-        border-radius: 6px;
-        padding: 16px 20px;
-        margin-bottom: 16px;
-        border-bottom: 1px solid #dcdcde;
-    }
+// Shared card chrome. Apply directly via `.orbitools-card`, or pull
+// the underlying tokens via the variables above. The PanelBody-based
+// containers (section stack / aggregate panel / repeater rows) get
+// the same chrome through dedicated selectors below — they can't
+// just use the class because the PanelBody markup is owned by WP.
+.orbitools-card {
+    background: var(--orbitools-card-bg);
+    border: var(--orbitools-card-border);
+    border-radius: var(--orbitools-card-radius);
 }
 
-// Aggregate panel — used by the Editor tab's Orbital Blocks /
-// Orbital Controls virtual entries to stack every enabled module's
-// settings as a PanelBody. Same per-PanelBody card treatment as the
-// stacked-section layout so it reads as a sibling stack of cards
-// under the header, not as one fat panel.
-.orbitools-aggregate-panel {
+// SettingsSection wraps a WP `<Card>`. Pin its chrome to the same
+// tokens so flat-layout sections sit alongside PanelBody-based ones
+// without visual drift.
+.orbitools-settings-section.components-card {
+    background: var(--orbitools-card-bg);
+    border: var(--orbitools-card-border);
+    border-radius: var(--orbitools-card-radius);
+    box-shadow: none;
+}
+
+/* ---------- Unified PanelBody-as-card rule ---------- */
+//
+// The three contexts that stack PanelBody-based cards on the gray
+// background (Stacked sections, Aggregate panel for Editor tab,
+// Repeater rows) all share the same chrome via this single rule.
+// Each Panel container is just a transparent flex layout; the
+// PanelBody children pick up the card chrome through the same
+// tokens SettingsSection / content-header use.
+
+.orbitools-section-stack,
+.orbitools-aggregate-panel,
+.orbitools-repeater__rows {
     background: transparent;
     border: 0;
 
-    // Only the *direct* PanelBody children get promoted to bordered
-    // cards. Without the child combinator, a module whose body
-    // rendered its own nested Panel (e.g. a stacked-section layout)
-    // would have its inner PanelBodies styled as cards too — and
-    // they'd visually nest inside the aggregate's own card.
+    // Direct PanelBody children only — a child Panel rendered
+    // by an embedded module's stacked layout (or a custom Page)
+    // shouldn't also have its inner PanelBodies promoted to
+    // cards; that would nest visually inside the outer card.
     > .components-panel__body {
-        background: #fff;
-        border: 1px solid #dcdcde;
-        border-radius: 6px;
-        margin-bottom: 16px;
+        background: var(--orbitools-card-bg);
+        border: var(--orbitools-card-border);
+        border-radius: var(--orbitools-card-radius);
+        margin-bottom: var(--orbitools-section-gap);
         overflow: hidden;
 
         &:last-child {
             margin-bottom: 0;
         }
     }
-
-    // Inside the aggregate we render module bodies with
-    // `sectionLayoutOverride='flat'`, which bypasses both the
-    // PanelBody section stack and the SettingsSection wrapper —
-    // so the only inner rendering is `.orbitools-flat-section`.
-    // (Any custom Page extension that ignored the override and
-    // rendered its own section-stack would still nest visually;
-    // we'd address that case if one ever shows up.)
 }
 
 /* ---------- Flat section (aggregate-panel inner) ---------- */
@@ -733,22 +705,8 @@
 }
 
 .orbitools-section-stack {
-    background: transparent;
-    border: 0;
-
-    // Each PanelBody is its own self-contained card.
-    .components-panel__body {
-        background: #fff;
-        border: 1px solid #dcdcde;
-        border-radius: 6px;
-        margin-bottom: 16px;
-        overflow: hidden;
-
-        &:last-child {
-            margin-bottom: 0;
-        }
-    }
-
+    // Card chrome lives on the unified rule above. Only the
+    // description-paragraph typography is owned here.
     &__description {
         margin: 0 0 16px;
         font-size: 13px;
@@ -757,6 +715,11 @@
     }
 }
 
+// Two-column section layout (used by SectionSidebarLayout when a
+// module declares 2+ sections without `section_layout: stacked`).
+// The sidebar is naturally a card; the right pane is a transparent
+// surface so its inner content cards (SettingsSection, repeater
+// header card, etc.) sit directly on the gray.
 .orbitools-section-split {
     display: grid;
     grid-template-columns: var(--orbitools-sidebar-width) 1fr;
@@ -768,24 +731,29 @@
     }
 
     &__sidebar {
-        background: #fff;
-        border: 1px solid #dcdcde;
-        border-radius: 6px;
+        background: var(--orbitools-card-bg);
+        border: var(--orbitools-card-border);
+        border-radius: var(--orbitools-card-radius);
         overflow: hidden;
     }
 
     &__content {
-        background: #fff;
-        border: 1px solid #dcdcde;
-        border-radius: 6px;
-        padding: 24px 28px 32px;
+        // Transparent surface. Inner cards (content-header,
+        // SettingsSection, repeater header) provide the chrome.
+        background: transparent;
+        border: 0;
+        padding: 0;
         min-width: 0;
+        display: flex;
+        flex-direction: column;
+        gap: var(--orbitools-section-gap);
     }
 
     &__content-header {
-        margin: 0 0 20px;
-        padding-bottom: 16px;
-        border-bottom: 1px solid #f0f0f1;
+        background: var(--orbitools-card-bg);
+        border: var(--orbitools-card-border);
+        border-radius: var(--orbitools-card-radius);
+        padding: var(--orbitools-card-padding);
     }
 
     &__content-title {
@@ -806,6 +774,10 @@
 
 /* ---------- Category Settings page (two-column) ---------- */
 
+// CategoryPage two-column layout. Same grammar as section-split:
+// sidebar is a card, right pane is a transparent surface, inner
+// content cards (content-header, SettingsSection, repeater header,
+// PanelBody stacks) provide their own chrome.
 .orbitools-category-split {
     display: grid;
     grid-template-columns: var(--orbitools-sidebar-width) 1fr;
@@ -817,24 +789,27 @@
     }
 
     &__sidebar {
-        background: #fff;
-        border: 1px solid #dcdcde;
-        border-radius: 6px;
+        background: var(--orbitools-card-bg);
+        border: var(--orbitools-card-border);
+        border-radius: var(--orbitools-card-radius);
         overflow: hidden;
     }
 
     &__content {
-        background: #fff;
-        border: 1px solid #dcdcde;
-        border-radius: 6px;
-        padding: 24px 28px 32px;
+        background: transparent;
+        border: 0;
+        padding: 0;
         min-width: 0; // let inner content shrink instead of pushing the grid wide
+        display: flex;
+        flex-direction: column;
+        gap: var(--orbitools-section-gap);
     }
 
     &__content-header {
-        margin: 0;
-        padding-bottom: 16px;
-        border-bottom: 1px solid #f0f0f1;
+        background: var(--orbitools-card-bg);
+        border: var(--orbitools-card-border);
+        border-radius: var(--orbitools-card-radius);
+        padding: var(--orbitools-card-padding);
     }
 
     &__content-title {
@@ -853,6 +828,9 @@
     }
 
     &__empty {
+        background: var(--orbitools-card-bg);
+        border: var(--orbitools-card-border);
+        border-radius: var(--orbitools-card-radius);
         display: flex;
         align-items: center;
         justify-content: center;
