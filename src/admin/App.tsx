@@ -18,6 +18,7 @@ import { CategoryPage } from './components/CategoryPage';
 import { Dashboard } from './components/Dashboard';
 import { SettingsPage } from './components/SettingsPage';
 import { ThemePage } from './components/ThemePage';
+import { ToolsPage } from './components/ToolsPage';
 import { useHashRoute } from './lib/router';
 import { discovered } from './.generated/discovered';
 import { getThemePage } from './lib/themePages';
@@ -38,6 +39,10 @@ export function App(): JSX.Element {
             <DiscoveredFills />
             {route.name === 'settings' ? (
                 <RoutedSettings slug={route.slug} />
+            ) : route.name === 'tools' ? (
+                <AppChrome title="Tools">
+                    <ToolsPage />
+                </AppChrome>
             ) : route.name === 'page' ? (
                 <AppChrome title={getThemePage(route.slug)?.label ?? 'Page'}>
                     <ThemePage slug={route.slug} />

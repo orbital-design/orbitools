@@ -665,6 +665,49 @@
     }
 }
 
+/* ---------- Tools page ---------- */
+//
+// Export / Import cards. Both share the same internal layout:
+// description paragraph, optional file/textarea, checkbox list of
+// what's in the bundle, action buttons. Nothing exotic — the cards
+// themselves use the shared chrome.
+
+.orbitools-tools-card {
+    &__title {
+        margin: 0;
+        font-size: 14px;
+        font-weight: 600;
+        color: #1d2327;
+    }
+
+    &__description {
+        margin: 0 0 16px;
+        font-size: 13px;
+        color: #50575e;
+        line-height: 1.5;
+    }
+
+    &__list {
+        margin: 12px 0;
+        padding-left: 0;
+        list-style: none;
+
+        li {
+            margin: 0;
+        }
+    }
+
+    &__actions {
+        display: flex;
+        gap: 8px;
+        margin-top: 16px;
+    }
+
+    &__file-row {
+        margin-bottom: 12px;
+    }
+}
+
 /* ---------- Flat section (aggregate-panel inner) ---------- */
 //
 // One row per section in `flat` SectionLayout. Just an optional
