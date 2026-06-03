@@ -633,6 +633,7 @@
 // card so it doesn't sit naked on the gray; it's spaced apart
 // from the first accordion below.
 .orbitools-category-split__content:has(.orbitools-section-stack),
+.orbitools-category-split__content:has(.orbitools-aggregate-panel),
 .orbitools-category-split__content:has(.orbitools-repeater) {
     background: transparent;
     border: 0;
@@ -646,6 +647,28 @@
         padding: 16px 20px;
         margin-bottom: 16px;
         border-bottom: 1px solid #dcdcde;
+    }
+}
+
+// Aggregate panel — used by the Editor tab's Orbital Blocks /
+// Orbital Controls virtual entries to stack every enabled module's
+// settings as a PanelBody. Same per-PanelBody card treatment as the
+// stacked-section layout so it reads as a sibling stack of cards
+// under the header, not as one fat panel.
+.orbitools-aggregate-panel {
+    background: transparent;
+    border: 0;
+
+    .components-panel__body {
+        background: #fff;
+        border: 1px solid #dcdcde;
+        border-radius: 6px;
+        margin-bottom: 16px;
+        overflow: hidden;
+
+        &:last-child {
+            margin-bottom: 0;
+        }
     }
 }
 
