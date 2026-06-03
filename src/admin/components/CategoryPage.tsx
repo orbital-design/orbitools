@@ -45,6 +45,11 @@ const CATEGORY_META: Record<
         singular: 'block',
         description: 'Custom Gutenberg blocks shipped with Orbitools.',
     },
+    editor: {
+        label: 'Editor',
+        singular: 'editor setting',
+        description: 'Block editor cleanup and behaviour tweaks.',
+    },
     controls: {
         label: 'Controls',
         singular: 'control',
