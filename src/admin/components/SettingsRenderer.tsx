@@ -132,14 +132,31 @@ export function SettingsRenderer({
             <Slot name={SLOTS.settingsBefore(slug)} />
             <VStack spacing={4}>
                 {grouped.map((group) => {
-                    // A standalone repeater renders its own header card +
-                    // stacked row cards, so wrapping it in a SettingsSection
-                    // (a Card) would nest cards. Skip the wrapper when the
-                    // group is a single repeater field.
+                    // Repeater groups render their own header card +
+                    // stacked row cards, so wrapping in a SettingsSection
+                    // (a Card) would nest cards. Render the section
+                    // title / description as a plain heading instead and
+                    // let the repeaters provide their own structure.
                     if (isStandaloneRepeaterGroup(group)) {
                         return (
-                            <div key={group.section?.id ?? '__default__'}>
-                                {renderFields(group.fields)}
+                            <div
+                                key={group.section?.id ?? '__default__'}
+                                className="orbitools-bare-section"
+                            >
+                                {group.section?.title !== undefined && (
+                                    <header className="orbitools-bare-section__header">
+                                        <h3 className="orbitools-bare-section__title">
+                                            {group.section.title}
+                                        </h3>
+                                        {group.section?.description !== undefined &&
+                                            group.section.description !== '' && (
+                                                <p className="orbitools-bare-section__description">
+                                                    {group.section.description}
+                                                </p>
+                                            )}
+                                    </header>
+                                )}
+                                <VStack spacing={4}>{renderFields(group.fields)}</VStack>
                             </div>
                         );
                     }
@@ -160,7 +177,11 @@ export function SettingsRenderer({
 }
 
 function isStandaloneRepeaterGroup(group: FieldGroup): boolean {
-    return group.fields.length === 1 && String(group.fields[0].type) === 'repeater';
+    // True when every field in the group is a repeater. Each repeater
+    // ships its own header card + stacked row cards; wrapping them in
+    // a SettingsSection (a Card) would nest cards regardless of how
+    // many siblings they had.
+    return group.fields.length >= 1 && group.fields.every((f) => String(f.type) === 'repeater');
 }
 
 interface FieldGroup {

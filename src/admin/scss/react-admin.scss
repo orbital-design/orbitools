@@ -699,6 +699,39 @@
     }
 }
 
+/* ---------- Bare section (repeater-only groups) ---------- */
+//
+// A section whose fields are all repeaters renders its title +
+// description as a plain heading instead of in a SettingsSection
+// Card — the repeaters provide their own card structure below
+// and a wrapping Card would nest them.
+
+.orbitools-bare-section {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+
+    &__header {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    &__title {
+        margin: 0;
+        font-size: 14px;
+        font-weight: 600;
+        color: #1d2327;
+    }
+
+    &__description {
+        margin: 0;
+        font-size: 13px;
+        color: #50575e;
+        line-height: 1.5;
+    }
+}
+
 .orbitools-section-stack {
     background: transparent;
     border: 0;
