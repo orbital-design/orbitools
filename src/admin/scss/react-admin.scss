@@ -676,14 +676,24 @@
         }
     }
 
-    // Inside the aggregate's PanelBody, the block's body might
-    // render a SettingsSection — which is itself a Card. Strip its
-    // chrome so the section title + fields read as plain content
-    // inside the aggregate card, not a card-in-card.
-    //
-    // We strip both the BEM-with-double-underscore and the
-    // single-hyphen variants of `components-card-{body,header}` to
-    // cover any WP version drift in the class names.
+    // Block-category modules get section_layout='stacked' forced on
+    // them by Modules_Controller, so their body always renders as
+    // `Panel.orbitools-section-stack` → `PanelBody` per section.
+    // The .orbitools-section-stack rule (further down) promotes each
+    // of those PanelBodies to a standalone bordered card — perfect
+    // for a standalone module page, but inside the aggregate it
+    // produces a card nested inside the aggregate's own per-module
+    // card. Flatten the inner promotion so the inner section reads
+    // as plain collapsible content inside the aggregate card.
+    .orbitools-section-stack .components-panel__body {
+        background: transparent;
+        border: 0;
+        border-radius: 0;
+        margin-bottom: 0;
+    }
+
+    // Same idea for the flat layout's SettingsSection (a Card) —
+    // strip its chrome when it sits inside the aggregate.
     .orbitools-settings-section.components-card {
         background: transparent;
         border: 0;
