@@ -617,10 +617,17 @@
 // containers (section stack / aggregate panel / repeater rows) get
 // the same chrome through dedicated selectors below — they can't
 // just use the class because the PanelBody markup is owned by WP.
-.orbitools-card {
+//
+// The doubled `.components-card.orbitools-card` selector overrides
+// WP's default Card box-shadow / border — same trick the
+// SettingsSection rule uses — so a `<Card className="orbitools-card">`
+// reads the same as a plain bordered card on the gray.
+.orbitools-card,
+.components-card.orbitools-card {
     background: var(--orbitools-card-bg);
     border: var(--orbitools-card-border);
     border-radius: var(--orbitools-card-radius);
+    box-shadow: none;
 }
 
 // SettingsSection wraps a WP `<Card>`. Pin its chrome to the same
@@ -691,6 +698,9 @@
         margin: 12px 0;
         padding-left: 0;
         list-style: none;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
 
         li {
             margin: 0;

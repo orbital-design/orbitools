@@ -15,9 +15,6 @@
 import { useCallback, useMemo, useState } from '@wordpress/element';
 import {
     Button,
-    Card,
-    CardBody,
-    CardHeader,
     CheckboxControl,
     Notice,
     TextareaControl,
@@ -111,7 +108,34 @@ function filterSettingsBySlugs(
     return out;
 }
 
+type ToolId = 'export' | 'import';
+
+interface ToolDescriptor {
+    id: ToolId;
+    label: string;
+    description: string;
+    render: () => JSX.Element;
+}
+
+const TOOLS: ToolDescriptor[] = [
+    {
+        id:          'export',
+        label:       'Export',
+        description: 'Bundle your Orbitools settings into a JSON file you can import on another site.',
+        render:      () => <ExportBody />,
+    },
+    {
+        id:          'import',
+        label:       'Import',
+        description: 'Drop in a JSON bundle from another site and merge its settings into this install.',
+        render:      () => <ImportBody />,
+    },
+];
+
 export function ToolsPage(): JSX.Element {
+    const [activeId, setActiveId] = useState<ToolId>('export');
+    const active = TOOLS.find((t) => t.id === activeId) ?? TOOLS[0];
+
     return (
         <div className="orbitools-page orbitools-tools-page">
             <header className="orbitools-section-header">
@@ -121,10 +145,47 @@ export function ToolsPage(): JSX.Element {
                     exported as a JSON bundle you can drop into a fresh install.
                 </p>
             </header>
-            <VStack spacing={4}>
-                <ExportCard />
-                <ImportCard />
-            </VStack>
+
+            <div className="orbitools-category-split">
+                <aside className="orbitools-category-split__sidebar" aria-label="Tools">
+                    <ul className="orbitools-sidebar-list">
+                        {TOOLS.map((tool) => {
+                            const isActive = tool.id === activeId;
+                            return (
+                                <li key={tool.id} className="orbitools-sidebar-list__item">
+                                    <button
+                                        type="button"
+                                        className={
+                                            isActive
+                                                ? 'orbitools-sidebar-list__link orbitools-sidebar-list__link--active'
+                                                : 'orbitools-sidebar-list__link'
+                                        }
+                                        aria-current={isActive ? 'page' : undefined}
+                                        onClick={() => setActiveId(tool.id)}
+                                    >
+                                        <span className="orbitools-sidebar-list__label">
+                                            <span className="orbitools-sidebar-list__label-text">
+                                                {tool.label}
+                                            </span>
+                                        </span>
+                                    </button>
+                                </li>
+                            );
+                        })}
+                    </ul>
+                </aside>
+                <section className="orbitools-category-split__content">
+                    <header className="orbitools-category-split__content-header">
+                        <h3 className="orbitools-category-split__content-title">
+                            {active.label}
+                        </h3>
+                        <p className="orbitools-category-split__content-description">
+                            {active.description}
+                        </p>
+                    </header>
+                    {active.render()}
+                </section>
+            </div>
         </div>
     );
 }
@@ -133,7 +194,7 @@ export function ToolsPage(): JSX.Element {
 // Export
 // =============================================================================
 
-function ExportCard(): JSX.Element {
+function ExportBody(): JSX.Element {
     const [bundle, setBundle]   = useState<Bundle | null>(null);
     const [loading, setLoading] = useState(false);
     const [error, setError]     = useState<string | null>(null);
@@ -190,88 +251,78 @@ function ExportCard(): JSX.Element {
     }, [bundle, selections, selection]);
 
     return (
-        <Card className="orbitools-card">
-            <CardHeader>
-                <h3 className="orbitools-tools-card__title">Export</h3>
-            </CardHeader>
-            <CardBody>
-                <p className="orbitools-tools-card__description">
-                    Bundles every selected category's settings into a JSON file. Page-picker
-                    and media references are blanked on export — re-pick them on the new
-                    site after import.
-                </p>
-                {error !== null && (
-                    <Notice status="error" isDismissible={false}>
-                        {error}
-                    </Notice>
-                )}
-                {bundle === null ? (
-                    <Button
-                        variant="primary"
-                        onClick={fetchBundle}
-                        disabled={loading}
-                        __next40pxDefaultSize
-                    >
-                        {loading ? 'Loading…' : 'Prepare export'}
-                    </Button>
-                ) : (
-                    <>
-                        <CheckboxControl
-                            label="Select all"
-                            checked={allOn}
-                            indeterminate={!allOn && selection.size > 0}
-                            onChange={(on) =>
-                                setSelection(on ? new Set(SELECTION_ORDER) : new Set())
-                            }
-                            __nextHasNoMarginBottom
-                        />
-                        <ul className="orbitools-tools-card__list">
-                            {SELECTION_ORDER.map((key) => {
-                                const count = selections === null ? 0 : selections[key].length;
-                                return (
-                                    <li key={key}>
-                                        <CheckboxControl
-                                            label={`${SELECTION_LABELS[key]} (${count})`}
-                                            checked={selection.has(key)}
-                                            onChange={(on) => toggle(key, on)}
-                                            disabled={count === 0}
-                                            __nextHasNoMarginBottom
-                                        />
-                                    </li>
-                                );
-                            })}
-                        </ul>
-                        {bundle.stripped_keys.length > 0 && (
-                            <Notice status="info" isDismissible={false}>
-                                {bundle.stripped_keys.length} page / media reference
-                                {bundle.stripped_keys.length === 1 ? '' : 's'} will be
-                                blanked on export.
-                            </Notice>
-                        )}
-                        <div className="orbitools-tools-card__actions">
-                            <Button
-                                variant="primary"
-                                onClick={download}
-                                disabled={selection.size === 0}
-                                __next40pxDefaultSize
-                            >
-                                Download JSON
-                            </Button>
-                            <Button
-                                variant="tertiary"
-                                onClick={() => {
-                                    setBundle(null);
-                                    setSelection(new Set(SELECTION_ORDER));
-                                }}
-                                __next40pxDefaultSize
-                            >
-                                Reset
-                            </Button>
-                        </div>
-                    </>
-                )}
-            </CardBody>
-        </Card>
+        <VStack spacing={3} className="orbitools-tools-body">
+            {error !== null && (
+                <Notice status="error" isDismissible={false}>
+                    {error}
+                </Notice>
+            )}
+            {bundle === null ? (
+                <Button
+                    variant="primary"
+                    onClick={fetchBundle}
+                    disabled={loading}
+                    __next40pxDefaultSize
+                >
+                    {loading ? 'Loading…' : 'Prepare export'}
+                </Button>
+            ) : (
+                <>
+                    <CheckboxControl
+                        label="Select all"
+                        checked={allOn}
+                        indeterminate={!allOn && selection.size > 0}
+                        onChange={(on) =>
+                            setSelection(on ? new Set(SELECTION_ORDER) : new Set())
+                        }
+                        __nextHasNoMarginBottom
+                    />
+                    <ul className="orbitools-tools-card__list">
+                        {SELECTION_ORDER.map((key) => {
+                            const count = selections === null ? 0 : selections[key].length;
+                            return (
+                                <li key={key}>
+                                    <CheckboxControl
+                                        label={`${SELECTION_LABELS[key]} (${count})`}
+                                        checked={selection.has(key)}
+                                        onChange={(on) => toggle(key, on)}
+                                        disabled={count === 0}
+                                        __nextHasNoMarginBottom
+                                    />
+                                </li>
+                            );
+                        })}
+                    </ul>
+                    {bundle.stripped_keys.length > 0 && (
+                        <Notice status="info" isDismissible={false}>
+                            {bundle.stripped_keys.length} page / media reference
+                            {bundle.stripped_keys.length === 1 ? '' : 's'} will be
+                            blanked on export.
+                        </Notice>
+                    )}
+                    <div className="orbitools-tools-card__actions">
+                        <Button
+                            variant="primary"
+                            onClick={download}
+                            disabled={selection.size === 0}
+                            __next40pxDefaultSize
+                        >
+                            Download JSON
+                        </Button>
+                        <Button
+                            variant="tertiary"
+                            onClick={() => {
+                                setBundle(null);
+                                setSelection(new Set(SELECTION_ORDER));
+                            }}
+                            __next40pxDefaultSize
+                        >
+                            Reset
+                        </Button>
+                    </div>
+                </>
+            )}
+        </VStack>
     );
 }
 
@@ -283,7 +334,7 @@ interface ImportApiResponse {
     applied: number;
 }
 
-function ImportCard(): JSX.Element {
+function ImportBody(): JSX.Element {
     const [raw, setRaw]               = useState('');
     const [bundle, setBundle]         = useState<Bundle | null>(null);
     const [parseError, setParseError] = useState<string | null>(null);
@@ -365,89 +416,79 @@ function ImportCard(): JSX.Element {
     }, [bundle, selections, selection]);
 
     return (
-        <Card className="orbitools-card">
-            <CardHeader>
-                <h3 className="orbitools-tools-card__title">Import</h3>
-            </CardHeader>
-            <CardBody>
-                <p className="orbitools-tools-card__description">
-                    Drop a JSON bundle from another site (or paste it below). The selected
-                    categories' settings will be merged into this site — existing values
-                    are overwritten.
-                </p>
-                <div className="orbitools-tools-card__file-row">
-                    <input
-                        type="file"
-                        accept="application/json,.json"
-                        onChange={(e) => {
-                            const f = e.target.files?.[0];
-                            if (f !== undefined) onFile(f);
-                        }}
-                    />
-                </div>
-                <TextareaControl
-                    label="…or paste the JSON"
-                    value={raw}
-                    onChange={parse}
-                    rows={6}
-                    __nextHasNoMarginBottom
+        <VStack spacing={3} className="orbitools-tools-body">
+            <div className="orbitools-tools-card__file-row">
+                <input
+                    type="file"
+                    accept="application/json,.json"
+                    onChange={(e) => {
+                        const f = e.target.files?.[0];
+                        if (f !== undefined) onFile(f);
+                    }}
                 />
-                {parseError !== null && (
-                    <Notice status="error" isDismissible={false}>
-                        Couldn't parse the JSON: {parseError}
-                    </Notice>
-                )}
-                {submitError !== null && (
-                    <Notice status="error" isDismissible={false}>
-                        {submitError}
-                    </Notice>
-                )}
-                {success !== null && (
-                    <Notice status="success" isDismissible={false}>
-                        Imported {success} setting{success === 1 ? '' : 's'}. Reload to see
-                        the new values everywhere.
-                    </Notice>
-                )}
-                {bundle !== null && (
-                    <>
-                        <CheckboxControl
-                            label="Select all"
-                            checked={allOn}
-                            indeterminate={!allOn && selection.size > 0}
-                            onChange={(on) =>
-                                setSelection(on ? new Set(SELECTION_ORDER) : new Set())
-                            }
-                            __nextHasNoMarginBottom
-                        />
-                        <ul className="orbitools-tools-card__list">
-                            {SELECTION_ORDER.map((key) => {
-                                const count = selections === null ? 0 : selections[key].length;
-                                return (
-                                    <li key={key}>
-                                        <CheckboxControl
-                                            label={`${SELECTION_LABELS[key]} (${count})`}
-                                            checked={selection.has(key)}
-                                            onChange={(on) => toggle(key, on)}
-                                            disabled={count === 0}
-                                            __nextHasNoMarginBottom
-                                        />
-                                    </li>
-                                );
-                            })}
-                        </ul>
-                        <div className="orbitools-tools-card__actions">
-                            <Button
-                                variant="primary"
-                                onClick={apply}
-                                disabled={submitting || selection.size === 0}
-                                __next40pxDefaultSize
-                            >
-                                {submitting ? 'Importing…' : 'Apply'}
-                            </Button>
-                        </div>
-                    </>
-                )}
-            </CardBody>
-        </Card>
+            </div>
+            <TextareaControl
+                label="…or paste the JSON"
+                value={raw}
+                onChange={parse}
+                rows={6}
+                __nextHasNoMarginBottom
+            />
+            {parseError !== null && (
+                <Notice status="error" isDismissible={false}>
+                    Couldn't parse the JSON: {parseError}
+                </Notice>
+            )}
+            {submitError !== null && (
+                <Notice status="error" isDismissible={false}>
+                    {submitError}
+                </Notice>
+            )}
+            {success !== null && (
+                <Notice status="success" isDismissible={false}>
+                    Imported {success} setting{success === 1 ? '' : 's'}. Reload to see
+                    the new values everywhere.
+                </Notice>
+            )}
+            {bundle !== null && (
+                <>
+                    <CheckboxControl
+                        label="Select all"
+                        checked={allOn}
+                        indeterminate={!allOn && selection.size > 0}
+                        onChange={(on) =>
+                            setSelection(on ? new Set(SELECTION_ORDER) : new Set())
+                        }
+                        __nextHasNoMarginBottom
+                    />
+                    <ul className="orbitools-tools-card__list">
+                        {SELECTION_ORDER.map((key) => {
+                            const count = selections === null ? 0 : selections[key].length;
+                            return (
+                                <li key={key}>
+                                    <CheckboxControl
+                                        label={`${SELECTION_LABELS[key]} (${count})`}
+                                        checked={selection.has(key)}
+                                        onChange={(on) => toggle(key, on)}
+                                        disabled={count === 0}
+                                        __nextHasNoMarginBottom
+                                    />
+                                </li>
+                            );
+                        })}
+                    </ul>
+                    <div className="orbitools-tools-card__actions">
+                        <Button
+                            variant="primary"
+                            onClick={apply}
+                            disabled={submitting || selection.size === 0}
+                            __next40pxDefaultSize
+                        >
+                            {submitting ? 'Importing…' : 'Apply'}
+                        </Button>
+                    </div>
+                </>
+            )}
+        </VStack>
     );
 }
