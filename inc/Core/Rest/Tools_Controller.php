@@ -84,7 +84,29 @@ final class Tools_Controller extends WP_REST_Controller
                 ],
             ],
         ]);
+
+        \register_rest_route($this->namespace, '/' . $this->rest_base . '/reset', [
+            [
+                'methods'             => WP_REST_Server::CREATABLE,
+                'callback'            => [$this, 'reset'],
+                'permission_callback' => [$this, 'permissions_check'],
+                'args'                => [
+                    'confirm' => [
+                        'description' => 'Must equal the literal string "RESET" to confirm the destructive action.',
+                        'type'        => 'string',
+                        'required'    => true,
+                    ],
+                ],
+            ],
+        ]);
     }
+
+    /**
+     * Phrase the user has to type to confirm the reset. Server-side
+     * check mirrors the client gate — the gate is also enforced here
+     * so the endpoint isn't trivially callable through a script.
+     */
+    private const RESET_CONFIRM_PHRASE = 'RESET';
 
     public function permissions_check(): bool
     {
@@ -364,5 +386,69 @@ final class Tools_Controller extends WP_REST_Controller
             }
         }
         return $out;
+    }
+
+    // =========================================================================
+    // Reset
+    // =========================================================================
+
+    /**
+     * Migration flag options. Deleting these alongside the settings
+     * row makes the post-reset state look exactly like a fresh
+     * install — migrations will re-run on the next request and seed
+     * any defaults they're responsible for.
+     *
+     * Keep in sync with `Migrations::run()` — every migration in
+     * there that gates on an option flag should be listed here.
+     *
+     * @var array<int,string>
+     */
+    private const MIGRATION_FLAG_OPTIONS = [
+        'orbitools_v2_slug_migration_done',
+        'orbitools_drop_toolbar_fab_done',
+    ];
+
+    /**
+     * Wipe `orbitools_settings` and the migration-done flags so the
+     * plugin lands back at its first-active state — every module
+     * falls back to its manifest's `default_enabled`, every field to
+     * its schema `default`.
+     *
+     * Destructive — gated on a typed confirmation phrase. The
+     * client gate is the primary UX affordance; the server check
+     * exists so the endpoint isn't trivially callable from a script.
+     *
+     * @return WP_REST_Response|WP_Error
+     */
+    public function reset(WP_REST_Request $request)
+    {
+        $confirm = (string) $request->get_param('confirm');
+        if ($confirm !== self::RESET_CONFIRM_PHRASE) {
+            return new WP_Error(
+                'orbitools_reset_not_confirmed',
+                \sprintf(
+                    /* translators: %s: the literal confirmation phrase the client should send */
+                    \__('The reset confirmation phrase must equal "%s".', 'orbitools'),
+                    self::RESET_CONFIRM_PHRASE
+                ),
+                ['status' => 400]
+            );
+        }
+
+        $cleared = [];
+
+        if (\delete_option('orbitools_settings')) {
+            $cleared[] = 'orbitools_settings';
+        }
+
+        foreach (self::MIGRATION_FLAG_OPTIONS as $flag) {
+            if (\delete_option($flag)) {
+                $cleared[] = $flag;
+            }
+        }
+
+        return new WP_REST_Response([
+            'cleared' => $cleared,
+        ]);
     }
 }

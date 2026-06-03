@@ -19,6 +19,7 @@ import {
     CardBody,
     CheckboxControl,
     Notice,
+    TextControl,
     TextareaControl,
     __experimentalVStack as VStack,
 } from '@wordpress/components';
@@ -133,7 +134,7 @@ function filterSettingsBySlugs(
     return out;
 }
 
-type ToolId = 'export' | 'import';
+type ToolId = 'export' | 'import' | 'reset';
 
 interface ToolDescriptor {
     id: ToolId;
@@ -154,6 +155,12 @@ const TOOLS: ToolDescriptor[] = [
         label:       'Import',
         description: 'Drop in a JSON bundle from another site and merge its settings into this install.',
         render:      () => <ImportBody />,
+    },
+    {
+        id:          'reset',
+        label:       'Reset',
+        description: 'Wipe every module toggle and setting. The plugin lands back at its first-active state.',
+        render:      () => <ResetBody />,
     },
 ];
 
@@ -509,6 +516,97 @@ function ImportBody(): JSX.Element {
                     </div>
                 </>
             )}
+        </VStack>
+    );
+}
+
+// =============================================================================
+// Reset
+// =============================================================================
+
+interface ResetApiResponse {
+    cleared: string[];
+}
+
+/**
+ * The literal phrase the user has to type to confirm. Mirrors the
+ * server-side check in `Tools_Controller::RESET_CONFIRM_PHRASE` —
+ * keep them in sync.
+ */
+const RESET_CONFIRM_PHRASE = 'RESET';
+
+function ResetBody(): JSX.Element {
+    const [phrase, setPhrase]         = useState('');
+    const [submitting, setSubmitting] = useState(false);
+    const [error, setError]           = useState<string | null>(null);
+    const [cleared, setCleared]       = useState<string[] | null>(null);
+
+    const confirmed = phrase === RESET_CONFIRM_PHRASE;
+
+    const apply = useCallback(async () => {
+        if (!confirmed) return;
+        setSubmitting(true);
+        setError(null);
+        setCleared(null);
+        try {
+            const resp = await apiFetch<ResetApiResponse>({
+                path: 'orbitools/v1/tools/reset',
+                method: 'POST',
+                data: { confirm: RESET_CONFIRM_PHRASE },
+            });
+            setCleared(resp.cleared);
+            setPhrase('');
+        } catch (e) {
+            setError(e instanceof Error ? e.message : 'Reset failed.');
+        } finally {
+            setSubmitting(false);
+        }
+    }, [confirmed]);
+
+    return (
+        <VStack spacing={3} className="orbitools-tools-body">
+            <Notice status="warning" isDismissible={false}>
+                <strong>This action is destructive.</strong> Every module toggle,
+                every per-module setting, and every theme-page setting stored under{' '}
+                <code>orbitools_settings</code> will be deleted. The plugin will
+                land back at its first-active state — modules fall back to their
+                manifest <code>default_enabled</code>, fields to their schema
+                <code>default</code>. There is no undo.
+            </Notice>
+            <p className="orbitools-tools-body__hint">
+                Type <code>{RESET_CONFIRM_PHRASE}</code> below to enable the reset
+                button.
+            </p>
+            <TextControl
+                label={`Type "${RESET_CONFIRM_PHRASE}" to confirm`}
+                value={phrase}
+                onChange={setPhrase}
+                __next40pxDefaultSize
+                __nextHasNoMarginBottom
+            />
+            {error !== null && (
+                <Notice status="error" isDismissible={false}>
+                    {error}
+                </Notice>
+            )}
+            {cleared !== null && (
+                <Notice status="success" isDismissible={false}>
+                    Cleared {cleared.length} option
+                    {cleared.length === 1 ? '' : 's'}. Reload the page to see the
+                    fresh-install state.
+                </Notice>
+            )}
+            <div className="orbitools-tools-card__actions">
+                <Button
+                    variant="primary"
+                    isDestructive
+                    onClick={apply}
+                    disabled={!confirmed || submitting}
+                    __next40pxDefaultSize
+                >
+                    {submitting ? 'Resetting…' : 'Reset everything'}
+                </Button>
+            </div>
         </VStack>
     );
 }

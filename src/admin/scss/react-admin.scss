@@ -718,6 +718,20 @@
     }
 }
 
+.orbitools-tools-body__hint {
+    margin: 0;
+    font-size: 13px;
+    color: #50575e;
+    line-height: 1.5;
+
+    code {
+        padding: 1px 6px;
+        background: #f0f0f1;
+        border-radius: 3px;
+        font-size: 12px;
+    }
+}
+
 /* ---------- Flat section (aggregate-panel inner) ---------- */
 //
 // One row per section in `flat` SectionLayout. Just an optional

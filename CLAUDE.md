@@ -262,6 +262,8 @@ The flow:
 
 - **Renaming a slug** — never rename a `get_slug()` value or a theme page slug. The settings keys are stored against it; existing installs would silently get a new module with no toggle state and the old toggle key would orphan. Same rule as the v2 slug migration described in the module architecture section above.
 
+- **Adding a new migration to `Migrations::run()`** — also add its flag-option name to `Tools_Controller::MIGRATION_FLAG_OPTIONS`. The Reset tool deletes those flags so migrations re-run on the next request; leaving one out means after a Reset the migration silently skips and your defaults aren't seeded.
+
 ### What does NOT round-trip
 
 - **Fields with `wp_option` binding** — these write directly to the named WP option (`blogname`, `blogdescription`, `site_logo`) rather than `orbitools_settings`. They are deliberately out of scope for Tools; site identity / branding values aren't expected to transfer. If you ever need them to, the export needs an `options` section keyed by `wp_option` name and the import needs the matching `update_option` loop.
