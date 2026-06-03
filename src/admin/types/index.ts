@@ -119,7 +119,16 @@ export interface ModuleExtension {
     Fills?: () => JSX.Element | null;
 }
 
-export type ModulePage = (props: { slug: string }) => JSX.Element;
+export type ModulePage = (props: {
+    slug: string;
+    /**
+     * Optional layout hint passed by the caller — currently used by
+     * the Editor tab's aggregate-panel render path to ask custom
+     * Pages to render `flat` (no inner cards / collapsibles). Custom
+     * Pages can ignore it if they don't want the hint to apply.
+     */
+    sectionLayoutOverride?: SectionLayout;
+}) => JSX.Element;
 
 /**
  * Theme-registered top-level page metadata, delivered via the

@@ -248,7 +248,7 @@ function CategoryItemBody({
 }): JSX.Element {
     const CustomPage = discovered[slug]?.Page;
     if (CustomPage !== undefined) {
-        return <CustomPage slug={slug} />;
+        return <CustomPage slug={slug} sectionLayoutOverride={sectionLayoutOverride} />;
     }
     return <ModuleSettingsBody slug={slug} sectionLayoutOverride={sectionLayoutOverride} />;
 }

@@ -19,7 +19,9 @@
 import { ModuleSettingsBody } from '../../components/SettingsPage';
 import type { ModuleExtension, ModulePage } from '../../types';
 
-const Page: ModulePage = ({ slug }) => <ModuleSettingsBody slug={slug} />;
+const Page: ModulePage = ({ slug, sectionLayoutOverride }) => (
+    <ModuleSettingsBody slug={slug} sectionLayoutOverride={sectionLayoutOverride} />
+);
 
 const extension: ModuleExtension = { Page };
 export default extension;
