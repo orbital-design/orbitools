@@ -12,9 +12,11 @@
  * surface checkboxes — same shape as the Export UI — then POST the
  * payload + selected slugs to `/orbitools/v1/tools/import`.
  */
-import { useCallback, useMemo, useState } from '@wordpress/element';
+import { useCallback, useEffect, useMemo, useState } from '@wordpress/element';
 import {
     Button,
+    Card,
+    CardBody,
     CheckboxControl,
     Notice,
     TextareaControl,
@@ -183,7 +185,9 @@ export function ToolsPage(): JSX.Element {
                             {active.description}
                         </p>
                     </header>
-                    {active.render()}
+                    <Card className="orbitools-card">
+                        <CardBody>{active.render()}</CardBody>
+                    </Card>
                 </section>
             </div>
         </div>
@@ -196,23 +200,32 @@ export function ToolsPage(): JSX.Element {
 
 function ExportBody(): JSX.Element {
     const [bundle, setBundle]   = useState<Bundle | null>(null);
-    const [loading, setLoading] = useState(false);
+    const [loading, setLoading] = useState(true);
     const [error, setError]     = useState<string | null>(null);
     const [selection, setSelection] = useState<Set<SelectionKey>>(
         () => new Set(SELECTION_ORDER),
     );
 
-    const fetchBundle = useCallback(async () => {
-        setLoading(true);
-        setError(null);
-        try {
-            const resp = await apiFetch<Bundle>({ path: 'orbitools/v1/tools/export' });
-            setBundle(resp);
-        } catch (e) {
-            setError(e instanceof Error ? e.message : 'Failed to load export payload.');
-        } finally {
-            setLoading(false);
-        }
+    // Fetch the bundle on mount — checkboxes show as soon as we
+    // have a payload. No "Prepare export" gate.
+    useEffect(() => {
+        let cancelled = false;
+        apiFetch<Bundle>({ path: 'orbitools/v1/tools/export' })
+            .then((resp) => {
+                if (!cancelled) {
+                    setBundle(resp);
+                    setLoading(false);
+                }
+            })
+            .catch((e) => {
+                if (!cancelled) {
+                    setError(e instanceof Error ? e.message : 'Failed to load export payload.');
+                    setLoading(false);
+                }
+            });
+        return () => {
+            cancelled = true;
+        };
     }, []);
 
     const selections = useMemo(() => (bundle === null ? null : bundleSelections(bundle)), [bundle]);
@@ -250,78 +263,62 @@ function ExportBody(): JSX.Element {
         URL.revokeObjectURL(url);
     }, [bundle, selections, selection]);
 
+    if (error !== null) {
+        return (
+            <Notice status="error" isDismissible={false}>
+                {error}
+            </Notice>
+        );
+    }
+
+    if (loading || bundle === null) {
+        return <p className="orbitools-tools-body__loading">Loading…</p>;
+    }
+
     return (
         <VStack spacing={3} className="orbitools-tools-body">
-            {error !== null && (
-                <Notice status="error" isDismissible={false}>
-                    {error}
+            <CheckboxControl
+                label="Select all"
+                checked={allOn}
+                indeterminate={!allOn && selection.size > 0}
+                onChange={(on) =>
+                    setSelection(on ? new Set(SELECTION_ORDER) : new Set())
+                }
+                __nextHasNoMarginBottom
+            />
+            <ul className="orbitools-tools-card__list">
+                {SELECTION_ORDER.map((key) => {
+                    const count = selections === null ? 0 : selections[key].length;
+                    return (
+                        <li key={key}>
+                            <CheckboxControl
+                                label={`${SELECTION_LABELS[key]} (${count})`}
+                                checked={selection.has(key)}
+                                onChange={(on) => toggle(key, on)}
+                                disabled={count === 0}
+                                __nextHasNoMarginBottom
+                            />
+                        </li>
+                    );
+                })}
+            </ul>
+            {bundle.stripped_keys.length > 0 && (
+                <Notice status="info" isDismissible={false}>
+                    {bundle.stripped_keys.length} page / media reference
+                    {bundle.stripped_keys.length === 1 ? '' : 's'} will be blanked
+                    on export.
                 </Notice>
             )}
-            {bundle === null ? (
+            <div className="orbitools-tools-card__actions">
                 <Button
                     variant="primary"
-                    onClick={fetchBundle}
-                    disabled={loading}
+                    onClick={download}
+                    disabled={selection.size === 0}
                     __next40pxDefaultSize
                 >
-                    {loading ? 'Loading…' : 'Prepare export'}
+                    Download JSON
                 </Button>
-            ) : (
-                <>
-                    <CheckboxControl
-                        label="Select all"
-                        checked={allOn}
-                        indeterminate={!allOn && selection.size > 0}
-                        onChange={(on) =>
-                            setSelection(on ? new Set(SELECTION_ORDER) : new Set())
-                        }
-                        __nextHasNoMarginBottom
-                    />
-                    <ul className="orbitools-tools-card__list">
-                        {SELECTION_ORDER.map((key) => {
-                            const count = selections === null ? 0 : selections[key].length;
-                            return (
-                                <li key={key}>
-                                    <CheckboxControl
-                                        label={`${SELECTION_LABELS[key]} (${count})`}
-                                        checked={selection.has(key)}
-                                        onChange={(on) => toggle(key, on)}
-                                        disabled={count === 0}
-                                        __nextHasNoMarginBottom
-                                    />
-                                </li>
-                            );
-                        })}
-                    </ul>
-                    {bundle.stripped_keys.length > 0 && (
-                        <Notice status="info" isDismissible={false}>
-                            {bundle.stripped_keys.length} page / media reference
-                            {bundle.stripped_keys.length === 1 ? '' : 's'} will be
-                            blanked on export.
-                        </Notice>
-                    )}
-                    <div className="orbitools-tools-card__actions">
-                        <Button
-                            variant="primary"
-                            onClick={download}
-                            disabled={selection.size === 0}
-                            __next40pxDefaultSize
-                        >
-                            Download JSON
-                        </Button>
-                        <Button
-                            variant="tertiary"
-                            onClick={() => {
-                                setBundle(null);
-                                setSelection(new Set(SELECTION_ORDER));
-                            }}
-                            __next40pxDefaultSize
-                        >
-                            Reset
-                        </Button>
-                    </div>
-                </>
-            )}
+            </div>
         </VStack>
     );
 }
