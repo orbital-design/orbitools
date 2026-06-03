@@ -240,7 +240,16 @@ function SectionSidebarLayout({
                         </p>
                     )}
                 </header>
-                <VStack spacing={4}>{renderFields(activeGroup.fields)}</VStack>
+                {/* Render the active group's body. Repeater-only groups
+                 * are self-contained cards already, so wrapping them in
+                 * another SettingsSection would nest. Everything else
+                 * lives in a chrome-providing SettingsSection (without
+                 * title — the content-header already shows it). */}
+                {isStandaloneRepeaterGroup(activeGroup) ? (
+                    <VStack spacing={4}>{renderFields(activeGroup.fields)}</VStack>
+                ) : (
+                    <SettingsSection>{renderFields(activeGroup.fields)}</SettingsSection>
+                )}
             </section>
         </div>
     );
