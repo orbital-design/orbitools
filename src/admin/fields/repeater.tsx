@@ -170,6 +170,7 @@ function RepeaterField({ field, value, onChange }: FieldProps): JSX.Element {
                                                 field={sf}
                                                 value={subValue}
                                                 onChange={(v) => updateRow(idx, sf.id, v)}
+                                                rowContext={{ row, subFields }}
                                             />
                                         );
                                     })}
