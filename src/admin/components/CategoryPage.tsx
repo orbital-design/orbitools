@@ -25,7 +25,7 @@ import { BlockIcon } from './BlockIcon';
 import { discovered } from '../.generated/discovered';
 import { routes } from '../lib/router';
 import { STORE_KEY } from '../store';
-import type { Module, ModuleCategory } from '../types';
+import type { Module, ModuleCategory, SectionLayout } from '../types';
 
 interface ModulesDispatch {
     toggleModule: (slug: string, enabled: boolean) => unknown;
@@ -239,12 +239,18 @@ export function CategoryPage({ category, selectedSlug }: CategoryPageProps): JSX
  * shape as App.tsx's RoutedSettings; the category and standalone
  * routes need to behave identically when a custom Page exists.
  */
-function CategoryItemBody({ slug }: { slug: string }): JSX.Element {
+function CategoryItemBody({
+    slug,
+    sectionLayoutOverride,
+}: {
+    slug: string;
+    sectionLayoutOverride?: SectionLayout;
+}): JSX.Element {
     const CustomPage = discovered[slug]?.Page;
     if (CustomPage !== undefined) {
         return <CustomPage slug={slug} />;
     }
-    return <ModuleSettingsBody slug={slug} />;
+    return <ModuleSettingsBody slug={slug} sectionLayoutOverride={sectionLayoutOverride} />;
 }
 
 /**
@@ -280,7 +286,7 @@ function AggregateModulesPanel({
         <Panel className="orbitools-aggregate-panel">
             {enabled.map((mod) => (
                 <PanelBody key={mod.slug} title={mod.name} initialOpen={false}>
-                    <CategoryItemBody slug={mod.slug} />
+                    <CategoryItemBody slug={mod.slug} sectionLayoutOverride="flat" />
                 </PanelBody>
             ))}
         </Panel>

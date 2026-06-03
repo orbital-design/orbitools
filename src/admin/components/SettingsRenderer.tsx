@@ -72,10 +72,17 @@ export function SettingsRenderer({
             );
         });
 
+    // `flat` short-circuits both stacked + sidebar — used by the
+    // Editor tab's aggregate-panel render path, where the block /
+    // control card is already a collapsible container and any inner
+    // collapsibles just nest. Falls through to the SettingsSection-
+    // per-group rendering below.
+    const isFlat = sectionLayout === 'flat';
+
     // Stacked layout applies regardless of section count — even one
     // section becomes a collapsible card. Sidebar layout needs 2+
     // sections to make sense and falls back to flat below.
-    if (sectionLayout === 'stacked' && grouped.length >= 1 && grouped[0].section !== null) {
+    if (!isFlat && sectionLayout === 'stacked' && grouped.length >= 1 && grouped[0].section !== null) {
         return (
             <>
                 <Slot name={SLOTS.settingsBefore(slug)} />
@@ -85,7 +92,7 @@ export function SettingsRenderer({
         );
     }
 
-    if (grouped.length >= 2) {
+    if (!isFlat && grouped.length >= 2) {
         return (
             <>
                 <Slot name={SLOTS.settingsBefore(slug)} />

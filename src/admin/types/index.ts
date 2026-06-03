@@ -60,7 +60,7 @@ export interface SectionDescriptor {
  *   - 'stacked' — each section as its own collapsible card.
  * Single-section pages ignore this and render flat.
  */
-export type SectionLayout = 'sidebar' | 'stacked';
+export type SectionLayout = 'sidebar' | 'stacked' | 'flat';
 
 export interface Module {
     slug: string;

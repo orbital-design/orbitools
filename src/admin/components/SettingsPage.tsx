@@ -12,7 +12,7 @@ import { AppChrome } from './AppChrome';
 import { LoadingState } from './LoadingState';
 import { SettingsRenderer } from './SettingsRenderer';
 import { STORE_KEY } from '../store';
-import type { Module, ModuleSettings } from '../types';
+import type { Module, ModuleSettings, SectionLayout } from '../types';
 
 interface StoreShape {
     getModules: () => Module[];
@@ -71,8 +71,16 @@ export function SettingsPage({ slug }: SettingsPageProps): JSX.Element {
  * the loading / not-found / error / no-settings states. Designed to
  * be embedded inside another page (CategoryPage's right pane) or
  * inside SettingsPage's own AppChrome.
+ *
+ * `sectionLayoutOverride` lets the caller force a layout for this
+ * one render — used by the Editor tab's aggregate panel, which
+ * passes 'flat' so a block module's sections don't render as nested
+ * collapsibles inside the aggregate's own collapsible card.
  */
-export function ModuleSettingsBody({ slug }: SettingsPageProps): JSX.Element {
+export function ModuleSettingsBody({
+    slug,
+    sectionLayoutOverride,
+}: SettingsPageProps & { sectionLayoutOverride?: SectionLayout }): JSX.Element {
     const { module, settings, isLoading, errorMessage } = useSelect(
         (select) => {
             const store = select(STORE_KEY) as unknown as StoreShape;
@@ -125,7 +133,7 @@ export function ModuleSettingsBody({ slug }: SettingsPageProps): JSX.Element {
             sections={module.sections}
             settings={settings ?? {}}
             onChange={(key, value) => updateSetting(slug, key, value)}
-            sectionLayout={module.section_layout}
+            sectionLayout={sectionLayoutOverride ?? module.section_layout}
         />
     );
 }
