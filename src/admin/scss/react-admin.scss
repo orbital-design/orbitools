@@ -247,6 +247,14 @@
         line-height: 1.5;
     }
 
+    // When two repeaters stack directly next to each other (e.g.
+    // Socials → Share Links + Social Links), draw a thin divider
+    // between them so they don't read as one continuous list.
+    & + & {
+        border-top: 1px solid var(--orbitools-card-border-color);
+        padding-top: var(--orbitools-section-gap);
+    }
+
     // Remove button sits at the bottom of an expanded row's content.
     &__row-actions {
         display: flex;
