@@ -676,47 +676,26 @@
         }
     }
 
-    // Block-category modules get section_layout='stacked' forced on
-    // them by Modules_Controller, so their body always renders as
-    // `Panel.orbitools-section-stack` → `PanelBody` per section.
-    // The .orbitools-section-stack rule (further down) promotes each
-    // of those PanelBodies to a standalone bordered card — perfect
-    // for a standalone module page, but inside the aggregate it
-    // produces a card nested inside the aggregate's own per-module
-    // card. Flatten the inner promotion so the inner section reads
-    // as plain collapsible content inside the aggregate card.
-    .orbitools-section-stack .components-panel__body {
-        background: transparent;
-        border: 0;
-        border-radius: 0;
-        margin-bottom: 0;
-    }
+    // Inside the aggregate we render module bodies with
+    // `sectionLayoutOverride='flat'`, which bypasses both the
+    // PanelBody section stack and the SettingsSection wrapper —
+    // so the only inner rendering is `.orbitools-flat-section`.
+    // (Any custom Page extension that ignored the override and
+    // rendered its own section-stack would still nest visually;
+    // we'd address that case if one ever shows up.)
+}
 
-    // Same idea for the flat layout's SettingsSection (a Card) —
-    // strip its chrome when it sits inside the aggregate.
-    .orbitools-settings-section.components-card {
-        background: transparent;
-        border: 0;
-        box-shadow: none;
-        border-radius: 0;
-    }
+/* ---------- Flat section (aggregate-panel inner) ---------- */
+//
+// One row per section in `flat` SectionLayout. Just an optional
+// description paragraph and the fields beneath — no title, no card.
 
-    .orbitools-settings-section {
-        .components-card-header,
-        .components-card__header {
-            background: transparent;
-            border-bottom: 1px solid #f0f0f1;
-            padding-left: 0;
-            padding-right: 0;
-            padding-top: 0;
-        }
-
-        .components-card-body,
-        .components-card__body {
-            padding-left: 0;
-            padding-right: 0;
-            padding-bottom: 0;
-        }
+.orbitools-flat-section {
+    &__description {
+        margin: 0 0 12px;
+        font-size: 13px;
+        color: #50575e;
+        line-height: 1.5;
     }
 }
 

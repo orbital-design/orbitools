@@ -72,17 +72,42 @@ export function SettingsRenderer({
             );
         });
 
-    // `flat` short-circuits both stacked + sidebar — used by the
-    // Editor tab's aggregate-panel render path, where the block /
-    // control card is already a collapsible container and any inner
-    // collapsibles just nest. Falls through to the SettingsSection-
-    // per-group rendering below.
-    const isFlat = sectionLayout === 'flat';
+    // `flat` short-circuits everything else — no SettingsSection
+    // wrapper, no collapsible PanelBody, no section title. The
+    // section description (if any) renders as a paragraph above the
+    // fields. Used by the Editor tab's aggregate-panel render path,
+    // where the block / control card is already a collapsible
+    // container with its own title, so anything else just nests or
+    // duplicates.
+    if (sectionLayout === 'flat') {
+        return (
+            <>
+                <Slot name={SLOTS.settingsBefore(slug)} />
+                <VStack spacing={4}>
+                    {grouped.map((group) => (
+                        <div
+                            key={group.section?.id ?? '__default__'}
+                            className="orbitools-flat-section"
+                        >
+                            {group.section?.description !== undefined &&
+                                group.section.description !== '' && (
+                                    <p className="orbitools-flat-section__description">
+                                        {group.section.description}
+                                    </p>
+                                )}
+                            <VStack spacing={3}>{renderFields(group.fields)}</VStack>
+                        </div>
+                    ))}
+                </VStack>
+                <Slot name={SLOTS.settingsAfter(slug)} />
+            </>
+        );
+    }
 
     // Stacked layout applies regardless of section count — even one
     // section becomes a collapsible card. Sidebar layout needs 2+
     // sections to make sense and falls back to flat below.
-    if (!isFlat && sectionLayout === 'stacked' && grouped.length >= 1 && grouped[0].section !== null) {
+    if (sectionLayout === 'stacked' && grouped.length >= 1 && grouped[0].section !== null) {
         return (
             <>
                 <Slot name={SLOTS.settingsBefore(slug)} />
@@ -92,7 +117,7 @@ export function SettingsRenderer({
         );
     }
 
-    if (!isFlat && grouped.length >= 2) {
+    if (grouped.length >= 2) {
         return (
             <>
                 <Slot name={SLOTS.settingsBefore(slug)} />
