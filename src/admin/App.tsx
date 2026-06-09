@@ -28,6 +28,7 @@ const CATEGORY_TITLES: Record<ModuleCategory, string> = {
     blocks: 'Block Settings',
     controls: 'Control Settings',
     editor: 'Editor Settings',
+    integrations: 'Integrations',
     modules: 'Module Settings',
 };
 

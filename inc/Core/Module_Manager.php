@@ -33,6 +33,7 @@ final class Module_Manager
         'inc/Blocks/*/module.json',
         'inc/Controls/*/module.json',
         'inc/Modules/*/module.json',
+        'inc/Integrations/*/module.json',
     ];
 
     /**

@@ -30,7 +30,7 @@ export type Route =
     | { name: 'settings'; slug: string }
     | { name: 'tools' };
 
-const CATEGORY_SLUGS: ModuleCategory[] = ['blocks', 'controls', 'modules', 'editor'];
+const CATEGORY_SLUGS: ModuleCategory[] = ['blocks', 'controls', 'modules', 'editor', 'integrations'];
 
 export function parseHash(hash: string): Route {
     const cleaned = hash.replace(/^#\/?/, '');

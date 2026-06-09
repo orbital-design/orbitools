@@ -251,7 +251,7 @@ The flow:
 
 - **New field type that stores a WordPress entity ID (page picker, attachment, term, comment, user, etc.)** — **YOU MUST ADD IT TO `Tools_Controller::ENTITY_FIELD_TYPES`**. Otherwise the values get shipped verbatim to the export bundle and break on the destination site. The constant currently holds `['page', 'media']`. The strip walker handles nesting (a `page` field inside a `repeater` sub_field is found recursively), so the only step is the constant addition.
 
-- **New module category** (peer to `blocks` / `controls` / `editor` / `modules`) — three pieces:
+- **New module category** (peer to `blocks` / `controls` / `editor` / `integrations` / `modules`) — three pieces:
     1. `Module_Manifest::FIELD_TYPES`-style `ALLOWED_CATEGORIES` in `inc/Core/Module/Module_Manifest.php`.
     2. `ModuleCategory` TS union + the matching `CATEGORY_TITLES` / `CATEGORY_META` / `CATEGORY_SLUGS` / `categoryIcon` records (search `category-icons.tsx`, `App.tsx`, `CategoryPage.tsx`, `router.ts`).
     3. `SELECTION_LABELS` / `SELECTION_ORDER` in `src/admin/components/ToolsPage.tsx` — the Tools UI hardcodes a `category:<id>` SelectionKey union, **so a new category must be added or its modules will silently be unreachable from the Export / Import checkbox grid**.

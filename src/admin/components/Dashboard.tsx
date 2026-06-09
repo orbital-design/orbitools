@@ -29,6 +29,7 @@ const CATEGORIES: { id: ModuleCategory; label: string }[] = [
     { id: 'blocks', label: 'Blocks' },
     { id: 'editor', label: 'Editor' },
     { id: 'controls', label: 'Controls' },
+    { id: 'integrations', label: 'Integrations' },
     { id: 'modules', label: 'Modules' },
 ];
 

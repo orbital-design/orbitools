@@ -50,6 +50,11 @@ const CATEGORY_META: Record<
         singular: 'item',
         description: 'Block editor cleanup, Block Manager, and the settings for every enabled Orbital block + control.',
     },
+    integrations: {
+        label: 'Integrations',
+        singular: 'integration',
+        description: 'Bridges to external services — third-party scripts, APIs, and content sources you want surfaced inside WordPress.',
+    },
     controls: {
         label: 'Controls',
         singular: 'control',

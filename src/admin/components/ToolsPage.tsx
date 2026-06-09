@@ -69,20 +69,28 @@ interface Bundle {
  *   contract.
  * ────────────────────────────────────────────────────────────
  */
-type SelectionKey = 'category:blocks' | 'category:editor' | 'category:controls' | 'category:modules' | 'theme-pages';
+type SelectionKey =
+    | 'category:blocks'
+    | 'category:editor'
+    | 'category:controls'
+    | 'category:integrations'
+    | 'category:modules'
+    | 'theme-pages';
 
 const SELECTION_LABELS: Record<SelectionKey, string> = {
-    'category:blocks':   'Blocks',
-    'category:editor':   'Editor',
-    'category:controls': 'Controls',
-    'category:modules':  'Modules',
-    'theme-pages':       'Theme pages (Site Settings, etc.)',
+    'category:blocks':       'Blocks',
+    'category:editor':       'Editor',
+    'category:controls':     'Controls',
+    'category:integrations': 'Integrations',
+    'category:modules':      'Modules',
+    'theme-pages':           'Theme pages (Site Settings, etc.)',
 };
 
 const SELECTION_ORDER: SelectionKey[] = [
     'category:blocks',
     'category:editor',
     'category:controls',
+    'category:integrations',
     'category:modules',
     'theme-pages',
 ];
@@ -94,11 +102,12 @@ const SELECTION_ORDER: SelectionKey[] = [
  */
 function bundleSelections(bundle: Bundle): Record<SelectionKey, string[]> {
     const out: Record<SelectionKey, string[]> = {
-        'category:blocks':   [],
-        'category:editor':   [],
-        'category:controls': [],
-        'category:modules':  [],
-        'theme-pages':       [],
+        'category:blocks':       [],
+        'category:editor':       [],
+        'category:controls':     [],
+        'category:integrations': [],
+        'category:modules':      [],
+        'theme-pages':           [],
     };
     for (const m of bundle.modules) {
         const key = `category:${m.category}` as SelectionKey;

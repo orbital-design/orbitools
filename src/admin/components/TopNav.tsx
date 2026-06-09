@@ -73,6 +73,29 @@ function EditorIcon(): JSX.Element {
     );
 }
 
+function IntegrationsIcon(): JSX.Element {
+    return (
+        <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.75"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
+            focusable="false"
+        >
+            <path d="M12 22v-5" />
+            <path d="M9 8V2" />
+            <path d="M15 8V2" />
+            <path d="M18 8v5a4 4 0 0 1-4 4h-4a4 4 0 0 1-4-4V8z" />
+        </svg>
+    );
+}
+
 function ToolsIcon(): JSX.Element {
     return (
         <svg
@@ -163,6 +186,14 @@ const builtins: NavItem[] = [
             cat === 'editor' ||
             cat === 'blocks' ||
             cat === 'controls',
+    },
+    {
+        label: 'Integrations',
+        href: routes.category('integrations'),
+        icon: IntegrationsIcon,
+        position: 95,
+        matches: (r, cat) =>
+            (r.name === 'category' && r.category === 'integrations') || cat === 'integrations',
     },
     {
         label: 'Module Settings',
