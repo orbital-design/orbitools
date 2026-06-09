@@ -1,0 +1,26 @@
+{
+    "$schema": "https://schemas.wp.org/trunk/block.json",
+    "apiVersion": 3,
+    "name": "orb/reading-time",
+    "title": "Reading Time",
+    "category": "widgets",
+    "description": "Estimated reading time for the current post.",
+    "keywords": ["reading", "time", "minutes", "post"],
+    "textdomain": "orbitools",
+    "attributes": {},
+    "usesContext": ["postId", "postType"],
+    "supports": {
+        "anchor": true,
+        "customClassName": true,
+        "html": false,
+        "inserter": true,
+        "multiple": false,
+        "reusable": false,
+        "spacing": { "margin": true, "padding": true },
+        "typography": { "fontSize": true, "lineHeight": true },
+        "color": { "text": true, "background": true }
+    },
+    "editorScript": "file:./index.js",
+    "editorStyle": "file:./editor.css",
+    "style": "file:./index.css"
+}

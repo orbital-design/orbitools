@@ -1,0 +1,24 @@
+/**
+ * Reading Time block — frontend styles.
+ *
+ * Theme-agnostic — no theme.json `--wp--preset--*` references. Just
+ * minimal layout for the `<span>` group emitted by Reading_Time::
+ * get_reading_time(). Themes can override the orb-reading-time
+ * classes via block style supports or their own CSS.
+ */
+
+.orb-reading-time {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 0.35em;
+    font-size: 0.875em;
+    line-height: 1.4;
+
+    &__value {
+        font-weight: 600;
+    }
+
+    &__suffix {
+        opacity: 0.8;
+    }
+}

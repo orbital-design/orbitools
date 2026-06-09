@@ -37,6 +37,8 @@ const blockEntries = {
     'blocks/video/index': path.resolve(process.cwd(), 'src', 'blocks', 'video', 'index.tsx'),
     'blocks/video/editor': path.resolve(process.cwd(), 'src', 'blocks', 'video', 'editor.scss'),
     'blocks/video/frontend': path.resolve(process.cwd(), 'src', 'blocks', 'video', 'frontend.js'),
+    'blocks/reading-time/index': path.resolve(process.cwd(), 'src', 'blocks', 'reading-time', 'index.tsx'),
+    'blocks/reading-time/editor': path.resolve(process.cwd(), 'src', 'blocks', 'reading-time', 'editor.scss'),
 };
 
 module.exports = {
@@ -83,6 +85,10 @@ module.exports = {
                 {
                     from: 'src/blocks/group/block.json',
                     to: 'blocks/group/block.json',
+                },
+                {
+                    from: 'src/blocks/reading-time/block.json',
+                    to: 'blocks/reading-time/block.json',
                 },
                 {
                     from: 'src/blocks/video/block.json',

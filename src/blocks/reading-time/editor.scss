@@ -1,0 +1,11 @@
+/**
+ * Reading Time block — editor styles.
+ *
+ * Nothing custom right now — the server-side render preview shares
+ * the frontend chrome via index.scss. This file exists so the
+ * webpack `editor.css` slot in block.json has something to emit.
+ */
+.wp-block-orb-reading-time {
+    // Reserved for editor-specific tweaks if the preview ever needs
+    // chrome the frontend shouldn't carry.
+}

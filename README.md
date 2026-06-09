@@ -64,6 +64,7 @@ See `CLAUDE.md` § "Theme pages" for the full registration shape.
 - **Upload Guard** — block theme `.zip` uploads on `local` environments so a stray drag-and-drop can't clobber in-progress theme work
 - **External Rewrites** — per-rule exclusion + 301 engine for CPT posts whose canonical home has moved off WordPress (Yoast sitemap exclusions + single-post / term-archive redirects)
 - **Editor Settings** *(Editor tab)* — trim down the block editor: kill marketplace surfaces (Block Directory, remote patterns, Openverse, Font Library), tighten defaults, drop the wp-elements-* classes + core-block-supports inline CSS we don't use
+- **Reading Time** *(Editor tab)* — calculate a post's reading time on save, expose it as an `orb/reading-time` block and a static `Reading_Time::get_reading_time()` accessor
 - **Block Manager** *(Editor tab)* — toggle which blocks appear in the editor inserter
 - **Core Overrides** — hide built-in WP admin pages (Settings → Connectors / Site Health / etc.) the site doesn't need
 
