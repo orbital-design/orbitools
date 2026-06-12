@@ -66,20 +66,19 @@ final class Editor_Settings extends Module_Base
         }
 
         if ($this->get_setting('strip_core_theme_json_defaults', true)) {
-            // Hook both data filters — `_default` for core's theme.json,
-            // `_theme` to also clear any defaults the theme inherits.
-            // Some core defaults (palette / spacing scale) only get
-            // wiped reliably when both stages are intercepted.
+            // Only filter `_default` — wiping `_theme` would also blow
+            // away the theme's own palette / spacing / etc. We want
+            // core's defaults gone but the theme.json's own values
+            // intact. The merge order downstream
+            // (`get_merged_data`: core → blocks → theme → user) brings
+            // the theme's values in on top of our empty core.
             \add_filter('wp_theme_json_data_default', [$this, 'strip_theme_json_defaults']);
-            \add_filter('wp_theme_json_data_theme',   [$this, 'strip_theme_json_defaults']);
 
-            // The compiled global-styles inline CSS is transient-
-            // cached (`wp_styles_for_blocks` + per-theme variants);
-            // `wp_clean_theme_json_cache()` doesn't clear those, so we
-            // do it manually every request while the toggle is on.
-            // Heavy-handed; we'll trim to settings-change-only once we
-            // know which transient key the user's WP is actually
-            // hitting.
+            // Brute-force per-request cache invalidation while the
+            // toggle is on. The compiled global-styles inline CSS
+            // lives in a transient `wp_clean_theme_json_cache()`
+            // doesn't reach; we'll trim this to settings-change-only
+            // once verified working.
             \add_action('init', [$this, 'invalidate_theme_json_cache']);
         }
 
@@ -198,58 +197,54 @@ final class Editor_Settings extends Module_Base
     /**
      * Wipe WordPress's default theme.json presets — color palette,
      * gradients, duotone, shadow, font sizes, aspect ratios, spacing
-     * scale. The editor only shows what the theme declares
-     * explicitly after this fires.
+     * scale.
      *
-     * Returns the same WP_Theme_JSON_Data instance with the empties
-     * merged in via `update_with()`, matching the documented filter
-     * contract.
+     * Returns a **fresh** WP_Theme_JSON_Data with only `version: 3`
+     * and the `default*: false` flags set, instead of mutating the
+     * one passed in. The reason: `WP_Theme_JSON_Data::update_with()`
+     * internally calls `$this->theme_json->merge(...)`, which does
+     * `array_replace_recursive`. Passing `palette: []` to that is a
+     * no-op when the existing palette has entries — empty arrays
+     * don't clear lists, they just leave them alone. A fresh object
+     * has no existing palette / gradients / etc. to leave alone.
+     *
+     * Only filter `_default` (not `_theme`) — the merge order
+     * downstream (core → blocks → theme → user) brings the theme's
+     * own palette in on top of our empty core, so the theme.json's
+     * presets are preserved while WP's built-in black / white /
+     * vivid-red etc. are gone.
      *
      * @param mixed $theme_json
      * @return mixed
      */
     public function strip_theme_json_defaults($theme_json)
     {
-        if (!is_object($theme_json) || !method_exists($theme_json, 'update_with')) {
+        if (!class_exists('\WP_Theme_JSON_Data')) {
             return $theme_json;
         }
 
-        return $theme_json->update_with([
+        return new \WP_Theme_JSON_Data([
             'version'  => 3,
             'settings' => [
                 'color' => [
-                    // Empty the arrays AND flip the `default*` flags
-                    // off — without those flags WP merges its built-in
-                    // black / white / vivid-red / etc. back in even
-                    // when the array we provide is empty. This is the
-                    // bit a lot of "disable WP defaults" snippets miss.
-                    'palette'          => [],
-                    'gradients'        => [],
-                    'duotone'          => [],
                     'defaultPalette'   => false,
                     'defaultGradients' => false,
                     'defaultDuotone'   => false,
                 ],
                 'shadow' => [
-                    'presets'        => [],
                     'defaultPresets' => false,
                 ],
                 'typography' => [
-                    'fontSizes'        => [],
                     'defaultFontSizes' => false,
                 ],
                 'dimensions' => [
-                    'aspectRatios'        => [],
                     'defaultAspectRatios' => false,
                 ],
                 'spacing' => [
-                    'spacingScale'        => [
-                        'steps' => 0,
-                    ],
                     'defaultSpacingSizes' => false,
                 ],
             ],
-        ]);
+        ], 'default');
     }
 
     /**
