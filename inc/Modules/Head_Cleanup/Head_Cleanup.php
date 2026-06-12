@@ -11,29 +11,20 @@ if (!defined('ABSPATH')) {
 }
 
 /**
- * Head Cleanup — trim the WordPress `<head>` to what modern sites
- * actually use.
- *
- * Three concerns, each split into individual toggles on the settings
- * page so admins can opt out of any single rule without losing the
- * rest:
- *
- *   1. **`<head>` bloat** — `wp_head` actions WordPress hangs on for
- *      legacy clients (feed discovery, RSD / WLW manifest, oEmbed
- *      discovery, prev/next rel links, generator tag, shortlink,
- *      REST discovery, recent-comments widget CSS).
- *
- *   2. **Stylesheet markup** — rewrites `<link rel=stylesheet>`
- *      tags to drop the `id=`, `type=`, and `media="all"` attributes.
- *      The regex is intentionally narrow and falls back to the
- *      original tag if WordPress's output ever shifts.
- *
- *   3. **Resource hints** — drops the default `s.w.org` DNS-prefetch
- *      hint (used for an emoji CDN we don't ship), and the inline
- *      loader CSS the WordPress Popular Posts plugin injects.
+ * Head Cleanup — remove the `wp_head` actions WordPress hangs on for
+ * legacy clients (feed discovery, RSD / WLW manifest, oEmbed
+ * discovery, prev/next rel links, generator tag, shortlink, REST
+ * discovery, recent-comments widget CSS). Each is its own toggle on
+ * the settings page so admins can opt out of any single rule without
+ * losing the rest.
  *
  * Ported from the dream-and-leap-sage theme's
- * `App\Providers\HtmlHeadOptimizerServiceProvider`.
+ * `App\Providers\HtmlHeadOptimizerServiceProvider`. The theme version
+ * also stripped stylesheet boilerplate + the s.w.org DNS-prefetch +
+ * the WP Popular Posts inline CSS — dropped here because their
+ * measurable impact was effectively zero (cosmetic byte savings that
+ * gzip out, or plugin-specific cruft that doesn't belong as a
+ * sitewide toggle).
  *
  * @package Orbitools
  * @since   1.0.0
@@ -60,28 +51,17 @@ final class Head_Cleanup extends Module_Base
     public function init(): void
     {
         \add_action('init', [$this, 'remove_head_actions']);
-
-        if ($this->is_setting_on('clean_stylesheet_links', true)) {
-            \add_filter('style_loader_tag', [$this, 'clean_css_link_tag']);
-        }
-
-        if ($this->is_setting_on('drop_sw_org_prefetch', true)) {
-            \add_filter('wp_resource_hints', [$this, 'filter_resource_hints'], 10, 2);
-        }
     }
 
     public function get_default_settings(): array
     {
         return [
-            'disable_feed_links'           => true,
-            'disable_editor_discovery'     => true,
-            'disable_relational_links'     => true,
-            'disable_wp_identity'          => true,
-            'disable_oembed_discovery'     => true,
-            'disable_recent_comments_css'  => true,
-            'clean_stylesheet_links'       => true,
-            'drop_sw_org_prefetch'         => true,
-            'disable_wpp_inline_css'       => true,
+            'disable_feed_links'          => true,
+            'disable_editor_discovery'    => true,
+            'disable_relational_links'    => true,
+            'disable_wp_identity'         => true,
+            'disable_oembed_discovery'    => true,
+            'disable_recent_comments_css' => true,
         ];
     }
 
@@ -130,71 +110,6 @@ final class Head_Cleanup extends Module_Base
                 \remove_filter('wp_head', 'wp_widget_recent_comments_style');
             }
         }
-
-        if ($this->is_setting_on('disable_wpp_inline_css', true)) {
-            // No-op when WP Popular Posts isn't active — remove_action
-            // is safe to call against a hook nothing's bound to.
-            \remove_action('wp_head', 'WordPressPopularPosts\Front\Front::inline_loading_css');
-        }
-    }
-
-    // =========================================================================
-    // Stylesheet boilerplate strip
-    // =========================================================================
-
-    /**
-     * Rewrite `<link rel=stylesheet>` tags emitted by `wp_head` to
-     * drop the `id=`, `type=`, and `media="all"` attributes — browsers
-     * default `media` to `all`, `type=text/css` has been the default
-     * since HTML5, and the per-stylesheet `id` is only useful to
-     * WordPress's own enqueue tracking which doesn't read it back.
-     *
-     * The regex is intentionally narrow against the exact format
-     * WordPress currently emits. On any mismatch we return the input
-     * untouched, so a future core change to that markup can't break
-     * the page.
-     */
-    public function clean_css_link_tag(string $input): string
-    {
-        \preg_match_all(
-            "!<link rel='stylesheet'\s?(id='[^']+')?\s+href='(.*)' type='text/css' media='(.*)' />!",
-            $input,
-            $matches,
-        );
-
-        if (empty($matches[2])) {
-            return $input;
-        }
-
-        $media = '';
-        if (isset($matches[3][0]) && $matches[3][0] !== '' && $matches[3][0] !== 'all') {
-            $media = ' media="' . \esc_attr($matches[3][0]) . '"';
-        }
-
-        return '<link rel="stylesheet" href="' . \esc_url($matches[2][0]) . '"' . $media . '>' . "\n";
-    }
-
-    // =========================================================================
-    // Resource hints
-    // =========================================================================
-
-    /**
-     * Drop WordPress's default `s.w.org` DNS-prefetch hint while
-     * letting any custom hints through unchanged.
-     *
-     * @param mixed  $urls
-     * @return mixed
-     */
-    public function filter_resource_hints($urls, string $relation_type)
-    {
-        if ($relation_type !== 'dns-prefetch' || !is_array($urls)) {
-            return $urls;
-        }
-
-        return array_values(array_filter($urls, static function ($url) {
-            $host = is_array($url) ? ($url['href'] ?? '') : $url;
-            return strpos((string) $host, 's.w.org') === false;
-        }));
     }
 
     // =========================================================================

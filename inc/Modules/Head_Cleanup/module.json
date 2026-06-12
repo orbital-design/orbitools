@@ -17,16 +17,6 @@
       "id": "head_bloat",
       "title": "<head> bloat",
       "description": "Remove the `wp_head` actions WordPress hangs on for legacy clients (feed readers, RSD, oEmbed clients) that nobody actually uses anymore."
-    },
-    {
-      "id": "stylesheet",
-      "title": "Stylesheet markup",
-      "description": "Rewrite the `<link rel=stylesheet>` tags WordPress emits, stripping the cruft browsers don't read."
-    },
-    {
-      "id": "resource_hints",
-      "title": "Resource hints",
-      "description": "Tidy up the `<link rel=…>` hints WordPress adds at the top of the page."
     }
   ],
   "settings": [
@@ -77,30 +67,6 @@
       "description": "Removes the inline `<style>` block the Recent Comments widget injects. Safe to leave on even if the widget isn't used.",
       "default": true,
       "section": "head_bloat"
-    },
-    {
-      "id": "clean_stylesheet_links",
-      "type": "toggle",
-      "label": "Strip stylesheet boilerplate",
-      "description": "Rewrites `<link rel=stylesheet>` tags to drop the `id=`, `type=`, and `media=\"all\"` attributes (browsers default to all). Falls back to the original tag on any markup change WP makes, so this stays safe across upgrades.",
-      "default": true,
-      "section": "stylesheet"
-    },
-    {
-      "id": "drop_sw_org_prefetch",
-      "type": "toggle",
-      "label": "Drop the s.w.org DNS-prefetch",
-      "description": "WordPress adds a DNS-prefetch hint to its emoji CDN even when the Emoji feature is off. Removes it.",
-      "default": true,
-      "section": "resource_hints"
-    },
-    {
-      "id": "disable_wpp_inline_css",
-      "type": "toggle",
-      "label": "Hide WP Popular Posts inline CSS",
-      "description": "Removes the inline loader CSS the WordPress Popular Posts plugin injects on every page. No-op when the plugin isn't installed.",
-      "default": true,
-      "section": "resource_hints"
     }
   ]
 }
