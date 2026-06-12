@@ -71,6 +71,14 @@
       "section": "behaviour"
     },
     {
+      "id": "strip_core_theme_json_defaults",
+      "type": "toggle",
+      "label": "Strip core's default theme.json presets",
+      "description": "Wipes WP's built-in color palette / gradients / duotone / shadow presets, default font sizes, default aspect ratios, and the default spacing scale (set to 0 steps) on the `wp_theme_json_data_default` filter. The editor then only shows what the theme declares explicitly in its own theme.json. Recommended for Orbital sites where the theme owns the design tokens end-to-end.",
+      "default": true,
+      "section": "behaviour"
+    },
+    {
       "id": "strip_wp_elements_classes",
       "type": "toggle",
       "label": "Strip wp-elements-* classes",

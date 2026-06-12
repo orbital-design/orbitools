@@ -64,18 +64,23 @@ final class Editor_Settings extends Module_Base
             // (default priority 10) flushes block-supports inline CSS.
             \add_action('wp_footer', [$this, 'dequeue_core_block_supports'], 5);
         }
+
+        if ($this->get_setting('strip_core_theme_json_defaults', true)) {
+            \add_filter('wp_theme_json_data_default', [$this, 'strip_theme_json_defaults']);
+        }
     }
 
     public function get_default_settings(): array
     {
         return [
-            'disable_block_directory'     => true,
-            'disable_remote_patterns'     => true,
-            'disable_openverse'           => true,
-            'disable_font_library'        => true,
-            'force_post_image_full'       => true,
-            'strip_wp_elements_classes'   => true,
-            'dequeue_core_block_supports' => true,
+            'disable_block_directory'        => true,
+            'disable_remote_patterns'        => true,
+            'disable_openverse'              => true,
+            'disable_font_library'           => true,
+            'force_post_image_full'          => true,
+            'strip_wp_elements_classes'      => true,
+            'dequeue_core_block_supports'    => true,
+            'strip_core_theme_json_defaults' => true,
         ];
     }
 
@@ -164,5 +169,54 @@ final class Editor_Settings extends Module_Base
     public function dequeue_core_block_supports(): void
     {
         \wp_dequeue_style('core-block-supports');
+    }
+
+    // =========================================================================
+    // Strip core's default theme.json presets
+    // =========================================================================
+
+    /**
+     * Wipe WordPress's default theme.json presets — color palette,
+     * gradients, duotone, shadow, font sizes, aspect ratios, spacing
+     * scale. The editor only shows what the theme declares
+     * explicitly after this fires.
+     *
+     * Returns the same WP_Theme_JSON_Data instance with the empties
+     * merged in via `update_with()`, matching the documented filter
+     * contract.
+     *
+     * @param mixed $theme_json
+     * @return mixed
+     */
+    public function strip_theme_json_defaults($theme_json)
+    {
+        if (!is_object($theme_json) || !method_exists($theme_json, 'update_with')) {
+            return $theme_json;
+        }
+
+        return $theme_json->update_with([
+            'version'  => 3,
+            'settings' => [
+                'color' => [
+                    'palette'   => [],
+                    'gradients' => [],
+                    'duotone'   => [],
+                ],
+                'shadow' => [
+                    'presets' => [],
+                ],
+                'typography' => [
+                    'fontSizes' => [],
+                ],
+                'dimensions' => [
+                    'aspectRatios' => [],
+                ],
+                'spacing' => [
+                    'spacingScale' => [
+                        'steps' => 0,
+                    ],
+                ],
+            ],
+        ]);
     }
 }
