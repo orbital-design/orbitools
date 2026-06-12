@@ -66,15 +66,26 @@ final class Editor_Settings extends Module_Base
         }
 
         if ($this->get_setting('strip_core_theme_json_defaults', true)) {
+            // Hook both data filters — `_default` for core's theme.json,
+            // `_theme` to also clear any defaults the theme inherits.
+            // Some core defaults (palette / spacing scale) only get
+            // wiped reliably when both stages are intercepted.
             \add_filter('wp_theme_json_data_default', [$this, 'strip_theme_json_defaults']);
+            \add_filter('wp_theme_json_data_theme',   [$this, 'strip_theme_json_defaults']);
+
+            // The compiled global-styles inline CSS is transient-
+            // cached (`wp_styles_for_blocks` + per-theme variants);
+            // `wp_clean_theme_json_cache()` doesn't clear those, so we
+            // do it manually every request while the toggle is on.
+            // Heavy-handed; we'll trim to settings-change-only once we
+            // know which transient key the user's WP is actually
+            // hitting.
+            \add_action('init', [$this, 'invalidate_theme_json_cache']);
         }
 
-        // The compiled global-styles CSS is transient-cached, and the
-        // cache key doesn't change when our filters do — so toggling
-        // strip_core_theme_json_defaults (or any other theme.json-
-        // affecting setting) won't take effect until the cache expires.
-        // Invalidate whenever orbitools_settings is saved so the next
-        // request rebuilds against the live filter state.
+        // Same idea, save-side — useful for any other theme.json
+        // toggle we add later that doesn't already register the init
+        // hook above.
         \add_action('update_option_orbitools_settings', [$this, 'invalidate_theme_json_cache']);
         \add_action('add_option_orbitools_settings',    [$this, 'invalidate_theme_json_cache']);
     }
@@ -242,20 +253,54 @@ final class Editor_Settings extends Module_Base
     }
 
     /**
-     * Drop the cached compiled global-styles CSS so the next request
-     * rebuilds against the current filter state.
+     * Drop every cache that holds the compiled theme.json / global-
+     * styles output so the next request rebuilds against the current
+     * filter state.
      *
-     * Hooked on `update_option_orbitools_settings` so toggling
-     * `strip_core_theme_json_defaults` (or any future theme.json-
-     * affecting setting) takes effect on the next page load instead
-     * of waiting for the transient to expire. Safe to call when
-     * the function isn't available — older WPs without theme.json
-     * cache support just no-op.
+     * `wp_clean_theme_json_cache()` only handles the resolver-side
+     * caches; the actual inline CSS the user sees on the frontend is
+     * cached separately in a transient keyed by `$types` (set by
+     * `wp_get_global_stylesheet()`). We delete the known variants
+     * plus reset the resolver's static state by hand. Safe to call
+     * unconditionally — every step is a no-op when the matching
+     * key / function isn't there.
      */
     public function invalidate_theme_json_cache(): void
     {
         if (\function_exists('wp_clean_theme_json_cache')) {
             \wp_clean_theme_json_cache();
         }
+
+        // Resolver static cache — fresh data on next read.
+        if (class_exists('WP_Theme_JSON_Resolver')
+            && method_exists('WP_Theme_JSON_Resolver', 'clean_cached_data')
+        ) {
+            \WP_Theme_JSON_Resolver::clean_cached_data();
+        }
+
+        // Compiled global-styles inline CSS transients. WP varies the
+        // key by `$types`; cover the ones in active use across 6.0+.
+        $stylesheet_slug = \function_exists('get_stylesheet') ? \get_stylesheet() : '';
+        $transient_keys  = [
+            'wp_styles_for_blocks',
+            'global_styles_inline_css',
+            'gutenberg_global_styles',
+            'wp_styles_global_styles_' . $stylesheet_slug,
+            'wp_global_styles_' . $stylesheet_slug,
+        ];
+        foreach ($transient_keys as $key) {
+            if ($key === '' || $key === 'wp_styles_global_styles_' || $key === 'wp_global_styles_') {
+                continue;
+            }
+            \delete_transient($key);
+        }
+
+        // Object cache `theme_json` group — at least the entries WP
+        // documents writing to. wp_cache_flush_group works on some
+        // backends only, so we delete known keys directly.
+        \wp_cache_delete('theme_json',                     'theme_json');
+        \wp_cache_delete('wp_theme_features',              'theme_json');
+        \wp_cache_delete('wp_styles_for_blocks',           'theme_json');
+        \wp_cache_delete('wp_global_styles_data_compiled', 'theme_json');
     }
 }
