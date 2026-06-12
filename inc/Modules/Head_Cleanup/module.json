@@ -17,6 +17,11 @@
       "id": "head_bloat",
       "title": "<head> bloat",
       "description": "Remove the `wp_head` actions WordPress hangs on for legacy clients (feed readers, RSD, oEmbed clients) that nobody actually uses anymore."
+    },
+    {
+      "id": "frontend_assets",
+      "title": "Frontend assets",
+      "description": "Drop the JS / CSS / HTTP headers WordPress ships for features Orbital sites don't use — emoji, oEmbed-in (other sites embedding yours), pingbacks."
     }
   ],
   "settings": [
@@ -67,6 +72,30 @@
       "description": "Removes the inline `<style>` block the Recent Comments widget injects. Safe to leave on even if the widget isn't used.",
       "default": true,
       "section": "head_bloat"
+    },
+    {
+      "id": "disable_emoji",
+      "type": "toggle",
+      "label": "Disable Emoji",
+      "description": "Stops WordPress shipping its emoji detection script + inline stylesheet on every page (~3KB pre-gzip, render-blocking) plus the s.w.org DNS-prefetch hint that exists only to support it. Modern OSes render emoji natively; the polyfill is dead weight.",
+      "default": true,
+      "section": "frontend_assets"
+    },
+    {
+      "id": "disable_wp_embed_script",
+      "type": "toggle",
+      "label": "Disable wp-embed.min.js",
+      "description": "Dequeues the ~2.5KB script WordPress loads on every page so *other* sites can embed your posts via oEmbed. Separate from the discovery-link toggle above — that stops you advertising, this stops you serving. Almost no Orbital site cares about being embedded.",
+      "default": true,
+      "section": "frontend_assets"
+    },
+    {
+      "id": "disable_pingback",
+      "type": "toggle",
+      "label": "Disable pingback",
+      "description": "Drops the `X-Pingback` HTTP header and removes the `pingback.ping` + `pingback.extensions.getPingbacks` XML-RPC methods. XML-RPC pingback is a known DDoS reflection vector and almost no site actively uses pingbacks anymore.",
+      "default": true,
+      "section": "frontend_assets"
     }
   ]
 }
