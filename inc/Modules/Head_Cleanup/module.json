@@ -1,0 +1,106 @@
+{
+  "$schema": "https://orbitools/schemas/module.v1.json",
+  "slug": "head-cleanup",
+  "name": "Head Cleanup",
+  "description": "Trim WordPress's default `<head>` to what modern sites actually use — drop feed / oEmbed / shortlink discovery tags, strip stylesheet boilerplate, kill the s.w.org DNS-prefetch hint.",
+  "version": "1.0.0",
+  "category": "modules",
+  "class": "\\Orbitools\\Modules\\Head_Cleanup\\Head_Cleanup",
+  "default_enabled": false,
+  "section_layout": "stacked",
+  "requires": {
+    "php": ">=7.4",
+    "wp": ">=5.0"
+  },
+  "sections": [
+    {
+      "id": "head_bloat",
+      "title": "<head> bloat",
+      "description": "Remove the `wp_head` actions WordPress hangs on for legacy clients (feed readers, RSD, oEmbed clients) that nobody actually uses anymore."
+    },
+    {
+      "id": "stylesheet",
+      "title": "Stylesheet markup",
+      "description": "Rewrite the `<link rel=stylesheet>` tags WordPress emits, stripping the cruft browsers don't read."
+    },
+    {
+      "id": "resource_hints",
+      "title": "Resource hints",
+      "description": "Tidy up the `<link rel=…>` hints WordPress adds at the top of the page."
+    }
+  ],
+  "settings": [
+    {
+      "id": "disable_feed_links",
+      "type": "toggle",
+      "label": "Disable feed discovery",
+      "description": "Removes the `<link rel=alternate>` RSS / Atom feed tags from every page. Site feeds still work directly; they just aren't advertised.",
+      "default": true,
+      "section": "head_bloat"
+    },
+    {
+      "id": "disable_editor_discovery",
+      "type": "toggle",
+      "label": "Disable RSD / WLW manifest",
+      "description": "Drops the Really Simple Discovery + Windows Live Writer endpoint tags. Both are 2005-era remote-editing protocols.",
+      "default": true,
+      "section": "head_bloat"
+    },
+    {
+      "id": "disable_relational_links",
+      "type": "toggle",
+      "label": "Disable relational link tags",
+      "description": "Removes the `<link rel=index / parent / start / prev / next>` post-relation tags. Useful only to a handful of feed crawlers.",
+      "default": true,
+      "section": "head_bloat"
+    },
+    {
+      "id": "disable_wp_identity",
+      "type": "toggle",
+      "label": "Hide WordPress identity",
+      "description": "Removes the `<meta name=generator>` (your WP version), the `<link rel=shortlink>`, and the `<link rel=https://api.w.org/>` REST discovery link. Drops a small fingerprinting surface.",
+      "default": true,
+      "section": "head_bloat"
+    },
+    {
+      "id": "disable_oembed_discovery",
+      "type": "toggle",
+      "label": "Disable oEmbed discovery",
+      "description": "Removes the oEmbed discovery `<link>` + host JS WordPress adds so other sites can embed your posts. Disabling doesn't stop you embedding *other* sites' content.",
+      "default": true,
+      "section": "head_bloat"
+    },
+    {
+      "id": "disable_recent_comments_css",
+      "type": "toggle",
+      "label": "Disable Recent Comments widget CSS",
+      "description": "Removes the inline `<style>` block the Recent Comments widget injects. Safe to leave on even if the widget isn't used.",
+      "default": true,
+      "section": "head_bloat"
+    },
+    {
+      "id": "clean_stylesheet_links",
+      "type": "toggle",
+      "label": "Strip stylesheet boilerplate",
+      "description": "Rewrites `<link rel=stylesheet>` tags to drop the `id=`, `type=`, and `media=\"all\"` attributes (browsers default to all). Falls back to the original tag on any markup change WP makes, so this stays safe across upgrades.",
+      "default": true,
+      "section": "stylesheet"
+    },
+    {
+      "id": "drop_sw_org_prefetch",
+      "type": "toggle",
+      "label": "Drop the s.w.org DNS-prefetch",
+      "description": "WordPress adds a DNS-prefetch hint to its emoji CDN even when the Emoji feature is off. Removes it.",
+      "default": true,
+      "section": "resource_hints"
+    },
+    {
+      "id": "disable_wpp_inline_css",
+      "type": "toggle",
+      "label": "Hide WP Popular Posts inline CSS",
+      "description": "Removes the inline loader CSS the WordPress Popular Posts plugin injects on every page. No-op when the plugin isn't installed.",
+      "default": true,
+      "section": "resource_hints"
+    }
+  ]
+}

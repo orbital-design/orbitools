@@ -68,6 +68,7 @@ See `CLAUDE.md` § "Theme pages" for the full registration shape.
 - **Font Awesome** *(Integrations tab)* — load a Font Awesome kit on the frontend, optional ACF Font Awesome plugin bridge
 - **Block Manager** *(Editor tab)* — toggle which blocks appear in the editor inserter
 - **Core Overrides** — hide built-in WP admin pages (Settings → Connectors / Site Health / etc.) the site doesn't need
+- **Head Cleanup** — strip the legacy clutter WP emits in `<head>` (feed / RSD / oEmbed discovery, generator tag, s.w.org DNS-prefetch, stylesheet boilerplate)
 
 ## Project structure
 
