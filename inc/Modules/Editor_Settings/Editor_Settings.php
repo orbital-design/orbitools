@@ -68,6 +68,15 @@ final class Editor_Settings extends Module_Base
         if ($this->get_setting('strip_core_theme_json_defaults', true)) {
             \add_filter('wp_theme_json_data_default', [$this, 'strip_theme_json_defaults']);
         }
+
+        // The compiled global-styles CSS is transient-cached, and the
+        // cache key doesn't change when our filters do — so toggling
+        // strip_core_theme_json_defaults (or any other theme.json-
+        // affecting setting) won't take effect until the cache expires.
+        // Invalidate whenever orbitools_settings is saved so the next
+        // request rebuilds against the live filter state.
+        \add_action('update_option_orbitools_settings', [$this, 'invalidate_theme_json_cache']);
+        \add_action('add_option_orbitools_settings',    [$this, 'invalidate_theme_json_cache']);
     }
 
     public function get_default_settings(): array
@@ -198,25 +207,55 @@ final class Editor_Settings extends Module_Base
             'version'  => 3,
             'settings' => [
                 'color' => [
-                    'palette'   => [],
-                    'gradients' => [],
-                    'duotone'   => [],
+                    // Empty the arrays AND flip the `default*` flags
+                    // off — without those flags WP merges its built-in
+                    // black / white / vivid-red / etc. back in even
+                    // when the array we provide is empty. This is the
+                    // bit a lot of "disable WP defaults" snippets miss.
+                    'palette'          => [],
+                    'gradients'        => [],
+                    'duotone'          => [],
+                    'defaultPalette'   => false,
+                    'defaultGradients' => false,
+                    'defaultDuotone'   => false,
                 ],
                 'shadow' => [
-                    'presets' => [],
+                    'presets'        => [],
+                    'defaultPresets' => false,
                 ],
                 'typography' => [
-                    'fontSizes' => [],
+                    'fontSizes'        => [],
+                    'defaultFontSizes' => false,
                 ],
                 'dimensions' => [
-                    'aspectRatios' => [],
+                    'aspectRatios'        => [],
+                    'defaultAspectRatios' => false,
                 ],
                 'spacing' => [
-                    'spacingScale' => [
+                    'spacingScale'        => [
                         'steps' => 0,
                     ],
+                    'defaultSpacingSizes' => false,
                 ],
             ],
         ]);
+    }
+
+    /**
+     * Drop the cached compiled global-styles CSS so the next request
+     * rebuilds against the current filter state.
+     *
+     * Hooked on `update_option_orbitools_settings` so toggling
+     * `strip_core_theme_json_defaults` (or any future theme.json-
+     * affecting setting) takes effect on the next page load instead
+     * of waiting for the transient to expire. Safe to call when
+     * the function isn't available — older WPs without theme.json
+     * cache support just no-op.
+     */
+    public function invalidate_theme_json_cache(): void
+    {
+        if (\function_exists('wp_clean_theme_json_cache')) {
+            \wp_clean_theme_json_cache();
+        }
     }
 }
