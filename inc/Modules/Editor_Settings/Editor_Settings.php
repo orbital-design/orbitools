@@ -76,14 +76,23 @@ final class Editor_Settings extends Module_Base
         }
 
         if ($this->get_setting('disable_layout_styles', true)) {
-            // Replace WP's compiled global-styles inline CSS with just
-            // the variables + presets types — drops the layout
-            // scaffolding (.is-layout-*, .wp-site-blocks alignment,
-            // block-gap) and the element/block default styles, keeps
-            // the theme's preset CSS vars + .has-* utility classes.
-            // Priority 100 so it runs after wp_enqueue_global_styles
-            // (default 10) has registered the handle we're replacing.
+            // Replace the CSS attached to the `global-styles` handle
+            // with just the variables + presets types — drops the
+            // layout scaffolding (.is-layout-*, .wp-site-blocks
+            // alignment, block-gap) and the element/block default
+            // styles, keeps the theme's preset CSS vars + .has-*
+            // utility classes.
+            //
+            // WP builds the `global-styles` handle at different points
+            // depending on theme type + asset-loading mode: in the
+            // head during wp_enqueue_scripts for block themes, but at
+            // wp_footer priority 1 for classic themes with on-demand
+            // assets (the WP 6.9 default — it enqueues only a head
+            // placeholder during wp_enqueue_scripts and hoists the
+            // real CSS up from the footer later). Hook both points
+            // and patch whichever has the handle registered.
             \add_action('wp_enqueue_scripts', [$this, 'replace_global_styles'], 100);
+            \add_action('wp_footer',          [$this, 'replace_global_styles'], 2);
         }
 
         // Per-request cache invalidation while any theme.json /
@@ -215,41 +224,48 @@ final class Editor_Settings extends Module_Base
      * frontend global-styles CSS while keeping the preset tokens.
      *
      * WordPress compiles `<style id="global-styles-inline-css">` from
-     * three stylesheet "types": `variables` (the
-     * `--wp--preset--*` custom properties + content-size vars),
-     * `presets` (the `.has-*-color` / `.has-*-font-size` utility
-     * classes), and `styles` (root layout rules, `.is-layout-*`
-     * alignment + flex/grid, block-gap, element button defaults,
-     * per-block styles). Only `styles` carries the layout cruft.
+     * three stylesheet "types": `variables` (the `--wp--preset--*`
+     * custom properties + content-size vars), `presets` (the
+     * `.has-*-color` / `.has-*-font-size` utility classes), and
+     * `styles` (root layout rules, `.is-layout-*` alignment +
+     * flex/grid, block-gap, element button defaults, per-block
+     * styles). Only `styles` carries the layout cruft.
      *
-     * There's no built-in flag that removes just the layout subset
-     * reliably — `add_theme_support('disable-layout-styles')` only
-     * gates part of it (`get_layout_styles`, not the `.wp-site-blocks`
-     * root rules), and is version-sensitive. So instead we dequeue
-     * the full compiled stylesheet and re-add a fresh one built from
-     * only `variables` + `presets`. The theme keeps its colour /
-     * spacing / font tokens + utility classes and owns all layout
-     * CSS itself.
+     * The compiled CSS is stored as inline 'after' data on the
+     * `global-styles` style handle. Rather than dequeue the handle
+     * (which doesn't survive WP 6.9's classic-theme footer-hoist
+     * machinery), we replace that stored CSS in place with a fresh
+     * build of only `variables` + `presets`. The handle stays
+     * registered, so whatever printing / hoisting path WP uses still
+     * runs — it just carries our trimmed CSS.
+     *
+     * Idempotent: runs on two hooks (head + footer) to cover both
+     * theme types; the static guard makes the second call a no-op.
      */
     public function replace_global_styles(): void
     {
-        if (!\function_exists('wp_get_global_stylesheet')) {
+        static $done = false;
+        if ($done || !\function_exists('wp_get_global_stylesheet') || !\function_exists('wp_styles')) {
             return;
         }
 
-        // Drop WP's full compiled global stylesheet.
-        \wp_dequeue_style('global-styles');
-        \wp_deregister_style('global-styles');
+        $styles = \wp_styles();
+        if (!isset($styles->registered['global-styles'])) {
+            // Handle not built yet on this hook — let the other hook
+            // catch it. Don't set $done.
+            return;
+        }
 
-        // Rebuild with only the preset tokens + utility classes.
         $css = \wp_get_global_stylesheet(['variables', 'presets']);
-        if ($css === '') {
-            return;
-        }
 
-        \wp_register_style('orbitools-global-presets', false);
-        \wp_enqueue_style('orbitools-global-presets');
-        \wp_add_inline_style('orbitools-global-presets', $css);
+        // Replace the compiled stylesheet's inline 'after' data with
+        // our trimmed build. Wholesale replace is correct for classic
+        // themes (Customizer custom CSS prints on its own handle);
+        // block themes merge custom CSS in here, but the Orbital
+        // target is classic.
+        $styles->registered['global-styles']->extra['after'] = $css === '' ? [] : [$css];
+
+        $done = true;
     }
 
     // =========================================================================
