@@ -73,12 +73,26 @@ final class Editor_Settings extends Module_Base
             // (`get_merged_data`: core → blocks → theme → user) brings
             // the theme's values in on top of our empty core.
             \add_filter('wp_theme_json_data_default', [$this, 'strip_theme_json_defaults']);
+        }
 
-            // Brute-force per-request cache invalidation while the
-            // toggle is on. The compiled global-styles inline CSS
-            // lives in a transient `wp_clean_theme_json_cache()`
-            // doesn't reach; we'll trim this to settings-change-only
-            // once verified working.
+        if ($this->get_setting('disable_layout_styles', true)) {
+            // Core gates the `.is-layout-*` base CSS emission on this
+            // theme-support flag (see WP_Theme_JSON::get_layout_styles).
+            // Registered on after_setup_theme — well before the global
+            // stylesheet is compiled. The layout classes still get
+            // added to block markup; only the rules that style them
+            // are skipped, so the theme owns layout CSS.
+            \add_action('after_setup_theme', [$this, 'disable_layout_styles']);
+        }
+
+        // Per-request cache invalidation while any theme.json /
+        // global-stylesheet-affecting toggle is on. The compiled
+        // global-styles inline CSS lives in a transient
+        // `wp_clean_theme_json_cache()` doesn't reach; we flush it on
+        // init so a toggle change takes effect on the next load.
+        if ($this->get_setting('strip_core_theme_json_defaults', true)
+            || $this->get_setting('disable_layout_styles', true)
+        ) {
             \add_action('init', [$this, 'invalidate_theme_json_cache']);
         }
 
@@ -100,6 +114,7 @@ final class Editor_Settings extends Module_Base
             'strip_wp_elements_classes'      => true,
             'dequeue_core_block_supports'    => true,
             'strip_core_theme_json_defaults' => true,
+            'disable_layout_styles'          => true,
         ];
     }
 
@@ -188,6 +203,27 @@ final class Editor_Settings extends Module_Base
     public function dequeue_core_block_supports(): void
     {
         \wp_dequeue_style('core-block-supports');
+    }
+
+    // =========================================================================
+    // Disable core layout styles
+    // =========================================================================
+
+    /**
+     * Opt into core's `disable-layout-styles` theme support, which
+     * makes `WP_Theme_JSON::get_layout_styles()` short-circuit — the
+     * `.is-layout-flow` / `.is-layout-constrained` / `.is-layout-flex`
+     * / `.is-layout-grid` base CSS (margins, max-width centering,
+     * block-gap, alignment rules) is then never emitted into the
+     * global stylesheet.
+     *
+     * The layout *classes* are still added to block markup; only the
+     * core CSS that styles them is skipped. The active theme is
+     * responsible for its own layout CSS once this is on.
+     */
+    public function disable_layout_styles(): void
+    {
+        \add_theme_support('disable-layout-styles');
     }
 
     // =========================================================================

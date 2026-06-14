@@ -93,6 +93,14 @@
       "description": "Dequeues the `core-block-supports` stylesheet on the frontend — the inline CSS WP builds from block supports (typography, spacing, etc.). Only flip this on for themes that already cover supports in theme.json or their own CSS.",
       "default": true,
       "section": "frontend_output"
+    },
+    {
+      "id": "disable_layout_styles",
+      "type": "toggle",
+      "label": "Disable core layout styles",
+      "description": "Stops WordPress emitting the `.is-layout-flow` / `.is-layout-constrained` / `.is-layout-flex` / `.is-layout-grid` base CSS (margins, max-width centering, block-gap, alignment rules) into the global stylesheet, via core's `disable-layout-styles` theme support. The layout classes still land on block markup — the theme owns the CSS that styles them. Only turn on for themes that handle their own layout.",
+      "default": true,
+      "section": "frontend_output"
     }
   ]
 }
