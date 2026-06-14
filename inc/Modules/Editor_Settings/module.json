@@ -97,8 +97,8 @@
     {
       "id": "disable_layout_styles",
       "type": "toggle",
-      "label": "Disable core layout styles",
-      "description": "Stops WordPress emitting the `.is-layout-flow` / `.is-layout-constrained` / `.is-layout-flex` / `.is-layout-grid` base CSS (margins, max-width centering, block-gap, alignment rules) into the global stylesheet, via core's `disable-layout-styles` theme support. The layout classes still land on block markup — the theme owns the CSS that styles them. Only turn on for themes that handle their own layout.",
+      "label": "Strip layout & default styles from global CSS",
+      "description": "Rebuilds WP's `global-styles` inline CSS from just the preset variables + utility classes — dropping the layout scaffolding (`.is-layout-*`, `.wp-site-blocks` alignment, block-gap) and the element / block default styles. Your colour / spacing / font tokens and `.has-*` classes stay; the theme owns all layout + element CSS. Only turn on for themes that handle their own layout.",
       "default": true,
       "section": "frontend_output"
     }

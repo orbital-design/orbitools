@@ -76,13 +76,14 @@ final class Editor_Settings extends Module_Base
         }
 
         if ($this->get_setting('disable_layout_styles', true)) {
-            // Core gates the `.is-layout-*` base CSS emission on this
-            // theme-support flag (see WP_Theme_JSON::get_layout_styles).
-            // Registered on after_setup_theme — well before the global
-            // stylesheet is compiled. The layout classes still get
-            // added to block markup; only the rules that style them
-            // are skipped, so the theme owns layout CSS.
-            \add_action('after_setup_theme', [$this, 'disable_layout_styles']);
+            // Replace WP's compiled global-styles inline CSS with just
+            // the variables + presets types — drops the layout
+            // scaffolding (.is-layout-*, .wp-site-blocks alignment,
+            // block-gap) and the element/block default styles, keeps
+            // the theme's preset CSS vars + .has-* utility classes.
+            // Priority 100 so it runs after wp_enqueue_global_styles
+            // (default 10) has registered the handle we're replacing.
+            \add_action('wp_enqueue_scripts', [$this, 'replace_global_styles'], 100);
         }
 
         // Per-request cache invalidation while any theme.json /
@@ -206,24 +207,49 @@ final class Editor_Settings extends Module_Base
     }
 
     // =========================================================================
-    // Disable core layout styles
+    // Replace global-styles with variables + presets only
     // =========================================================================
 
     /**
-     * Opt into core's `disable-layout-styles` theme support, which
-     * makes `WP_Theme_JSON::get_layout_styles()` short-circuit — the
-     * `.is-layout-flow` / `.is-layout-constrained` / `.is-layout-flex`
-     * / `.is-layout-grid` base CSS (margins, max-width centering,
-     * block-gap, alignment rules) is then never emitted into the
-     * global stylesheet.
+     * Strip WP's layout / element / block scaffolding from the
+     * frontend global-styles CSS while keeping the preset tokens.
      *
-     * The layout *classes* are still added to block markup; only the
-     * core CSS that styles them is skipped. The active theme is
-     * responsible for its own layout CSS once this is on.
+     * WordPress compiles `<style id="global-styles-inline-css">` from
+     * three stylesheet "types": `variables` (the
+     * `--wp--preset--*` custom properties + content-size vars),
+     * `presets` (the `.has-*-color` / `.has-*-font-size` utility
+     * classes), and `styles` (root layout rules, `.is-layout-*`
+     * alignment + flex/grid, block-gap, element button defaults,
+     * per-block styles). Only `styles` carries the layout cruft.
+     *
+     * There's no built-in flag that removes just the layout subset
+     * reliably — `add_theme_support('disable-layout-styles')` only
+     * gates part of it (`get_layout_styles`, not the `.wp-site-blocks`
+     * root rules), and is version-sensitive. So instead we dequeue
+     * the full compiled stylesheet and re-add a fresh one built from
+     * only `variables` + `presets`. The theme keeps its colour /
+     * spacing / font tokens + utility classes and owns all layout
+     * CSS itself.
      */
-    public function disable_layout_styles(): void
+    public function replace_global_styles(): void
     {
-        \add_theme_support('disable-layout-styles');
+        if (!\function_exists('wp_get_global_stylesheet')) {
+            return;
+        }
+
+        // Drop WP's full compiled global stylesheet.
+        \wp_dequeue_style('global-styles');
+        \wp_deregister_style('global-styles');
+
+        // Rebuild with only the preset tokens + utility classes.
+        $css = \wp_get_global_stylesheet(['variables', 'presets']);
+        if ($css === '') {
+            return;
+        }
+
+        \wp_register_style('orbitools-global-presets', false);
+        \wp_enqueue_style('orbitools-global-presets');
+        \wp_add_inline_style('orbitools-global-presets', $css);
     }
 
     // =========================================================================
