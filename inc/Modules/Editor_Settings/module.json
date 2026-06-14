@@ -101,6 +101,14 @@
       "description": "Rebuilds WP's `global-styles` inline CSS from just the preset variables + utility classes — dropping the layout scaffolding (`.is-layout-*`, `.wp-site-blocks` alignment, block-gap) and the element / block default styles. Your colour / spacing / font tokens and `.has-*` classes stay; the theme owns all layout + element CSS. Only turn on for themes that handle their own layout.",
       "default": true,
       "section": "frontend_output"
+    },
+    {
+      "id": "global_styles_in_head",
+      "type": "toggle",
+      "label": "Print global styles in the head",
+      "description": "WordPress 6.9 defers the global-styles CSS to the footer on classic themes (on-demand asset loading) and relies on an output-buffer hoist to move it back into the `<head>` — when that buffer isn't active the CSS renders in the footer and causes a flash of unstyled content. Turning this on disables on-demand loading so global styles + core block CSS print in the `<head>` again. Trade-off: all core block CSS loads on every page instead of only when a block is used.",
+      "default": true,
+      "section": "frontend_output"
     }
   ]
 }

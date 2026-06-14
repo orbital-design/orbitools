@@ -75,6 +75,19 @@ final class Editor_Settings extends Module_Base
             \add_filter('wp_theme_json_data_default', [$this, 'strip_theme_json_defaults']);
         }
 
+        if ($this->get_setting('global_styles_in_head', true)) {
+            // WP 6.9 defaults classic themes to on-demand block-asset
+            // loading, which defers the global-styles CSS to wp_footer
+            // and relies on an output-buffer hoist to pull it back into
+            // the <head>. When that buffer isn't active the CSS just
+            // renders in the footer (FOUC risk). Returning false from
+            // this filter reverts to the pre-6.9 path: global styles +
+            // core block CSS print in the <head> during
+            // wp_enqueue_scripts. Trade-off — all core block CSS loads
+            // on every page rather than only when a block is present.
+            \add_filter('should_load_block_assets_on_demand', '__return_false');
+        }
+
         if ($this->get_setting('disable_layout_styles', true)) {
             // Replace the CSS attached to the `global-styles` handle
             // with just the variables + presets types — drops the
@@ -125,6 +138,7 @@ final class Editor_Settings extends Module_Base
             'dequeue_core_block_supports'    => true,
             'strip_core_theme_json_defaults' => true,
             'disable_layout_styles'          => true,
+            'global_styles_in_head'          => true,
         ];
     }
 
