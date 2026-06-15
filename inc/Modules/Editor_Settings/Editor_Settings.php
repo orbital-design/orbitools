@@ -352,24 +352,42 @@ final class Editor_Settings extends Module_Base
             return $theme_json;
         }
 
+        // Each preset gets an explicit empty array AND its
+        // `default*: false` flag. The empty arrays matter: this object
+        // replaces the whole default-origin theme.json, and core's
+        // preset iterators (get_settings_values_by_slug /
+        // get_settings_slugs) `foreach` over each origin's preset list.
+        // Without the empty arrays here some origin slots end up as
+        // `false` rather than an iterable, which trips
+        // "foreach() argument must be of type array|object, false
+        // given" warnings in class-wp-theme-json.php. Empty arrays
+        // still strip core's defaults (no black / white / etc. in our
+        // replacement); they just give core well-formed lists to walk.
         return new \WP_Theme_JSON_Data([
             'version'  => 3,
             'settings' => [
                 'color' => [
+                    'palette'          => [],
+                    'gradients'        => [],
+                    'duotone'          => [],
                     'defaultPalette'   => false,
                     'defaultGradients' => false,
                     'defaultDuotone'   => false,
                 ],
                 'shadow' => [
+                    'presets'        => [],
                     'defaultPresets' => false,
                 ],
                 'typography' => [
+                    'fontSizes'        => [],
                     'defaultFontSizes' => false,
                 ],
                 'dimensions' => [
+                    'aspectRatios'        => [],
                     'defaultAspectRatios' => false,
                 ],
                 'spacing' => [
+                    'spacingSizes'        => [],
                     'defaultSpacingSizes' => false,
                 ],
             ],
