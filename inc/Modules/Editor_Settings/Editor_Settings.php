@@ -278,12 +278,19 @@ final class Editor_Settings extends Module_Base
             return;
         }
 
-        // Own handle so we don't collide with WP's `global-styles`
-        // (whose actions we removed). Empty src + inline data =
-        // <style id="orbitools-global-styles-inline-css"> in the head.
-        \wp_register_style('orbitools-global-styles', false);
-        \wp_enqueue_style('orbitools-global-styles');
-        \wp_add_inline_style('orbitools-global-styles', $css);
+        // Reuse the native `global-styles` handle. WP no longer
+        // registers it (we removed its enqueue actions in init), so
+        // there's no collision — and reusing it means the output is
+        // indistinguishable from core's: <style id="global-styles-
+        // inline-css"> with the same `sourceURL` annotation WP_Styles
+        // auto-appends, instead of leaking an `orbitools-` handle into
+        // the page source. Any dependency on `global-styles` still
+        // resolves too. Deregister first in case anything pre-
+        // registered the handle.
+        \wp_deregister_style('global-styles');
+        \wp_register_style('global-styles', false);
+        \wp_enqueue_style('global-styles');
+        \wp_add_inline_style('global-styles', $css);
     }
 
     public function replace_global_styles(): void
