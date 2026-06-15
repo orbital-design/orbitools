@@ -324,74 +324,58 @@ final class Editor_Settings extends Module_Base
     // =========================================================================
 
     /**
-     * Wipe WordPress's default theme.json presets — color palette,
-     * gradients, duotone, shadow, font sizes, aspect ratios, spacing
-     * scale.
+     * Drop WordPress's built-in theme.json presets — default colour
+     * palette, gradients, duotone, shadow presets, font sizes, aspect
+     * ratios, and spacing scale — by flipping the `default*` flags off
+     * on the default origin.
      *
-     * Returns a **fresh** WP_Theme_JSON_Data with only `version: 3`
-     * and the `default*: false` flags set, instead of mutating the
-     * one passed in. The reason: `WP_Theme_JSON_Data::update_with()`
-     * internally calls `$this->theme_json->merge(...)`, which does
-     * `array_replace_recursive`. Passing `palette: []` to that is a
-     * no-op when the existing palette has entries — empty arrays
-     * don't clear lists, they just leave them alone. A fresh object
-     * has no existing palette / gradients / etc. to leave alone.
+     * Uses `update_with()` to MODIFY the default data, not a fresh
+     * object that replaces it. Replacing the whole default origin
+     * nukes core's entire baseline theme.json (spacing units,
+     * typography settings, appearanceTools expansions, block settings,
+     * etc.) — which breaks the editor's settings resolution and can
+     * make even the *theme's* own palette stop showing. Modifying via
+     * update_with keeps that baseline intact.
      *
-     * Only filter `_default` (not `_theme`) — the merge order
-     * downstream (core → blocks → theme → user) brings the theme's
-     * own palette in on top of our empty core, so the theme.json's
-     * presets are preserved while WP's built-in black / white /
-     * vivid-red etc. are gone.
+     * The `default*: false` flags are WP's documented mechanism for
+     * removing the built-in presets (same thing `appearanceTools`
+     * themes set), so we only need the flags — not to clear the preset
+     * arrays. Core drops the default-origin presets from both the
+     * editor options and the emitted CSS variables when these are
+     * false, leaving the theme's own presets (theme origin, which we
+     * don't touch) in place.
      *
      * @param mixed $theme_json
      * @return mixed
      */
     public function strip_theme_json_defaults($theme_json)
     {
-        if (!class_exists('\WP_Theme_JSON_Data')) {
+        if (!is_object($theme_json) || !method_exists($theme_json, 'update_with')) {
             return $theme_json;
         }
 
-        // Each preset gets an explicit empty array AND its
-        // `default*: false` flag. The empty arrays matter: this object
-        // replaces the whole default-origin theme.json, and core's
-        // preset iterators (get_settings_values_by_slug /
-        // get_settings_slugs) `foreach` over each origin's preset list.
-        // Without the empty arrays here some origin slots end up as
-        // `false` rather than an iterable, which trips
-        // "foreach() argument must be of type array|object, false
-        // given" warnings in class-wp-theme-json.php. Empty arrays
-        // still strip core's defaults (no black / white / etc. in our
-        // replacement); they just give core well-formed lists to walk.
-        return new \WP_Theme_JSON_Data([
+        return $theme_json->update_with([
             'version'  => 3,
             'settings' => [
                 'color' => [
-                    'palette'          => [],
-                    'gradients'        => [],
-                    'duotone'          => [],
                     'defaultPalette'   => false,
                     'defaultGradients' => false,
                     'defaultDuotone'   => false,
                 ],
                 'shadow' => [
-                    'presets'        => [],
                     'defaultPresets' => false,
                 ],
                 'typography' => [
-                    'fontSizes'        => [],
                     'defaultFontSizes' => false,
                 ],
                 'dimensions' => [
-                    'aspectRatios'        => [],
                     'defaultAspectRatios' => false,
                 ],
                 'spacing' => [
-                    'spacingSizes'        => [],
                     'defaultSpacingSizes' => false,
                 ],
             ],
-        ], 'default');
+        ]);
     }
 
     /**
