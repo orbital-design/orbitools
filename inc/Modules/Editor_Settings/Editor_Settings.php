@@ -75,45 +75,29 @@ final class Editor_Settings extends Module_Base
             \add_filter('wp_theme_json_data_default', [$this, 'strip_theme_json_defaults']);
         }
 
-        if ($this->get_setting('global_styles_in_head', true)) {
-            // WP 6.9 defaults classic themes to on-demand block-asset
-            // loading, which defers the global-styles CSS to wp_footer
-            // and relies on an output-buffer hoist to pull it back into
-            // the <head>. When that buffer isn't active the CSS just
-            // renders in the footer (FOUC risk). Returning false from
-            // this filter reverts to the pre-6.9 path: global styles +
-            // core block CSS print in the <head> during
-            // wp_enqueue_scripts. Trade-off — all core block CSS loads
-            // on every page rather than only when a block is present.
-            //
-            // PHP_INT_MAX priority: themes / other plugins commonly
-            // opt *into* on-demand with a plain
-            // `add_filter('should_load_block_assets_on_demand',
-            // '__return_true')` at the default priority 10, registered
-            // during theme setup (after our setup_theme init) — so at
-            // equal priority theirs runs last and wins. Running at the
-            // max priority guarantees the user's explicit toggle here
-            // overrides that.
-            \add_filter('should_load_block_assets_on_demand', '__return_false', PHP_INT_MAX);
-            \add_filter('should_load_separate_core_block_assets', '__return_false', PHP_INT_MAX);
-        }
+        $in_head = $this->get_setting('global_styles_in_head', true);
+        $strip   = $this->get_setting('disable_layout_styles', true);
 
-        if ($this->get_setting('disable_layout_styles', true)) {
-            // Replace the CSS attached to the `global-styles` handle
-            // with just the variables + presets types — drops the
-            // layout scaffolding (.is-layout-*, .wp-site-blocks
-            // alignment, block-gap) and the element/block default
-            // styles, keeps the theme's preset CSS vars + .has-*
-            // utility classes.
+        if ($in_head) {
+            // Take over global-styles printing so it lands in the <head>
+            // WITHOUT disabling on-demand block-asset loading (the theme
+            // opts into that and we leave it alone). Under on-demand WP
+            // defers the global-styles CSS to wp_footer + an output-
+            // buffer hoist that doesn't reliably run here, so it ends up
+            // in the footer. We suppress WP's own global-styles printing
+            // (both the wp_enqueue_scripts placeholder and the wp_footer
+            // build) and emit our own copy in the head instead.
             //
-            // WP builds the `global-styles` handle at different points
-            // depending on theme type + asset-loading mode: in the
-            // head during wp_enqueue_scripts for block themes, but at
-            // wp_footer priority 1 for classic themes with on-demand
-            // assets (the WP 6.9 default — it enqueues only a head
-            // placeholder during wp_enqueue_scripts and hoists the
-            // real CSS up from the footer later). Hook both points
-            // and patch whichever has the handle registered.
+            // Only global styles are affected — per-block CSS still
+            // loads on demand via the separate render_block path.
+            \remove_action('wp_enqueue_scripts', 'wp_enqueue_global_styles');
+            \remove_action('wp_footer', 'wp_enqueue_global_styles', 1);
+            \add_action('wp_enqueue_scripts', [$this, 'print_global_styles_in_head'], 9);
+        } elseif ($strip) {
+            // Not forcing into the head — just trim the CSS in place
+            // wherever WP prints the global-styles handle. Patches the
+            // handle's inline data on whichever hook has it registered
+            // (head for block themes, footer for classic on-demand).
             \add_action('wp_enqueue_scripts', [$this, 'replace_global_styles'], 100);
             \add_action('wp_footer',          [$this, 'replace_global_styles'], 2);
         }
@@ -266,6 +250,42 @@ final class Editor_Settings extends Module_Base
      * Idempotent: runs on two hooks (head + footer) to cover both
      * theme types; the static guard makes the second call a no-op.
      */
+    /**
+     * Emit our own copy of the global-styles CSS in the <head>.
+     *
+     * Used when `global_styles_in_head` is on. WP's own global-styles
+     * actions have been removed (see init), so this is the only copy
+     * printed. Content is trimmed to `variables` + `presets` when
+     * `disable_layout_styles` is also on (drops the layout / element /
+     * block scaffolding), otherwise the full stylesheet is emitted —
+     * either way it prints in the head via our own handle.
+     *
+     * On-demand per-block CSS is unaffected; only the global styles
+     * are taken over here.
+     */
+    public function print_global_styles_in_head(): void
+    {
+        if (!\function_exists('wp_get_global_stylesheet')) {
+            return;
+        }
+
+        $types = $this->get_setting('disable_layout_styles', true)
+            ? ['variables', 'presets']
+            : [];
+
+        $css = \wp_get_global_stylesheet($types);
+        if ($css === '') {
+            return;
+        }
+
+        // Own handle so we don't collide with WP's `global-styles`
+        // (whose actions we removed). Empty src + inline data =
+        // <style id="orbitools-global-styles-inline-css"> in the head.
+        \wp_register_style('orbitools-global-styles', false);
+        \wp_enqueue_style('orbitools-global-styles');
+        \wp_add_inline_style('orbitools-global-styles', $css);
+    }
+
     public function replace_global_styles(): void
     {
         static $done = false;

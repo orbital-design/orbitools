@@ -106,7 +106,7 @@
       "id": "global_styles_in_head",
       "type": "toggle",
       "label": "Print global styles in the head",
-      "description": "WordPress 6.9 defers the global-styles CSS to the footer on classic themes (on-demand asset loading) and relies on an output-buffer hoist to move it back into the `<head>` — when that buffer isn't active the CSS renders in the footer and causes a flash of unstyled content. Turning this on disables on-demand loading so global styles + core block CSS print in the `<head>` again. Trade-off: all core block CSS loads on every page instead of only when a block is used.",
+      "description": "WordPress 6.9 defers the global-styles CSS to the footer on classic themes using on-demand asset loading, relying on an output-buffer hoist to move it back into the `<head>` — when that buffer isn't active the CSS renders in the footer (flash of unstyled content). This takes over global-styles printing and emits it in the `<head>` directly, leaving on-demand block-asset loading untouched (per-block CSS still loads only when a block is used).",
       "default": true,
       "section": "frontend_output"
     }
