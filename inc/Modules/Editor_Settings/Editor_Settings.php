@@ -85,7 +85,17 @@ final class Editor_Settings extends Module_Base
             // core block CSS print in the <head> during
             // wp_enqueue_scripts. Trade-off — all core block CSS loads
             // on every page rather than only when a block is present.
-            \add_filter('should_load_block_assets_on_demand', '__return_false');
+            //
+            // PHP_INT_MAX priority: themes / other plugins commonly
+            // opt *into* on-demand with a plain
+            // `add_filter('should_load_block_assets_on_demand',
+            // '__return_true')` at the default priority 10, registered
+            // during theme setup (after our setup_theme init) — so at
+            // equal priority theirs runs last and wins. Running at the
+            // max priority guarantees the user's explicit toggle here
+            // overrides that.
+            \add_filter('should_load_block_assets_on_demand', '__return_false', PHP_INT_MAX);
+            \add_filter('should_load_separate_core_block_assets', '__return_false', PHP_INT_MAX);
         }
 
         if ($this->get_setting('disable_layout_styles', true)) {
