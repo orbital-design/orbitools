@@ -154,18 +154,17 @@ export function getResponsiveClasses(responsiveValue, classPrefix, formatValue) 
 }
 
 /**
- * Which devices are offered, given the block's configured breakpoints.
- * Desktop is always present; Tablet / Mobile only when a breakpoint
- * with that slug exists in the config.
+ * Look up the px breakpoint for a slug (for the cascade hint only).
+ * Behaviour never depends on this — it's purely cosmetic.
  */
-function availableDevices(blockName) {
+function breakpointForSlug(blockName, slug) {
     var breakpoints = getBreakpointOptions(blockName) || [];
-    var slugs = {};
-    breakpoints.forEach(function (b) { slugs[b.slug] = b; });
-    var devices = ['Desktop'];
-    if (slugs.tablet) devices.push('Tablet');
-    if (slugs.mobile) devices.push('Mobile');
-    return { devices: devices, bySlug: slugs };
+    for (var i = 0; i < breakpoints.length; i++) {
+        if (breakpoints[i].slug === slug) {
+            return breakpoints[i];
+        }
+    }
+    return null;
 }
 
 /**
@@ -173,48 +172,45 @@ function availableDevices(blockName) {
  *
  * Props:
  *   - title       {string}   PanelBody title.
- *   - blockName   {string}   for breakpoint config lookup.
+ *   - blockName   {string}   for the (cosmetic) breakpoint hint lookup.
  *   - initialOpen {boolean}  PanelBody initialOpen (default false).
  *   - wrap        {boolean}  wrap in a PanelBody (default true). Pass
  *                            false to embed inside an existing panel.
  *   - render      {Function} ({ device, slug, breakpoint }) => element.
+ *
+ * The three editor preview devices (Desktop / Tablet / Mobile) are
+ * always offered and map straight through to base / tablet / mobile —
+ * deliberately NOT gated on the block's breakpoint config, so the
+ * control can never silently collapse to Desktop-only and write every
+ * device's value to `base`.
  */
 export function ResponsiveControl(props) {
     var dt = useDeviceType();
     var device = dt.device;
     var slug = deviceToSlug(device);
-
-    var info = availableDevices(props.blockName);
-    var breakpoint = info.bySlug[slug] || null;
-
-    // If the active preview is a device this block doesn't define a
-    // breakpoint for, fall back to editing the Desktop/base value so
-    // the control is never dead.
-    var effectiveSlug = info.devices.indexOf(device) === -1 ? 'base' : slug;
-    var effectiveBreakpoint = info.bySlug[effectiveSlug] || null;
+    var breakpoint = breakpointForSlug(props.blockName, slug);
 
     // Device switcher — mirrors (and drives) the editor toolbar's
     // preview toggle so the inspector and canvas stay in sync.
-    var switcher = info.devices.length > 1
-        ? createElement('div', { className: 'orbitools-responsive__devices' },
-            info.devices.map(function (d) {
-                return createElement(Tooltip, { key: d, text: d },
-                    createElement(Button, {
-                        size: 'small',
-                        icon: DEVICE_ICON[d],
-                        isPressed: device === d,
-                        onClick: function () { dt.setDevice(d); },
-                        'aria-label': d
-                    })
-                );
-            })
-        )
-        : null;
+    var switcher = createElement('div', { className: 'orbitools-responsive__devices' },
+        DEVICE_ORDER.map(function (d) {
+            return createElement(Tooltip, { key: d, text: d },
+                createElement(Button, {
+                    size: 'small',
+                    icon: DEVICE_ICON[d],
+                    isPressed: device === d,
+                    onClick: function () { dt.setDevice(d); },
+                    'aria-label': d
+                })
+            );
+        })
+    );
 
-    var hint = effectiveSlug !== 'base' && effectiveBreakpoint
+    var hint = slug !== 'base'
         ? createElement(Notice, { status: 'info', isDismissible: false, className: 'orbitools-responsive__hint' },
-            'Editing ' + (SLUG_TO_DEVICE[effectiveSlug] || effectiveSlug) +
-            ' — applies at ' + effectiveBreakpoint.value + ' and below. Falls back to the Desktop value when unset.'
+            'Editing ' + (SLUG_TO_DEVICE[slug] || slug) +
+            (breakpoint ? ' — applies at ' + breakpoint.value + ' and below.' : ' — applies at this viewport and below.') +
+            ' Falls back to the Desktop value when unset.'
         )
         : null;
 
@@ -222,7 +218,7 @@ export function ResponsiveControl(props) {
         switcher,
         hint,
         createElement('div', { className: 'orbitools-responsive__control' },
-            props.render({ device: device, slug: effectiveSlug, breakpoint: effectiveBreakpoint })
+            props.render({ device: device, slug: slug, breakpoint: breakpoint })
         )
     );
 

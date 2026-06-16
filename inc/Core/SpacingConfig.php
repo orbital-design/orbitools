@@ -42,7 +42,11 @@ class SpacingConfig {
      * Initialize the spacing config system
      */
     public static function init() {
-        self::$defaults_file = \plugin_dir_path(dirname(__FILE__)) . 'config/defaults.json';
+        // Plugin root is three levels up from inc/Core/SpacingConfig.php.
+        // (The old `plugin_dir_path(dirname(__FILE__))` resolved to inc/,
+        // so it read a non-existent inc/config/defaults.json and every
+        // plugin default — breakpoints included — silently came back empty.)
+        self::$defaults_file = (defined('ORBITOOLS_DIR') ? \constant('ORBITOOLS_DIR') : \trailingslashit(\dirname(__FILE__, 3))) . 'config/defaults.json';
         
         // Clear cache when theme.json might change
         \add_action('after_switch_theme', [self::class, 'clear_cache']);
