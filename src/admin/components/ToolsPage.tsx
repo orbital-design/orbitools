@@ -143,7 +143,7 @@ function filterSettingsBySlugs(
     return out;
 }
 
-type ToolId = 'export' | 'import' | 'reset';
+type ToolId = 'export' | 'import' | 'migrate' | 'reset';
 
 interface ToolDescriptor {
     id: ToolId;
@@ -164,6 +164,12 @@ const TOOLS: ToolDescriptor[] = [
         label:       'Import',
         description: 'Drop in a JSON bundle from another site and merge its settings into this install.',
         render:      () => <ImportBody />,
+    },
+    {
+        id:          'migrate',
+        label:       'Migrate breakpoints',
+        description: 'Update block content that still uses the old sm/md/lg/xl responsive breakpoints.',
+        render:      () => <MigrateBody />,
     },
     {
         id:          'reset',
@@ -523,6 +529,186 @@ function ImportBody(): JSX.Element {
                             {submitting ? 'Importing…' : 'Apply'}
                         </Button>
                     </div>
+                </>
+            )}
+        </VStack>
+    );
+}
+
+// =============================================================================
+// Migrate breakpoints
+// =============================================================================
+
+interface MigrationOverride {
+    block: string;
+    attr: string;
+    key: string;
+}
+
+interface MigrationPost {
+    id: number;
+    type: string;
+    title: string;
+    edit_link: string;
+    overrides: MigrationOverride[];
+}
+
+interface MigrationReport {
+    applied: boolean;
+    posts_scanned: number;
+    posts_affected: number;
+    total_overrides: number;
+    rewritten: number;
+    failed: number[];
+    details: MigrationPost[];
+}
+
+/**
+ * Migrate breakpoints — drop the legacy mobile-first sm/md/lg/xl
+ * responsive overrides from block content. Each block's unqualified
+ * `base` value is kept (it means the same thing in both systems); the
+ * old min-width slugs have no max-width equivalent, so they're removed
+ * and reported. The old content is preserved as a post revision, so the
+ * rewrite is recoverable per-post.
+ *
+ * Scan first (dry-run, read-only) → review the affected posts → Apply.
+ */
+function MigrateBody(): JSX.Element {
+    const [report, setReport]         = useState<MigrationReport | null>(null);
+    const [scanning, setScanning]     = useState(false);
+    const [applying, setApplying]     = useState(false);
+    const [error, setError]           = useState<string | null>(null);
+
+    const scan = useCallback(async () => {
+        setScanning(true);
+        setError(null);
+        try {
+            const resp = await apiFetch<MigrationReport>({
+                path: 'orbitools/v1/tools/breakpoint-migration',
+            });
+            setReport(resp);
+        } catch (e) {
+            setError(e instanceof Error ? e.message : 'Scan failed.');
+        } finally {
+            setScanning(false);
+        }
+    }, []);
+
+    const apply = useCallback(async () => {
+        setApplying(true);
+        setError(null);
+        try {
+            const resp = await apiFetch<MigrationReport>({
+                path: 'orbitools/v1/tools/breakpoint-migration',
+                method: 'POST',
+                data: { confirm: true },
+            });
+            setReport(resp);
+        } catch (e) {
+            setError(e instanceof Error ? e.message : 'Migration failed.');
+        } finally {
+            setApplying(false);
+        }
+    }, []);
+
+    const hasWork = report !== null && report.posts_affected > 0;
+    const done    = report !== null && report.applied;
+
+    return (
+        <VStack spacing={3} className="orbitools-tools-body">
+            <Notice status="info" isDismissible={false}>
+                Blocks keep their <strong>base</strong> (all-screens) value. The old{' '}
+                <code>sm</code> / <code>md</code> / <code>lg</code> / <code>xl</code>{' '}
+                overrides are removed — they have no equivalent in the new Tablet /
+                Mobile system. Affected posts are listed so you can re-apply Tablet /
+                Mobile values in the editor where needed. Each rewritten post keeps a
+                revision of its previous content.
+            </Notice>
+
+            {error !== null && (
+                <Notice status="error" isDismissible={false}>
+                    {error}
+                </Notice>
+            )}
+
+            <div className="orbitools-tools-card__actions">
+                <Button
+                    variant="secondary"
+                    onClick={scan}
+                    disabled={scanning || applying}
+                    __next40pxDefaultSize
+                >
+                    {scanning ? 'Scanning…' : 'Scan content'}
+                </Button>
+            </div>
+
+            {report !== null && (
+                <>
+                    {done ? (
+                        <Notice status="success" isDismissible={false}>
+                            Rewrote {report.rewritten} post
+                            {report.rewritten === 1 ? '' : 's'} ({report.total_overrides}{' '}
+                            legacy override{report.total_overrides === 1 ? '' : 's'}{' '}
+                            removed).
+                            {report.failed.length > 0 && (
+                                <>
+                                    {' '}
+                                    {report.failed.length} post
+                                    {report.failed.length === 1 ? '' : 's'} could not be
+                                    updated (IDs: {report.failed.join(', ')}).
+                                </>
+                            )}
+                        </Notice>
+                    ) : hasWork ? (
+                        <Notice status="warning" isDismissible={false}>
+                            Found <strong>{report.total_overrides}</strong> legacy
+                            override{report.total_overrides === 1 ? '' : 's'} across{' '}
+                            <strong>{report.posts_affected}</strong> post
+                            {report.posts_affected === 1 ? '' : 's'} (of{' '}
+                            {report.posts_scanned} scanned). Review below, then apply.
+                        </Notice>
+                    ) : (
+                        <Notice status="success" isDismissible={false}>
+                            No legacy breakpoints found in {report.posts_scanned}{' '}
+                            scanned post{report.posts_scanned === 1 ? '' : 's'}. Nothing
+                            to migrate.
+                        </Notice>
+                    )}
+
+                    {report.details.length > 0 && (
+                        <ul className="orbitools-tools-card__list">
+                            {report.details.map((post) => (
+                                <li key={post.id}>
+                                    {post.edit_link !== '' ? (
+                                        <a href={post.edit_link} target="_blank" rel="noreferrer">
+                                            {post.title}
+                                        </a>
+                                    ) : (
+                                        <strong>{post.title}</strong>
+                                    )}{' '}
+                                    <code>{post.type}</code> — {post.overrides.length}{' '}
+                                    override{post.overrides.length === 1 ? '' : 's'}{' '}
+                                    ({post.overrides
+                                        .map((o) => `${o.attr}.${o.key}`)
+                                        .join(', ')})
+                                </li>
+                            ))}
+                        </ul>
+                    )}
+
+                    {hasWork && !done && (
+                        <div className="orbitools-tools-card__actions">
+                            <Button
+                                variant="primary"
+                                isDestructive
+                                onClick={apply}
+                                disabled={applying || scanning}
+                                __next40pxDefaultSize
+                            >
+                                {applying ? 'Migrating…' : `Apply — rewrite ${report.posts_affected} post${report.posts_affected === 1 ? '' : 's'}`}
+                            </Button>
+                        </div>
+                    )}
                 </>
             )}
         </VStack>

@@ -270,6 +270,25 @@ The flow:
 
 - **Entity IDs (page / media)** — blanked on export by design (page ID 47 on site A is a totally different page on site B). The export payload's `stripped_keys` array surfaces which fields were blanked so the UI can prompt the user to re-pick them on the destination site.
 
+### Breakpoint migration (content rewrite, not a settings round-trip)
+
+The Tools tab also hosts **Migrate breakpoints** — a separate, on-demand
+content migration (not part of export/import/reset, not flag-gated in
+`Migrations.php`). It rewrites `post_content` block attributes, not the
+`orbitools_settings` option.
+
+- Endpoints: `GET /tools/breakpoint-migration` (dry-run scan, read-only) and
+  `POST /tools/breakpoint-migration` with `{ confirm: true }` (apply).
+- It walks `parse_blocks()` over every non-trashed post whose body mentions a
+  responsive attribute (`Tools_Controller::RESPONSIVE_BLOCK_ATTRS` =
+  `orbGap`/`orbPadding`/`orbMargin`/`orbAspectRatio`), drops the legacy
+  `Tools_Controller::LEGACY_BREAKPOINT_KEYS` (`sm`/`md`/`lg`/`xl`) from each,
+  and `wp_update_post()`s the result (so the old content survives as a
+  revision). `base` and all non-orb attrs are preserved; the walker recurses
+  into `innerBlocks`.
+- **If you add a new responsive block attribute, add it to
+  `RESPONSIVE_BLOCK_ATTRS`** or its legacy overrides won't be migrated.
+
 ### Process discipline
 
 When you open a PR that touches:
@@ -335,11 +354,29 @@ const [spacingSizes] = useSettings('spacing.spacingSizes');
 const [spacingSizes] = useSettings(['spacing.spacingSizes']);
 ```
 
-#### Responsive Control Architecture
-- Use `ResponsiveToolsPanel` for breakpoint-specific controls
-- Each breakpoint should be a separate `ToolsPanelItem` 
-- Include visual breakpoint labels for UX clarity
-- Follow ToolsPanel patterns, not custom dropdown menus
+#### Responsive Control Architecture (device-aware, no tab bar)
+Responsive block controls are driven by the **editor's native screen-size
+preview toggle**, not a bespoke breakpoint tab bar. The shared framework lives
+at [`src/core/utils/responsive-control.js`](src/core/utils/responsive-control.js)
+— plain-JS `createElement` because the controls build (`webpack.assets.js`)
+only runs `@babel/preset-env` (no JSX/TS).
+
+- Wrap a control in `ResponsiveControl({ title, blockName, render })`. The
+  `render({ device, slug, breakpoint })` callback returns the input for the
+  active device; the framework owns device detection, the device switcher
+  (which drives the real preview), and the cascade hint.
+- Device → slug mapping is fixed: **Desktop→`base`, Tablet→`tablet`,
+  Mobile→`mobile`**. Attribute storage stays an object keyed by slug
+  (`{ base, tablet, mobile }`), so existing values round-trip.
+- `useDeviceType()` is version-safe across `core/editor` (`getDeviceType`/
+  `setDeviceType`, WP 6.5+) and the legacy `core/edit-post` experimental API.
+- Controls that use it must enqueue `wp-data` + `wp-icons` as script deps.
+- Breakpoints come from theme.json `settings.custom.breakpoints` (3-tier,
+  desktop-first **max-width**: tablet 781px, mobile 479px — aligned to WP's
+  device-preview canvas). The aspect-ratio and spacings controls are the
+  reference conversions.
+- Legacy `sm/md/lg/xl` (mobile-first min-width) content is migrated via the
+  **Tools → Migrate breakpoints** tool (see below), which drops them.
 
 ### 3. Code Quality Standards
 

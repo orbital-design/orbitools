@@ -51,6 +51,22 @@ final class Tools_Controller extends WP_REST_Controller
      */
     private const ENTITY_FIELD_TYPES = ['page', 'media'];
 
+    /**
+     * Block attributes (stored in post_content) whose value is an object
+     * keyed by breakpoint slug — the responsive controls write these.
+     * The breakpoint migration walks each of them.
+     */
+    private const RESPONSIVE_BLOCK_ATTRS = ['orbGap', 'orbPadding', 'orbMargin', 'orbAspectRatio'];
+
+    /**
+     * Legacy breakpoint slugs from the old mobile-first min-width system.
+     * The 3-tier desktop-first system keeps `base` (unqualified, identical
+     * in both schemes) and adds `tablet` / `mobile`; these four have no
+     * max-width equivalent, so the migration drops them and reports each
+     * one so the editor can re-apply Tablet / Mobile by hand.
+     */
+    private const LEGACY_BREAKPOINT_KEYS = ['sm', 'md', 'lg', 'xl'];
+
     public function __construct()
     {
         $this->namespace = Rest_Server::REST_NAMESPACE;
@@ -80,6 +96,28 @@ final class Tools_Controller extends WP_REST_Controller
                     'apply_slugs' => [
                         'description' => 'Optional whitelist of slugs to restore. Omit to apply everything in the payload.',
                         'required'    => false,
+                    ],
+                ],
+            ],
+        ]);
+
+        \register_rest_route($this->namespace, '/' . $this->rest_base . '/breakpoint-migration', [
+            [
+                // Dry-run: report which posts carry legacy breakpoint keys.
+                'methods'             => WP_REST_Server::READABLE,
+                'callback'            => [$this, 'scan_breakpoints'],
+                'permission_callback' => [$this, 'permissions_check'],
+            ],
+            [
+                // Apply: drop the legacy keys and rewrite affected posts.
+                'methods'             => WP_REST_Server::CREATABLE,
+                'callback'            => [$this, 'migrate_breakpoints'],
+                'permission_callback' => [$this, 'permissions_check'],
+                'args'                => [
+                    'confirm' => [
+                        'description' => 'Must be true to perform the destructive content rewrite.',
+                        'type'        => 'boolean',
+                        'required'    => true,
                     ],
                 ],
             ],
@@ -386,6 +424,172 @@ final class Tools_Controller extends WP_REST_Controller
             }
         }
         return $out;
+    }
+
+    // =========================================================================
+    // Breakpoint migration (legacy sm/md/lg/xl → drop, keep base)
+    // =========================================================================
+
+    /**
+     * Dry-run: scan all posts for responsive block attributes that still
+     * carry legacy breakpoint keys. Reports counts + a per-post breakdown
+     * without touching anything.
+     *
+     * @return WP_REST_Response
+     */
+    public function scan_breakpoints(WP_REST_Request $request)
+    {
+        return new WP_REST_Response($this->run_breakpoint_migration(false));
+    }
+
+    /**
+     * Apply: strip the legacy keys from every affected post and rewrite
+     * its content. Gated on `confirm: true`. The old content is preserved
+     * as a WordPress revision (wp_update_post creates one), so the rewrite
+     * is recoverable per-post.
+     *
+     * @return WP_REST_Response|WP_Error
+     */
+    public function migrate_breakpoints(WP_REST_Request $request)
+    {
+        if ($request->get_param('confirm') !== true) {
+            return new WP_Error(
+                'orbitools_migration_not_confirmed',
+                \__('The breakpoint migration must be confirmed before it can run.', 'orbitools'),
+                ['status' => 400]
+            );
+        }
+
+        return new WP_REST_Response($this->run_breakpoint_migration(true));
+    }
+
+    /**
+     * Shared scan/apply routine. Walks every candidate post's parsed
+     * block tree, dropping legacy breakpoint keys when `$apply` is true.
+     *
+     * @param bool $apply Whether to persist the rewritten content.
+     * @return array<string,mixed> Report payload.
+     */
+    private function run_breakpoint_migration(bool $apply): array
+    {
+        global $wpdb;
+
+        // Candidate posts: any non-trashed content whose body mentions one
+        // of the responsive attributes. esc_like guards the LIKE needles.
+        $likes  = [];
+        $params = [];
+        foreach (self::RESPONSIVE_BLOCK_ATTRS as $attr) {
+            $likes[]  = 'post_content LIKE %s';
+            $params[] = '%' . $wpdb->esc_like($attr) . '%';
+        }
+
+        $sql = "SELECT ID, post_type, post_title, post_content
+                FROM {$wpdb->posts}
+                WHERE post_status NOT IN ('trash', 'auto-draft')
+                AND (" . implode(' OR ', $likes) . ')';
+
+        $rows = $wpdb->get_results($wpdb->prepare($sql, $params));
+
+        $posts_scanned   = is_array($rows) ? count($rows) : 0;
+        $total_overrides = 0;
+        $rewritten       = 0;
+        $failed          = [];
+        $details         = [];
+
+        foreach ((array) $rows as $row) {
+            $report = [];
+            $blocks = \parse_blocks((string) $row->post_content);
+            $walked = $this->walk_breakpoint_blocks($blocks, $apply, $report);
+
+            if (empty($report)) {
+                continue;
+            }
+
+            $total_overrides += count($report);
+            $details[] = [
+                'id'        => (int) $row->ID,
+                'type'      => (string) $row->post_type,
+                'title'     => (string) ($row->post_title !== '' ? $row->post_title : \__('(no title)', 'orbitools')),
+                'edit_link' => \get_edit_post_link((int) $row->ID, 'raw') ?: '',
+                'overrides' => $report,
+            ];
+
+            if ($apply) {
+                $result = \wp_update_post([
+                    'ID'           => (int) $row->ID,
+                    // Block markup must be slashed for wp_update_post.
+                    'post_content' => \wp_slash(\serialize_blocks($walked)),
+                ], true);
+
+                if (\is_wp_error($result) || $result === 0) {
+                    $failed[] = (int) $row->ID;
+                } else {
+                    $rewritten++;
+                }
+            }
+        }
+
+        return [
+            'applied'         => $apply,
+            'posts_scanned'   => $posts_scanned,
+            'posts_affected'  => count($details),
+            'total_overrides' => $total_overrides,
+            'rewritten'       => $rewritten,
+            'failed'          => $failed,
+            'details'         => $details,
+        ];
+    }
+
+    /**
+     * Recursively walk a parsed-block tree. For each responsive attribute
+     * carrying a legacy breakpoint key, record it in `$report`; when
+     * `$apply` is set, unset the key (and drop the attribute entirely if
+     * nothing but legacy keys remained).
+     *
+     * @param array<int,array<string,mixed>> $blocks
+     * @param bool                           $apply
+     * @param array<int,array<string,string>> $report By-ref accumulator.
+     * @return array<int,array<string,mixed>> The (possibly rewritten) blocks.
+     */
+    private function walk_breakpoint_blocks(array $blocks, bool $apply, array &$report): array
+    {
+        foreach ($blocks as &$block) {
+            if (!empty($block['attrs']) && is_array($block['attrs'])) {
+                foreach (self::RESPONSIVE_BLOCK_ATTRS as $attr) {
+                    if (!isset($block['attrs'][$attr]) || !is_array($block['attrs'][$attr])) {
+                        continue;
+                    }
+
+                    foreach (self::LEGACY_BREAKPOINT_KEYS as $legacy_key) {
+                        if (!array_key_exists($legacy_key, $block['attrs'][$attr])) {
+                            continue;
+                        }
+
+                        $report[] = [
+                            'block' => (string) ($block['blockName'] ?? '(classic)'),
+                            'attr'  => $attr,
+                            'key'   => $legacy_key,
+                        ];
+
+                        if ($apply) {
+                            unset($block['attrs'][$attr][$legacy_key]);
+                        }
+                    }
+
+                    // Collapse an attribute that now holds nothing.
+                    if ($apply && empty($block['attrs'][$attr])) {
+                        unset($block['attrs'][$attr]);
+                    }
+                }
+            }
+
+            if (!empty($block['innerBlocks']) && is_array($block['innerBlocks'])) {
+                $block['innerBlocks'] = $this->walk_breakpoint_blocks($block['innerBlocks'], $apply, $report);
+            }
+        }
+        unset($block);
+
+        return $blocks;
     }
 
     // =========================================================================
