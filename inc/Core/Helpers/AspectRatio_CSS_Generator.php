@@ -125,16 +125,17 @@ class AspectRatio_CSS_Generator
     }
 
     /**
-     * Register (but don't enqueue) the frontend aspect-ratio CSS.
+     * Enqueue the frontend aspect-ratio CSS (inline) in <head>.
      *
-     * Enqueued per-block during render_block so the CSS only loads on
-     * pages that actually contain a block using the aspect-ratio
-     * control — see enqueue_aspect_ratio_on_render. Because render_block
-     * fires after wp_head, the style prints in the footer via
-     * print_late_styles() (non-render-blocking), same pattern as the
-     * Spacer block + Block_Style_Loader.
+     * The `has-aspect-ratio` class is added server-side at render time
+     * (by AspectRatioRenderer), so it isn't in the stored post content —
+     * there's no cheap way to detect usage up front, and the previous
+     * render_block late-enqueue relied on print_late_styles() firing in
+     * the footer, which doesn't happen reliably in block themes (the
+     * style silently never printed). Enqueue directly, same as
+     * Gaps_CSS_Generator. The inline CSS is small.
      */
-    public static function register_frontend_aspect_ratio_css(): void
+    public static function enqueue_frontend_aspect_ratio_css(): void
     {
         if (!\apply_filters('orbitools_aspect_ratio_frontend_css', true)) {
             return;
@@ -143,32 +144,9 @@ class AspectRatio_CSS_Generator
         $css = self::generate_aspect_ratio_css();
         if (!empty($css)) {
             \wp_register_style('orbitools-aspect-ratio-frontend', false);
+            \wp_enqueue_style('orbitools-aspect-ratio-frontend');
             \wp_add_inline_style('orbitools-aspect-ratio-frontend', $css);
         }
-    }
-
-    /**
-     * Enqueue the aspect-ratio frontend style the first time a block
-     * using the control renders. The control always adds the base
-     * `has-aspect-ratio` class (see AspectRatioRenderer), so a simple
-     * substring check on the rendered HTML reliably detects it. The
-     * Video block's own `has-{ratio}-aspect-ratio` scheme doesn't
-     * contain the `has-aspect-ratio` substring, so it won't false-match.
-     *
-     * @param string              $content      Rendered block HTML.
-     * @param array<string,mixed> $parsed_block Parsed block data.
-     */
-    public static function enqueue_aspect_ratio_on_render(string $content, array $parsed_block): string
-    {
-        if (
-            strpos($content, 'has-aspect-ratio') !== false
-            && \wp_style_is('orbitools-aspect-ratio-frontend', 'registered')
-            && !\wp_style_is('orbitools-aspect-ratio-frontend', 'enqueued')
-        ) {
-            \wp_enqueue_style('orbitools-aspect-ratio-frontend');
-        }
-
-        return $content;
     }
 
     /**
@@ -193,8 +171,7 @@ class AspectRatio_CSS_Generator
      */
     public static function init(): void
     {
-        \add_action('wp_enqueue_scripts', [self::class, 'register_frontend_aspect_ratio_css']);
-        \add_filter('render_block', [self::class, 'enqueue_aspect_ratio_on_render'], 10, 2);
+        \add_action('wp_enqueue_scripts', [self::class, 'enqueue_frontend_aspect_ratio_css']);
         \add_action('enqueue_block_editor_assets', [self::class, 'enqueue_editor_aspect_ratio_css']);
 
         \add_action('switch_theme', [self::class, 'clear_cache']);

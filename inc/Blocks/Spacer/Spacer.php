@@ -110,60 +110,48 @@ class Spacer extends Module_Base
      */
     public function setup_css_generation(): void
     {
-        // Register the frontend style (with inline CSS) up front, but
-        // only enqueue it when an orb/spacer block actually renders on
-        // the page — see enqueue_spacer_style_on_render.
-        \add_action('wp_enqueue_scripts', [$this, 'register_frontend_styles']);
-        \add_filter('render_block', [$this, 'enqueue_spacer_style_on_render'], 10, 2);
+        // Enqueue the frontend style on wp_enqueue_scripts so it prints
+        // in <head>. The previous render_block-based late enqueue relied
+        // on print_late_styles() firing in the footer, which doesn't
+        // happen reliably in block themes — the style silently never
+        // printed and spacer heights had no CSS behind them. Same direct
+        // pattern as Gaps_CSS_Generator.
+        \add_action('wp_enqueue_scripts', [$this, 'enqueue_frontend_styles']);
 
         // Add inline styles for block editor
         \add_action('enqueue_block_editor_assets', [$this, 'enqueue_editor_styles']);
     }
 
     /**
-     * Register (but don't enqueue) the frontend spacer CSS.
+     * Enqueue the frontend spacer CSS (inline).
      *
-     * The style is enqueued per-block during render_block so the CSS
-     * only loads on pages that actually contain a spacer. Registering
-     * here (with the generated CSS attached as inline data) means the
-     * render_block handler just has to flip it to enqueued. Because
-     * render_block fires after wp_head, the style prints in the footer
-     * via print_late_styles() — non-render-blocking, same pattern as
-     * Block_Style_Loader.
+     * Conditional where we can verify it cheaply: on singular views we
+     * skip the CSS when the queried post doesn't contain an orb/spacer.
+     * On template-driven views (archives, FSE templates) a spacer may
+     * live in a template part we can't cheaply inspect here, so we load
+     * unconditionally rather than risk missing it — correctness over a
+     * few KB of inline CSS.
      */
-    public function register_frontend_styles(): void
+    public function enqueue_frontend_styles(): void
     {
         // Filter to allow themes to disable frontend CSS generation
         if (!\apply_filters('orbitools_spacer_frontend_css', true)) {
             return;
         }
 
+        if (\is_singular()) {
+            $post = \get_queried_object();
+            if ($post instanceof \WP_Post && !\has_block('orb/spacer', $post)) {
+                return;
+            }
+        }
+
         $css = $this->generate_spacer_css();
         if (!empty($css)) {
             \wp_register_style('orbitools-spacer-frontend', false);
+            \wp_enqueue_style('orbitools-spacer-frontend');
             \wp_add_inline_style('orbitools-spacer-frontend', $css);
         }
-    }
-
-    /**
-     * Enqueue the spacer frontend style the first time an orb/spacer
-     * block is rendered on the page. No-op for every other block, and
-     * for spacer once already enqueued.
-     *
-     * @param string              $content      Rendered block HTML.
-     * @param array<string,mixed> $parsed_block Parsed block data.
-     */
-    public function enqueue_spacer_style_on_render(string $content, array $parsed_block): string
-    {
-        if (
-            ($parsed_block['blockName'] ?? '') === 'orb/spacer'
-            && \wp_style_is('orbitools-spacer-frontend', 'registered')
-            && !\wp_style_is('orbitools-spacer-frontend', 'enqueued')
-        ) {
-            \wp_enqueue_style('orbitools-spacer-frontend');
-        }
-
-        return $content;
     }
 
     /**
