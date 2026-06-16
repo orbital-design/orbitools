@@ -49,24 +49,16 @@
         ],
         "breakpoints": [
             {
-                "value": "50.6875rem",
-                "slug": "sm",
-                "name": "810px"
+                "value": "781px",
+                "slug": "tablet",
+                "name": "Tablet",
+                "query": "max-width"
             },
             {
-                "value": "67.5625rem",
-                "slug": "md",
-                "name": "1080px"
-            },
-            {
-                "value": "85rem",
-                "slug": "lg",
-                "name": "1360px"
-            },
-            {
-                "value": "100rem",
-                "slug": "xl",
-                "name": "1600px"
+                "value": "479px",
+                "slug": "mobile",
+                "name": "Mobile",
+                "query": "max-width"
             }
         ]
     },

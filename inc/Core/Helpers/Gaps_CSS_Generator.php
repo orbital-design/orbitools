@@ -79,12 +79,16 @@ class Gaps_CSS_Generator
             $css .= "}\n\n";
         }
 
-        // Generate responsive gap classes for all breakpoints
+        // Generate responsive gap classes for all breakpoints.
+        // Desktop-first cascade (tablet then mobile), each honouring
+        // its own `query` direction (defaults to max-width) so the
+        // queries line up with WordPress's device-preview widths.
         foreach ($breakpoints as $breakpoint) {
             $breakpoint_slug = $breakpoint['slug'];
             $breakpoint_value = $breakpoint['value'];
-            
-            $css .= "@media (min-width: {$breakpoint_value}) {\n";
+            $breakpoint_query = $breakpoint['query'] ?? 'max-width';
+
+            $css .= "@media ({$breakpoint_query}: {$breakpoint_value}) {\n";
             
             // Zero gap for this breakpoint
             $css .= "    .has-gap.{$breakpoint_slug}\:has-gap--0 {\n";

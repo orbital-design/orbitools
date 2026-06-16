@@ -71,12 +71,18 @@ class AspectRatio_CSS_Generator
             $css .= "}\n\n";
         }
 
-        // Responsive aspect ratio classes per breakpoint
+        // Responsive aspect ratio classes per breakpoint. Breakpoints
+        // are emitted in array order (desktop-first cascade: tablet
+        // then mobile), each honouring its own `query` direction
+        // (defaults to max-width) so the tablet override applies at
+        // <=781px and the mobile override (later in source) wins at
+        // <=479px — matching WordPress's device-preview canvas widths.
         foreach ($breakpoints as $breakpoint) {
-            $bp_slug = $breakpoint['slug'];
+            $bp_slug  = $breakpoint['slug'];
             $bp_value = $breakpoint['value'];
+            $bp_query = $breakpoint['query'] ?? 'max-width';
 
-            $css .= "@media (min-width: {$bp_value}) {\n";
+            $css .= "@media ({$bp_query}: {$bp_value}) {\n";
 
             foreach ($ratios as $ratio) {
                 $slug = $ratio['slug'];

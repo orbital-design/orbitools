@@ -226,12 +226,16 @@ class Spacer extends Module_Base
             $css .= "}\n\n";
         }
 
-        // Generate responsive classes for all breakpoints
+        // Generate responsive classes for all breakpoints. Desktop-
+        // first cascade (tablet then mobile), each honouring its own
+        // `query` direction (defaults to max-width) so they line up
+        // with WordPress's device-preview canvas widths.
         foreach ($breakpoints as $breakpoint) {
             $breakpoint_slug = $breakpoint['slug'];
             $breakpoint_value = $breakpoint['value'];
+            $breakpoint_query = $breakpoint['query'] ?? 'max-width';
 
-            $css .= "@media (min-width: {$breakpoint_value}) {\n";
+            $css .= "@media ({$breakpoint_query}: {$breakpoint_value}) {\n";
 
             // Zero height for this breakpoint
             $css .= "    .{$breakpoint_slug}\:orb-spacer--0 {\n";
