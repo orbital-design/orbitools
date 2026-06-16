@@ -77,7 +77,7 @@ class AspectRatio_Controls extends Module_Base
         \wp_enqueue_script(
             'orbitools-aspect-ratio-controls',
             $asset_url . 'editor-aspect-ratio-register-controls.js',
-            ['wp-hooks', 'wp-compose', 'wp-element', 'wp-block-editor', 'wp-components', 'wp-data', 'wp-icons'],
+            ['wp-hooks', 'wp-compose', 'wp-element', 'wp-block-editor', 'wp-components', 'wp-data'],
             $this->get_version(),
             true
         );

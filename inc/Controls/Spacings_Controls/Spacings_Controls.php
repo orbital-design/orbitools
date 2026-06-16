@@ -94,7 +94,7 @@ class Spacings_Controls extends Module_Base {
         \wp_enqueue_script(
             'orbitools-spacings-controls',
             $asset_url . 'editor-spacings-register-controls.js',
-            ['wp-hooks', 'wp-compose', 'wp-element', 'wp-block-editor', 'wp-components', 'wp-data', 'wp-icons'],
+            ['wp-hooks', 'wp-compose', 'wp-element', 'wp-block-editor', 'wp-components', 'wp-data'],
             $this->get_version(),
             true
         );

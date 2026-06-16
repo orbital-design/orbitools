@@ -52,13 +52,44 @@ var PanelBody = wp.components.PanelBody;
 var Button = wp.components.Button;
 var Notice = wp.components.Notice;
 var Tooltip = wp.components.Tooltip;
-var icons = wp.icons || {};
 
 /** Editor device type → our breakpoint slug. */
 var DEVICE_TO_SLUG = { Desktop: 'base', Tablet: 'tablet', Mobile: 'mobile' };
 var SLUG_TO_DEVICE = { base: 'Desktop', tablet: 'Tablet', mobile: 'Mobile' };
 var DEVICE_ORDER = ['Desktop', 'Tablet', 'Mobile'];
-var DEVICE_ICON = { Desktop: icons.desktop, Tablet: icons.tablet, Mobile: icons.mobile };
+
+/**
+ * Inline device icons — built from wp.element only. We deliberately do
+ * NOT use @wordpress/icons (`wp.icons`): in WP 7.0 there is no
+ * registered `wp-icons` script handle, so declaring it as a dependency
+ * makes WordPress silently drop the whole control script. These SVGs
+ * inherit `currentColor`, so they tint with the button state.
+ */
+function deviceSvg(children) {
+    return createElement('svg', {
+        width: 20,
+        height: 20,
+        viewBox: '0 0 24 24',
+        xmlns: 'http://www.w3.org/2000/svg',
+        'aria-hidden': true,
+        focusable: false
+    }, children);
+}
+
+var DEVICE_ICON = {
+    Desktop: deviceSvg([
+        createElement('rect', { key: 'b', x: 3, y: 4, width: 18, height: 12, rx: 1.5, fill: 'none', stroke: 'currentColor', 'stroke-width': 1.6 }),
+        createElement('path', { key: 's', d: 'M8.5 20h7M12 16.5v3.5', fill: 'none', stroke: 'currentColor', 'stroke-width': 1.6, 'stroke-linecap': 'round' })
+    ]),
+    Tablet: deviceSvg([
+        createElement('rect', { key: 'b', x: 6, y: 3, width: 12, height: 18, rx: 2, fill: 'none', stroke: 'currentColor', 'stroke-width': 1.6 }),
+        createElement('circle', { key: 'h', cx: 12, cy: 18, r: 0.85, fill: 'currentColor' })
+    ]),
+    Mobile: deviceSvg([
+        createElement('rect', { key: 'b', x: 8, y: 3, width: 8, height: 18, rx: 2, fill: 'none', stroke: 'currentColor', 'stroke-width': 1.6 }),
+        createElement('circle', { key: 'h', cx: 12, cy: 18, r: 0.75, fill: 'currentColor' })
+    ])
+};
 
 /** Map an editor device type to our breakpoint slug. */
 export function deviceToSlug(device) {
