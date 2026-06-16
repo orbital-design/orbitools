@@ -10,12 +10,7 @@
  * @since 1.0.0
  */
 
-import {
-    RangeControl,
-    __experimentalToolsPanel as ToolsPanel,
-    __experimentalToolsPanelItem as ToolsPanelItem,
-    __experimentalVStack as VStack,
-} from '@wordpress/components';
+import { RangeControl } from '@wordpress/components';
 import { useSettings } from '@wordpress/block-editor';
 import { getSpacingDisplayName } from '../utils/control-helpers';
 import { ResponsiveControl } from '../../core/utils/responsive-control';
@@ -101,58 +96,44 @@ export default function SpacerHeightControl({
                 };
 
                 return (
-                    <div className="orbitools-nested-panel">
-                        <ToolsPanel label="Height" panelId={`${slug}-height-panel`}>
-                            <VStack spacing={1} style={{ gridColumn: '1 / -1' }}>
-                                <ToolsPanelItem
-                                    hasValue={() => getValue(slug) !== undefined}
-                                    onDeselect={() => setValue(slug, undefined)}
-                                    label="Height"
-                                    isShownByDefault={true}
-                                    panelId={`${slug}-height-panel`}
-                                >
-                                    <div>
-                                        <div style={{
-                                            display: 'flex',
-                                            justifyContent: 'space-between',
-                                            alignItems: 'center',
-                                        }}>
-                                            <label style={{
-                                                fontSize: '11px',
-                                                fontWeight: 500,
-                                                color: '#757575',
-                                                margin: 0
-                                            }}>
-                                                Height
-                                            </label>
-                                            <span style={{
-                                                fontSize: '11px',
-                                                fontWeight: 400,
-                                                color: '#949494'
-                                            }}>
-                                                {getSpacingDisplayName(spacingSizes, currentValue || '')}
-                                            </span>
-                                        </div>
-                                        <RangeControl
-                                            value={sliderValue}
-                                            onChange={updateHeight}
-                                            min={0}
-                                            max={allOptions.length - 1}
-                                            step={1}
-                                            marks={true}
-                                            withInputField={false}
-                                            renderTooltipContent={(index) => {
-                                                if (index === undefined || index === null || typeof index !== 'number') return '';
-                                                if (index < 0 || index >= allOptions.length) return 'Default';
-                                                return allOptions[index].name;
-                                            }}
-                                            __next40pxDefaultSize={true}
-                                            __nextHasNoMarginBottom={true}
-                                        />
-                                    </div>
-                                </ToolsPanelItem>
-                            </VStack>
-                        </ToolsPanel>
+                    <div>
+                        <div style={{
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'center',
+                        }}>
+                            <label style={{
+                                fontSize: '11px',
+                                fontWeight: 500,
+                                color: '#757575',
+                                margin: 0
+                            }}>
+                                Height
+                            </label>
+                            <span style={{
+                                fontSize: '11px',
+                                fontWeight: 400,
+                                color: '#949494'
+                            }}>
+                                {getSpacingDisplayName(spacingSizes, currentValue || '')}
+                            </span>
+                        </div>
+                        <RangeControl
+                            value={sliderValue}
+                            onChange={updateHeight}
+                            min={0}
+                            max={allOptions.length - 1}
+                            step={1}
+                            marks={true}
+                            withInputField={false}
+                            renderTooltipContent={(index) => {
+                                if (index === undefined || index === null || typeof index !== 'number') return '';
+                                if (index < 0 || index >= allOptions.length) return 'Default';
+                                return allOptions[index].name;
+                            }}
+                            __next40pxDefaultSize={true}
+                            __nextHasNoMarginBottom={true}
+                        />
                     </div>
                 );
             }}
