@@ -4,7 +4,7 @@
  * Automatically adds spacing controls to blocks with orbitools.spacings support
  */
 
-import { getBreakpointOptions } from '../../../../core/utils/breakpoints.js';
+import { ResponsiveControl } from '../../../../core/utils/responsive-control.js';
 
 (function() {
     // Configuration functions from spacings-config.js (available globally)
@@ -31,14 +31,13 @@ import { getBreakpointOptions } from '../../../../core/utils/breakpoints.js';
 
     const { addFilter } = wp.hooks;
     const { createHigherOrderComponent } = wp.compose;
-    const { Fragment, useState } = wp.element;
+    const { Fragment } = wp.element;
     const { InspectorControls, useSettings } = wp.blockEditor;
     const {
         __experimentalToolsPanel: ToolsPanel,
         __experimentalToolsPanelItem: ToolsPanelItem,
         RangeControl,
         Button,
-        Tooltip,
         __experimentalVStack: VStack
     } = wp.components;
 
@@ -72,38 +71,13 @@ import { getBreakpointOptions } from '../../../../core/utils/breakpoints.js';
      * Simple Spacings Control Component
      */
     function SpacingsControl({ gap, padding, margin, onGapChange, onPaddingChange, onMarginChange, blockName, supports }) {
-        // Get proper breakpoints and spacing from configuration system
-        const breakpoints = getBreakpointOptions();
+        // Spacing presets from the configuration system (falls back to
+        // theme.json via useSpacingPresets). The responsive behaviour —
+        // which viewport's value is being edited — is owned by the shared
+        // ResponsiveControl framework and driven by the editor's native
+        // screen-size preview toggle, so there's no breakpoint tab bar here.
         const config = getBlockSpacingsConfig(blockName);
         const spacingPresets = config.spacings || useSpacingPresets();
-
-        // Read raw breakpoints from theme config for base entry and icons
-        const themeConfig = window.orbitoolsThemeConfig || {};
-        const rawBreakpoints = (themeConfig.settings && themeConfig.settings.breakpoints) || [];
-        let baseEntry = null;
-        rawBreakpoints.forEach(bp => { if (bp.slug === 'base') baseEntry = bp; });
-
-        // Build all breakpoints with labels and icons from config
-        const allBreakpoints = [{
-            slug: 'base',
-            label: (baseEntry && baseEntry.name) || 'All',
-            menuLabel: (baseEntry && baseEntry.name) || 'All Screens',
-            tooltip: (baseEntry && baseEntry.name) || 'All Screens',
-            icon: (baseEntry && baseEntry.icon) || null
-        }];
-        breakpoints.forEach(bp => {
-            allBreakpoints.push({
-                slug: bp.slug,
-                label: bp.slug.toUpperCase(),
-                menuLabel: bp.name || bp.slug,
-                tooltip: bp.name || bp.slug,
-                icon: bp.icon || null
-            });
-        });
-
-        // Active tab state — default to 'base'
-        const [activeTab, setActiveTab] = useState('base');
-        const effectiveActiveTab = activeTab;
 
         /**
          * Helper to get spacing index by slug
@@ -556,126 +530,76 @@ import { getBreakpointOptions } from '../../../../core/utils/breakpoints.js';
             );
         }
 
-        // Get active tab's label for the nested panel
-        const activeTabData = allBreakpoints.find(bp => bp.slug === effectiveActiveTab);
-        const nestedPanelLabel = activeTabData
-            ? (activeTabData.slug === 'base'
-                ? activeTabData.tooltip
-                : activeTabData.tooltip + '+')
-            : 'Spacings';
+        // The active device (slug) comes from the ResponsiveControl
+        // framework, driven by the editor's screen-size preview toggle.
+        // Each device gets its own nested ToolsPanel of gap/padding/margin
+        // bound to that slug's slice of the attribute object.
+        return wp.element.createElement(ResponsiveControl, {
+            title: 'Spacings',
+            blockName: blockName,
+            initialOpen: true,
+            render: function(ctx) {
+                const slug = ctx.slug;
+                const panelId = slug + '-spacings-panel';
 
-        // Nested ToolsPanel with ItemGroup for the active tab's gap/padding/margin
-        const activeControls = effectiveActiveTab ? wp.element.createElement('div', {
-            className: 'orbitools-nested-panel'
-        },
-            wp.element.createElement(ToolsPanel, {
-                label: nestedPanelLabel,
-                panelId: `${effectiveActiveTab}-spacings-panel`
-            },
-                wp.element.createElement(VStack, {
-                    spacing: 1,
-                    style: { gridColumn: '1 / -1' }
+                return wp.element.createElement('div', {
+                    className: 'orbitools-nested-panel'
                 },
-                    supports.gap && wp.element.createElement(ToolsPanelItem, {
-                        hasValue: () => gap?.[effectiveActiveTab] !== undefined,
-                        label: 'Gap',
-                        onDeselect: () => {
-                            const newGap = { ...gap }; delete newGap[effectiveActiveTab]; onGapChange(newGap);
-                        },
-                        isShownByDefault: false,
-                        panelId: `${effectiveActiveTab}-spacings-panel`
+                    wp.element.createElement(ToolsPanel, {
+                        label: 'Spacings',
+                        panelId: panelId
                     },
-                        createSpacingControl(
-                            spacingPresets, 'gap', gap?.[effectiveActiveTab],
-                            (newValue) => { onGapChange({ ...gap, [effectiveActiveTab]: newValue }); }
-                        )
-                    ),
-                    supports.padding && wp.element.createElement(ToolsPanelItem, {
-                        hasValue: () => padding?.[effectiveActiveTab] !== undefined,
-                        label: 'Padding',
-                        onDeselect: () => {
-                            const newPadding = { ...padding }; delete newPadding[effectiveActiveTab]; onPaddingChange(newPadding);
+                        wp.element.createElement(VStack, {
+                            spacing: 1,
+                            style: { gridColumn: '1 / -1' }
                         },
-                        isShownByDefault: false,
-                        panelId: `${effectiveActiveTab}-spacings-panel`
-                    },
-                        createBoxControl(
-                            spacingPresets, 'padding', padding?.[effectiveActiveTab] || {},
-                            (newValue) => { onPaddingChange({ ...padding, [effectiveActiveTab]: newValue }); }
-                        )
-                    ),
-                    supports.margin && wp.element.createElement(ToolsPanelItem, {
-                        hasValue: () => margin?.[effectiveActiveTab] !== undefined,
-                        label: 'Margin',
-                        onDeselect: () => {
-                            const newMargin = { ...margin }; delete newMargin[effectiveActiveTab]; onMarginChange(newMargin);
-                        },
-                        isShownByDefault: false,
-                        panelId: `${effectiveActiveTab}-spacings-panel`
-                    },
-                        createBoxControl(
-                            spacingPresets, 'margin', margin?.[effectiveActiveTab] || {},
-                            (newValue) => { onMarginChange({ ...margin, [effectiveActiveTab]: newValue }); }
+                            supports.gap && wp.element.createElement(ToolsPanelItem, {
+                                hasValue: () => gap?.[slug] !== undefined,
+                                label: 'Gap',
+                                onDeselect: () => {
+                                    const newGap = { ...gap }; delete newGap[slug]; onGapChange(newGap);
+                                },
+                                isShownByDefault: false,
+                                panelId: panelId
+                            },
+                                createSpacingControl(
+                                    spacingPresets, 'gap', gap?.[slug],
+                                    (newValue) => { onGapChange({ ...gap, [slug]: newValue }); }
+                                )
+                            ),
+                            supports.padding && wp.element.createElement(ToolsPanelItem, {
+                                hasValue: () => padding?.[slug] !== undefined,
+                                label: 'Padding',
+                                onDeselect: () => {
+                                    const newPadding = { ...padding }; delete newPadding[slug]; onPaddingChange(newPadding);
+                                },
+                                isShownByDefault: false,
+                                panelId: panelId
+                            },
+                                createBoxControl(
+                                    spacingPresets, 'padding', padding?.[slug] || {},
+                                    (newValue) => { onPaddingChange({ ...padding, [slug]: newValue }); }
+                                )
+                            ),
+                            supports.margin && wp.element.createElement(ToolsPanelItem, {
+                                hasValue: () => margin?.[slug] !== undefined,
+                                label: 'Margin',
+                                onDeselect: () => {
+                                    const newMargin = { ...margin }; delete newMargin[slug]; onMarginChange(newMargin);
+                                },
+                                isShownByDefault: false,
+                                panelId: panelId
+                            },
+                                createBoxControl(
+                                    spacingPresets, 'margin', margin?.[slug] || {},
+                                    (newValue) => { onMarginChange({ ...margin, [slug]: newValue }); }
+                                )
+                            )
                         )
                     )
-                )
-            )
-        ) : null;
-
-        // PanelBody with tab bar for breakpoints, nested ToolsPanel for spacing types
-        return wp.element.createElement(wp.components.PanelBody, {
-            title: 'Spacings',
-            initialOpen: true
-        },
-            // Tab bar — all breakpoints always visible
-            wp.element.createElement('div', {
-                style: {
-                    display: 'flex',
-                    gap: '4px',
-                    marginBottom: '12px',
-                    padding: '4px',
-                    background: '#F3F5F7',
-                    borderRadius: '6px'
-                }
-            },
-                allBreakpoints.map((bp) => {
-                    const isActive = effectiveActiveTab === bp.slug;
-                    return wp.element.createElement(Tooltip, {
-                        key: bp.slug,
-                        text: bp.tooltip
-                    },
-                        wp.element.createElement('button', {
-                            onClick: () => setActiveTab(bp.slug),
-                            style: {
-                                flex: 1,
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                padding: '6px 4px',
-                                border: 'none',
-                                borderRadius: '4px',
-                                background: isActive ? '#fff' : 'transparent',
-                                boxShadow: isActive ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
-                                color: isActive ? '#1e1e1e' : '#757575',
-                                cursor: 'pointer',
-                                fontSize: '11px',
-                                fontWeight: isActive ? 600 : 400,
-                                lineHeight: '1'
-                            }
-                        },
-                            bp.icon
-                                ? wp.element.createElement('span', {
-                                    dangerouslySetInnerHTML: { __html: bp.icon },
-                                    style: { display: 'flex', alignItems: 'center', width: '20px', height: '20px' }
-                                })
-                                : bp.label
-                        )
-                    );
-                })
-            ),
-            // Active tab's spacing controls
-            activeControls
-        );
+                );
+            }
+        });
     }
 
     // Add automatic spacing controls
