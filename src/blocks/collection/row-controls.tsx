@@ -304,7 +304,7 @@ export default function RowControls({ attributes, setAttributes }: RowControlsPr
         }
 
         return (
-            <BlockControls group="block">
+            <BlockControls>
                 <ToolbarGroup>
                     {alignmentControls}
                 </ToolbarGroup>

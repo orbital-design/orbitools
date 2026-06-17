@@ -248,7 +248,7 @@ function renderToolbarControls(
 	}
 
 	return (
-		<BlockControls group="block">
+		<BlockControls>
 			<ToolbarGroup>{ controls }</ToolbarGroup>
 		</BlockControls>
 	);
