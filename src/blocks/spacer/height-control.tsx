@@ -84,13 +84,16 @@ export default function SpacerHeightControl({
             render={({ slug }) => {
                 const currentValue = getValue(slug);
                 const currentIndex = currentValue ? allOptions.findIndex((o) => o.slug === currentValue) : -1;
-                const sliderValue = currentIndex >= 0 ? currentIndex : 0;
+                // Slider index 0 is "Default" (no value → inherits the
+                // larger viewport); the spacing sizes follow at 1..N, so
+                // dragging fully left clears the current viewport.
+                const sliderValue = currentIndex >= 0 ? currentIndex + 1 : 0;
 
                 const updateHeight = (index: number | undefined) => {
-                    if (index === undefined || index < 0) {
+                    if (index === undefined || index <= 0) {
                         setValue(slug, undefined);
-                    } else if (index < allOptions.length) {
-                        setValue(slug, allOptions[index].slug);
+                    } else if (index - 1 < allOptions.length) {
+                        setValue(slug, allOptions[index - 1].slug);
                     }
                 };
 
@@ -124,14 +127,15 @@ export default function SpacerHeightControl({
                             value={sliderValue}
                             onChange={updateHeight}
                             min={0}
-                            max={allOptions.length - 1}
+                            max={allOptions.length}
                             step={1}
                             marks={true}
                             withInputField={false}
                             renderTooltipContent={(index) => {
                                 if (index === undefined || index === null || typeof index !== 'number') return '';
-                                if (index < 0 || index >= allOptions.length) return 'Default';
-                                return allOptions[index].name;
+                                if (index <= 0) return 'Default';
+                                const opt = allOptions[index - 1];
+                                return opt ? opt.name : 'Default';
                             }}
                             __next40pxDefaultSize={true}
                             __nextHasNoMarginBottom={true}
