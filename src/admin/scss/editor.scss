@@ -23,28 +23,46 @@
     }
 }
 
-// ResponsiveControl framework — no in-panel switcher; the control
-// follows the editor's native screen-size preview toggle. Discoverability
-// comes from the ResponsiveDots indicator: three dots (Desktop/Tablet/
-// Mobile) next to a control's label — filled when that viewport has its
-// own value, accent-coloured for the editor's active preview device.
-.orbitools-responsive__heading {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
+// ResponsiveControl framework — no in-panel switcher; the control follows
+// the editor's native screen-size preview toggle. Discoverability + control
+// come from the ResponsiveDots indicator: three dots (Desktop/Tablet/
+// Mobile) — filled when that viewport has its own value, accent-coloured
+// for the active preview device, and clickable to switch viewport. They're
+// real <button>s (keyboard-focusable, aria-pressed).
+
+// Panel-wrapped controls: dock the dots over the panel header as an
+// absolutely-positioned sibling of the PanelBody (left of the collapse
+// chevron), so they're never nested inside the title button.
+.orbitools-responsive {
+    position: relative;
+
+    > .orbitools-responsive__indicator {
+        position: absolute;
+        top: 10px;
+        right: 42px;
+        z-index: 1;
+    }
 }
 
 .orbitools-responsive-dots {
     display: inline-flex;
     align-items: center;
 
-    // Padding gives each dot a usable click target while keeping the
-    // visible dot small.
+    // Button reset + padded hit target around the small visible dot.
     &__hit {
         display: inline-flex;
         align-items: center;
         padding: 3px;
+        margin: 0;
+        border: 0;
+        background: transparent;
+        border-radius: 2px;
         cursor: pointer;
+
+        &:focus-visible {
+            outline: 1.5px solid var(--wp-admin-theme-color, #3858e9);
+            outline-offset: 0;
+        }
     }
 
     &__dot {

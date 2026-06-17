@@ -158,10 +158,11 @@ function slugHasValue(value, slug) {
  * device (so the control then edits that viewport). Place it next to a
  * control's label.
  *
- * Clickable spans (not <button>s) on purpose: the indicator is rendered
- * inside the PanelBody title — itself a <button> — so a nested button
- * would be invalid markup. stopPropagation keeps the click from toggling
- * the panel open/closed.
+ * Real <button>s — keyboard-focusable and activatable, with aria-pressed
+ * marking the active device. For panel-wrapped controls the indicator is
+ * docked into the header as a sibling of the PanelBody (NOT inside its
+ * title button), so these buttons are never nested in another button.
+ * stopPropagation is belt-and-braces against the click toggling the panel.
  *
  * Props (one of):
  *   - value {Object}   responsive value keyed by slug; a slug counts as
@@ -181,8 +182,11 @@ export function ResponsiveDots(props) {
                 + (set ? ' is-set' : '')
                 + (active === d ? ' is-active' : '');
             return createElement(Tooltip, { key: d, text: d },
-                createElement('span', {
+                createElement('button', {
+                    type: 'button',
                     className: 'orbitools-responsive-dots__hit',
+                    'aria-label': 'Edit ' + d + ' value',
+                    'aria-pressed': active === d,
                     onClick: function (e) {
                         if (e && e.stopPropagation) { e.stopPropagation(); }
                         dt.setDevice(d);
@@ -204,11 +208,11 @@ export function ResponsiveDots(props) {
  *   - initialOpen {boolean}  PanelBody initialOpen (default false).
  *   - wrap        {boolean}  wrap in a PanelBody (default true). Pass
  *                            false to embed inside an existing panel.
- *   - indicator   {Element}  optional node (a <ResponsiveDots/>) rendered
- *                            inline in the panel title — for wrapped
- *                            controls that have no inline label of their
- *                            own. Ignored when wrap === false (place the
- *                            dots next to your own label instead).
+ *   - indicator   {Element}  optional node (a <ResponsiveDots/>) docked
+ *                            into the panel header for wrapped controls
+ *                            that have no inline label of their own.
+ *                            Ignored when wrap === false (place the dots
+ *                            next to your own label instead).
  *   - render      {Function} ({ device, slug, breakpoint }) => element.
  *
  * There is no in-panel device switcher: the control reflects the editor's
@@ -229,17 +233,18 @@ export function ResponsiveControl(props) {
         return control;
     }
 
-    var title = props.indicator
-        ? createElement('span', { className: 'orbitools-responsive__heading' },
-            createElement('span', { className: 'orbitools-responsive__heading-text' }, props.title),
-            props.indicator
-        )
-        : props.title;
-
-    return createElement(PanelBody, {
-        title: title,
-        initialOpen: !!props.initialOpen
-    }, control);
+    // The indicator is an absolutely-positioned sibling of the PanelBody
+    // (docked over its header — see CSS), NOT inside the title button, so
+    // its dots can be real, keyboard-focusable buttons.
+    return createElement('div', { className: 'orbitools-responsive' },
+        props.indicator
+            ? createElement('div', { className: 'orbitools-responsive__indicator' }, props.indicator)
+            : null,
+        createElement(PanelBody, {
+            title: props.title,
+            initialOpen: !!props.initialOpen
+        }, control)
+    );
 }
 
 export { DEVICE_ORDER, DEVICE_TO_SLUG, SLUG_TO_DEVICE };
