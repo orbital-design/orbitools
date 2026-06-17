@@ -554,15 +554,12 @@ import { ResponsiveControl, ResponsiveDots } from '../../../../core/utils/respon
                 const panelId = slug + '-spacings-panel';
 
                 // No PanelBody wrapper — the ToolsPanel is the panel. The
-                // responsive dots dock over its header (see CSS).
-                return wp.element.createElement('div', {
-                    className: 'orbitools-responsive'
-                },
-                    wp.element.createElement('div', { className: 'orbitools-responsive__indicator' },
-                        wp.element.createElement(ResponsiveDots, { isSet: spacingsSetForSlug })
-                    ),
-                    wp.element.createElement(ToolsPanel, {
-                        label: 'Spacings',
+                // dots sit inline right after the "Spacings" label.
+                return wp.element.createElement(ToolsPanel, {
+                        label: wp.element.createElement('span', { className: 'orbitools-spacings-label' },
+                            'Spacings',
+                            wp.element.createElement(ResponsiveDots, { isSet: spacingsSetForSlug })
+                        ),
                         panelId: panelId
                     },
                         wp.element.createElement(VStack, {
@@ -612,8 +609,7 @@ import { ResponsiveControl, ResponsiveDots } from '../../../../core/utils/respon
                                 )
                             )
                         )
-                    )
-                );
+                    );
             }
         });
     }

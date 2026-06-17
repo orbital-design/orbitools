@@ -44,6 +44,13 @@
     }
 }
 
+// Spacings panel header: "Spacings" label with the dots inline beside it.
+.orbitools-spacings-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
 .orbitools-responsive-dots {
     display: inline-flex;
     align-items: center;
