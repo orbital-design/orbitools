@@ -21,11 +21,10 @@ import {
     ToolbarDropdownMenu,
     ToggleControl,
     RangeControl,
-    SVG,
-    Path,
 } from '@wordpress/components';
 
 import type { LayoutAttributes } from '../types';
+import { flexDirectionIcons, justifyContentIcons, alignItemsIcons } from '../utils/flex-icons';
 
 interface RowControlsProps {
     attributes: LayoutAttributes;
@@ -116,31 +115,13 @@ export default function RowControls({ attributes, setAttributes }: RowControlsPr
         // Direction Control
         const directionControls = [
             {
-                icon: (
-                    <SVG width="25" height="25" viewBox="0 0 25 25" fill="none">
-                        <Path className="line" fill="#1D303A" d="M13 15.5c0 .2761-.2239.5-.5.5h-1c-.2761 0-.5-.2239-.5-.5v-6c0-.27614.2239-.5.5-.5h1c.2761 0 .5.22386.5.5v6Z" />
-                        <Path className="box" fill="#32A3E2" d="M10 15.5c0 .2761-.22386.5-.5.5h-6c-.27614 0-.5-.2239-.5-.5v-6c0-.27614.22386-.5.5-.5h6c.27614 0 .5.22386.5.5v6Z" />
-                        <Path className="box" fill="#32A3E2" d="M18 15.5c0 .2761-.2239.5-.5.5h-3c-.2761 0-.5-.2239-.5-.5v-6c0-.27614.2239-.5.5-.5h3c.2761 0 .5.22386.5.5v6Z" />
-                        <rect className="line" width="19" height="1" fill="#1D303A" rx=".5" transform="matrix(1 0 0 -1 3 7)" />
-                        <rect className="line" width="19" height="1" fill="#1D303A" rx=".5" transform="matrix(1 0 0 -1 3 19)" />
-                        <Path className="arrow" stroke="#1D303A" strokeLinecap="round" strokeLinejoin="round" strokeWidth=".75" d="m19.4 15.65 2.25-3.15-2.25-3.15" />
-                    </SVG>
-                ),
+                icon: flexDirectionIcons['row'],
                 title: 'Horizontal',
                 onClick: () => updateAttribute('flexDirection', 'row'),
                 isActive: flexDirection === 'row'
             },
             {
-                icon: (
-                    <SVG width="25" height="25" viewBox="0 0 25 25" fill="none">
-                        <Path className="line" fill="#1D303A" d="M16 12.5c0 .2761-.2239.5-.5.5h-6c-.27614 0-.5-.2239-.5-.5v-1c0-.2761.22386-.5.5-.5h6c.2761 0 .5.2239.5.5v1Z" />
-                        <Path className="box" fill="#32A3E2" d="M16 9.5c0 .27614-.2239.5-.5.5h-6c-.27614 0-.5-.22386-.5-.5v-6c0-.27614.22386-.5.5-.5h6c.2761 0 .5.22386.5.5v6Z" />
-                        <Path className="box" fill="#32A3E2" d="M16 17.5c0 .2761-.2239.5-.5.5h-6c-.27614 0-.5-.2239-.5-.5v-3c0-.2761.22386-.5.5-.5h6c.2761 0 .5.2239.5.5v3Z" />
-                        <rect className="line" width="1" height="19" fill="#1D303A" rx=".5" transform="matrix(1 0 0 -1 6 22)" />
-                        <rect className="line" width="1" height="19" fill="#1D303A" rx=".5" transform="matrix(1 0 0 -1 18 22)" />
-                        <Path className="arrow" stroke="#1D303A" strokeLinecap="round" strokeLinejoin="round" strokeWidth=".75" d="m15.65 19.4-3.15 2.25-3.14999-2.25" />
-                    </SVG>
-                ),
+                icon: flexDirectionIcons['column'],
                 title: 'Vertical',
                 onClick: () => updateAttribute('flexDirection', 'column'),
                 isActive: flexDirection === 'column'
@@ -161,41 +142,25 @@ export default function RowControls({ attributes, setAttributes }: RowControlsPr
             // For column: align-items controls horizontal alignment
             const alignItemsControls = [
                 {
-                    icon: (
-                        <SVG width="24" height="24" viewBox="0 0 24 24" fill="none">
-                            <Path d="M4 2L4 22M11 8H13C13.5523 8 14 7.55228 14 7V5C14 4.44772 13.5523 4 13 4H11C10.4477 4 10 4.44772 10 5V7C10 7.55228 10.4477 8 11 8Z" stroke="currentColor" strokeWidth="1.5"/>
-                        </SVG>
-                    ),
+                    icon: alignItemsIcons.column['flex-start'],
                     title: 'Start',
                     onClick: () => updateAttribute('alignItems', 'flex-start'),
                     isActive: alignItems === 'flex-start'
                 },
                 {
-                    icon: (
-                        <SVG width="24" height="24" viewBox="0 0 24 24" fill="none">
-                            <Path d="M12 2L12 22M10 8H14C14.5523 8 15 7.55228 15 7V5C15 4.44772 14.5523 4 14 4H10C9.44772 4 9 4.44772 9 5V7C9 7.55228 9.44772 8 10 8Z" stroke="currentColor" strokeWidth="1.5"/>
-                        </SVG>
-                    ),
+                    icon: alignItemsIcons.column['center'],
                     title: 'Center',
                     onClick: () => updateAttribute('alignItems', 'center'),
                     isActive: alignItems === 'center'
                 },
                 {
-                    icon: (
-                        <SVG width="24" height="24" viewBox="0 0 24 24" fill="none">
-                            <Path d="M20 2L20 22M13 8H17C17.5523 8 18 7.55228 18 7V5C18 4.44772 17.5523 4 17 4H13C12.4477 4 12 4.44772 12 5V7C12 7.55228 12.4477 8 13 8Z" stroke="currentColor" strokeWidth="1.5"/>
-                        </SVG>
-                    ),
+                    icon: alignItemsIcons.column['flex-end'],
                     title: 'End',
                     onClick: () => updateAttribute('alignItems', 'flex-end'),
                     isActive: alignItems === 'flex-end'
                 },
                 {
-                    icon: (
-                        <SVG width="24" height="24" viewBox="0 0 24 24" fill="none">
-                            <Path d="M2 2L2 22M22 2L22 22M8 8H16C16.5523 8 17 7.55228 17 7V5C17 4.44772 16.5523 4 16 4H8C7.44772 4 7 4.44772 7 5V7C7 7.55228 7.44772 8 8 8Z" stroke="currentColor" strokeWidth="1.5"/>
-                        </SVG>
-                    ),
+                    icon: alignItemsIcons.column['stretch'],
                     title: 'Stretch',
                     onClick: () => updateAttribute('alignItems', 'stretch'),
                     isActive: alignItems === 'stretch'
@@ -214,61 +179,37 @@ export default function RowControls({ attributes, setAttributes }: RowControlsPr
             // For row: justify-content controls horizontal alignment
             const justifyContentControls = [
                 {
-                    icon: (
-                        <SVG width="24" height="24" viewBox="0 0 24 24" fill="none">
-                            <Path d="M4 2L4 22M11 16L11 8C11 7.44772 10.5523 7 10 7H8C7.44772 7 7 7.44772 7 8L7 16C7 16.5523 7.44772 17 8 17H10C10.5523 17 11 16.5523 11 16Z" stroke="currentColor" strokeWidth="1.5"/>
-                        </SVG>
-                    ),
+                    icon: justifyContentIcons.row['flex-start'],
                     title: 'Start',
                     onClick: () => updateAttribute('justifyContent', 'flex-start'),
                     isActive: justifyContent === 'flex-start'
                 },
                 {
-                    icon: (
-                        <SVG width="24" height="24" viewBox="0 0 24 24" fill="none">
-                            <Path d="M12 2L12 22M9 16L9 8C9 7.44772 8.55228 7 8 7H6C5.44772 7 5 7.44772 5 8L5 16C5 16.5523 5.44772 17 6 17H8C8.55229 17 9 16.5523 9 16Z" stroke="currentColor" strokeWidth="1.5"/>
-                        </SVG>
-                    ),
+                    icon: justifyContentIcons.row['center'],
                     title: 'Center',
                     onClick: () => updateAttribute('justifyContent', 'center'),
                     isActive: justifyContent === 'center'
                 },
                 {
-                    icon: (
-                        <SVG width="24" height="24" viewBox="0 0 24 24" fill="none">
-                            <Path d="M20 2L20 22M13 16L13 8C13 7.44772 12.5523 7 12 7H10C9.44772 7 9 7.44772 9 8L9 16C9 16.5523 9.44772 17 10 17H12C12.5523 17 13 16.5523 13 16Z" stroke="currentColor" strokeWidth="1.5"/>
-                        </SVG>
-                    ),
+                    icon: justifyContentIcons.row['flex-end'],
                     title: 'End',
                     onClick: () => updateAttribute('justifyContent', 'flex-end'),
                     isActive: justifyContent === 'flex-end'
                 },
                 {
-                    icon: (
-                        <SVG width="24" height="24" viewBox="0 0 24 24" fill="none">
-                            <Path d="M4 2L4 22M20 2L20 22M11 16L11 8C11 7.44772 10.5523 7 10 7H8C7.44772 7 7 7.44772 7 8L7 16C7 16.5523 7.44772 17 8 17H10C10.5523 17 11 16.5523 11 16Z" stroke="currentColor" strokeWidth="1.5"/>
-                        </SVG>
-                    ),
+                    icon: justifyContentIcons.row['space-between'],
                     title: 'Space Between',
                     onClick: () => updateAttribute('justifyContent', 'space-between'),
                     isActive: justifyContent === 'space-between'
                 },
                 {
-                    icon: (
-                        <SVG width="24" height="24" viewBox="0 0 24 24" fill="none">
-                            <Path d="M21 2V22M4 2L4 22M10 16L10 8C10 7.44772 9.55229 7 9 7H7C6.44772 7 6 7.44772 6 8L6 16C6 16.5523 6.44772 17 7 17H9C9.55229 17 10 16.5523 10 16Z" stroke="currentColor" strokeWidth="1.5"/>
-                        </SVG>
-                    ),
+                    icon: justifyContentIcons.row['space-around'],
                     title: 'Space Around',
                     onClick: () => updateAttribute('justifyContent', 'space-around'),
                     isActive: justifyContent === 'space-around'
                 },
                 {
-                    icon: (
-                        <SVG width="24" height="24" viewBox="0 0 24 24" fill="none">
-                            <Path d="M2 2L2 22M22 2L22 22M11 16L11 8C11 7.44772 10.5523 7 10 7H8C7.44772 7 7 7.44772 7 8L7 16C7 16.5523 7.44772 17 8 17H10C10.5523 17 11 16.5523 11 16Z" stroke="currentColor" strokeWidth="1.5"/>
-                        </SVG>
-                    ),
+                    icon: justifyContentIcons.row['space-evenly'],
                     title: 'Space Evenly',
                     onClick: () => updateAttribute('justifyContent', 'space-evenly'),
                     isActive: justifyContent === 'space-evenly'
@@ -290,41 +231,25 @@ export default function RowControls({ attributes, setAttributes }: RowControlsPr
             // For column: justify-content controls vertical alignment
             const justifyContentControls = [
                 {
-                    icon: (
-                        <SVG width="24" height="24" viewBox="0 0 24 24" fill="none">
-                            <Path d="M2 4L22 4M11 16L11 8C11 7.44772 10.5523 7 10 7H8C7.44772 7 7 7.44772 7 8L7 16C7 16.5523 7.44772 17 8 17H10C10.5523 17 11 16.5523 11 16Z" stroke="currentColor" strokeWidth="1.5"/>
-                        </SVG>
-                    ),
+                    icon: justifyContentIcons.column['flex-start'],
                     title: 'Top',
                     onClick: () => updateAttribute('justifyContent', 'flex-start'),
                     isActive: justifyContent === 'flex-start'
                 },
                 {
-                    icon: (
-                        <SVG width="24" height="24" viewBox="0 0 24 24" fill="none">
-                            <Path d="M12 2L12 22M9 16L9 8C9 7.44772 8.55228 7 8 7H6C5.44772 7 5 7.44772 5 8L5 16C5 16.5523 5.44772 17 6 17H8C8.55229 17 9 16.5523 9 16Z" stroke="currentColor" strokeWidth="1.5"/>
-                        </SVG>
-                    ),
+                    icon: justifyContentIcons.column['center'],
                     title: 'Middle',
                     onClick: () => updateAttribute('justifyContent', 'center'),
                     isActive: justifyContent === 'center'
                 },
                 {
-                    icon: (
-                        <SVG width="24" height="24" viewBox="0 0 24 24" fill="none">
-                            <Path d="M2 20L22 20M11 16L11 8C11 7.44772 10.5523 7 10 7H8C7.44772 7 7 7.44772 7 8L7 16C7 16.5523 7.44772 17 8 17H10C10.5523 17 11 16.5523 11 16Z" stroke="currentColor" strokeWidth="1.5"/>
-                        </SVG>
-                    ),
+                    icon: justifyContentIcons.column['flex-end'],
                     title: 'Bottom',
                     onClick: () => updateAttribute('justifyContent', 'flex-end'),
                     isActive: justifyContent === 'flex-end'
                 },
                 {
-                    icon: (
-                        <SVG width="24" height="24" viewBox="0 0 24 24" fill="none">
-                            <Path d="M2 4L22 4M2 20L22 20M11 16L11 8C11 7.44772 10.5523 7 10 7H8C7.44772 7 7 7.44772 7 8L7 16C7 16.5523 7.44772 17 8 17H10C10.5523 17 11 16.5523 11 16Z" stroke="currentColor" strokeWidth="1.5"/>
-                        </SVG>
-                    ),
+                    icon: justifyContentIcons.column['space-between'],
                     title: 'Space Between',
                     onClick: () => updateAttribute('justifyContent', 'space-between'),
                     isActive: justifyContent === 'space-between'
@@ -343,41 +268,25 @@ export default function RowControls({ attributes, setAttributes }: RowControlsPr
             // For row: align-items controls vertical alignment
             const alignItemsControls = [
                 {
-                    icon: (
-                        <SVG width="24" height="24" viewBox="0 0 24 24" fill="none">
-                            <Path d="M2 4L22 4M11 16L11 8C11 7.44772 10.5523 7 10 7H8C7.44772 7 7 7.44772 7 8L7 16C7 16.5523 7.44772 17 8 17H10C10.5523 17 11 16.5523 11 16Z" stroke="currentColor" strokeWidth="1.5"/>
-                        </SVG>
-                    ),
+                    icon: alignItemsIcons.row['flex-start'],
                     title: 'Top',
                     onClick: () => updateAttribute('alignItems', 'flex-start'),
                     isActive: alignItems === 'flex-start'
                 },
                 {
-                    icon: (
-                        <SVG width="24" height="24" viewBox="0 0 24 24" fill="none">
-                            <Path d="M12 2L12 22M9 16L9 8C9 7.44772 8.55228 7 8 7H6C5.44772 7 5 7.44772 5 8L5 16C5 16.5523 5.44772 17 6 17H8C8.55229 17 9 16.5523 9 16Z" stroke="currentColor" strokeWidth="1.5"/>
-                        </SVG>
-                    ),
+                    icon: alignItemsIcons.row['center'],
                     title: 'Middle',
                     onClick: () => updateAttribute('alignItems', 'center'),
                     isActive: alignItems === 'center'
                 },
                 {
-                    icon: (
-                        <SVG width="24" height="24" viewBox="0 0 24 24" fill="none">
-                            <Path d="M2 20L22 20M11 16L11 8C11 7.44772 10.5523 7 10 7H8C7.44772 7 7 7.44772 7 8L7 16C7 16.5523 7.44772 17 8 17H10C10.5523 17 11 16.5523 11 16Z" stroke="currentColor" strokeWidth="1.5"/>
-                        </SVG>
-                    ),
+                    icon: alignItemsIcons.row['flex-end'],
                     title: 'Bottom',
                     onClick: () => updateAttribute('alignItems', 'flex-end'),
                     isActive: alignItems === 'flex-end'
                 },
                 {
-                    icon: (
-                        <SVG width="24" height="24" viewBox="0 0 24 24" fill="none">
-                            <Path d="M2 2L2 22M22 2L22 22M11 16L11 8C11 7.44772 10.5523 7 10 7H8C7.44772 7 7 7.44772 7 8L7 16C7 16.5523 7.44772 17 8 17H10C10.5523 17 11 16.5523 11 16Z" stroke="currentColor" strokeWidth="1.5"/>
-                        </SVG>
-                    ),
+                    icon: alignItemsIcons.row['stretch'],
                     title: 'Stretch',
                     onClick: () => updateAttribute('alignItems', 'stretch'),
                     isActive: alignItems === 'stretch'
