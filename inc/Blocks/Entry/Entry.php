@@ -36,7 +36,7 @@ class Entry extends Module_Base
      */
     public function get_name(): string
     {
-        return \__('Entry Block', 'orbitools');
+        return \__('Column', 'orbitools');
     }
 
     /**

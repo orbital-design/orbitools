@@ -497,12 +497,12 @@ export default function RowControls({ attributes, setAttributes }: RowControlsPr
                         'itemWidth',
                         () => hasNonDefaultValue('itemWidth', ROW_DEFAULTS.itemWidth),
                         () => updateAttribute('itemWidth', ROW_DEFAULTS.itemWidth),
-                        'Entry Width',
+                        'Column Width',
                         createToggleGroup(
                             itemWidth,
                             (value) => updateAttribute('itemWidth', value),
                             ITEM_WIDTH_OPTIONS,
-                            'Entry Width'
+                            'Column Width'
                         ),
                         true
                     )}

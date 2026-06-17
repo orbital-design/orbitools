@@ -36,7 +36,7 @@ class Collection extends Module_Base
      */
     public function get_name(): string
     {
-        return \__('Collection Block', 'orbitools');
+        return \__('Row Layout', 'orbitools');
     }
 
     /**
