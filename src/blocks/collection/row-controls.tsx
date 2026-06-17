@@ -18,13 +18,28 @@ import { InspectorControls, BlockControls } from '@wordpress/block-editor';
 import {
     __experimentalToolsPanel as ToolsPanel,
     ToolbarGroup,
+    ToolbarButton,
     ToolbarDropdownMenu,
     ToggleControl,
     RangeControl,
+    SVG,
 } from '@wordpress/components';
 
 import type { LayoutAttributes } from '../types';
 import { flexDirectionIcons, justifyContentIcons, alignItemsIcons } from '../utils/flex-icons';
+import { COLLECTION_LIMITS } from '../utils/class-builders';
+
+/**
+ * Add-column toolbar icon (lucide copy-plus).
+ */
+const addColumnIcon = (
+    <SVG width={24} height={24} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+        <line x1="15" x2="15" y1="12" y2="18" />
+        <line x1="12" x2="18" y1="15" y2="15" />
+        <rect width="14" height="14" x="8" y="8" rx="2" ry="2" />
+        <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" />
+    </SVG>
+);
 
 interface RowControlsProps {
     attributes: LayoutAttributes;
@@ -305,6 +320,14 @@ export default function RowControls({ attributes, setAttributes }: RowControlsPr
 
         return (
             <BlockControls>
+                <ToolbarGroup>
+                    <ToolbarButton
+                        icon={addColumnIcon}
+                        label="Add column"
+                        onClick={() => updateAttribute('columnCount', Math.min(columnCount + 1, COLLECTION_LIMITS.MAX_COLUMNS))}
+                        disabled={columnCount >= COLLECTION_LIMITS.MAX_COLUMNS}
+                    />
+                </ToolbarGroup>
                 <ToolbarGroup>
                     {alignmentControls}
                 </ToolbarGroup>
