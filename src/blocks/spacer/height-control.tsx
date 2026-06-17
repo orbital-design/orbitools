@@ -79,10 +79,9 @@ export default function SpacerHeightControl({
 
     return (
         <ResponsiveControl
-            title="Height"
             blockName={blockName}
-            initialOpen={true}
-            render={({ slug }) => {
+            wrap={false}
+            render={({ slug, device }) => {
                 const currentValue = getValue(slug);
                 const currentIndex = currentValue ? allOptions.findIndex((o) => o.slug === currentValue) : -1;
                 const sliderValue = currentIndex >= 0 ? currentIndex : 0;
@@ -96,7 +95,7 @@ export default function SpacerHeightControl({
                 };
 
                 return (
-                    <div>
+                    <div style={{ padding: '16px', borderBottom: '1px solid #e0e0e0' }}>
                         <div style={{
                             display: 'flex',
                             justifyContent: 'space-between',
@@ -108,7 +107,7 @@ export default function SpacerHeightControl({
                                 color: '#757575',
                                 margin: 0
                             }}>
-                                Height
+                                {slug === 'base' ? 'Height' : `Height · ${device}`}
                             </label>
                             <span style={{
                                 fontSize: '11px',
