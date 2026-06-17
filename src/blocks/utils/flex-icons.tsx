@@ -51,13 +51,12 @@ export const justifyContentIcons: Record<string, Record<string, JSX.Element>> = 
 export const alignItemsIcons: Record<string, Record<string, JSX.Element>> = {
     row: {
         'flex-start': icon('M17.7822 21.4434H13.5117V5.77246H17.7822V21.4434ZM10.4756 15.7666H6.20605V5.77246H10.4756V15.7666ZM21.4375 3.21582H2.55078V2.21582H21.4375V3.21582Z'),
-        // Multi-element source (a centre line + two bars), so it can't use
-        // the single-path icon() helper.
+        // Two-path source (a stroked centre line + the bars), so it can't
+        // use the single-path icon() helper.
         'center': (
             <SVG width={24} height={24} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <line x1="2.55062" y1="11.9774" x2="21.4374" y2="11.9774" stroke="currentColor" />
-                <Path d="M17.7821 2.55661L17.7821 21.4434L13.5121 21.4434L13.5121 2.55661L17.7821 2.55661Z" fill="currentColor" />
-                <Path d="M10.4759 7.24268L10.4759 16.7573L6.20591 16.7573L6.20591 7.24268L10.4759 7.24268Z" fill="currentColor" />
+                <Path stroke="currentColor" d="M2.55 11.98h18.89" />
+                <Path fill="currentColor" d="M17.78 2.56v18.88h-4.27V2.56zm-7.3 4.68v9.52H6.2V7.24z" />
             </SVG>
         ),
         'flex-end': icon('M17.7822 2.55664H13.5117V17.875H17.7822V2.55664ZM10.4756 8.05273H6.20605V17.875H10.4756V8.05273ZM21.4375 20.4316H2.55078V21.4316H21.4375V20.4316Z'),
