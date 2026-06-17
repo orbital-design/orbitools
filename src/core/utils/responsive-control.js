@@ -173,7 +173,7 @@ export function ResponsiveDots(props) {
             var className = 'orbitools-responsive-dots__dot'
                 + (set ? ' is-set' : '')
                 + (active === d ? ' is-active' : '');
-            return createElement(Tooltip, { key: d, text: d + (set ? ' — custom value' : '') },
+            return createElement(Tooltip, { key: d, text: d },
                 createElement('span', { className: className })
             );
         })
