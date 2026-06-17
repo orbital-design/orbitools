@@ -67,28 +67,39 @@ $elem_base: 'orb-collection';
         &[data-justify="around"]    { justify-content: space-around; }
         &[data-justify="evenly"]    { justify-content: space-evenly; }
 
-        // Stacked Mobile Classes - children automatically stack on smaller
-        // screens. Triggers at the tablet breakpoint (781px) so it lines up
-        // with the editor's Tablet device preview.
-        &[data-stacked="true"]  {
+        // Custom column grids (penta / dodeca) use CSS Grid rather than flex,
+        // so the column gap is accounted for in the track sizing and items
+        // wrap correctly — flexbox %-widths can't subtract the gap, which is
+        // why custom widths + gaps never lined up. The collection gap (set
+        // above) applies natively to the grid too. Entry spans live in
+        // entry/index.scss as `grid-column: span N`. (The `equal` layout stays
+        // flex — its grow behaviour is handled on the entries.)
+        &[data-layout="penta"]  { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); }
+        &[data-layout="dodeca"] { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); }
+
+        // Stacked Mobile - children stack on smaller screens. Triggers at the
+        // tablet breakpoint (781px) so it lines up with the editor's Tablet
+        // device preview.
+        &[data-stacked="true"] {
             @media (max-width: 48.8125rem) {
+                // Flex modes (fit / equal): wrap and let entries go full-width.
                 flex-wrap: wrap !important;
 
-                &[data-layout="equal"],
-                &[data-layout=dodeca],
-                &[data-layout=penta] {
+                &[data-layout="equal"] > .orb-entry {
+                    max-width: 100% !important;
+                    flex: 1 1 100%;
+                }
+
+                // Grid modes (penta / dodeca): collapse to a single column.
+                &[data-layout="penta"],
+                &[data-layout="dodeca"] {
+                    grid-template-columns: 1fr;
+
                     > .orb-entry {
-                        max-width: 100% !important;
-                        flex: 1 1 100%;
+                        grid-column: 1 / -1 !important;
                     }
                 }
             }
         }
-
-        // Layout Classes - Controls classes on children, fit | equal/grow | 5 col grid | 12 col grid
-        // Only output when NOT default value 'fit'
-        &[data-layout="equal"]  { /* Currently no class required but keeping here for record. */}
-        &[data-layout="penta"]  { /* 5-column grid system base styles */ }
-        &[data-layout="dodeca"] { /* 12-column grid system base styles */ }
     }
 }
