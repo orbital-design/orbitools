@@ -4,7 +4,7 @@
  * Automatically adds spacing controls to blocks with orbitools.spacings support
  */
 
-import { ResponsiveControl } from '../../../../core/utils/responsive-control.js';
+import { ResponsiveControl, ResponsiveDots } from '../../../../core/utils/responsive-control.js';
 
 (function() {
     // Configuration functions from spacings-config.js (available globally)
@@ -530,6 +530,18 @@ import { ResponsiveControl } from '../../../../core/utils/responsive-control.js'
             );
         }
 
+        // Combined responsive indicator: a viewport counts as "set" when
+        // any of gap / padding / margin has a value for that slug.
+        function spacingsSetForSlug(slug) {
+            function has(obj) {
+                var v = obj && obj[slug];
+                if (v === undefined || v === null || v === '') return false;
+                if (typeof v === 'object') return Object.keys(v).length > 0;
+                return true;
+            }
+            return has(gap) || has(padding) || has(margin);
+        }
+
         // The active device (slug) comes from the ResponsiveControl
         // framework, driven by the editor's screen-size preview toggle.
         // Each device gets its own nested ToolsPanel of gap/padding/margin
@@ -538,6 +550,7 @@ import { ResponsiveControl } from '../../../../core/utils/responsive-control.js'
             title: 'Spacings',
             blockName: blockName,
             initialOpen: true,
+            indicator: wp.element.createElement(ResponsiveDots, { isSet: spacingsSetForSlug }),
             render: function(ctx) {
                 const slug = ctx.slug;
                 const panelId = slug + '-spacings-panel';

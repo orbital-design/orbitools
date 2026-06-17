@@ -49,6 +49,7 @@ var createElement = wp.element.createElement;
 var useSelect = wp.data.useSelect;
 var useDispatch = wp.data.useDispatch;
 var PanelBody = wp.components.PanelBody;
+var Tooltip = wp.components.Tooltip;
 
 /** Editor device type → our breakpoint slug. */
 var DEVICE_TO_SLUG = { Desktop: 'base', Tablet: 'tablet', Mobile: 'mobile' };
@@ -132,22 +133,74 @@ function breakpointForSlug(blockName, slug) {
 }
 
 /**
+ * Decide whether a responsive value object holds a real value for a slug.
+ * Empty strings, null/undefined, and empty objects/arrays count as unset.
+ */
+function slugHasValue(value, slug) {
+    if (!value) {
+        return false;
+    }
+    var v = value[slug];
+    if (v === undefined || v === null || v === '') {
+        return false;
+    }
+    if (typeof v === 'object') {
+        return Object.keys(v).length > 0;
+    }
+    return true;
+}
+
+/**
+ * Responsive indicator — three non-interactive dots (Desktop / Tablet /
+ * Mobile) that signal a control varies by viewport. A dot is filled when
+ * that viewport has its own value, and the dot for the editor's active
+ * preview device is accent-coloured. Place it next to a control's label.
+ *
+ * Props (one of):
+ *   - value {Object}   responsive value keyed by slug; a slug counts as
+ *                      "set" when slugHasValue() is true.
+ *   - isSet {Function} (slug) => boolean — custom predicate (use for
+ *                      controls that span several values, e.g. spacings).
+ */
+export function ResponsiveDots(props) {
+    var dt = useDeviceType();
+    var active = dt.device;
+    var isSet = props.isSet || function (s) { return slugHasValue(props.value, s); };
+
+    return createElement('span', { className: 'orbitools-responsive-dots' },
+        DEVICE_ORDER.map(function (d) {
+            var set = isSet(deviceToSlug(d));
+            var className = 'orbitools-responsive-dots__dot'
+                + (set ? ' is-set' : '')
+                + (active === d ? ' is-active' : '');
+            return createElement(Tooltip, { key: d, text: d + (set ? ' — custom value' : '') },
+                createElement('span', { className: className })
+            );
+        })
+    );
+}
+
+/**
  * The framework component.
  *
  * Props:
  *   - title       {string}   PanelBody title.
- *   - blockName   {string}   for the (cosmetic) breakpoint hint lookup.
+ *   - blockName   {string}   for the (cosmetic) breakpoint lookup.
  *   - initialOpen {boolean}  PanelBody initialOpen (default false).
  *   - wrap        {boolean}  wrap in a PanelBody (default true). Pass
  *                            false to embed inside an existing panel.
+ *   - indicator   {Element}  optional node (a <ResponsiveDots/>) rendered
+ *                            inline in the panel title — for wrapped
+ *                            controls that have no inline label of their
+ *                            own. Ignored when wrap === false (place the
+ *                            dots next to your own label instead).
  *   - render      {Function} ({ device, slug, breakpoint }) => element.
  *
- * There is no in-panel device switcher: the control reflects the
- * editor's own screen-size preview toggle (the top-bar Preview ▸
- * Desktop / Tablet / Mobile). Whichever device the editor is previewing
- * is the viewport you're editing — Desktop→base, Tablet→tablet,
- * Mobile→mobile. The active non-Desktop device is appended to the panel
- * title so it's clear which viewport a value applies to.
+ * There is no in-panel device switcher: the control reflects the editor's
+ * own screen-size preview toggle (top-bar Preview ▸ Desktop/Tablet/
+ * Mobile). Whichever device the editor previews is the viewport you edit
+ * — Desktop→base, Tablet→tablet, Mobile→mobile. Discoverability comes
+ * from the ResponsiveDots indicator instead.
  */
 export function ResponsiveControl(props) {
     var dt = useDeviceType();
@@ -161,7 +214,12 @@ export function ResponsiveControl(props) {
         return control;
     }
 
-    var title = slug === 'base' ? props.title : props.title + ' · ' + device;
+    var title = props.indicator
+        ? createElement('span', { className: 'orbitools-responsive__heading' },
+            createElement('span', { className: 'orbitools-responsive__heading-text' }, props.title),
+            props.indicator
+        )
+        : props.title;
 
     return createElement(PanelBody, {
         title: title,

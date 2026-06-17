@@ -24,6 +24,39 @@
 }
 
 // ResponsiveControl framework — no in-panel switcher; the control
-// follows the editor's native screen-size preview toggle. The active
-// non-Desktop device is appended to the panel title (e.g. "Height ·
-// Tablet") so it's clear which viewport is being edited.
+// follows the editor's native screen-size preview toggle. Discoverability
+// comes from the ResponsiveDots indicator: three dots (Desktop/Tablet/
+// Mobile) next to a control's label — filled when that viewport has its
+// own value, accent-coloured for the editor's active preview device.
+.orbitools-responsive__heading {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.orbitools-responsive-dots {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+
+    &__dot {
+        width: 8px;
+        height: 8px;
+        box-sizing: border-box;
+        border-radius: 50%;
+        border: 1.5px solid #949494;
+        display: inline-block;
+
+        &.is-set {
+            background: #949494;
+        }
+
+        &.is-active {
+            border-color: var(--wp-admin-theme-color, #3858e9);
+        }
+
+        &.is-active.is-set {
+            background: var(--wp-admin-theme-color, #3858e9);
+        }
+    }
+}

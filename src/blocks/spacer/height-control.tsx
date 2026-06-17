@@ -13,7 +13,7 @@
 import { RangeControl } from '@wordpress/components';
 import { useSettings } from '@wordpress/block-editor';
 import { getSpacingDisplayName } from '../utils/control-helpers';
-import { ResponsiveControl } from '../../core/utils/responsive-control';
+import { ResponsiveControl, ResponsiveDots } from '../../core/utils/responsive-control';
 
 export interface ResponsiveValue<T = string> {
     base?: T;
@@ -81,7 +81,7 @@ export default function SpacerHeightControl({
         <ResponsiveControl
             blockName={blockName}
             wrap={false}
-            render={({ slug, device }) => {
+            render={({ slug }) => {
                 const currentValue = getValue(slug);
                 const currentIndex = currentValue ? allOptions.findIndex((o) => o.slug === currentValue) : -1;
                 const sliderValue = currentIndex >= 0 ? currentIndex : 0;
@@ -101,14 +101,17 @@ export default function SpacerHeightControl({
                             justifyContent: 'space-between',
                             alignItems: 'center',
                         }}>
-                            <label style={{
-                                fontSize: '11px',
-                                fontWeight: 500,
-                                color: '#757575',
-                                margin: 0
-                            }}>
-                                {slug === 'base' ? 'Height' : `Height · ${device}`}
-                            </label>
+                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                                <label style={{
+                                    fontSize: '11px',
+                                    fontWeight: 500,
+                                    color: '#757575',
+                                    margin: 0
+                                }}>
+                                    Height
+                                </label>
+                                <ResponsiveDots value={height} />
+                            </span>
                             <span style={{
                                 fontSize: '11px',
                                 fontWeight: 400,

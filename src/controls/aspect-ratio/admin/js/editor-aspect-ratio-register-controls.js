@@ -11,7 +11,7 @@
  * @since 1.4.0
  */
 
-import { ResponsiveControl } from '../../../../core/utils/responsive-control.js';
+import { ResponsiveControl, ResponsiveDots } from '../../../../core/utils/responsive-control.js';
 
 (function() {
     function getBlockAspectRatioConfig(blockName) {
@@ -83,6 +83,7 @@ import { ResponsiveControl } from '../../../../core/utils/responsive-control.js'
             title: 'Aspect Ratio',
             blockName: blockName,
             initialOpen: false,
+            indicator: createElement(ResponsiveDots, { value: aspectRatio }),
             render: function(ctx) {
                 return createElement(SelectControl, {
                     value: getValue(ctx.slug),

@@ -26,10 +26,21 @@ export interface ResponsiveControlProps {
     initialOpen?: boolean;
     /** Pass false to skip the PanelBody wrapper. */
     wrap?: boolean;
+    /** Optional <ResponsiveDots/> rendered inline in the panel title. */
+    indicator?: ReactNode;
     render: (ctx: ResponsiveRenderContext) => ReactNode;
 }
 
 export function ResponsiveControl(props: ResponsiveControlProps): JSX.Element;
+
+export interface ResponsiveDotsProps {
+    /** Responsive value keyed by slug; a slug is "set" when non-empty. */
+    value?: Record<string, unknown> | null;
+    /** Custom predicate for controls that span several values. */
+    isSet?: (slug: string) => boolean;
+}
+
+export function ResponsiveDots(props: ResponsiveDotsProps): JSX.Element;
 
 export function deviceToSlug(device: string): string;
 
