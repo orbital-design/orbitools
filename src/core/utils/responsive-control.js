@@ -29,12 +29,12 @@
  *       },
  *   });
  *
- * The framework owns: device detection (version-safe across
- * core/editor ↔ core/edit-post), the device switcher chrome (which
- * also drives the editor's real preview so the inspector and toolbar
- * stay in sync), and the cascade hint. The consumer owns only the
- * actual input control and how it reads/writes its own attribute
- * slice for the active `slug`.
+ * The framework owns device detection (version-safe across
+ * core/editor ↔ core/edit-post) and reflecting the editor's active
+ * preview device in the panel title. There is no in-panel switcher —
+ * the editor's own screen-size preview toggle is the single control.
+ * The consumer owns only the actual input and how it reads/writes its
+ * own attribute slice for the active `slug`.
  *
  * Plain JS + wp.element.createElement on purpose — the controls build
  * (webpack.assets.js) transpiles JS with preset-env only, no JSX/TS.
@@ -49,45 +49,11 @@ var createElement = wp.element.createElement;
 var useSelect = wp.data.useSelect;
 var useDispatch = wp.data.useDispatch;
 var PanelBody = wp.components.PanelBody;
-var DropdownMenu = wp.components.DropdownMenu;
 
 /** Editor device type → our breakpoint slug. */
 var DEVICE_TO_SLUG = { Desktop: 'base', Tablet: 'tablet', Mobile: 'mobile' };
 var SLUG_TO_DEVICE = { base: 'Desktop', tablet: 'Tablet', mobile: 'Mobile' };
 var DEVICE_ORDER = ['Desktop', 'Tablet', 'Mobile'];
-
-/**
- * Inline device icons — built from wp.element only. We deliberately do
- * NOT use @wordpress/icons (`wp.icons`): in WP 7.0 there is no
- * registered `wp-icons` script handle, so declaring it as a dependency
- * makes WordPress silently drop the whole control script. These SVGs
- * inherit `currentColor`, so they tint with the button state.
- */
-function deviceSvg(children) {
-    return createElement('svg', {
-        width: 20,
-        height: 20,
-        viewBox: '0 0 24 24',
-        xmlns: 'http://www.w3.org/2000/svg',
-        'aria-hidden': true,
-        focusable: false
-    }, children);
-}
-
-var DEVICE_ICON = {
-    Desktop: deviceSvg([
-        createElement('rect', { key: 'b', x: 3, y: 4, width: 18, height: 12, rx: 1.5, fill: 'none', stroke: 'currentColor', 'stroke-width': 1.6 }),
-        createElement('path', { key: 's', d: 'M8.5 20h7M12 16.5v3.5', fill: 'none', stroke: 'currentColor', 'stroke-width': 1.6, 'stroke-linecap': 'round' })
-    ]),
-    Tablet: deviceSvg([
-        createElement('rect', { key: 'b', x: 6, y: 3, width: 12, height: 18, rx: 2, fill: 'none', stroke: 'currentColor', 'stroke-width': 1.6 }),
-        createElement('circle', { key: 'h', cx: 12, cy: 18, r: 0.85, fill: 'currentColor' })
-    ]),
-    Mobile: deviceSvg([
-        createElement('rect', { key: 'b', x: 8, y: 3, width: 8, height: 18, rx: 2, fill: 'none', stroke: 'currentColor', 'stroke-width': 1.6 }),
-        createElement('circle', { key: 'h', cx: 12, cy: 18, r: 0.75, fill: 'currentColor' })
-    ])
-};
 
 /** Map an editor device type to our breakpoint slug. */
 export function deviceToSlug(device) {
@@ -176,11 +142,12 @@ function breakpointForSlug(blockName, slug) {
  *                            false to embed inside an existing panel.
  *   - render      {Function} ({ device, slug, breakpoint }) => element.
  *
- * The three editor preview devices (Desktop / Tablet / Mobile) are
- * always offered and map straight through to base / tablet / mobile —
- * deliberately NOT gated on the block's breakpoint config, so the
- * control can never silently collapse to Desktop-only and write every
- * device's value to `base`.
+ * There is no in-panel device switcher: the control reflects the
+ * editor's own screen-size preview toggle (the top-bar Preview ▸
+ * Desktop / Tablet / Mobile). Whichever device the editor is previewing
+ * is the viewport you're editing — Desktop→base, Tablet→tablet,
+ * Mobile→mobile. The active non-Desktop device is appended to the panel
+ * title so it's clear which viewport a value applies to.
  */
 export function ResponsiveControl(props) {
     var dt = useDeviceType();
@@ -188,45 +155,18 @@ export function ResponsiveControl(props) {
     var slug = deviceToSlug(device);
     var breakpoint = breakpointForSlug(props.blockName, slug);
 
-    // Device switcher — a compact dropdown whose toggle is the current
-    // device's icon. Docked onto the panel's title row (see CSS) so it
-    // costs no extra height; selecting a device also drives the editor's
-    // preview, keeping the inspector and canvas in sync.
-    var switcher = createElement(DropdownMenu, {
-        icon: DEVICE_ICON[device],
-        label: 'Editing device: ' + device,
-        popoverProps: { placement: 'bottom-end' },
-        toggleProps: { size: 'small', className: 'orbitools-responsive__toggle' },
-        controls: DEVICE_ORDER.map(function (d) {
-            return {
-                title: d,
-                icon: DEVICE_ICON[d],
-                isActive: device === d,
-                onClick: function () { dt.setDevice(d); }
-            };
-        })
-    });
+    var control = props.render({ device: device, slug: slug, breakpoint: breakpoint });
 
-    var control = createElement('div', { className: 'orbitools-responsive__control' },
-        props.render({ device: device, slug: slug, breakpoint: breakpoint })
-    );
-
-    // No panel header to dock the dropdown onto — show it inline,
-    // right-aligned above the control instead.
     if (props.wrap === false) {
-        return createElement(wp.element.Fragment, {},
-            createElement('div', { className: 'orbitools-responsive__devices orbitools-responsive__devices--inline' }, switcher),
-            control
-        );
+        return control;
     }
 
-    return createElement('div', { className: 'orbitools-responsive' },
-        createElement('div', { className: 'orbitools-responsive__devices' }, switcher),
-        createElement(PanelBody, {
-            title: props.title,
-            initialOpen: !!props.initialOpen
-        }, control)
-    );
+    var title = slug === 'base' ? props.title : props.title + ' · ' + device;
+
+    return createElement(PanelBody, {
+        title: title,
+        initialOpen: !!props.initialOpen
+    }, control);
 }
 
 export { DEVICE_ORDER, DEVICE_TO_SLUG, SLUG_TO_DEVICE };
