@@ -1,14 +1,9 @@
 /**
- * Collection Block Controls
+ * Row Layout Block Controls
  *
- * Main controls for the Collection block that are common to all layout types:
- * - Layout type selection (row vs grid)
- * - Gap/spacing controls with theme.json integration
- * - Content width restriction for full-width blocks
- *
- * Layout-specific controls are handled by separate components:
- * - RowControls for row layout
- * - GridControls for grid layout
+ * Common controls plus the row layout controls (RowControls). The block is a
+ * row layout; a dedicated grid block will be separate, so there's no grid mode
+ * here.
  *
  * @file blocks/collection/controls.tsx
  * @since 1.0.0
@@ -24,7 +19,6 @@ import {
 
 import type { LayoutAttributes } from '../types';
 import RowControls from './row-controls';
-import GridControls from './grid-controls';
 
 interface CollectionControlsProps {
     attributes: LayoutAttributes;
@@ -35,7 +29,6 @@ interface CollectionControlsProps {
  * Default values for common controls
  */
 const COMMON_DEFAULTS = {
-    layoutType: 'row',
     restrictContentWidth: false,
 } as const;
 
@@ -44,7 +37,6 @@ const COMMON_DEFAULTS = {
  */
 export default function CollectionControls({ attributes, setAttributes }: CollectionControlsProps) {
     const {
-        layoutType = COMMON_DEFAULTS.layoutType,
         restrictContentWidth = COMMON_DEFAULTS.restrictContentWidth,
         align
     } = attributes;
@@ -110,21 +102,10 @@ export default function CollectionControls({ attributes, setAttributes }: Collec
     return (
         <Fragment>
             {renderCommonControls()}
-
-            {/* Layout-specific controls */}
-            {layoutType === 'row' && (
-                <RowControls
-                    attributes={attributes}
-                    setAttributes={setAttributes}
-                />
-            )}
-
-            {layoutType === 'grid' && (
-                <GridControls
-                    attributes={attributes}
-                    setAttributes={setAttributes}
-                />
-            )}
+            <RowControls
+                attributes={attributes}
+                setAttributes={setAttributes}
+            />
         </Fragment>
     );
 }

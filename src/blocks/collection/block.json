@@ -43,8 +43,7 @@
             "type": "string",
             "default": "row",
             "enum": [
-                "row",
-                "grid"
+                "row"
             ]
         },
         "itemWidth": {
