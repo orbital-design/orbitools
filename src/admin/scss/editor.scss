@@ -37,7 +37,15 @@
 .orbitools-responsive-dots {
     display: inline-flex;
     align-items: center;
-    gap: 4px;
+
+    // Padding gives each dot a usable click target while keeping the
+    // visible dot small.
+    &__hit {
+        display: inline-flex;
+        align-items: center;
+        padding: 3px;
+        cursor: pointer;
+    }
 
     &__dot {
         width: 8px;
@@ -58,5 +66,10 @@
         &.is-active.is-set {
             background: var(--wp-admin-theme-color, #3858e9);
         }
+    }
+
+    // Hover affordance — signals the dots are clickable.
+    &__hit:hover &__dot:not(.is-active) {
+        border-color: var(--wp-admin-theme-color, #3858e9);
     }
 }

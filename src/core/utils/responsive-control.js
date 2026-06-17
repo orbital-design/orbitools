@@ -151,10 +151,17 @@ function slugHasValue(value, slug) {
 }
 
 /**
- * Responsive indicator — three non-interactive dots (Desktop / Tablet /
- * Mobile) that signal a control varies by viewport. A dot is filled when
- * that viewport has its own value, and the dot for the editor's active
- * preview device is accent-coloured. Place it next to a control's label.
+ * Responsive indicator — three dots (Desktop / Tablet / Mobile) that
+ * signal a control varies by viewport. A dot is filled when that viewport
+ * has its own value, and the dot for the editor's active preview device is
+ * accent-coloured. Clicking a dot switches the editor's preview to that
+ * device (so the control then edits that viewport). Place it next to a
+ * control's label.
+ *
+ * Clickable spans (not <button>s) on purpose: the indicator is rendered
+ * inside the PanelBody title — itself a <button> — so a nested button
+ * would be invalid markup. stopPropagation keeps the click from toggling
+ * the panel open/closed.
  *
  * Props (one of):
  *   - value {Object}   responsive value keyed by slug; a slug counts as
@@ -170,11 +177,19 @@ export function ResponsiveDots(props) {
     return createElement('span', { className: 'orbitools-responsive-dots' },
         DEVICE_ORDER.map(function (d) {
             var set = isSet(deviceToSlug(d));
-            var className = 'orbitools-responsive-dots__dot'
+            var dotClassName = 'orbitools-responsive-dots__dot'
                 + (set ? ' is-set' : '')
                 + (active === d ? ' is-active' : '');
             return createElement(Tooltip, { key: d, text: d },
-                createElement('span', { className: className })
+                createElement('span', {
+                    className: 'orbitools-responsive-dots__hit',
+                    onClick: function (e) {
+                        if (e && e.stopPropagation) { e.stopPropagation(); }
+                        dt.setDevice(d);
+                    }
+                },
+                    createElement('span', { className: dotClassName })
+                )
             );
         })
     );
