@@ -204,13 +204,20 @@ class Spacer extends Module_Base
         $css .= "    flex: 1;\n";
         $css .= "}\n\n";
 
-        // Generate spacing size classes
+        // Generate spacing size classes. No `, {$size}` fallback: WordPress
+        // emits --wp--preset--spacing--{slug} for every preset, and this CSS
+        // is only generated when those same presets exist — so the var is
+        // always defined and the fallback is dead weight. Slug 0 is
+        // special-cased above (there's no preset var for it).
         foreach ($spacing_sizes as $spacing) {
             $slug = $spacing['slug'];
-            $size = $spacing['size'];
+
+            if ((string) $slug === '0') {
+                continue;
+            }
 
             $css .= ".orb-spacer--{$slug} {\n";
-            $css .= "    min-height: var(--wp--preset--spacing--{$slug}, {$size});\n";
+            $css .= "    min-height: var(--wp--preset--spacing--{$slug});\n";
             $css .= "}\n\n";
         }
 
@@ -236,13 +243,17 @@ class Spacer extends Module_Base
             $css .= "        flex: 1;\n";
             $css .= "    }\n\n";
 
-            // Spacing sizes for this breakpoint
+            // Spacing sizes for this breakpoint (no fallback; slug 0 is
+            // special-cased above).
             foreach ($spacing_sizes as $spacing) {
                 $slug = $spacing['slug'];
-                $size = $spacing['size'];
+
+                if ((string) $slug === '0') {
+                    continue;
+                }
 
                 $css .= "    .{$breakpoint_slug}\:orb-spacer--{$slug} {\n";
-                $css .= "        min-height: var(--wp--preset--spacing--{$slug}, {$size});\n";
+                $css .= "        min-height: var(--wp--preset--spacing--{$slug});\n";
                 $css .= "    }\n\n";
             }
 
