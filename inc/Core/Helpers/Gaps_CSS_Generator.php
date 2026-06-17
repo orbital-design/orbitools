@@ -49,8 +49,10 @@ class Gaps_CSS_Generator
             return '';
         }
 
-        // Build cache key from config data
-        $cache_key = self::TRANSIENT_KEY . '_' . md5(\wp_json_encode([$spacing_sizes, $breakpoints]));
+        // Build cache key from config data. The leading schema version
+        // busts stale transients whenever the generated CSS shape changes
+        // (the config inputs alone wouldn't) — bump it on any edit below.
+        $cache_key = self::TRANSIENT_KEY . '_' . md5(\wp_json_encode([2, $spacing_sizes, $breakpoints]));
 
         // Check transient cache
         $cached = \get_transient($cache_key);
@@ -69,13 +71,19 @@ class Gaps_CSS_Generator
         $css .= "    gap: 0;\n";
         $css .= "}\n\n";
 
-        // Generate spacing size gap classes
+        // Generate spacing size gap classes. No `, {$size}` fallback:
+        // WordPress emits --wp--preset--spacing--{slug} for every preset and
+        // this CSS only exists when those presets do, so the var is always
+        // defined. Slug 0 is the special-cased zero above.
         foreach ($spacing_sizes as $spacing) {
             $slug = $spacing['slug'];
-            $size = $spacing['size'];
-            
+
+            if ((string) $slug === '0') {
+                continue;
+            }
+
             $css .= ".has-gap.has-gap--{$slug} {\n";
-            $css .= "    gap: var(--wp--preset--spacing--{$slug}, {$size});\n";
+            $css .= "    gap: var(--wp--preset--spacing--{$slug});\n";
             $css .= "}\n\n";
         }
 
@@ -95,13 +103,17 @@ class Gaps_CSS_Generator
             $css .= "        gap: 0;\n";
             $css .= "    }\n\n";
             
-            // Spacing sizes for this breakpoint
+            // Spacing sizes for this breakpoint (no fallback; slug 0 is
+            // special-cased above).
             foreach ($spacing_sizes as $spacing) {
                 $slug = $spacing['slug'];
-                $size = $spacing['size'];
-                
+
+                if ((string) $slug === '0') {
+                    continue;
+                }
+
                 $css .= "    .has-gap.{$breakpoint_slug}\:has-gap--{$slug} {\n";
-                $css .= "        gap: var(--wp--preset--spacing--{$slug}, {$size});\n";
+                $css .= "        gap: var(--wp--preset--spacing--{$slug});\n";
                 $css .= "    }\n\n";
             }
             
