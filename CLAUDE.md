@@ -466,6 +466,20 @@ When adding new blocks or features:
 4. **Document decisions** - Update this file with new patterns
 5. **Clean as you go** - Remove unused code immediately
 
+### Planned: Grid block
+
+A dedicated `orb/grid` block (separate from the flex-based Row Layout) is
+planned, with **responsive per-breakpoint column spans** (e.g. desktop 8/4 →
+tablet 6/6 → stacked-mobile full). It uses CSS Grid — `grid-template-columns:
+repeat(N, minmax(0,1fr))` + `grid-column: span N` — because flexbox `%` widths
+can't reconcile with `gap`. Reuses the `ResponsiveControl`/`ResponsiveDots`
+framework and the `has-gap` system; "stack on mobile" locks the mobile span to
+full.
+
+- Full design: `GRID-BLOCK-SPEC.md` (local/untracked — `*.md` is gitignored).
+- Working CSS-Grid prototype (built on Row Layout, then reverted): commit
+  `1632f26` — `git show 1632f26` to lift the container + span CSS.
+
 ---
 *Last Updated: 2026-05-26 (v3 React admin layer + AdminKit retirement)*
 *This file should be updated whenever new development patterns or lessons are discovered.*
