@@ -32,6 +32,10 @@ const blockEntries = {
     'blocks/marquee/index': path.resolve(process.cwd(), 'src', 'blocks', 'marquee', 'index.tsx'),
     'blocks/marquee/editor': path.resolve(process.cwd(), 'src', 'blocks', 'marquee', 'editor.scss'),
     'blocks/marquee/frontend': path.resolve(process.cwd(), 'src', 'blocks', 'marquee', 'frontend.js'),
+    'blocks/grid/index': path.resolve(process.cwd(), 'src', 'blocks', 'grid', 'index.tsx'),
+    'blocks/grid/editor': path.resolve(process.cwd(), 'src', 'blocks', 'grid', 'editor.scss'),
+    'blocks/grid-cell/index': path.resolve(process.cwd(), 'src', 'blocks', 'grid-cell', 'index.tsx'),
+    'blocks/grid-cell/editor': path.resolve(process.cwd(), 'src', 'blocks', 'grid-cell', 'editor.scss'),
     'blocks/group/index': path.resolve(process.cwd(), 'src', 'blocks', 'group', 'index.tsx'),
     'blocks/group/editor': path.resolve(process.cwd(), 'src', 'blocks', 'group', 'editor.scss'),
     'blocks/video/index': path.resolve(process.cwd(), 'src', 'blocks', 'video', 'index.tsx'),
@@ -81,6 +85,14 @@ module.exports = {
                 {
                     from: 'src/blocks/marquee/block.json',
                     to: 'blocks/marquee/block.json',
+                },
+                {
+                    from: 'src/blocks/grid/block.json',
+                    to: 'blocks/grid/block.json',
+                },
+                {
+                    from: 'src/blocks/grid-cell/block.json',
+                    to: 'blocks/grid-cell/block.json',
                 },
                 {
                     from: 'src/blocks/group/block.json',

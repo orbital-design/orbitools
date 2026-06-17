@@ -1,0 +1,55 @@
+{
+    "apiVersion": 3,
+    "name": "orb/grid-cell",
+    "version": "1.0.0",
+    "title": "Cell",
+    "category": "layout",
+    "icon": "grid-view",
+    "description": "A cell within a Grid.",
+    "parent": [
+        "orb/grid"
+    ],
+    "supports": {
+        "html": false,
+        "reusable": false,
+        "background": {
+            "backgroundImage": true,
+            "backgroundSize": true,
+            "__experimentalDefaultControls": {
+                "backgroundImage": true
+            }
+        },
+        "color": {
+            "background": true,
+            "text": true
+        },
+        "__experimentalBorder": {
+            "radius": true
+        },
+        "orbitools": {
+            "spacings": {
+                "breakpoints": true,
+                "gap": true,
+                "margin": false,
+                "padding": true
+            }
+        },
+        "typography": {
+            "textAlign": true
+        }
+    },
+    "attributes": {
+        "span": {
+            "type": "object",
+            "default": {}
+        }
+    },
+    "usesContext": [
+        "orb/columnSystem",
+        "orb/stackOnMobile"
+    ],
+    "textdomain": "orbitools",
+    "editorScript": "file:./index.js",
+    "editorStyle": "file:./editor.css",
+    "style": "file:./index.css"
+}

@@ -1,0 +1,49 @@
+/**
+ * Block: Grid - Frontend Styles
+ *
+ * Frontend styles for the Grid block, shipped by the plugin via block.json
+ * `style` so the block is self-contained (no theme dependency).
+ *
+ * The grid uses native CSS Grid: column tracks are driven by the
+ * `--orb-grid-cols` custom property (set in PHP from columnSystem), and the
+ * gap comes from the Orbitools `has-gap` system (SpacingsRenderer) which
+ * applies to Grid identically — no bespoke gap plumbing here.
+ *
+ * Breakpoints follow the 3-tier desktop-first scheme (tablet 781px / mobile
+ * 479px) that matches the editor's device preview.
+ *
+ * @file        blocks/grid/index.scss
+ * @subpackage  orbitools/blocks
+ * @author      Adam Cullen, Orbital Tech Team
+ *
+ * @see         blocks/grid/editor.scss - Editor styles
+ */
+
+$elem_base: 'orb-grid';
+
+.#{$elem_base} {
+    display: grid;
+    grid-template-columns: repeat(var(--orb-grid-cols, 12), minmax(0, 1fr));
+    width: 100%;
+    box-sizing: border-box;
+
+    // Default gap (per-size gaps come from the has-gap system).
+    gap: var(--gutter, var(--wp--style--block-gap, 20px));
+
+    // Hide overflow if there's a radius set in the core
+    &[style*='border-radius'] {
+        overflow: hidden;
+    }
+
+    // Stack on mobile — collapse the grid to a single column and let every
+    // cell span the full width. Triggers at the mobile breakpoint (479px).
+    &[data-stacked="true"] {
+        @media (max-width: 29.9375rem) {
+            grid-template-columns: 1fr;
+
+            > .orb-grid-cell {
+                grid-column: 1 / -1 !important;
+            }
+        }
+    }
+}

@@ -1,0 +1,122 @@
+/**
+ * Block: Grid Cell - Editor Styles
+ *
+ * Block editor specific styles for the Grid Cell block. Handles editor-only
+ * styling, preview states, and the empty-cell appender affordance. The
+ * frontend span layout lives in index.scss.
+ *
+ * @file        blocks/grid-cell
+ * @subpackage  orbitools/blocks
+ * @author      Adam Cullen, Orbital Tech Team
+ * @since       1.0.0
+ *
+ * @see         blocks/grid-cell/index.scss - Frontend styles
+ */
+
+$elem_base: 'orb-grid-cell';
+
+.#{$elem_base} {
+    position: relative;
+
+    // UI Cues
+    &::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        background: rgba(0, 124, 186, 0);
+        border: 0px dashed #32a3e2;
+        border-radius: 6px;
+        transition: all 0.25s ease;
+    }
+
+    &:hover {
+        &:before {
+            background: rgba(0, 124, 186, 0.05);
+            top: -10px;
+            right: -10px;
+            bottom: -10px;
+            left: -10px;
+            border-width: 1px;
+        }
+    }
+
+    &.is-selected,
+    &.has-child-selected {
+        &:before {
+            background: rgba(0, 124, 186, 0.05);
+            top: -10px;
+            right: -10px;
+            bottom: -10px;
+            left: -10px;
+            border-width: 1px;
+            border-style: solid;
+        }
+    }
+
+    > .block-editor-inner-blocks,
+    > .block-editor-inner-blocks > .block-editor-block-list__layout {
+        display: contents;
+    }
+
+    &:has(> .block-editor-inner-blocks > .block-editor-block-list__layout .block-list-appender:only-child),
+    &:has(> .block-editor-inner-blocks > .block-editor-block-list__layout:empty) {
+        padding: 10px;
+        background: rgba(0, 124, 186, 0.2);
+        border-radius: 6px;
+
+        &:hover {
+            cursor: pointer;
+        }
+    }
+
+    &.block-editor-block-list__block {
+        .block-list-appender {
+            bottom: initial;
+            list-style: none;
+            padding: 0;
+            position: relative;
+            right: initial;
+            z-index: 2;
+            display: none !important;
+            align-self: center;
+
+            &:only-child {
+                display: flex !important;
+            }
+
+            &:not(:only-child) {
+                margin-top: 10px;
+            }
+
+            .block-editor-button-block-appender {
+                background: #f2f6fc;
+                aspect-ratio: 1/1;
+                border-radius: 4px;
+                max-width: 40px;
+                max-height: initial !important;
+                transition: all .15s ease;
+
+                &:hover,
+                &:focus {
+                    background: #32a3e2;
+                    color: white;
+                }
+            }
+        }
+
+        &.is-selected,
+        &.has-child-selected {
+            .block-list-appender {
+                display: flex !important;
+            }
+        }
+
+        &:has(> .block-editor-inner-blocks > .block-editor-block-list__layout > .block-list-appender:only-child) {
+            justify-content: center;
+            align-items: center;
+        }
+    }
+}

@@ -1,0 +1,58 @@
+/**
+ * Block: Grid Cell - Frontend Styles
+ *
+ * Frontend styles for the Grid Cell block, shipped by the plugin via
+ * block.json `style` so the block is self-contained (no theme dependency).
+ *
+ * Cells span columns via the responsive class scheme that mirrors the rest of
+ * the plugin: `orb-grid-cell--span-{n}` (base), `tablet:orb-grid-cell--span-{n}`,
+ * `mobile:orb-grid-cell--span-{n}` (the `:` escaped as `\:`). A cell with no
+ * span class defaults to a single grid track.
+ *
+ * Breakpoints follow the 3-tier desktop-first scheme (tablet 781px = 48.8125rem
+ * / mobile 479px = 29.9375rem) that matches the editor's device preview.
+ *
+ * @file        blocks/grid-cell/index.scss
+ * @subpackage  orbitools/blocks
+ * @author      Adam Cullen, Orbital Tech Team
+ *
+ * @see         blocks/grid-cell/editor.scss - Editor styles
+ */
+
+$elem_base: 'orb-grid-cell';
+$max_cols: 12;
+
+.#{$elem_base} {
+    display: flex;
+    flex-direction: column;
+    min-width: 0; // Prevent grid track blowout
+    box-sizing: border-box;
+
+    // Default gap (per-size gaps come from the has-gap system).
+    gap: var(--gutter, var(--wp--style--block-gap, 20px));
+}
+
+// Base span classes (desktop / no media query)
+@for $n from 1 through $max_cols {
+    .#{$elem_base}--span-#{$n} {
+        grid-column: span #{$n};
+    }
+}
+
+// Tablet span overrides — 781px
+@media (max-width: 48.8125rem) {
+    @for $n from 1 through $max_cols {
+        .tablet\:#{$elem_base}--span-#{$n} {
+            grid-column: span #{$n};
+        }
+    }
+}
+
+// Mobile span overrides — 479px
+@media (max-width: 29.9375rem) {
+    @for $n from 1 through $max_cols {
+        .mobile\:#{$elem_base}--span-#{$n} {
+            grid-column: span #{$n};
+        }
+    }
+}
