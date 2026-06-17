@@ -343,14 +343,16 @@ export default function RowControls({ attributes, setAttributes }: RowControlsPr
         return (
             <>
                 <InspectorControls group="settings">
-                    {/* Layout ToolsPanel */}
+                    {/* Columns ToolsPanel — count, width, system and stacking together */}
                     <ToolsPanel
-                        label="Layout"
+                        label="Columns"
                         resetAll={() => {
                             updateAttribute('columnCount', ROW_DEFAULTS.columnCount);
+                            updateAttribute('itemWidth', ROW_DEFAULTS.itemWidth);
+                            updateAttribute('columnSystem', ROW_DEFAULTS.columnSystem);
                             updateAttribute('stackOnMobile', ROW_DEFAULTS.stackOnMobile);
                         }}
-                        panelId="collection-row-layout-panel"
+                        panelId="collection-columns-panel"
                     >
                     {/* Column Count Control */}
                     {createToolsPanelItem(
@@ -398,33 +400,7 @@ export default function RowControls({ attributes, setAttributes }: RowControlsPr
                         true
                     )}
 
-                    {/* Stack on Mobile Control */}
-                    {createToolsPanelItem(
-                        'stackOnMobile',
-                        () => hasNonDefaultValue('stackOnMobile', ROW_DEFAULTS.stackOnMobile),
-                        () => updateAttribute('stackOnMobile', ROW_DEFAULTS.stackOnMobile),
-                        'Stack',
-                        <ToggleControl
-                            label="Stack on Mobile"
-                            help="Stack columns on mobile devices"
-                            checked={stackOnMobile}
-                            onChange={(value) => updateAttribute('stackOnMobile', value)}
-                            __nextHasNoMarginBottom={true}
-                        />,
-                        true
-                    )}
-                </ToolsPanel>
-
-                {/* Entries ToolsPanel */}
-                <ToolsPanel
-                    label="Entries"
-                    resetAll={() => {
-                        updateAttribute('itemWidth', ROW_DEFAULTS.itemWidth);
-                        updateAttribute('columnSystem', ROW_DEFAULTS.columnSystem);
-                    }}
-                    panelId="collection-row-content-panel"
-                >
-                    {/* Entry Width Control */}
+                    {/* Column Width Control */}
                     {createToolsPanelItem(
                         'itemWidth',
                         () => hasNonDefaultValue('itemWidth', ROW_DEFAULTS.itemWidth),
@@ -453,6 +429,22 @@ export default function RowControls({ attributes, setAttributes }: RowControlsPr
                                 'Grid System'
                             )}
                         </div>,
+                        true
+                    )}
+
+                    {/* Stack on Mobile Control */}
+                    {createToolsPanelItem(
+                        'stackOnMobile',
+                        () => hasNonDefaultValue('stackOnMobile', ROW_DEFAULTS.stackOnMobile),
+                        () => updateAttribute('stackOnMobile', ROW_DEFAULTS.stackOnMobile),
+                        'Stack',
+                        <ToggleControl
+                            label="Stack on Mobile"
+                            help="Stack columns on mobile devices"
+                            checked={stackOnMobile}
+                            onChange={(value) => updateAttribute('stackOnMobile', value)}
+                            __nextHasNoMarginBottom={true}
+                        />,
                         true
                     )}
                 </ToolsPanel>
