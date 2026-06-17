@@ -114,7 +114,7 @@ import { ResponsiveControl, ResponsiveDots } from '../../../../core/utils/respon
 
             return createElement(Fragment, null,
                 createElement(BlockEdit, props),
-                createElement(InspectorControls, null,
+                createElement(InspectorControls, { group: 'styles' },
                     createElement(AspectRatioControl, {
                         aspectRatio: orbAspectRatio,
                         onAspectRatioChange: onAspectRatioChange,

@@ -642,7 +642,7 @@ import { ResponsiveControl, ResponsiveDots } from '../../../../core/utils/respon
 
             return wp.element.createElement(Fragment, {},
                 wp.element.createElement(BlockEdit, props),
-                wp.element.createElement(InspectorControls, {},
+                wp.element.createElement(InspectorControls, { group: 'styles' },
                     wp.element.createElement(SpacingsControl, {
                         gap: orbGap,
                         padding: orbPadding,
