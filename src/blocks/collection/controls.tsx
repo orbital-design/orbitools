@@ -15,7 +15,7 @@
  */
 
 import { Fragment } from '@wordpress/element';
-import { createToolsPanelItem, createToggleGroup } from '../utils/control-helpers';
+import { createToolsPanelItem } from '../utils/control-helpers';
 import { InspectorControls } from '@wordpress/block-editor';
 import {
     __experimentalToolsPanel as ToolsPanel,
@@ -40,16 +40,6 @@ const COMMON_DEFAULTS = {
 } as const;
 
 /**
- * Layout options for the Collection block
- */
-const LAYOUT_OPTIONS = [
-    { value: 'row', label: 'Row' },
-    { value: 'grid', label: 'Grid' },
-] as const;
-
-
-
-/**
  * Collection Block Controls Component
  */
 export default function CollectionControls({ attributes, setAttributes }: CollectionControlsProps) {
@@ -71,7 +61,6 @@ export default function CollectionControls({ attributes, setAttributes }: Collec
      */
     const resetCommonAttributes = () => {
         setAttributes({
-            layoutType: COMMON_DEFAULTS.layoutType,
             restrictContentWidth: COMMON_DEFAULTS.restrictContentWidth,
         });
     };
@@ -84,6 +73,13 @@ export default function CollectionControls({ attributes, setAttributes }: Collec
     };
 
     const renderCommonControls = () => {
+        // The only common control left is Constrain Content, which applies
+        // to full-width blocks only — so skip the panel entirely otherwise
+        // rather than render an empty "Settings" panel.
+        if (align !== 'full') {
+            return null;
+        }
+
         return (
             <InspectorControls group="settings">
                 <ToolsPanel
@@ -91,23 +87,8 @@ export default function CollectionControls({ attributes, setAttributes }: Collec
                     resetAll={resetCommonAttributes}
                     panelId="collection-common-panel"
                 >
-                    {/* Layout Type Control */}
+                    {/* Constrain Content Control - full-width blocks only */}
                     {createToolsPanelItem(
-                        'layoutType',
-                        () => hasNonDefaultValue('layoutType', COMMON_DEFAULTS.layoutType),
-                        () => updateAttribute('layoutType', COMMON_DEFAULTS.layoutType),
-                        'Layout Type',
-                        createToggleGroup(
-                            layoutType,
-                            (value) => updateAttribute('layoutType', value),
-                            LAYOUT_OPTIONS,
-                            'Layout Type'
-                        ),
-                        true
-                    )}
-
-                    {/* Constrain Content Control - only for full-width blocks */}
-                    {align === 'full' && createToolsPanelItem(
                         'restrictContentWidth',
                         () => hasNonDefaultValue('restrictContentWidth', COMMON_DEFAULTS.restrictContentWidth),
                         () => updateAttribute('restrictContentWidth', COMMON_DEFAULTS.restrictContentWidth),
