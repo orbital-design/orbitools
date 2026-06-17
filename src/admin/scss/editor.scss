@@ -23,34 +23,10 @@
     }
 }
 
-// ResponsiveControl framework — device switcher mirrors the editor's
-// native screen-size preview toggle (Desktop / Tablet / Mobile).
+// ResponsiveControl framework — native segmented ToggleGroupControl
+// device switcher that mirrors the editor's screen-size preview toggle
+// (Desktop / Tablet / Mobile). The control supplies its own styling;
+// we only space it from the control beneath it.
 .orbitools-responsive__devices {
-    display: flex;
-    gap: 2px;
     margin-bottom: 12px;
-    padding: 2px;
-    background: #f0f0f0;
-    border-radius: 4px;
-
-    .components-button {
-        flex: 1;
-        justify-content: center;
-        border-radius: 3px;
-
-        &.is-pressed {
-            background: #fff;
-            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-        }
-    }
-}
-
-.orbitools-responsive__hint.components-notice {
-    margin: 0 0 12px;
-
-    .components-notice__content {
-        font-size: 11px;
-        line-height: 1.4;
-        margin: 8px 0;
-    }
 }

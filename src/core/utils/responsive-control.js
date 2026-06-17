@@ -49,9 +49,8 @@ var createElement = wp.element.createElement;
 var useSelect = wp.data.useSelect;
 var useDispatch = wp.data.useDispatch;
 var PanelBody = wp.components.PanelBody;
-var Button = wp.components.Button;
-var Notice = wp.components.Notice;
-var Tooltip = wp.components.Tooltip;
+var ToggleGroupControl = wp.components.__experimentalToggleGroupControl;
+var ToggleGroupControlOptionIcon = wp.components.__experimentalToggleGroupControlOptionIcon;
 
 /** Editor device type → our breakpoint slug. */
 var DEVICE_TO_SLUG = { Desktop: 'base', Tablet: 'tablet', Mobile: 'mobile' };
@@ -190,33 +189,32 @@ export function ResponsiveControl(props) {
     var slug = deviceToSlug(device);
     var breakpoint = breakpointForSlug(props.blockName, slug);
 
-    // Device switcher — mirrors (and drives) the editor toolbar's
-    // preview toggle so the inspector and canvas stay in sync.
-    var switcher = createElement('div', { className: 'orbitools-responsive__devices' },
+    // Device switcher — a native segmented icon control that mirrors
+    // (and drives) the editor toolbar's preview toggle so the inspector
+    // and canvas stay in sync.
+    var switcher = createElement(ToggleGroupControl, {
+        label: 'Device',
+        hideLabelFromVision: true,
+        value: device,
+        isBlock: true,
+        isDeselectable: false,
+        onChange: function (val) { if (val) { dt.setDevice(val); } },
+        className: 'orbitools-responsive__devices',
+        __next40pxDefaultSize: true,
+        __nextHasNoMarginBottom: true
+    },
         DEVICE_ORDER.map(function (d) {
-            return createElement(Tooltip, { key: d, text: d },
-                createElement(Button, {
-                    size: 'small',
-                    icon: DEVICE_ICON[d],
-                    isPressed: device === d,
-                    onClick: function () { dt.setDevice(d); },
-                    'aria-label': d
-                })
-            );
+            return createElement(ToggleGroupControlOptionIcon, {
+                key: d,
+                value: d,
+                icon: DEVICE_ICON[d],
+                label: d
+            });
         })
     );
 
-    var hint = slug !== 'base'
-        ? createElement(Notice, { status: 'info', isDismissible: false, className: 'orbitools-responsive__hint' },
-            'Editing ' + (SLUG_TO_DEVICE[slug] || slug) +
-            (breakpoint ? ' — applies at ' + breakpoint.value + ' and below.' : ' — applies at this viewport and below.') +
-            ' Falls back to the Desktop value when unset.'
-        )
-        : null;
-
     var body = createElement(wp.element.Fragment, {},
         switcher,
-        hint,
         createElement('div', { className: 'orbitools-responsive__control' },
             props.render({ device: device, slug: slug, breakpoint: breakpoint })
         )
