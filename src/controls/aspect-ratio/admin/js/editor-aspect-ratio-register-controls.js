@@ -32,6 +32,8 @@ import { ResponsiveControl, ResponsiveDots } from '../../../../core/utils/respon
     var createElement = wp.element.createElement;
     var InspectorControls = wp.blockEditor.InspectorControls;
     var SelectControl = wp.components.SelectControl;
+    var ToolsPanel = wp.components.__experimentalToolsPanel;
+    var ToolsPanelItem = wp.components.__experimentalToolsPanelItem;
 
     function blockHasAspectRatioSupport(blockName) {
         var blockType = wp.blocks.getBlockType(blockName);
@@ -80,18 +82,37 @@ import { ResponsiveControl, ResponsiveDots } from '../../../../core/utils/respon
         }
 
         return createElement(ResponsiveControl, {
-            title: 'Aspect Ratio',
             blockName: blockName,
-            initialOpen: false,
-            indicator: createElement(ResponsiveDots, { value: aspectRatio }),
+            wrap: false,
             render: function(ctx) {
-                return createElement(SelectControl, {
-                    value: getValue(ctx.slug),
-                    options: selectOptions,
-                    onChange: function(value) { setValue(ctx.slug, value); },
-                    __next40pxDefaultSize: true,
-                    __nextHasNoMarginBottom: true
-                });
+                var slug = ctx.slug;
+                var panelId = slug + '-aspect-ratio-panel';
+
+                // Match the Spacings layout: a ToolsPanel whose header is the
+                // "Aspect Ratio" label with the responsive dots inline.
+                return createElement(ToolsPanel, {
+                    label: createElement('span', { className: 'orbitools-responsive-label' },
+                        'Aspect Ratio',
+                        createElement(ResponsiveDots, { value: aspectRatio })
+                    ),
+                    panelId: panelId
+                },
+                    createElement(ToolsPanelItem, {
+                        hasValue: function() { return getValue(slug) !== ''; },
+                        label: 'Aspect Ratio',
+                        onDeselect: function() { setValue(slug, ''); },
+                        isShownByDefault: true,
+                        panelId: panelId
+                    },
+                        createElement(SelectControl, {
+                            value: getValue(slug),
+                            options: selectOptions,
+                            onChange: function(value) { setValue(slug, value); },
+                            __next40pxDefaultSize: true,
+                            __nextHasNoMarginBottom: true
+                        })
+                    )
+                );
             }
         });
     }

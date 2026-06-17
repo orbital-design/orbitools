@@ -556,7 +556,7 @@ import { ResponsiveControl, ResponsiveDots } from '../../../../core/utils/respon
                 // No PanelBody wrapper — the ToolsPanel is the panel. The
                 // dots sit inline right after the "Spacings" label.
                 return wp.element.createElement(ToolsPanel, {
-                        label: wp.element.createElement('span', { className: 'orbitools-spacings-label' },
+                        label: wp.element.createElement('span', { className: 'orbitools-responsive-label' },
                             'Spacings',
                             wp.element.createElement(ResponsiveDots, { isSet: spacingsSetForSlug })
                         ),

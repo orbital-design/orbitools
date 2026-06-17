@@ -44,8 +44,9 @@
     }
 }
 
-// Spacings panel header: "Spacings" label with the dots inline beside it.
-.orbitools-spacings-label {
+// Panel header: a control's label with the responsive dots inline beside it
+// (Spacings, Aspect Ratio, …).
+.orbitools-responsive-label {
     display: inline-flex;
     align-items: center;
     gap: 8px;
