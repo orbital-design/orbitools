@@ -49,8 +49,7 @@ var createElement = wp.element.createElement;
 var useSelect = wp.data.useSelect;
 var useDispatch = wp.data.useDispatch;
 var PanelBody = wp.components.PanelBody;
-var ToggleGroupControl = wp.components.__experimentalToggleGroupControl;
-var ToggleGroupControlOptionIcon = wp.components.__experimentalToggleGroupControlOptionIcon;
+var DropdownMenu = wp.components.DropdownMenu;
 
 /** Editor device type → our breakpoint slug. */
 var DEVICE_TO_SLUG = { Desktop: 'base', Tablet: 'tablet', Mobile: 'mobile' };
@@ -189,45 +188,45 @@ export function ResponsiveControl(props) {
     var slug = deviceToSlug(device);
     var breakpoint = breakpointForSlug(props.blockName, slug);
 
-    // Device switcher — a native segmented icon control that mirrors
-    // (and drives) the editor toolbar's preview toggle so the inspector
-    // and canvas stay in sync.
-    var switcher = createElement(ToggleGroupControl, {
-        label: 'Device',
-        hideLabelFromVision: true,
-        value: device,
-        isBlock: true,
-        isDeselectable: false,
-        onChange: function (val) { if (val) { dt.setDevice(val); } },
-        className: 'orbitools-responsive__devices',
-        __next40pxDefaultSize: true,
-        __nextHasNoMarginBottom: true
-    },
-        DEVICE_ORDER.map(function (d) {
-            return createElement(ToggleGroupControlOptionIcon, {
-                key: d,
-                value: d,
+    // Device switcher — a compact dropdown whose toggle is the current
+    // device's icon. Docked onto the panel's title row (see CSS) so it
+    // costs no extra height; selecting a device also drives the editor's
+    // preview, keeping the inspector and canvas in sync.
+    var switcher = createElement(DropdownMenu, {
+        icon: DEVICE_ICON[device],
+        label: 'Editing device: ' + device,
+        popoverProps: { placement: 'bottom-end' },
+        toggleProps: { size: 'small', className: 'orbitools-responsive__toggle' },
+        controls: DEVICE_ORDER.map(function (d) {
+            return {
+                title: d,
                 icon: DEVICE_ICON[d],
-                label: d
-            });
+                isActive: device === d,
+                onClick: function () { dt.setDevice(d); }
+            };
         })
+    });
+
+    var control = createElement('div', { className: 'orbitools-responsive__control' },
+        props.render({ device: device, slug: slug, breakpoint: breakpoint })
     );
 
-    var body = createElement(wp.element.Fragment, {},
-        switcher,
-        createElement('div', { className: 'orbitools-responsive__control' },
-            props.render({ device: device, slug: slug, breakpoint: breakpoint })
-        )
-    );
-
+    // No panel header to dock the dropdown onto — show it inline,
+    // right-aligned above the control instead.
     if (props.wrap === false) {
-        return body;
+        return createElement(wp.element.Fragment, {},
+            createElement('div', { className: 'orbitools-responsive__devices orbitools-responsive__devices--inline' }, switcher),
+            control
+        );
     }
 
-    return createElement(PanelBody, {
-        title: props.title,
-        initialOpen: !!props.initialOpen
-    }, body);
+    return createElement('div', { className: 'orbitools-responsive' },
+        createElement('div', { className: 'orbitools-responsive__devices' }, switcher),
+        createElement(PanelBody, {
+            title: props.title,
+            initialOpen: !!props.initialOpen
+        }, control)
+    );
 }
 
 export { DEVICE_ORDER, DEVICE_TO_SLUG, SLUG_TO_DEVICE };

@@ -23,10 +23,34 @@
     }
 }
 
-// ResponsiveControl framework — native segmented ToggleGroupControl
-// device switcher that mirrors the editor's screen-size preview toggle
-// (Desktop / Tablet / Mobile). The control supplies its own styling;
-// we only space it from the control beneath it.
-.orbitools-responsive__devices {
-    margin-bottom: 12px;
+// ResponsiveControl framework — compact device dropdown docked onto the
+// PanelBody title row, so it adds no extra height. Selecting a device
+// mirrors the editor's screen-size preview toggle (Desktop/Tablet/Mobile).
+.orbitools-responsive {
+    position: relative;
+
+    // Dock the dropdown into the panel header, just left of the
+    // collapse chevron. It's an absolutely-positioned sibling of the
+    // PanelBody, so its clicks never toggle the panel.
+    > .orbitools-responsive__devices {
+        position: absolute;
+        top: 4px;
+        right: 40px;
+        z-index: 1;
+    }
+
+    // Tighten the dropdown toggle so it sits neatly on the title row.
+    .orbitools-responsive__toggle.components-button {
+        min-width: 28px;
+        height: 28px;
+        padding: 0;
+        color: #1e1e1e;
+    }
+}
+
+// Fallback layout when the control isn't wrapped in a PanelBody.
+.orbitools-responsive__devices--inline {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 8px;
 }
