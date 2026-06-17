@@ -547,17 +547,20 @@ import { ResponsiveControl, ResponsiveDots } from '../../../../core/utils/respon
         // Each device gets its own nested ToolsPanel of gap/padding/margin
         // bound to that slug's slice of the attribute object.
         return wp.element.createElement(ResponsiveControl, {
-            title: 'Spacings',
             blockName: blockName,
-            initialOpen: true,
-            indicator: wp.element.createElement(ResponsiveDots, { isSet: spacingsSetForSlug }),
+            wrap: false,
             render: function(ctx) {
                 const slug = ctx.slug;
                 const panelId = slug + '-spacings-panel';
 
+                // No PanelBody wrapper — the ToolsPanel is the panel. The
+                // responsive dots dock over its header (see CSS).
                 return wp.element.createElement('div', {
-                    className: 'orbitools-nested-panel'
+                    className: 'orbitools-responsive'
                 },
+                    wp.element.createElement('div', { className: 'orbitools-responsive__indicator' },
+                        wp.element.createElement(ResponsiveDots, { isSet: spacingsSetForSlug })
+                    ),
                     wp.element.createElement(ToolsPanel, {
                         label: 'Spacings',
                         panelId: panelId
