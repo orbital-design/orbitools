@@ -237,6 +237,13 @@ class Gaps_CSS_Generator
      */
     public static function enqueue_editor_gaps_css(string $handle = ''): void
     {
+        // Only inside the editor. This runs on `enqueue_block_assets`, which
+        // also fires on the frontend — there the frontend handler on
+        // `wp_enqueue_scripts` owns gap CSS, so bail when not in admin.
+        if (!\is_admin()) {
+            return;
+        }
+
         // Filter to allow themes to disable editor gaps CSS generation
         if (!\apply_filters('orbitools_gaps_editor_css', true)) {
             return;
@@ -264,8 +271,12 @@ class Gaps_CSS_Generator
         // Add inline styles for frontend
         \add_action('wp_enqueue_scripts', [self::class, 'enqueue_frontend_gaps_css']);
 
-        // Add inline styles for block editor
-        \add_action('enqueue_block_editor_assets', [self::class, 'enqueue_editor_gaps_css']);
+        // Add inline styles for the block editor. `enqueue_block_assets` (not
+        // `enqueue_block_editor_assets`) is the hook WordPress injects into the
+        // editor canvas iframe, where the blocks actually render — the latter
+        // only reaches the editor's outer chrome, so gap classes wouldn't apply
+        // to block previews. The handler bails on the frontend via is_admin().
+        \add_action('enqueue_block_assets', [self::class, 'enqueue_editor_gaps_css']);
 
         // Clear CSS cache when theme settings change
         \add_action('switch_theme', [self::class, 'clear_cache']);
