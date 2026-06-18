@@ -48,6 +48,10 @@
         "stackOnMobile": {
             "type": "boolean",
             "default": true
+        },
+        "restrictContentWidth": {
+            "type": "boolean",
+            "default": false
         }
     },
     "providesContext": {

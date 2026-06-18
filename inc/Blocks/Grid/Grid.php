@@ -24,6 +24,19 @@ class Grid extends Module_Base
     protected const VERSION = '1.0.0';
 
     /**
+     * Classes that belong on the full-bleed outer wrapper when content is
+     * constrained — alignfull plus background / text-colour classes so the
+     * colour spans the viewport while the grid is capped at content width.
+     */
+    private const WRAPPER_CLASS_REGEX = '/^(?:has-background|has-text-color|has-link-color|has-.*-background-color|has-.*-color|has-vivid-.*|has-pale-.*|has-luminous-.*)$/';
+
+    /**
+     * Classes excluded from the inner constrained grid (they live on the outer
+     * wrapper, or are the block/alignment classes WordPress added).
+     */
+    private const INNER_EXCLUDE_REGEX = '/^(?:alignfull|alignwide|wp-block-orb-grid|has-background|has-text-color|has-link-color|has-.*-background-color|has-.*-color|has-vivid-.*|has-pale-.*|has-luminous-.*)$/';
+
+    /**
      * Get the module's unique slug identifier
      */
     public function get_slug(): string
@@ -109,31 +122,23 @@ class Grid extends Module_Base
     {
         // Default values - must match block.json defaults
         $defaults = [
-            'columnSystem'  => 12,
-            'stackOnMobile' => true,
+            'columnSystem'         => 12,
+            'stackOnMobile'        => true,
+            'restrictContentWidth' => false,
+            'align'                => '',
         ];
 
         // Merge attributes with defaults
         $attributes = array_merge($defaults, $attributes);
 
         // Extract attributes
-        $column_system  = (int) $attributes['columnSystem'];
-        $stack_on_mobile = (bool) $attributes['stackOnMobile'];
+        $column_system          = (int) $attributes['columnSystem'];
+        $stack_on_mobile        = (bool) $attributes['stackOnMobile'];
+        $align                  = $attributes['align'] ?? '';
+        $restrict_content_width = (bool) $attributes['restrictContentWidth'];
 
-        // Let WordPress compose the wrapper attributes, merging our semantic
-        // class + the grid column-count custom property with whatever the block
-        // supports emit (background / colour / border, plus the has-gap classes
-        // from SpacingsRenderer). Passing class + style through here avoids the
-        // duplicate `style` attribute a manual rebuild would produce.
-        $extra = [
-            'class' => SpacingsRenderer::add_spacings('orb-grid', $attributes),
-            'style' => '--orb-grid-cols:' . $column_system . ';',
-        ];
-        if ($stack_on_mobile) {
-            // Drives the mobile single-column collapse in CSS.
-            $extra['data-stacked'] = 'true';
-        }
-        $wrapper_attributes = \get_block_wrapper_attributes($extra);
+        // The grid track count travels on the grid container as a custom prop.
+        $grid_cols_decl = '--orb-grid-cols:' . $column_system . ';';
 
         // Render inner blocks
         $inner_blocks_content = '';
@@ -143,24 +148,112 @@ class Grid extends Module_Base
             }
         }
 
-        return sprintf('<div %s>%s</div>', $wrapper_attributes, $inner_blocks_content);
+        // Full-width grids can constrain their cells to the content width while
+        // the background bleeds full-width. That needs the nested-wrapper
+        // pattern (outer full-bleed, inner constrained grid) — same as Row.
+        $needs_wrapper = ($align === 'full') && $restrict_content_width;
+
+        if (!$needs_wrapper) {
+            // Single .orb-grid wrapper carries everything. Letting WordPress
+            // compose class + style avoids the duplicate `style` attribute a
+            // manual rebuild would produce.
+            $extra = [
+                'class' => SpacingsRenderer::add_spacings('orb-grid', $attributes),
+                'style' => $grid_cols_decl,
+            ];
+            if ($stack_on_mobile) {
+                // Drives the mobile single-column collapse in CSS.
+                $extra['data-stacked'] = 'true';
+            }
+            $wrapper_attributes = \get_block_wrapper_attributes($extra);
+
+            return sprintf('<div %s>%s</div>', $wrapper_attributes, $inner_blocks_content);
+        }
+
+        // Nested wrapper: outer div bleeds full-width and carries alignfull +
+        // background/text colour classes; the inner .orb-grid is the grid
+        // container, constrained and centred via data-constrain.
+        $wrapper_attributes = \get_block_wrapper_attributes();
+
+        $existing_classes = '';
+        if (preg_match('/class=["\']([^"\']*)["\']/', $wrapper_attributes, $matches)) {
+            $existing_classes = $matches[1];
+        }
+        $existing_style = '';
+        if (preg_match('/style=["\']([^"\']*)["\']/', $wrapper_attributes, $matches)) {
+            $existing_style = $matches[1];
+        }
+
+        // Outer keeps full-bleed/background classes; inner takes the rest.
+        $outer_classes = $this->get_wrapper_classes($existing_classes);
+        $inner_classes = $this->get_inner_classes($existing_classes);
+
+        // Inner grid: semantic class + carried-over classes + has-gap spacings.
+        $base_classes = trim('orb-grid ' . $inner_classes);
+        $all_classes  = SpacingsRenderer::add_spacings($base_classes, $attributes);
+
+        // Merge the column-count custom property ahead of any supports style
+        // (border-radius, background image) so the inner div has one style attr.
+        $inner_style = $grid_cols_decl . $existing_style;
+
+        // Any non-class, non-style attrs WordPress emitted (e.g. an anchor id)
+        // ride along on the inner grid, matching Row Layout.
+        $other_attrs = preg_replace('/\s*(?:class|style)=["\'][^"\']*["\']/', '', $wrapper_attributes);
+        $other_attrs = trim($other_attrs);
+        $other_html  = $other_attrs ? ' ' . $other_attrs : '';
+
+        $data_attrs = ' data-constrain="true"';
+        if ($stack_on_mobile) {
+            $data_attrs .= ' data-stacked="true"';
+        }
+
+        return sprintf(
+            '<div class="%s"><div class="%s" style="%s"%s%s>%s</div></div>',
+            \esc_attr($outer_classes),
+            \esc_attr($all_classes),
+            \esc_attr($inner_style),
+            $other_html,
+            $data_attrs,
+            $inner_blocks_content
+        );
     }
 
     /**
-     * Filter WordPress classes
+     * Classes for the outer full-bleed wrapper (constrained mode).
+     *
+     * Keeps alignfull plus any background / text-colour classes so the colour
+     * bleeds the full viewport width while the inner grid is constrained.
      */
-    private function filter_wordpress_classes(string $class_names, array $classes_to_filter = []): string
+    private function get_wrapper_classes(string $class_names): string
     {
-        if (empty($class_names)) {
-            return '';
+        $wrapper_classes = ['alignfull'];
+
+        foreach (array_filter(explode(' ', $class_names)) as $class) {
+            if (preg_match(self::WRAPPER_CLASS_REGEX, $class)) {
+                $wrapper_classes[] = $class;
+            }
         }
 
-        $classes = explode(' ', $class_names);
-        $filtered = array_filter($classes, function ($class) use ($classes_to_filter) {
-            return !empty($class) && !in_array($class, $classes_to_filter);
-        });
+        return implode(' ', array_unique($wrapper_classes));
+    }
 
-        return implode(' ', $filtered);
+    /**
+     * Classes for the inner constrained grid (constrained mode).
+     *
+     * Everything WordPress emitted except alignment, the block class, and the
+     * colour classes that belong on the full-bleed outer wrapper.
+     */
+    private function get_inner_classes(string $class_names): string
+    {
+        $inner_classes = [];
+
+        foreach (array_filter(explode(' ', $class_names)) as $class) {
+            if (!preg_match(self::INNER_EXCLUDE_REGEX, $class)) {
+                $inner_classes[] = $class;
+            }
+        }
+
+        return implode(' ', $inner_classes);
     }
 
     /**

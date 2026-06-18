@@ -68,3 +68,16 @@
         }
     }
 }
+
+// Constrained full-width mode: the editor auto-stamps the base orb-grid class
+// onto the block wrapper as well, but there it's the full-bleed outer div, not
+// the grid. Neutralise the grid layout and UI cues on it so only the inner
+// constrained .orb-grid renders the tracks. Editor-only — the frontend wrapper
+// (composed in PHP) never carries the class.
+.orb-grid.orb-grid--bleed {
+    display: block;
+
+    &::before {
+        content: none;
+    }
+}
