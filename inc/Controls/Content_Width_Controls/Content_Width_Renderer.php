@@ -42,7 +42,11 @@ class Content_Width_Renderer
             return 'standard';
         }
 
-        return 'full';
+        // Default: constrain to the content width. Full-bleed content is opt-in
+        // via an explicit orbContentWidth: 'full'. The attribute is
+        // JS-registered (absent server-side), so this fallback is what new
+        // blocks resolve to here — matching the editor.
+        return 'standard';
     }
 
     /**

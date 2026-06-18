@@ -4,8 +4,13 @@
  * The Content Width control lets a *full-aligned* block keep its background
  * full-bleed while constraining its inner content to the site content
  * ("standard") or wide width. Storage is a single string attribute
- * `orbContentWidth` with values: 'full' (default, no constraint), 'wide',
- * 'standard'.
+ * `orbContentWidth` with values: 'full' (no constraint), 'wide', 'standard'.
+ *
+ * The default (when nothing is set) is 'standard' — a full-aligned block
+ * constrains its content to the content width unless the user explicitly
+ * picks Full-width content. That holds in the editor and on the server
+ * (where the attribute, being JS-registered, is simply absent), so the two
+ * always agree.
  *
  * This module is the single source of truth for resolving the effective width
  * from a block's attributes, including back-compat with the legacy Row/Grid
@@ -33,7 +38,9 @@ export function resolveContentWidth(attributes) {
     if (attributes && attributes.restrictContentWidth === true) {
         return 'standard';
     }
-    return 'full';
+    // Default: constrain to the content width. Full-bleed content is opt-in
+    // via an explicit orbContentWidth: 'full'.
+    return 'standard';
 }
 
 /**
