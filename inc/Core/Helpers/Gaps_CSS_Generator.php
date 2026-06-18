@@ -52,7 +52,7 @@ class Gaps_CSS_Generator
         // Build cache key from config data. The leading schema version
         // busts stale transients whenever the generated CSS shape changes
         // (the config inputs alone wouldn't) — bump it on any edit below.
-        $cache_key = self::TRANSIENT_KEY . '_' . md5(\wp_json_encode([2, $spacing_sizes, $breakpoints]));
+        $cache_key = self::TRANSIENT_KEY . '_' . md5(\wp_json_encode([3, $spacing_sizes, $breakpoints]));
 
         // Check transient cache
         $cached = \get_transient($cache_key);
@@ -87,6 +87,32 @@ class Gaps_CSS_Generator
             $css .= "}\n\n";
         }
 
+        // Axis-specific gap classes (row-gap / column-gap) for split gaps.
+        // Same conventions as the shorthand above: zero is special-cased,
+        // slug 0 is skipped in the loop, and there's no var fallback.
+        $css .= ".has-gap.has-row-gap--0 {\n";
+        $css .= "    row-gap: 0;\n";
+        $css .= "}\n\n";
+        $css .= ".has-gap.has-column-gap--0 {\n";
+        $css .= "    column-gap: 0;\n";
+        $css .= "}\n\n";
+
+        foreach ($spacing_sizes as $spacing) {
+            $slug = $spacing['slug'];
+
+            if ((string) $slug === '0') {
+                continue;
+            }
+
+            $css .= ".has-gap.has-row-gap--{$slug} {\n";
+            $css .= "    row-gap: var(--wp--preset--spacing--{$slug});\n";
+            $css .= "}\n\n";
+
+            $css .= ".has-gap.has-column-gap--{$slug} {\n";
+            $css .= "    column-gap: var(--wp--preset--spacing--{$slug});\n";
+            $css .= "}\n\n";
+        }
+
         // Generate responsive gap classes for all breakpoints.
         // Desktop-first cascade (tablet then mobile), each honouring
         // its own `query` direction (defaults to max-width) so the
@@ -116,7 +142,32 @@ class Gaps_CSS_Generator
                 $css .= "        gap: var(--wp--preset--spacing--{$slug});\n";
                 $css .= "    }\n\n";
             }
-            
+
+            // Axis-specific zero for this breakpoint.
+            $css .= "    .has-gap.{$breakpoint_slug}\:has-row-gap--0 {\n";
+            $css .= "        row-gap: 0;\n";
+            $css .= "    }\n\n";
+            $css .= "    .has-gap.{$breakpoint_slug}\:has-column-gap--0 {\n";
+            $css .= "        column-gap: 0;\n";
+            $css .= "    }\n\n";
+
+            // Axis-specific spacing sizes for this breakpoint.
+            foreach ($spacing_sizes as $spacing) {
+                $slug = $spacing['slug'];
+
+                if ((string) $slug === '0') {
+                    continue;
+                }
+
+                $css .= "    .has-gap.{$breakpoint_slug}\:has-row-gap--{$slug} {\n";
+                $css .= "        row-gap: var(--wp--preset--spacing--{$slug});\n";
+                $css .= "    }\n\n";
+
+                $css .= "    .has-gap.{$breakpoint_slug}\:has-column-gap--{$slug} {\n";
+                $css .= "        column-gap: var(--wp--preset--spacing--{$slug});\n";
+                $css .= "    }\n\n";
+            }
+
             $css .= "}\n\n";
         }
 

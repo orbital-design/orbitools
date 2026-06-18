@@ -15,19 +15,28 @@
         if (!gap || typeof gap !== 'object') return '';
 
         const classes = ['has-gap']; // Always include base class
-        
+
         Object.entries(gap).forEach(([breakpoint, value]) => {
-            if (!value && value !== '0') return;
-            
-            let className = '';
-            if (breakpoint === 'base') {
-                className = `has-gap--${value}`;
+            if (value === undefined || value === null || value === '') return;
+
+            const prefix = breakpoint === 'base' ? '' : `${breakpoint}:`;
+
+            if (typeof value === 'object') {
+                // Split gap: separate row/column axes. Skip empty axes.
+                const row = value.row;
+                const column = value.column;
+                if (row !== undefined && row !== null && row !== '') {
+                    classes.push(`${prefix}has-row-gap--${row}`);
+                }
+                if (column !== undefined && column !== null && column !== '') {
+                    classes.push(`${prefix}has-column-gap--${column}`);
+                }
             } else {
-                className = `${breakpoint}:has-gap--${value}`;
+                // Linked gap: shorthand (string slug, includes '0').
+                classes.push(`${prefix}has-gap--${value}`);
             }
-            classes.push(className);
         });
-        
+
         // Only return classes if we have modifiers (not just the base class)
         return classes.length > 1 ? classes.join(' ') : '';
     }

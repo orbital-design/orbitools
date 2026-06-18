@@ -530,6 +530,104 @@ import { ResponsiveControl, ResponsiveDots } from '../../../../core/utils/respon
             );
         }
 
+        /**
+         * Create the gap control. When the block opts in via
+         * supports.splitGap, render a link/unlink toggle (mirroring
+         * createBoxControl's all/split toggle): a single "Gap" slider when
+         * linked (value is a string/undefined), or "Row" + "Column" sliders
+         * when unlinked (value is an object { row, column }).
+         *
+         * Without splitGap this is just a single createSpacingControl, i.e.
+         * identical to the previous behaviour.
+         */
+        function createGapControl(spacingSizes, value, onChange) {
+            // Linked = string or undefined; Split = object { row, column }.
+            const isSplit = value && typeof value === 'object';
+
+            const toggleMode = () => {
+                if (isSplit) {
+                    // Split -> linked: take row, fall back to column.
+                    const linked = (value.row !== undefined && value.row !== '')
+                        ? value.row
+                        : value.column;
+                    onChange(linked === undefined ? undefined : linked);
+                } else {
+                    // Linked -> split: seed both axes with the current value.
+                    onChange({ row: value, column: value });
+                }
+            };
+
+            // Reuse the box-control's split icons for the axis sliders and the
+            // box-control's toggle icon for the link/unlink button.
+            const rowIcon = wp.element.createElement('svg', { width: "16", height: "16", viewBox: "0 0 640 640", fill: "none" },
+                wp.element.createElement('path', { fill: "#32A3E2", d: "M160 256c0 17.7-14.3 32-32 32s-32-14.3-32-32 14.3-32 32-32 32 14.3 32 32Zm0 128c0 17.7-14.3 32-32 32s-32-14.3-32-32 14.3-32 32-32 32 14.3 32 32Zm384-128c0 17.7-14.3 32-32 32s-32-14.3-32-32 14.3-32 32-32 32 14.3 32 32Zm0 128c0 17.7-14.3 32-32 32s-32-14.3-32-32 14.3-32 32-32 32 14.3 32 32Z" }),
+                wp.element.createElement('path', { fill: "#1D303A", d: "M544 512c0 17.7-14.3 32-32 32H128c-17.7 0-32-14.3-32-32s14.3-32 32-32h384c17.7 0 32 14.3 32 32ZM96 128c0-17.7 14.3-32 32-32h384c17.7 0 32 14.3 32 32s-14.3 32-32 32H128c-17.7 0-32-14.3-32-32Z" })
+            );
+            const columnIcon = wp.element.createElement('svg', { width: "16", height: "16", viewBox: "0 0 640 640", fill: "none" },
+                wp.element.createElement('path', { fill: "#32A3E2", d: "M224 128c0 17.7 14.3 32 32 32s32-14.3 32-32-14.3-32-32-32-32 14.3-32 32Zm0 384c0 17.7 14.3 32 32 32s32-14.3 32-32-14.3-32-32-32-32 14.3-32 32Zm128-384c0 17.7 14.3 32 32 32s32-14.3 32-32-14.3-32-32-32-32 14.3-32 32Zm0 384c0 17.7 14.3 32 32 32s32-14.3 32-32-14.3-32-32-32-32 14.3-32 32Z" }),
+                wp.element.createElement('path', { fill: "#1D303A", d: "M128 544c-17.7 0-32-14.3-32-32V128c0-17.7 14.3-32 32-32s32 14.3 32 32v384c0 17.7-14.3 32-32 32ZM512 96c17.7 0 32 14.3 32 32v384c0 17.7-14.3 32-32 32s-32-14.3-32-32V128c0-17.7 14.3-32 32-32Z" })
+            );
+            const toggleIcon = wp.element.createElement('svg', { xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 640 640", width: "16", height: "16" },
+                wp.element.createElement('path', { fill: "#1d303a", d: "M64 224c0 17.7 14.3 32 32 32h293.5c-3.5-10-5.5-20.8-5.5-32s1.9-22 5.5-32H96c-17.7 0-32 14.3-32 32zm186.5 160c3.5 10 5.5 20.8 5.5 32s-1.9 22-5.5 32H544c17.7 0 32-14.3 32-32s-14.3-32-32-32H250.5z" }),
+                wp.element.createElement('path', { fill: "#32a3e2", d: "M480 256c-17.7 0-32-14.3-32-32s14.3-32 32-32 32 14.3 32 32-14.3 32-32 32zm0-128c-53 0-96 43-96 96s43 96 96 96 96-43 96-96-43-96-96-96zM160 448c-17.7 0-32-14.3-32-32s14.3-32 32-32 32 14.3 32 32-14.3 32-32 32zm0-128c-53 0-96 43-96 96s43 96 96 96 96-43 96-96-43-96-96-96z" })
+            );
+
+            const axisRow = (icon, axisValue, onAxisChange) =>
+                wp.element.createElement('div', {
+                    style: { display: 'flex', alignItems: 'center', gap: '8px' }
+                },
+                    wp.element.createElement('div', {
+                        style: {
+                            width: '20px', height: '20px', display: 'flex',
+                            alignItems: 'center', justifyContent: 'center',
+                            color: '#757575', flexShrink: 0
+                        }
+                    }, icon),
+                    wp.element.createElement('div', { style: { flex: 1 } },
+                        createSpacingControl(spacingSizes, 'gap', axisValue, onAxisChange, true)
+                    )
+                );
+
+            return wp.element.createElement('div', null,
+                // Header: "Gap" label + link/unlink toggle button.
+                wp.element.createElement('div', {
+                    style: {
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center'
+                    }
+                },
+                    wp.element.createElement('label', {
+                        style: {
+                            fontSize: '11px',
+                            fontWeight: '500',
+                            color: '#757575',
+                            margin: 0
+                        }
+                    }, 'Gap'),
+                    wp.element.createElement(Button, {
+                        size: 'small',
+                        variant: 'tertiary',
+                        onClick: toggleMode,
+                        style: { minWidth: 'auto', padding: '6px', background: 'transparent' }
+                    }, toggleIcon)
+                ),
+
+                isSplit ? (
+                    wp.element.createElement('div', { style: { display: 'grid', gap: '12px' } },
+                        axisRow(rowIcon, value.row, (newValue) =>
+                            onChange({ ...value, row: newValue })),
+                        axisRow(columnIcon, value.column, (newValue) =>
+                            onChange({ ...value, column: newValue }))
+                    )
+                ) : (
+                    // Linked: a single slider with no internal label (the
+                    // header above already carries "Gap").
+                    createSpacingControl(spacingSizes, 'gap', value, onChange, true)
+                )
+            );
+        }
+
         // Combined responsive indicator: a viewport counts as "set" when
         // any of gap / padding / margin has a value for that slug.
         function spacingsSetForSlug(slug) {
@@ -575,7 +673,10 @@ import { ResponsiveControl, ResponsiveDots } from '../../../../core/utils/respon
                                 isShownByDefault: false,
                                 panelId: panelId
                             },
-                                createSpacingControl(
+                                supports.splitGap ? createGapControl(
+                                    spacingPresets, gap?.[slug],
+                                    (newValue) => { onGapChange({ ...gap, [slug]: newValue }); }
+                                ) : createSpacingControl(
                                     spacingPresets, 'gap', gap?.[slug],
                                     (newValue) => { onGapChange({ ...gap, [slug]: newValue }); }
                                 )

@@ -30,6 +30,7 @@
             "spacings": {
                 "breakpoints": true,
                 "gap": true,
+                "splitGap": true,
                 "margin": false,
                 "padding": true
             }

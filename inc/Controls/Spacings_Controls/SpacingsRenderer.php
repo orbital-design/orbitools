@@ -30,21 +30,30 @@ class SpacingsRenderer
         }
 
         $classes = ['has-gap']; // Always include base class
-        
+
         foreach ($gap as $breakpoint => $value) {
             if ($value === null || $value === '' || $value === false) {
                 continue;
             }
-            
-            $class_name = '';
-            if ($breakpoint === 'base') {
-                $class_name = "has-gap--{$value}";
+
+            $prefix = $breakpoint === 'base' ? '' : "{$breakpoint}:";
+
+            if (is_array($value)) {
+                // Split gap: separate row/column axes. Skip empty axes.
+                $row = $value['row'] ?? null;
+                $column = $value['column'] ?? null;
+                if ($row !== null && $row !== '' && $row !== false) {
+                    $classes[] = "{$prefix}has-row-gap--{$row}";
+                }
+                if ($column !== null && $column !== '' && $column !== false) {
+                    $classes[] = "{$prefix}has-column-gap--{$column}";
+                }
             } else {
-                $class_name = "{$breakpoint}:has-gap--{$value}";
+                // Linked gap: shorthand (string slug, includes '0').
+                $classes[] = "{$prefix}has-gap--{$value}";
             }
-            $classes[] = $class_name;
         }
-        
+
         // Only return classes if we have modifiers (not just the base class)
         return count($classes) > 1 ? implode(' ', $classes) : '';
     }
