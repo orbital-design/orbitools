@@ -56,3 +56,31 @@ $max_cols: 12;
         }
     }
 }
+
+// Row span — a cell can occupy multiple grid rows (feature tiles, mosaics).
+// Implicit rows are created as needed by the grid.
+$max_rows: 6;
+
+@for $n from 1 through $max_rows {
+    .#{$elem_base}--row-span-#{$n} {
+        grid-row: span #{$n};
+    }
+}
+
+// Tablet row-span overrides — 781px
+@media (max-width: 48.8125rem) {
+    @for $n from 1 through $max_rows {
+        .tablet\:#{$elem_base}--row-span-#{$n} {
+            grid-row: span #{$n};
+        }
+    }
+}
+
+// Mobile row-span overrides — 479px
+@media (max-width: 29.9375rem) {
+    @for $n from 1 through $max_rows {
+        .mobile\:#{$elem_base}--row-span-#{$n} {
+            grid-row: span #{$n};
+        }
+    }
+}

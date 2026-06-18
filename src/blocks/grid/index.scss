@@ -46,6 +46,7 @@ $elem_base: 'orb-grid';
 
             > .orb-grid-cell {
                 grid-column: 1 / -1 !important;
+                grid-row: auto !important;
             }
         }
     }

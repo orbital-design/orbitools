@@ -109,14 +109,16 @@ class Grid_Cell extends Module_Base
     {
         // Default values - must match block.json defaults
         $defaults = [
-            'span' => [],
+            'span'    => [],
+            'rowSpan' => [],
         ];
 
         // Merge attributes with defaults
         $attributes = array_merge($defaults, $attributes);
 
         // Extract attributes
-        $span = is_array($attributes['span']) ? $attributes['span'] : [];
+        $span     = is_array($attributes['span']) ? $attributes['span'] : [];
+        $row_span = is_array($attributes['rowSpan']) ? $attributes['rowSpan'] : [];
 
         // Get wrapper attributes
         $wrapper_attributes = \get_block_wrapper_attributes();
@@ -130,8 +132,8 @@ class Grid_Cell extends Module_Base
         // Remove WordPress default class while preserving other classes
         $filtered_classes = $this->filter_wordpress_classes($existing_classes, ['wp-block-orb-grid-cell']);
 
-        // Build semantic class names (base + responsive span overrides)
-        $cell_classes = $this->build_cell_classes($span);
+        // Build semantic class names (base + responsive span / row-span overrides)
+        $cell_classes = $this->build_cell_classes($span, $row_span);
 
         // Combine classes and add spacings
         $base_classes = trim($cell_classes . ' ' . $filtered_classes);
@@ -158,31 +160,40 @@ class Grid_Cell extends Module_Base
     }
 
     /**
-     * Build Grid Cell classes from the responsive span attribute.
+     * Build Grid Cell classes from the responsive span / row-span attributes.
      *
-     * base   → orb-grid-cell--span-{n}
-     * tablet → tablet:orb-grid-cell--span-{n}
-     * mobile → mobile:orb-grid-cell--span-{n}
+     * base   → orb-grid-cell--{modifier}-{n}
+     * tablet → tablet:orb-grid-cell--{modifier}-{n}
+     * mobile → mobile:orb-grid-cell--{modifier}-{n}
      *
-     * Only slugs that carry a value emit a class; a cell with no span class
+     * where {modifier} is `span` (columns) or `row-span` (rows). Only slugs
+     * that carry a positive value emit a class; a cell with no span class
      * defaults to a single grid track.
      */
-    private function build_cell_classes(array $span, string $base_class = 'orb-grid-cell'): string
+    private function build_cell_classes(array $span, array $row_span = [], string $base_class = 'orb-grid-cell'): string
     {
         $classes = [$base_class];
+        $this->append_axis_classes($classes, $span, 'span', $base_class);
+        $this->append_axis_classes($classes, $row_span, 'row-span', $base_class);
 
-        foreach ($span as $slug => $value) {
+        return implode(' ', $classes);
+    }
+
+    /**
+     * Append responsive axis classes (column span or row span) to $classes.
+     */
+    private function append_axis_classes(array &$classes, array $values, string $modifier, string $base_class): void
+    {
+        foreach ($values as $slug => $value) {
             if ($value === null || $value === '' || (int) $value <= 0) {
                 continue;
             }
 
             $n = (int) $value;
             $classes[] = ($slug === 'base')
-                ? $base_class . '--span-' . $n
-                : $slug . ':' . $base_class . '--span-' . $n;
+                ? $base_class . '--' . $modifier . '-' . $n
+                : $slug . ':' . $base_class . '--' . $modifier . '-' . $n;
         }
-
-        return implode(' ', $classes);
     }
 
     /**

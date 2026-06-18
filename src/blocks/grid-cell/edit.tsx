@@ -18,10 +18,11 @@ import {
 } from '@wordpress/block-editor';
 import type { BlockEditProps } from '@wordpress/blocks';
 
-import SpanControl, { getSpanClasses, type ResponsiveValue } from './span-control';
+import CellSpanControls, { getSpanClasses, getRowSpanClasses, type ResponsiveValue } from './span-control';
 
 export interface GridCellAttributes {
     span: ResponsiveValue<number>;
+    rowSpan: ResponsiveValue<number>;
 }
 
 interface GridCellContext {
@@ -35,7 +36,7 @@ const Edit: React.FC<BlockEditProps<GridCellAttributes> & { context: GridCellCon
     context,
     clientId,
 }) => {
-    const { span = {} } = attributes;
+    const { span = {}, rowSpan = {} } = attributes;
     const {
         'orb/columnSystem': columnSystem = 12,
         'orb/stackOnMobile': stackOnMobile = true,
@@ -45,10 +46,15 @@ const Edit: React.FC<BlockEditProps<GridCellAttributes> & { context: GridCellCon
         setAttributes({ span: newSpan });
     };
 
+    const onRowSpanChange = (newRowSpan: ResponsiveValue<number>) => {
+        setAttributes({ rowSpan: newRowSpan });
+    };
+
     // Build span classes for the editor preview so the cell tracks its
-    // configured width inside the editor's grid.
-    const spanClasses = getSpanClasses(span);
-    const cellClasses = `orb-grid-cell ${spanClasses}`.trim();
+    // configured width/height inside the editor's grid.
+    const cellClasses = `orb-grid-cell ${getSpanClasses(span)} ${getRowSpanClasses(rowSpan)}`
+        .replace(/\s+/g, ' ')
+        .trim();
 
     const blockProps = useBlockProps({
         className: cellClasses,
@@ -57,9 +63,11 @@ const Edit: React.FC<BlockEditProps<GridCellAttributes> & { context: GridCellCon
     return (
         <>
             <InspectorControls>
-                <SpanControl
+                <CellSpanControls
                     span={span}
+                    rowSpan={rowSpan}
                     onSpanChange={onSpanChange}
+                    onRowSpanChange={onRowSpanChange}
                     columnSystem={columnSystem}
                     stackOnMobile={stackOnMobile}
                     blockName="orb/grid-cell"
