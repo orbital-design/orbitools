@@ -32,6 +32,8 @@ const GRID_DEFAULTS = {
     gridType: 'fixed',
     columnSystem: 12,
     minColWidth: '250px',
+    rowHeight: 'auto',
+    minRowHeight: '200px',
     stackOnMobile: true,
 } as const;
 
@@ -41,6 +43,15 @@ const GRID_DEFAULTS = {
 const GRID_TYPE_OPTIONS = [
     { value: 'fixed', label: 'Fixed columns' },
     { value: 'auto', label: 'Auto-fit' },
+] as const;
+
+/**
+ * Row height options — implicit row sizing (grid-auto-rows).
+ */
+const ROW_HEIGHT_OPTIONS = [
+    { value: 'auto', label: 'Auto' },
+    { value: 'equal', label: 'Equal' },
+    { value: 'min', label: 'Min' },
 ] as const;
 
 /**
@@ -59,10 +70,13 @@ export default function GridControls({ attributes, setAttributes }: GridControls
         gridType = GRID_DEFAULTS.gridType,
         columnSystem = GRID_DEFAULTS.columnSystem,
         minColWidth = GRID_DEFAULTS.minColWidth,
+        rowHeight = GRID_DEFAULTS.rowHeight,
+        minRowHeight = GRID_DEFAULTS.minRowHeight,
         stackOnMobile = GRID_DEFAULTS.stackOnMobile,
     } = attributes;
 
     const isAuto = gridType === 'auto';
+    const isMinRow = rowHeight === 'min';
 
     /**
      * Helper to update a single attribute
@@ -87,6 +101,8 @@ export default function GridControls({ attributes, setAttributes }: GridControls
                         updateAttribute('gridType', GRID_DEFAULTS.gridType);
                         updateAttribute('columnSystem', GRID_DEFAULTS.columnSystem);
                         updateAttribute('minColWidth', GRID_DEFAULTS.minColWidth);
+                        updateAttribute('rowHeight', GRID_DEFAULTS.rowHeight);
+                        updateAttribute('minRowHeight', GRID_DEFAULTS.minRowHeight);
                         updateAttribute('stackOnMobile', GRID_DEFAULTS.stackOnMobile);
                     }}
                     panelId="grid-panel"
@@ -136,6 +152,43 @@ export default function GridControls({ attributes, setAttributes }: GridControls
                                 { value: 'px', label: 'px' },
                                 { value: 'rem', label: 'rem' },
                                 { value: 'em', label: 'em' },
+                            ]}
+                            __next40pxDefaultSize={true}
+                        />,
+                        true
+                    )}
+
+                    {/* Row height (grid-auto-rows): Auto / Equal / Min */}
+                    {createToolsPanelItem(
+                        'rowHeight',
+                        () => hasNonDefaultValue('rowHeight', GRID_DEFAULTS.rowHeight),
+                        () => updateAttribute('rowHeight', GRID_DEFAULTS.rowHeight),
+                        'Row height',
+                        createToggleGroup(
+                            rowHeight,
+                            (value) => updateAttribute('rowHeight', value),
+                            ROW_HEIGHT_OPTIONS,
+                            'Row height'
+                        ),
+                        true
+                    )}
+
+                    {/* Min row height — only when Row height is "Min" */}
+                    {isMinRow && createToolsPanelItem(
+                        'minRowHeight',
+                        () => hasNonDefaultValue('minRowHeight', GRID_DEFAULTS.minRowHeight),
+                        () => updateAttribute('minRowHeight', GRID_DEFAULTS.minRowHeight),
+                        'Min row height',
+                        <UnitControl
+                            label="Min row height"
+                            help="Rows are at least this tall and grow with their content."
+                            value={minRowHeight}
+                            onChange={(value) => updateAttribute('minRowHeight', value || GRID_DEFAULTS.minRowHeight)}
+                            units={[
+                                { value: 'px', label: 'px' },
+                                { value: 'rem', label: 'rem' },
+                                { value: 'em', label: 'em' },
+                                { value: 'vh', label: 'vh' },
                             ]}
                             __next40pxDefaultSize={true}
                         />,

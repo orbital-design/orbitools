@@ -58,6 +58,19 @@
             "type": "string",
             "default": "250px"
         },
+        "rowHeight": {
+            "type": "string",
+            "default": "auto",
+            "enum": [
+                "auto",
+                "equal",
+                "min"
+            ]
+        },
+        "minRowHeight": {
+            "type": "string",
+            "default": "200px"
+        },
         "stackOnMobile": {
             "type": "boolean",
             "default": true

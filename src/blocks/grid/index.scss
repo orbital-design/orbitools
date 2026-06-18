@@ -33,6 +33,18 @@ $elem_base: 'orb-grid';
         grid-template-columns: repeat(auto-fit, minmax(var(--orb-grid-min, 250px), 1fr));
     }
 
+    // Row height (grid-auto-rows). Default (auto) leaves rows content-sized.
+    // Equal makes every implicit row the same height so row-span is exactly
+    // N× a row; Min gives each row a floor that grows with content. Both make
+    // cell row spans predictable.
+    &[data-row-height="equal"] {
+        grid-auto-rows: 1fr;
+    }
+
+    &[data-row-height="min"] {
+        grid-auto-rows: minmax(var(--orb-grid-row-min, 200px), auto);
+    }
+
     // Default gap (per-size gaps come from the has-gap system).
     gap: var(--gutter, var(--wp--style--block-gap, 20px));
 

@@ -126,6 +126,8 @@ class Grid extends Module_Base
             'gridType'      => 'fixed',
             'columnSystem'  => 12,
             'minColWidth'   => '250px',
+            'rowHeight'     => 'auto',
+            'minRowHeight'  => '200px',
             'stackOnMobile' => true,
             'align'         => '',
         ];
@@ -136,17 +138,24 @@ class Grid extends Module_Base
         // Extract attributes
         $grid_type       = $attributes['gridType'] === 'auto' ? 'auto' : 'fixed';
         $column_system   = (int) $attributes['columnSystem'];
+        $row_height      = in_array($attributes['rowHeight'], ['equal', 'min'], true) ? $attributes['rowHeight'] : 'auto';
         $stack_on_mobile = (bool) $attributes['stackOnMobile'];
         $is_auto         = $grid_type === 'auto';
 
+        // Strip chars that could break out of a CSS value (theme-trusted-ish).
+        $clean_length = static function ($value, string $fallback): string {
+            $value = trim(preg_replace('/[;{}<>"\\\\]/', '', (string) $value));
+            return $value !== '' ? $value : $fallback;
+        };
+
         // The grid track count travels on the grid container as a custom prop;
-        // auto-fit mode adds the minimum track width.
+        // auto-fit mode adds the minimum track width, min row height adds its.
         $grid_cols_decl = '--orb-grid-cols:' . $column_system . ';';
         if ($is_auto) {
-            // theme-trusted-ish CSS length; strip only chars that break the value.
-            $min = preg_replace('/[;{}<>"\\\\]/', '', (string) $attributes['minColWidth']);
-            $min = trim($min) !== '' ? trim($min) : '250px';
-            $grid_cols_decl .= '--orb-grid-min:' . $min . ';';
+            $grid_cols_decl .= '--orb-grid-min:' . $clean_length($attributes['minColWidth'], '250px') . ';';
+        }
+        if ($row_height === 'min') {
+            $grid_cols_decl .= '--orb-grid-row-min:' . $clean_length($attributes['minRowHeight'], '200px') . ';';
         }
 
         // Render inner blocks
@@ -178,6 +187,10 @@ class Grid extends Module_Base
             if ($is_auto) {
                 // Switches the grid-template to the auto-fit track recipe.
                 $extra['data-grid-mode'] = 'auto';
+            }
+            if ($row_height !== 'auto') {
+                // Drives grid-auto-rows (equal / min).
+                $extra['data-row-height'] = $row_height;
             }
             $wrapper_attributes = \get_block_wrapper_attributes($extra);
 
@@ -222,6 +235,9 @@ class Grid extends Module_Base
         }
         if ($is_auto) {
             $data_attrs .= ' data-grid-mode="auto"';
+        }
+        if ($row_height !== 'auto') {
+            $data_attrs .= ' data-row-height="' . \esc_attr($row_height) . '"';
         }
 
         return sprintf(

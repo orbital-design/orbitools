@@ -21,6 +21,8 @@ export interface GridAttributes {
     gridType: 'fixed' | 'auto';
     columnSystem: number;
     minColWidth: string;
+    rowHeight: 'auto' | 'equal' | 'min';
+    minRowHeight: string;
     stackOnMobile: boolean;
     align?: string;
 }
@@ -40,6 +42,8 @@ const Edit: React.FC<BlockEditProps<GridAttributes>> = ({
         gridType = 'fixed',
         columnSystem = 12,
         minColWidth = '250px',
+        rowHeight = 'auto',
+        minRowHeight = '200px',
         stackOnMobile = true,
     } = attributes;
 
@@ -61,9 +65,14 @@ const Edit: React.FC<BlockEditProps<GridAttributes>> = ({
         // Min track width for the auto-fit template.
         gridStyle['--orb-grid-min'] = minColWidth || '250px';
     }
+    if (rowHeight === 'min') {
+        gridStyle['--orb-grid-row-min'] = minRowHeight || '200px';
+    }
     const dataStacked = stackOnMobile ? 'true' : undefined;
     // Drives the auto-fit grid-template in CSS; only set in auto mode.
     const dataGridMode = isAuto ? 'auto' : undefined;
+    // Drives grid-auto-rows (equal / min); auto = unset.
+    const dataRowHeight = rowHeight !== 'auto' ? rowHeight : undefined;
 
     // The editor auto-stamps the block's default class (orb-grid) onto the
     // block wrapper. In constrained mode that wrapper is the full-bleed outer
@@ -74,6 +83,7 @@ const Edit: React.FC<BlockEditProps<GridAttributes>> = ({
         className: needsWrapper ? 'orb-grid--bleed' : 'orb-grid',
         'data-stacked': needsWrapper ? undefined : dataStacked,
         'data-grid-mode': needsWrapper ? undefined : dataGridMode,
+        'data-row-height': needsWrapper ? undefined : dataRowHeight,
         style: needsWrapper ? undefined : gridStyle,
     });
 
@@ -99,6 +109,7 @@ const Edit: React.FC<BlockEditProps<GridAttributes>> = ({
                         data-constrain={constrainVal}
                         data-stacked={dataStacked}
                         data-grid-mode={dataGridMode}
+                        data-row-height={dataRowHeight}
                         style={gridStyle}
                     >
                         {innerBlocks}
