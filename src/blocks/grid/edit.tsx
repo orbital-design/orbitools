@@ -23,6 +23,8 @@ export interface GridAttributes {
     minColWidth: string;
     rowHeight: 'auto' | 'equal' | 'min';
     minRowHeight: string;
+    alignItems: 'stretch' | 'start' | 'center' | 'end';
+    justifyItems: 'stretch' | 'start' | 'center' | 'end';
     stackOnMobile: boolean;
     align?: string;
 }
@@ -44,6 +46,8 @@ const Edit: React.FC<BlockEditProps<GridAttributes>> = ({
         minColWidth = '250px',
         rowHeight = 'auto',
         minRowHeight = '200px',
+        alignItems = 'stretch',
+        justifyItems = 'stretch',
         stackOnMobile = true,
     } = attributes;
 
@@ -73,6 +77,9 @@ const Edit: React.FC<BlockEditProps<GridAttributes>> = ({
     const dataGridMode = isAuto ? 'auto' : undefined;
     // Drives grid-auto-rows (equal / min); auto = unset.
     const dataRowHeight = rowHeight !== 'auto' ? rowHeight : undefined;
+    // Cell alignment within tracks; stretch (default) = unset.
+    const dataAlignItems = alignItems !== 'stretch' ? alignItems : undefined;
+    const dataJustifyItems = justifyItems !== 'stretch' ? justifyItems : undefined;
 
     // The editor auto-stamps the block's default class (orb-grid) onto the
     // block wrapper. In constrained mode that wrapper is the full-bleed outer
@@ -84,6 +91,8 @@ const Edit: React.FC<BlockEditProps<GridAttributes>> = ({
         'data-stacked': needsWrapper ? undefined : dataStacked,
         'data-grid-mode': needsWrapper ? undefined : dataGridMode,
         'data-row-height': needsWrapper ? undefined : dataRowHeight,
+        'data-align-items': needsWrapper ? undefined : dataAlignItems,
+        'data-justify-items': needsWrapper ? undefined : dataJustifyItems,
         style: needsWrapper ? undefined : gridStyle,
     });
 
@@ -110,6 +119,8 @@ const Edit: React.FC<BlockEditProps<GridAttributes>> = ({
                         data-stacked={dataStacked}
                         data-grid-mode={dataGridMode}
                         data-row-height={dataRowHeight}
+                        data-align-items={dataAlignItems}
+                        data-justify-items={dataJustifyItems}
                         style={gridStyle}
                     >
                         {innerBlocks}

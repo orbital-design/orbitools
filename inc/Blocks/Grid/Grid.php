@@ -128,6 +128,8 @@ class Grid extends Module_Base
             'minColWidth'   => '250px',
             'rowHeight'     => 'auto',
             'minRowHeight'  => '200px',
+            'alignItems'    => 'stretch',
+            'justifyItems'  => 'stretch',
             'stackOnMobile' => true,
             'align'         => '',
         ];
@@ -139,6 +141,8 @@ class Grid extends Module_Base
         $grid_type       = $attributes['gridType'] === 'auto' ? 'auto' : 'fixed';
         $column_system   = (int) $attributes['columnSystem'];
         $row_height      = in_array($attributes['rowHeight'], ['equal', 'min'], true) ? $attributes['rowHeight'] : 'auto';
+        $align_items     = in_array($attributes['alignItems'], ['start', 'center', 'end'], true) ? $attributes['alignItems'] : 'stretch';
+        $justify_items   = in_array($attributes['justifyItems'], ['start', 'center', 'end'], true) ? $attributes['justifyItems'] : 'stretch';
         $stack_on_mobile = (bool) $attributes['stackOnMobile'];
         $is_auto         = $grid_type === 'auto';
 
@@ -192,6 +196,12 @@ class Grid extends Module_Base
                 // Drives grid-auto-rows (equal / min).
                 $extra['data-row-height'] = $row_height;
             }
+            if ($align_items !== 'stretch') {
+                $extra['data-align-items'] = $align_items;
+            }
+            if ($justify_items !== 'stretch') {
+                $extra['data-justify-items'] = $justify_items;
+            }
             $wrapper_attributes = \get_block_wrapper_attributes($extra);
 
             return sprintf('<div %s>%s</div>', $wrapper_attributes, $inner_blocks_content);
@@ -238,6 +248,12 @@ class Grid extends Module_Base
         }
         if ($row_height !== 'auto') {
             $data_attrs .= ' data-row-height="' . \esc_attr($row_height) . '"';
+        }
+        if ($align_items !== 'stretch') {
+            $data_attrs .= ' data-align-items="' . \esc_attr($align_items) . '"';
+        }
+        if ($justify_items !== 'stretch') {
+            $data_attrs .= ' data-justify-items="' . \esc_attr($justify_items) . '"';
         }
 
         return sprintf(

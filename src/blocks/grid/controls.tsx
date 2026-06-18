@@ -34,8 +34,28 @@ const GRID_DEFAULTS = {
     minColWidth: '250px',
     rowHeight: 'auto',
     minRowHeight: '200px',
+    alignItems: 'stretch',
+    justifyItems: 'stretch',
     stackOnMobile: true,
 } as const;
+
+/**
+ * Cell alignment within each grid track. Stretch (default) fills the track;
+ * the others align the cell to an edge / centre.
+ */
+const ALIGN_ITEMS_OPTIONS = [
+    { value: 'stretch', label: 'Stretch' },
+    { value: 'start', label: 'Top' },
+    { value: 'center', label: 'Middle' },
+    { value: 'end', label: 'Bottom' },
+] as const;
+
+const JUSTIFY_ITEMS_OPTIONS = [
+    { value: 'stretch', label: 'Stretch' },
+    { value: 'start', label: 'Left' },
+    { value: 'center', label: 'Center' },
+    { value: 'end', label: 'Right' },
+] as const;
 
 /**
  * Grid type options — fixed N columns, or auto-fit tracks that wrap by width.
@@ -72,6 +92,8 @@ export default function GridControls({ attributes, setAttributes }: GridControls
         minColWidth = GRID_DEFAULTS.minColWidth,
         rowHeight = GRID_DEFAULTS.rowHeight,
         minRowHeight = GRID_DEFAULTS.minRowHeight,
+        alignItems = GRID_DEFAULTS.alignItems,
+        justifyItems = GRID_DEFAULTS.justifyItems,
         stackOnMobile = GRID_DEFAULTS.stackOnMobile,
     } = attributes;
 
@@ -208,6 +230,47 @@ export default function GridControls({ attributes, setAttributes }: GridControls
                             onChange={(value) => updateAttribute('stackOnMobile', value)}
                             __nextHasNoMarginBottom={true}
                         />,
+                        true
+                    )}
+                </ToolsPanel>
+            </InspectorControls>
+
+            <InspectorControls group="settings">
+                <ToolsPanel
+                    label="Cell alignment"
+                    resetAll={() => {
+                        updateAttribute('alignItems', GRID_DEFAULTS.alignItems);
+                        updateAttribute('justifyItems', GRID_DEFAULTS.justifyItems);
+                    }}
+                    panelId="grid-alignment-panel"
+                >
+                    {/* Vertical alignment of cells within their row (align-items) */}
+                    {createToolsPanelItem(
+                        'alignItems',
+                        () => hasNonDefaultValue('alignItems', GRID_DEFAULTS.alignItems),
+                        () => updateAttribute('alignItems', GRID_DEFAULTS.alignItems),
+                        'Vertical',
+                        createToggleGroup(
+                            alignItems,
+                            (value) => updateAttribute('alignItems', value),
+                            ALIGN_ITEMS_OPTIONS,
+                            'Vertical'
+                        ),
+                        true
+                    )}
+
+                    {/* Horizontal alignment of cells within their column (justify-items) */}
+                    {createToolsPanelItem(
+                        'justifyItems',
+                        () => hasNonDefaultValue('justifyItems', GRID_DEFAULTS.justifyItems),
+                        () => updateAttribute('justifyItems', GRID_DEFAULTS.justifyItems),
+                        'Horizontal',
+                        createToggleGroup(
+                            justifyItems,
+                            (value) => updateAttribute('justifyItems', value),
+                            JUSTIFY_ITEMS_OPTIONS,
+                            'Horizontal'
+                        ),
                         true
                     )}
                 </ToolsPanel>

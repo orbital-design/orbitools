@@ -45,6 +45,16 @@ $elem_base: 'orb-grid';
         grid-auto-rows: minmax(var(--orb-grid-row-min, 200px), auto);
     }
 
+    // Cell alignment within each track. Stretch (default) needs no rule.
+    // Vertical = align-items (block axis); horizontal = justify-items (inline).
+    &[data-align-items="start"]  { align-items: start; }
+    &[data-align-items="center"] { align-items: center; }
+    &[data-align-items="end"]    { align-items: end; }
+
+    &[data-justify-items="start"]  { justify-items: start; }
+    &[data-justify-items="center"] { justify-items: center; }
+    &[data-justify-items="end"]    { justify-items: end; }
+
     // Default gap (per-size gaps come from the has-gap system).
     gap: var(--gutter, var(--wp--style--block-gap, 20px));
 

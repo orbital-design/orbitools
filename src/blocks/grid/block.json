@@ -71,6 +71,26 @@
             "type": "string",
             "default": "200px"
         },
+        "alignItems": {
+            "type": "string",
+            "default": "stretch",
+            "enum": [
+                "stretch",
+                "start",
+                "center",
+                "end"
+            ]
+        },
+        "justifyItems": {
+            "type": "string",
+            "default": "stretch",
+            "enum": [
+                "stretch",
+                "start",
+                "center",
+                "end"
+            ]
+        },
         "stackOnMobile": {
             "type": "boolean",
             "default": true
