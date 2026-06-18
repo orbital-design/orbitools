@@ -84,6 +84,18 @@ $max_cols: 12;
     }
 }
 
+// Self-alignment — a cell overriding the grid's own Cell alignment.
+// align-self = vertical (block axis); justify-self = horizontal (inline axis).
+.#{$elem_base}--align-self-start   { align-self: start; }
+.#{$elem_base}--align-self-center  { align-self: center; }
+.#{$elem_base}--align-self-end     { align-self: end; }
+.#{$elem_base}--align-self-stretch { align-self: stretch; }
+
+.#{$elem_base}--justify-self-start   { justify-self: start; }
+.#{$elem_base}--justify-self-center  { justify-self: center; }
+.#{$elem_base}--justify-self-end     { justify-self: end; }
+.#{$elem_base}--justify-self-stretch { justify-self: stretch; }
+
 // Row span — a cell can occupy multiple grid rows (feature tiles, mosaics).
 // Implicit rows are created as needed by the grid.
 $max_rows: 6;

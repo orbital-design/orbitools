@@ -19,11 +19,14 @@ import {
 import type { BlockEditProps } from '@wordpress/blocks';
 
 import CellSpanControls, { getSpanClasses, getRowSpanClasses, getColStartClasses, type ResponsiveValue } from './span-control';
+import CellAlignControls, { getSelfAlignClasses } from './align-controls';
 
 export interface GridCellAttributes {
     span: ResponsiveValue<number>;
     rowSpan: ResponsiveValue<number>;
     colStart: ResponsiveValue<number>;
+    alignSelf: string;
+    justifySelf: string;
 }
 
 interface GridCellContext {
@@ -37,7 +40,13 @@ const Edit: React.FC<BlockEditProps<GridCellAttributes> & { context: GridCellCon
     context,
     clientId,
 }) => {
-    const { span = {}, rowSpan = {}, colStart = {} } = attributes;
+    const {
+        span = {},
+        rowSpan = {},
+        colStart = {},
+        alignSelf = 'auto',
+        justifySelf = 'auto',
+    } = attributes;
     const {
         'orb/columnSystem': columnSystem = 12,
         'orb/stackOnMobile': stackOnMobile = true,
@@ -55,9 +64,9 @@ const Edit: React.FC<BlockEditProps<GridCellAttributes> & { context: GridCellCon
         setAttributes({ colStart: newColStart });
     };
 
-    // Build span classes for the editor preview so the cell tracks its
-    // configured size/placement inside the editor's grid.
-    const cellClasses = `orb-grid-cell ${getSpanClasses(span)} ${getColStartClasses(colStart)} ${getRowSpanClasses(rowSpan)}`
+    // Build span + self-alignment classes for the editor preview so the cell
+    // tracks its configured size/placement/alignment inside the editor's grid.
+    const cellClasses = `orb-grid-cell ${getSpanClasses(span)} ${getColStartClasses(colStart)} ${getRowSpanClasses(rowSpan)} ${getSelfAlignClasses(alignSelf, justifySelf)}`
         .replace(/\s+/g, ' ')
         .trim();
 
@@ -80,6 +89,13 @@ const Edit: React.FC<BlockEditProps<GridCellAttributes> & { context: GridCellCon
                     blockName="orb/grid-cell"
                 />
             </InspectorControls>
+
+            <CellAlignControls
+                alignSelf={alignSelf}
+                justifySelf={justifySelf}
+                onAlignSelfChange={(value) => setAttributes({ alignSelf: value })}
+                onJustifySelfChange={(value) => setAttributes({ justifySelf: value })}
+            />
 
             <div {...blockProps}>
                 <InnerBlocks

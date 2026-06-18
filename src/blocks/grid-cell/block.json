@@ -50,6 +50,28 @@
         "colStart": {
             "type": "object",
             "default": {}
+        },
+        "alignSelf": {
+            "type": "string",
+            "default": "auto",
+            "enum": [
+                "auto",
+                "start",
+                "center",
+                "end",
+                "stretch"
+            ]
+        },
+        "justifySelf": {
+            "type": "string",
+            "default": "auto",
+            "enum": [
+                "auto",
+                "start",
+                "center",
+                "end",
+                "stretch"
+            ]
         }
     },
     "usesContext": [

@@ -109,18 +109,22 @@ class Grid_Cell extends Module_Base
     {
         // Default values - must match block.json defaults
         $defaults = [
-            'span'     => [],
-            'rowSpan'  => [],
-            'colStart' => [],
+            'span'        => [],
+            'rowSpan'     => [],
+            'colStart'    => [],
+            'alignSelf'   => 'auto',
+            'justifySelf' => 'auto',
         ];
 
         // Merge attributes with defaults
         $attributes = array_merge($defaults, $attributes);
 
         // Extract attributes
-        $span      = is_array($attributes['span']) ? $attributes['span'] : [];
-        $row_span  = is_array($attributes['rowSpan']) ? $attributes['rowSpan'] : [];
-        $col_start = is_array($attributes['colStart']) ? $attributes['colStart'] : [];
+        $span         = is_array($attributes['span']) ? $attributes['span'] : [];
+        $row_span     = is_array($attributes['rowSpan']) ? $attributes['rowSpan'] : [];
+        $col_start    = is_array($attributes['colStart']) ? $attributes['colStart'] : [];
+        $align_self   = in_array($attributes['alignSelf'], ['start', 'center', 'end', 'stretch'], true) ? $attributes['alignSelf'] : 'auto';
+        $justify_self = in_array($attributes['justifySelf'], ['start', 'center', 'end', 'stretch'], true) ? $attributes['justifySelf'] : 'auto';
 
         // Get wrapper attributes
         $wrapper_attributes = \get_block_wrapper_attributes();
@@ -136,6 +140,14 @@ class Grid_Cell extends Module_Base
 
         // Build semantic class names (base + responsive span / row-span / col-start overrides)
         $cell_classes = $this->build_cell_classes($span, $row_span, $col_start);
+
+        // Per-cell self-alignment overrides (non-responsive).
+        if ($align_self !== 'auto') {
+            $cell_classes .= ' orb-grid-cell--align-self-' . $align_self;
+        }
+        if ($justify_self !== 'auto') {
+            $cell_classes .= ' orb-grid-cell--justify-self-' . $justify_self;
+        }
 
         // Combine classes and add spacings
         $base_classes = trim($cell_classes . ' ' . $filtered_classes);
