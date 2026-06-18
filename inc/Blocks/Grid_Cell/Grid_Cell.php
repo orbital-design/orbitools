@@ -109,16 +109,18 @@ class Grid_Cell extends Module_Base
     {
         // Default values - must match block.json defaults
         $defaults = [
-            'span'    => [],
-            'rowSpan' => [],
+            'span'     => [],
+            'rowSpan'  => [],
+            'colStart' => [],
         ];
 
         // Merge attributes with defaults
         $attributes = array_merge($defaults, $attributes);
 
         // Extract attributes
-        $span     = is_array($attributes['span']) ? $attributes['span'] : [];
-        $row_span = is_array($attributes['rowSpan']) ? $attributes['rowSpan'] : [];
+        $span      = is_array($attributes['span']) ? $attributes['span'] : [];
+        $row_span  = is_array($attributes['rowSpan']) ? $attributes['rowSpan'] : [];
+        $col_start = is_array($attributes['colStart']) ? $attributes['colStart'] : [];
 
         // Get wrapper attributes
         $wrapper_attributes = \get_block_wrapper_attributes();
@@ -132,8 +134,8 @@ class Grid_Cell extends Module_Base
         // Remove WordPress default class while preserving other classes
         $filtered_classes = $this->filter_wordpress_classes($existing_classes, ['wp-block-orb-grid-cell']);
 
-        // Build semantic class names (base + responsive span / row-span overrides)
-        $cell_classes = $this->build_cell_classes($span, $row_span);
+        // Build semantic class names (base + responsive span / row-span / col-start overrides)
+        $cell_classes = $this->build_cell_classes($span, $row_span, $col_start);
 
         // Combine classes and add spacings
         $base_classes = trim($cell_classes . ' ' . $filtered_classes);
@@ -170,10 +172,11 @@ class Grid_Cell extends Module_Base
      * that carry a positive value emit a class; a cell with no span class
      * defaults to a single grid track.
      */
-    private function build_cell_classes(array $span, array $row_span = [], string $base_class = 'orb-grid-cell'): string
+    private function build_cell_classes(array $span, array $row_span = [], array $col_start = [], string $base_class = 'orb-grid-cell'): string
     {
         $classes = [$base_class];
         $this->append_axis_classes($classes, $span, 'span', $base_class);
+        $this->append_axis_classes($classes, $col_start, 'col-start', $base_class);
         $this->append_axis_classes($classes, $row_span, 'row-span', $base_class);
 
         return implode(' ', $classes);

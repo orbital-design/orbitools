@@ -18,11 +18,12 @@ import {
 } from '@wordpress/block-editor';
 import type { BlockEditProps } from '@wordpress/blocks';
 
-import CellSpanControls, { getSpanClasses, getRowSpanClasses, type ResponsiveValue } from './span-control';
+import CellSpanControls, { getSpanClasses, getRowSpanClasses, getColStartClasses, type ResponsiveValue } from './span-control';
 
 export interface GridCellAttributes {
     span: ResponsiveValue<number>;
     rowSpan: ResponsiveValue<number>;
+    colStart: ResponsiveValue<number>;
 }
 
 interface GridCellContext {
@@ -36,7 +37,7 @@ const Edit: React.FC<BlockEditProps<GridCellAttributes> & { context: GridCellCon
     context,
     clientId,
 }) => {
-    const { span = {}, rowSpan = {} } = attributes;
+    const { span = {}, rowSpan = {}, colStart = {} } = attributes;
     const {
         'orb/columnSystem': columnSystem = 12,
         'orb/stackOnMobile': stackOnMobile = true,
@@ -50,9 +51,13 @@ const Edit: React.FC<BlockEditProps<GridCellAttributes> & { context: GridCellCon
         setAttributes({ rowSpan: newRowSpan });
     };
 
+    const onColStartChange = (newColStart: ResponsiveValue<number>) => {
+        setAttributes({ colStart: newColStart });
+    };
+
     // Build span classes for the editor preview so the cell tracks its
-    // configured width/height inside the editor's grid.
-    const cellClasses = `orb-grid-cell ${getSpanClasses(span)} ${getRowSpanClasses(rowSpan)}`
+    // configured size/placement inside the editor's grid.
+    const cellClasses = `orb-grid-cell ${getSpanClasses(span)} ${getColStartClasses(colStart)} ${getRowSpanClasses(rowSpan)}`
         .replace(/\s+/g, ' ')
         .trim();
 
@@ -66,8 +71,10 @@ const Edit: React.FC<BlockEditProps<GridCellAttributes> & { context: GridCellCon
                 <CellSpanControls
                     span={span}
                     rowSpan={rowSpan}
+                    colStart={colStart}
                     onSpanChange={onSpanChange}
                     onRowSpanChange={onRowSpanChange}
+                    onColStartChange={onColStartChange}
                     columnSystem={columnSystem}
                     stackOnMobile={stackOnMobile}
                     blockName="orb/grid-cell"

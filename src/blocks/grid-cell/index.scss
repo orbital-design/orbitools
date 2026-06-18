@@ -35,7 +35,7 @@ $max_cols: 12;
 // Base span classes (desktop / no media query)
 @for $n from 1 through $max_cols {
     .#{$elem_base}--span-#{$n} {
-        grid-column: span #{$n};
+        grid-column-end: span #{$n};
     }
 }
 
@@ -43,7 +43,7 @@ $max_cols: 12;
 @media (max-width: 48.8125rem) {
     @for $n from 1 through $max_cols {
         .tablet\:#{$elem_base}--span-#{$n} {
-            grid-column: span #{$n};
+            grid-column-end: span #{$n};
         }
     }
 }
@@ -52,7 +52,34 @@ $max_cols: 12;
 @media (max-width: 29.9375rem) {
     @for $n from 1 through $max_cols {
         .mobile\:#{$elem_base}--span-#{$n} {
-            grid-column: span #{$n};
+            grid-column-end: span #{$n};
+        }
+    }
+}
+
+// Column start — place a cell at an explicit column line (offsets, asymmetric
+// layouts). Composes with the span above because span sets grid-column-end
+// (not the grid-column shorthand), leaving grid-column-start free.
+@for $n from 1 through $max_cols {
+    .#{$elem_base}--col-start-#{$n} {
+        grid-column-start: #{$n};
+    }
+}
+
+// Tablet column-start overrides — 781px
+@media (max-width: 48.8125rem) {
+    @for $n from 1 through $max_cols {
+        .tablet\:#{$elem_base}--col-start-#{$n} {
+            grid-column-start: #{$n};
+        }
+    }
+}
+
+// Mobile column-start overrides — 479px
+@media (max-width: 29.9375rem) {
+    @for $n from 1 through $max_cols {
+        .mobile\:#{$elem_base}--col-start-#{$n} {
+            grid-column-start: #{$n};
         }
     }
 }

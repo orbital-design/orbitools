@@ -58,6 +58,11 @@ export function getRowSpanClasses(rowSpan: ResponsiveValue<number>): string {
     return getAxisClasses(rowSpan, 'row-span');
 }
 
+/** Column-start classes (orb-grid-cell--col-start-{n}). */
+export function getColStartClasses(colStart: ResponsiveValue<number>): string {
+    return getAxisClasses(colStart, 'col-start');
+}
+
 interface AxisControlProps {
     values: ResponsiveValue<number>;
     onChange: (values: ResponsiveValue<number>) => void;
@@ -179,21 +184,25 @@ function AxisControl({
 export interface CellSpanControlsProps {
     span: ResponsiveValue<number>;
     rowSpan: ResponsiveValue<number>;
+    colStart: ResponsiveValue<number>;
     onSpanChange: (span: ResponsiveValue<number>) => void;
     onRowSpanChange: (rowSpan: ResponsiveValue<number>) => void;
+    onColStartChange: (colStart: ResponsiveValue<number>) => void;
     columnSystem: number;
     stackOnMobile: boolean;
     blockName: string;
 }
 
 /**
- * Column-span + row-span controls for a grid cell.
+ * Column span / column start / row span controls for a grid cell.
  */
 export default function CellSpanControls({
     span,
     rowSpan,
+    colStart,
     onSpanChange,
     onRowSpanChange,
+    onColStartChange,
     columnSystem,
     stackOnMobile,
     blockName,
@@ -213,6 +222,18 @@ export default function CellSpanControls({
                 lockedValue={colMax}
                 lockedLabel="Full"
                 format={(v) => `${v} / ${colMax}`}
+            />
+            <AxisControl
+                values={colStart}
+                onChange={onColStartChange}
+                blockName={blockName}
+                label="Column start"
+                max={colMax}
+                stackOnMobile={stackOnMobile}
+                lockOnStackedMobile={true}
+                lockedValue={0}
+                lockedLabel="Auto"
+                format={(v) => `Column ${v}`}
             />
             <AxisControl
                 values={rowSpan}

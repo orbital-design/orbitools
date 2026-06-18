@@ -46,6 +46,10 @@
         "rowSpan": {
             "type": "object",
             "default": {}
+        },
+        "colStart": {
+            "type": "object",
+            "default": {}
         }
     },
     "usesContext": [
