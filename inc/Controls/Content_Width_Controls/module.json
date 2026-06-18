@@ -1,0 +1,14 @@
+{
+  "$schema": "https://orbitools/schemas/module.v1.json",
+  "slug": "content-width-controls",
+  "name": "Content Width Controls",
+  "description": "Content width control (Full / Wide / Standard) for full-aligned blocks with orbitools.contentWidth support.",
+  "version": "1.0.0",
+  "category": "controls",
+  "class": "\\Orbitools\\Controls\\Content_Width_Controls\\Content_Width_Controls",
+  "default_enabled": true,
+  "requires": {
+    "php": ">=7.4",
+    "wp": ">=5.0"
+  }
+}

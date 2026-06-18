@@ -30,7 +30,6 @@ interface GridControlsProps {
 const GRID_DEFAULTS = {
     columnSystem: 12,
     stackOnMobile: true,
-    restrictContentWidth: false,
 } as const;
 
 /**
@@ -48,8 +47,6 @@ export default function GridControls({ attributes, setAttributes }: GridControls
     const {
         columnSystem = GRID_DEFAULTS.columnSystem,
         stackOnMobile = GRID_DEFAULTS.stackOnMobile,
-        restrictContentWidth = GRID_DEFAULTS.restrictContentWidth,
-        align,
     } = attributes;
 
     /**
@@ -109,38 +106,6 @@ export default function GridControls({ attributes, setAttributes }: GridControls
                     )}
                 </ToolsPanel>
             </InspectorControls>
-
-            {/* Constrain Content — only relevant for full-width grids, so the
-                whole panel is skipped otherwise (mirrors Row Layout). */}
-            {align === 'full' && (
-                <InspectorControls group="settings">
-                    <ToolsPanel
-                        label="Settings"
-                        resetAll={() =>
-                            updateAttribute(
-                                'restrictContentWidth',
-                                GRID_DEFAULTS.restrictContentWidth
-                            )
-                        }
-                        panelId="grid-settings-panel"
-                    >
-                        {createToolsPanelItem(
-                            'restrictContentWidth',
-                            () => hasNonDefaultValue('restrictContentWidth', GRID_DEFAULTS.restrictContentWidth),
-                            () => updateAttribute('restrictContentWidth', GRID_DEFAULTS.restrictContentWidth),
-                            'Constrain Content',
-                            <ToggleControl
-                                label="Constrain Content"
-                                help="Constrain cells to the standard content width while the background bleeds full-width."
-                                checked={restrictContentWidth}
-                                onChange={(value) => updateAttribute('restrictContentWidth', value)}
-                                __nextHasNoMarginBottom={true}
-                            />,
-                            true
-                        )}
-                    </ToolsPanel>
-                </InspectorControls>
-            )}
         </Fragment>
     );
 }

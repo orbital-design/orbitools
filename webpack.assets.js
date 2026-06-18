@@ -49,6 +49,9 @@ module.exports = {
         'admin/js/controls/aspect-ratio/editor-aspect-ratio-attribute-registration': path.resolve(process.cwd(), 'src', 'controls', 'aspect-ratio','admin', 'js','editor-aspect-ratio-attribute-registration.js'),
         'admin/js/controls/aspect-ratio/editor-aspect-ratio-classname-application': path.resolve(process.cwd(), 'src', 'controls', 'aspect-ratio','admin', 'js','editor-aspect-ratio-classname-application.js'),
         'admin/js/controls/aspect-ratio/editor-aspect-ratio-register-controls': path.resolve(process.cwd(), 'src', 'controls', 'aspect-ratio','admin', 'js','editor-aspect-ratio-register-controls.js'),
+        // - JS ~ Controls ~ Content Width
+        'admin/js/controls/content-width/editor-content-width-attribute-registration': path.resolve(process.cwd(), 'src', 'controls', 'content-width','admin', 'js','editor-content-width-attribute-registration.js'),
+        'admin/js/controls/content-width/editor-content-width-register-controls': path.resolve(process.cwd(), 'src', 'controls', 'content-width','admin', 'js','editor-content-width-register-controls.js'),
 
     },
     output: {

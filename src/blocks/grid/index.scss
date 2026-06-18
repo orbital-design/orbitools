@@ -35,14 +35,8 @@ $elem_base: 'orb-grid';
         overflow: hidden;
     }
 
-    // Constrain Content — active when Align is full and the toggle is on.
-    // The block wrapper bleeds full-width (carrying the background); this
-    // inner grid is centred and capped at the site content width.
-    &[data-constrain="true"] {
-        max-width: var(--wp--style--global--content-size, 1200px);
-        margin-left: auto;
-        margin-right: auto;
-    }
+    // Content constraint (data-constrain="standard|wide") is styled globally
+    // by the Content Width control — the inner grid bleeds otherwise.
 
     // Stack on mobile — collapse the grid to a single column and let every
     // cell span the full width. Triggers at the mobile breakpoint (479px).

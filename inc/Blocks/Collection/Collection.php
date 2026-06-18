@@ -5,6 +5,7 @@ namespace Orbitools\Blocks\Collection;
 use Orbitools\Core\Abstracts\Module_Base;
 use Orbitools\Controls\Spacings_Controls\SpacingsRenderer;
 use Orbitools\Controls\AspectRatio_Controls\AspectRatioRenderer;
+use Orbitools\Controls\Content_Width_Controls\Content_Width_Renderer;
 
 // Prevent direct access
 if (!defined('ABSPATH')) {
@@ -129,7 +130,6 @@ class Collection extends Module_Base
         // Extract attributes
         $layout_type = $attributes['layoutType'];
         $align = $attributes['align'] ?? '';
-        $restrict_content_width = $attributes['restrictContentWidth'];
 
         // Get wrapper attributes
         $wrapper_attributes = \get_block_wrapper_attributes();
@@ -140,8 +140,10 @@ class Collection extends Module_Base
             $existing_classes = $matches[1];
         }
 
-        // Check if we need content constraint wrapper for full-width blocks
-        $needs_wrapper = ($align === 'full') && $restrict_content_width;
+        // Check if we need content constraint wrapper for full-width blocks.
+        // Width (full / wide / standard) resolves via the global Content Width
+        // control, with back-compat for the legacy restrictContentWidth flag.
+        $needs_wrapper = Content_Width_Renderer::needs_constraint($attributes);
         $is_full_width = strpos($existing_classes, 'alignfull') !== false;
 
         // Generate semantic data attributes for CSS targeting
@@ -253,7 +255,6 @@ class Collection extends Module_Base
         $flex_wrap = $attributes['flexWrap'] ?? 'nowrap';
         $align_items = $attributes['alignItems'] ?? 'stretch';
         $justify_content = $attributes['justifyContent'] ?? 'flex-start';
-        $restrict_content_width = $attributes['restrictContentWidth'] ?? false;
         $stack_on_mobile = $attributes['stackOnMobile'] ?? true;
         $item_width = $attributes['itemWidth'] ?? 'fit';
         $column_system = $attributes['columnSystem'] ?? 12;
@@ -295,9 +296,10 @@ class Collection extends Module_Base
             $data_attrs['data-justify'] = $justify_mappings[$justify_content] ?? $justify_content;
         }
 
-        // Content constraint
-        if ($restrict_content_width && $is_full_width) {
-            $data_attrs['data-constrain'] = 'true';
+        // Content constraint — emit the resolved width on full-aligned blocks.
+        $constrain_value = Content_Width_Renderer::constrain_value($attributes);
+        if ($constrain_value && $is_full_width) {
+            $data_attrs['data-constrain'] = $constrain_value;
         }
 
         // Mobile stacking

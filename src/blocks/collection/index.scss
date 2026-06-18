@@ -37,13 +37,8 @@ $elem_base: 'orb-collection';
             overflow: hidden; // common need with border-radius
         }
 
-        // Constrain Content Class
-        // Active when Align is set to full and constrain is checked
-        &[data-constrain="true"] {
-            max-width: var(--wp--style--global--content-size, 1200px);
-            margin-left: auto;
-            margin-right: auto;
-        }
+        // Content constraint (data-constrain="standard|wide") is styled
+        // globally by the Content Width control, so there's no rule here.
 
         // Flex Flow Classes - Combined Dir and Wrap attrs
         // Only output when NOT default value 'row nowrap'

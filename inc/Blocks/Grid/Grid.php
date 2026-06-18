@@ -4,6 +4,7 @@ namespace Orbitools\Blocks\Grid;
 
 use Orbitools\Core\Abstracts\Module_Base;
 use Orbitools\Controls\Spacings_Controls\SpacingsRenderer;
+use Orbitools\Controls\Content_Width_Controls\Content_Width_Renderer;
 
 // Prevent direct access
 if (!defined('ABSPATH')) {
@@ -122,20 +123,17 @@ class Grid extends Module_Base
     {
         // Default values - must match block.json defaults
         $defaults = [
-            'columnSystem'         => 12,
-            'stackOnMobile'        => true,
-            'restrictContentWidth' => false,
-            'align'                => '',
+            'columnSystem'  => 12,
+            'stackOnMobile' => true,
+            'align'         => '',
         ];
 
         // Merge attributes with defaults
         $attributes = array_merge($defaults, $attributes);
 
         // Extract attributes
-        $column_system          = (int) $attributes['columnSystem'];
-        $stack_on_mobile        = (bool) $attributes['stackOnMobile'];
-        $align                  = $attributes['align'] ?? '';
-        $restrict_content_width = (bool) $attributes['restrictContentWidth'];
+        $column_system   = (int) $attributes['columnSystem'];
+        $stack_on_mobile = (bool) $attributes['stackOnMobile'];
 
         // The grid track count travels on the grid container as a custom prop.
         $grid_cols_decl = '--orb-grid-cols:' . $column_system . ';';
@@ -148,10 +146,11 @@ class Grid extends Module_Base
             }
         }
 
-        // Full-width grids can constrain their cells to the content width while
-        // the background bleeds full-width. That needs the nested-wrapper
-        // pattern (outer full-bleed, inner constrained grid) — same as Row.
-        $needs_wrapper = ($align === 'full') && $restrict_content_width;
+        // Full-width grids can constrain their cells to the content / wide
+        // width while the background bleeds full-width. That needs the
+        // nested-wrapper pattern (outer full-bleed, inner constrained grid).
+        // Width resolves via the global Content Width control.
+        $needs_wrapper = Content_Width_Renderer::needs_constraint($attributes);
 
         if (!$needs_wrapper) {
             // Single .orb-grid wrapper carries everything. Letting WordPress
@@ -202,7 +201,7 @@ class Grid extends Module_Base
         $other_attrs = trim($other_attrs);
         $other_html  = $other_attrs ? ' ' . $other_attrs : '';
 
-        $data_attrs = ' data-constrain="true"';
+        $data_attrs = ' data-constrain="' . \esc_attr(Content_Width_Renderer::constrain_value($attributes)) . '"';
         if ($stack_on_mobile) {
             $data_attrs .= ' data-stacked="true"';
         }

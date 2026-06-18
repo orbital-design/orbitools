@@ -15,11 +15,11 @@ import { InnerBlocks, useBlockProps } from '@wordpress/block-editor';
 import type { BlockEditProps } from '@wordpress/blocks';
 
 import GridControls from './controls';
+import { needsConstraint, constrainAttr, resolveContentWidth } from '../../core/utils/content-width.js';
 
 export interface GridAttributes {
     columnSystem: number;
     stackOnMobile: boolean;
-    restrictContentWidth: boolean;
     align?: string;
 }
 
@@ -34,19 +34,14 @@ const Edit: React.FC<BlockEditProps<GridAttributes>> = ({
     attributes,
     setAttributes,
 }) => {
-    const {
-        columnSystem = 12,
-        stackOnMobile = true,
-        restrictContentWidth = false,
-        align,
-    } = attributes;
+    const { columnSystem = 12, stackOnMobile = true } = attributes;
 
-    // Full-width grids can constrain their cells to the site content width
-    // while the background bleeds full-width. Mirrors Row Layout: the block
-    // wrapper stays full-bleed and an inner .orb-grid carries the grid +
-    // constraint. The grid's own styling/attrs go on whichever div is the
-    // grid container.
-    const needsWrapper = align === 'full' && restrictContentWidth;
+    // Full-width grids can constrain their cells to the site content / wide
+    // width while the background bleeds full-width. Width comes from the global
+    // Content Width control; the block wrapper stays full-bleed and an inner
+    // .orb-grid carries the grid + the data-constrain value.
+    const needsWrapper = needsConstraint(attributes);
+    const constrainVal = constrainAttr(resolveContentWidth(attributes));
 
     const gridStyle = {
         // Preview the column track count in the editor; PHP sets the
@@ -85,7 +80,7 @@ const Edit: React.FC<BlockEditProps<GridAttributes>> = ({
                 {needsWrapper ? (
                     <div
                         className="orb-grid"
-                        data-constrain="true"
+                        data-constrain={constrainVal}
                         data-stacked={dataStacked}
                         style={gridStyle}
                     >
