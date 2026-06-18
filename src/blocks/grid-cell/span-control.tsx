@@ -68,7 +68,8 @@ interface AxisControlProps {
     onChange: (values: ResponsiveValue<number>) => void;
     blockName: string;
     label: string;
-    max: number;
+    /** Upper bound — a fixed number, or a per-device function (e.g. clamped by span). */
+    max: number | ((slug: string) => number);
     stackOnMobile: boolean;
     /** Lock (disable) on Mobile when the parent grid stacks. */
     lockOnStackedMobile?: boolean;
@@ -112,6 +113,7 @@ function AxisControl({
             blockName={blockName}
             wrap={false}
             render={({ slug }) => {
+                const maxVal = typeof max === 'function' ? max(slug) : max;
                 const locked = !!lockOnStackedMobile && slug === 'mobile' && stackOnMobile;
                 const current = getValue(slug);
                 const display = locked
@@ -160,7 +162,7 @@ function AxisControl({
                                 }
                             }}
                             min={0}
-                            max={max}
+                            max={maxVal}
                             step={1}
                             marks={true}
                             withInputField={false}
@@ -243,7 +245,9 @@ export default function CellSpanControls({
                 onChange={onColStartChange}
                 blockName={blockName}
                 label="Column start"
-                max={colMax}
+                // Clamp so the cell can't start past where its right edge meets
+                // the grid edge — no implicit overflow columns.
+                max={(slug) => Math.max(1, colMax - effectiveSpan(span, slug) + 1)}
                 stackOnMobile={stackOnMobile}
                 lockOnStackedMobile={true}
                 lockedValue={0}
