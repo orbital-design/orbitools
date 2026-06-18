@@ -18,7 +18,9 @@ import GridControls from './controls';
 import { needsConstraint, constrainAttr, resolveContentWidth } from '../../core/utils/content-width.js';
 
 export interface GridAttributes {
+    gridType: 'fixed' | 'auto';
     columnSystem: number;
+    minColWidth: string;
     stackOnMobile: boolean;
     align?: string;
 }
@@ -34,7 +36,14 @@ const Edit: React.FC<BlockEditProps<GridAttributes>> = ({
     attributes,
     setAttributes,
 }) => {
-    const { columnSystem = 12, stackOnMobile = true } = attributes;
+    const {
+        gridType = 'fixed',
+        columnSystem = 12,
+        minColWidth = '250px',
+        stackOnMobile = true,
+    } = attributes;
+
+    const isAuto = gridType === 'auto';
 
     // Full-width grids can constrain their cells to the site content / wide
     // width while the background bleeds full-width. Width comes from the global
@@ -43,12 +52,18 @@ const Edit: React.FC<BlockEditProps<GridAttributes>> = ({
     const needsWrapper = needsConstraint(attributes);
     const constrainVal = constrainAttr(resolveContentWidth(attributes));
 
-    const gridStyle = {
+    const gridStyle: Record<string, string | number> = {
         // Preview the column track count in the editor; PHP sets the
         // same custom property on the frontend wrapper.
-        ['--orb-grid-cols' as any]: columnSystem,
+        ['--orb-grid-cols']: columnSystem,
     };
+    if (isAuto) {
+        // Min track width for the auto-fit template.
+        gridStyle['--orb-grid-min'] = minColWidth || '250px';
+    }
     const dataStacked = stackOnMobile ? 'true' : undefined;
+    // Drives the auto-fit grid-template in CSS; only set in auto mode.
+    const dataGridMode = isAuto ? 'auto' : undefined;
 
     // The editor auto-stamps the block's default class (orb-grid) onto the
     // block wrapper. In constrained mode that wrapper is the full-bleed outer
@@ -58,6 +73,7 @@ const Edit: React.FC<BlockEditProps<GridAttributes>> = ({
     const blockProps = useBlockProps({
         className: needsWrapper ? 'orb-grid--bleed' : 'orb-grid',
         'data-stacked': needsWrapper ? undefined : dataStacked,
+        'data-grid-mode': needsWrapper ? undefined : dataGridMode,
         style: needsWrapper ? undefined : gridStyle,
     });
 
@@ -82,6 +98,7 @@ const Edit: React.FC<BlockEditProps<GridAttributes>> = ({
                         className="orb-grid"
                         data-constrain={constrainVal}
                         data-stacked={dataStacked}
+                        data-grid-mode={dataGridMode}
                         style={gridStyle}
                     >
                         {innerBlocks}

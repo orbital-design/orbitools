@@ -123,7 +123,9 @@ class Grid extends Module_Base
     {
         // Default values - must match block.json defaults
         $defaults = [
+            'gridType'      => 'fixed',
             'columnSystem'  => 12,
+            'minColWidth'   => '250px',
             'stackOnMobile' => true,
             'align'         => '',
         ];
@@ -132,11 +134,20 @@ class Grid extends Module_Base
         $attributes = array_merge($defaults, $attributes);
 
         // Extract attributes
+        $grid_type       = $attributes['gridType'] === 'auto' ? 'auto' : 'fixed';
         $column_system   = (int) $attributes['columnSystem'];
         $stack_on_mobile = (bool) $attributes['stackOnMobile'];
+        $is_auto         = $grid_type === 'auto';
 
-        // The grid track count travels on the grid container as a custom prop.
+        // The grid track count travels on the grid container as a custom prop;
+        // auto-fit mode adds the minimum track width.
         $grid_cols_decl = '--orb-grid-cols:' . $column_system . ';';
+        if ($is_auto) {
+            // theme-trusted-ish CSS length; strip only chars that break the value.
+            $min = preg_replace('/[;{}<>"\\\\]/', '', (string) $attributes['minColWidth']);
+            $min = trim($min) !== '' ? trim($min) : '250px';
+            $grid_cols_decl .= '--orb-grid-min:' . $min . ';';
+        }
 
         // Render inner blocks
         $inner_blocks_content = '';
@@ -163,6 +174,10 @@ class Grid extends Module_Base
             if ($stack_on_mobile) {
                 // Drives the mobile single-column collapse in CSS.
                 $extra['data-stacked'] = 'true';
+            }
+            if ($is_auto) {
+                // Switches the grid-template to the auto-fit track recipe.
+                $extra['data-grid-mode'] = 'auto';
             }
             $wrapper_attributes = \get_block_wrapper_attributes($extra);
 
@@ -204,6 +219,9 @@ class Grid extends Module_Base
         $data_attrs = ' data-constrain="' . \esc_attr(Content_Width_Renderer::constrain_value($attributes)) . '"';
         if ($stack_on_mobile) {
             $data_attrs .= ' data-stacked="true"';
+        }
+        if ($is_auto) {
+            $data_attrs .= ' data-grid-mode="auto"';
         }
 
         return sprintf(

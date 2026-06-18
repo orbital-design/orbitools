@@ -27,6 +27,12 @@ $elem_base: 'orb-grid';
     width: 100%;
     box-sizing: border-box;
 
+    // Auto-fit mode: tracks are as wide as possible but never narrower than
+    // --orb-grid-min, wrapping automatically with no manual breakpoints.
+    &[data-grid-mode="auto"] {
+        grid-template-columns: repeat(auto-fit, minmax(var(--orb-grid-min, 250px), 1fr));
+    }
+
     // Default gap (per-size gaps come from the has-gap system).
     gap: var(--gutter, var(--wp--style--block-gap, 20px));
 
