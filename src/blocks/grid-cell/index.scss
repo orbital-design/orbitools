@@ -96,6 +96,13 @@ $max_cols: 12;
 .#{$elem_base}--justify-self-end     { justify-self: end; }
 .#{$elem_base}--justify-self-stretch { justify-self: stretch; }
 
+// Content vertical alignment — distributes the cell's own content within its
+// height (the cell is a flex column). Needs spare height to be visible
+// (stretched cell, taller row, row span). "Top" is the default flow.
+.#{$elem_base}--content-middle  { justify-content: center; }
+.#{$elem_base}--content-bottom  { justify-content: flex-end; }
+.#{$elem_base}--content-between { justify-content: space-between; }
+
 // Row span — a cell can occupy multiple grid rows (feature tiles, mosaics).
 // Implicit rows are created as needed by the grid.
 $max_rows: 6;

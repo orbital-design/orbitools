@@ -72,6 +72,16 @@
                 "end",
                 "stretch"
             ]
+        },
+        "contentAlign": {
+            "type": "string",
+            "default": "top",
+            "enum": [
+                "top",
+                "middle",
+                "bottom",
+                "between"
+            ]
         }
     },
     "usesContext": [

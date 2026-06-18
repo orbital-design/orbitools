@@ -112,19 +112,21 @@ class Grid_Cell extends Module_Base
             'span'        => [],
             'rowSpan'     => [],
             'colStart'    => [],
-            'alignSelf'   => 'auto',
-            'justifySelf' => 'auto',
+            'alignSelf'    => 'auto',
+            'justifySelf'  => 'auto',
+            'contentAlign' => 'top',
         ];
 
         // Merge attributes with defaults
         $attributes = array_merge($defaults, $attributes);
 
         // Extract attributes
-        $span         = is_array($attributes['span']) ? $attributes['span'] : [];
-        $row_span     = is_array($attributes['rowSpan']) ? $attributes['rowSpan'] : [];
-        $col_start    = is_array($attributes['colStart']) ? $attributes['colStart'] : [];
-        $align_self   = in_array($attributes['alignSelf'], ['start', 'center', 'end', 'stretch'], true) ? $attributes['alignSelf'] : 'auto';
-        $justify_self = in_array($attributes['justifySelf'], ['start', 'center', 'end', 'stretch'], true) ? $attributes['justifySelf'] : 'auto';
+        $span          = is_array($attributes['span']) ? $attributes['span'] : [];
+        $row_span      = is_array($attributes['rowSpan']) ? $attributes['rowSpan'] : [];
+        $col_start     = is_array($attributes['colStart']) ? $attributes['colStart'] : [];
+        $align_self    = in_array($attributes['alignSelf'], ['start', 'center', 'end', 'stretch'], true) ? $attributes['alignSelf'] : 'auto';
+        $justify_self  = in_array($attributes['justifySelf'], ['start', 'center', 'end', 'stretch'], true) ? $attributes['justifySelf'] : 'auto';
+        $content_align = in_array($attributes['contentAlign'], ['middle', 'bottom', 'between'], true) ? $attributes['contentAlign'] : 'top';
 
         // Get wrapper attributes
         $wrapper_attributes = \get_block_wrapper_attributes();
@@ -147,6 +149,9 @@ class Grid_Cell extends Module_Base
         }
         if ($justify_self !== 'auto') {
             $cell_classes .= ' orb-grid-cell--justify-self-' . $justify_self;
+        }
+        if ($content_align !== 'top') {
+            $cell_classes .= ' orb-grid-cell--content-' . $content_align;
         }
 
         // Combine classes and add spacings
