@@ -90,11 +90,11 @@ import { resolveContentWidth } from '../../../../core/utils/content-width.js';
                 props.setAttributes({ orbContentWidth: value || 'full' });
             }
 
-            var options = [{ value: 'full', label: 'Full width' }];
+            var options = [{ value: 'full', label: 'Full-width content' }];
             if (themeSpecifiesWideSize()) {
-                options.push({ value: 'wide', label: 'Wide' });
+                options.push({ value: 'wide', label: 'Wide content' });
             }
-            options.push({ value: 'standard', label: 'Standard' });
+            options.push({ value: 'standard', label: 'Standard content' });
 
             var controls = options.map(function (o) {
                 return {
