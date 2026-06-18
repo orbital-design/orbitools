@@ -76,8 +76,8 @@ interface AxisControlProps {
     lockedValue: number;
     /** Read-out label while locked. */
     lockedLabel: string;
-    /** Format a set value for the read-out + tooltip. */
-    format: (value: number) => string;
+    /** Format a set value for the read-out + tooltip (receives the active device slug). */
+    format: (value: number, slug: string) => string;
 }
 
 /**
@@ -117,7 +117,7 @@ function AxisControl({
                 const display = locked
                     ? lockedLabel
                     : current !== undefined
-                        ? format(current)
+                        ? format(current, slug)
                         : 'Auto';
 
                 return (
@@ -169,7 +169,7 @@ function AxisControl({
                                 if (value === undefined || value === null || typeof value !== 'number' || value <= 0) {
                                     return 'Auto';
                                 }
-                                return format(value);
+                                return format(value, slug);
                             }}
                             __next40pxDefaultSize={true}
                             __nextHasNoMarginBottom={true}
@@ -179,6 +179,21 @@ function AxisControl({
             }}
         />
     );
+}
+
+/**
+ * Effective column span for a device, resolved through the desktop-first
+ * cascade (base → tablet → mobile). Used to show which columns a cell lands in
+ * given its start line. Unset = 1 track.
+ */
+function effectiveSpan(span: ResponsiveValue<number>, slug: string): number {
+    if (slug === 'mobile') {
+        return span?.mobile ?? span?.tablet ?? span?.base ?? 1;
+    }
+    if (slug === 'tablet') {
+        return span?.tablet ?? span?.base ?? 1;
+    }
+    return span?.base ?? 1;
 }
 
 export interface CellSpanControlsProps {
@@ -233,7 +248,12 @@ export default function CellSpanControls({
                 lockOnStackedMobile={true}
                 lockedValue={0}
                 lockedLabel="Auto"
-                format={(v) => `Column ${v}`}
+                format={(v, slug) => {
+                    // Show the columns the cell actually lands in (start +
+                    // effective span), so there's no grid-line arithmetic.
+                    const sp = effectiveSpan(span, slug);
+                    return sp > 1 ? `${v}–${v + sp - 1}` : `Col ${v}`;
+                }}
             />
             <AxisControl
                 values={rowSpan}
