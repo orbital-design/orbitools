@@ -31,13 +31,20 @@ import { resolveContentWidth } from '../../../../core/utils/content-width.js';
         return !!blockType.supports.orbitools.contentWidth;
     }
 
-    function blockSupportsWideAlign(blockName) {
-        var blockType = wp.blocks.getBlockType(blockName);
-        var align = blockType && blockType.supports && blockType.supports.align;
-        if (align === true) {
-            return true; // all alignments
+    // The Wide option only makes sense when the theme actually defines a wide
+    // size in theme.json (settings.layout.wideSize). WordPress fills a default
+    // server-side, but the raw editor settings reflect what the theme truly
+    // specified — so read it from there. Independent of the block's own align
+    // support: a full-aligned block can constrain its content to wide width
+    // even if the block itself can't be wide-aligned.
+    function themeSpecifiesWideSize() {
+        try {
+            var settings = wp.data.select('core/block-editor').getSettings();
+            var layout = settings && settings.__experimentalFeatures && settings.__experimentalFeatures.layout;
+            return !!(layout && layout.wideSize);
+        } catch (e) {
+            return false;
         }
-        return Array.isArray(align) && align.indexOf('wide') !== -1;
     }
 
     var withContentWidthControls = createHigherOrderComponent(function (BlockEdit) {
@@ -49,7 +56,7 @@ import { resolveContentWidth } from '../../../../core/utils/content-width.js';
             }
 
             var current = resolveContentWidth(props.attributes);
-            var showWide = blockSupportsWideAlign(props.name);
+            var showWide = themeSpecifiesWideSize();
 
             function onChange(value) {
                 props.setAttributes({ orbContentWidth: value || 'full' });

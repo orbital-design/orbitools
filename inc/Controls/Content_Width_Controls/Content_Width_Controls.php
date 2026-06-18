@@ -75,7 +75,7 @@ class Content_Width_Controls extends Module_Base
         \wp_enqueue_script(
             'orbitools-content-width-controls',
             $asset_url . 'editor-content-width-register-controls.js',
-            ['wp-hooks', 'wp-compose', 'wp-element', 'wp-block-editor', 'wp-components', 'wp-blocks'],
+            ['wp-hooks', 'wp-compose', 'wp-element', 'wp-block-editor', 'wp-components', 'wp-blocks', 'wp-data'],
             $this->get_version(),
             true
         );
