@@ -11,13 +11,17 @@
 
 import { Fragment } from '@wordpress/element';
 import { createToolsPanelItem, createToggleGroup } from '../utils/control-helpers';
-import { InspectorControls } from '@wordpress/block-editor';
+import { InspectorControls, BlockControls } from '@wordpress/block-editor';
 import {
     __experimentalToolsPanel as ToolsPanel,
     __experimentalUnitControl as UnitControl,
     ToggleControl,
+    ToolbarGroup,
+    ToolbarDropdownMenu,
 } from '@wordpress/components';
 
+import { alignItemsIcons } from '../utils/flex-icons';
+import { buildControls, SELF_TO_FLEX } from '../grid-cell/align-controls';
 import type { GridAttributes } from './edit';
 
 interface GridControlsProps {
@@ -38,24 +42,6 @@ const GRID_DEFAULTS = {
     justifyItems: 'stretch',
     stackOnMobile: true,
 } as const;
-
-/**
- * Cell alignment within each grid track. Stretch (default) fills the track;
- * the others align the cell to an edge / centre.
- */
-const ALIGN_ITEMS_OPTIONS = [
-    { value: 'stretch', label: 'Stretch' },
-    { value: 'start', label: 'Top' },
-    { value: 'center', label: 'Middle' },
-    { value: 'end', label: 'Bottom' },
-] as const;
-
-const JUSTIFY_ITEMS_OPTIONS = [
-    { value: 'stretch', label: 'Stretch' },
-    { value: 'start', label: 'Left' },
-    { value: 'center', label: 'Center' },
-    { value: 'end', label: 'Right' },
-] as const;
 
 /**
  * Grid type options — fixed N columns, or auto-fit tracks that wrap by width.
@@ -113,6 +99,32 @@ export default function GridControls({ attributes, setAttributes }: GridControls
     const hasNonDefaultValue = (key: keyof GridAttributes, defaultValue: any) => {
         return attributes[key] !== undefined && attributes[key] !== defaultValue;
     };
+
+    // Cell alignment in the block toolbar — vertical (align-items) and
+    // horizontal (justify-items), reusing Row's flex-icons. Clicking the active
+    // option toggles back to Stretch (the grid default).
+    const verticalControls = buildControls(
+        [
+            { value: 'start', title: 'Top', icon: alignItemsIcons.row[SELF_TO_FLEX.start] },
+            { value: 'center', title: 'Middle', icon: alignItemsIcons.row[SELF_TO_FLEX.center] },
+            { value: 'end', title: 'Bottom', icon: alignItemsIcons.row[SELF_TO_FLEX.end] },
+            { value: 'stretch', title: 'Stretch', icon: alignItemsIcons.row[SELF_TO_FLEX.stretch] },
+        ],
+        alignItems,
+        'stretch',
+        (value) => updateAttribute('alignItems', value)
+    );
+    const horizontalControls = buildControls(
+        [
+            { value: 'start', title: 'Left', icon: alignItemsIcons.column[SELF_TO_FLEX.start] },
+            { value: 'center', title: 'Center', icon: alignItemsIcons.column[SELF_TO_FLEX.center] },
+            { value: 'end', title: 'Right', icon: alignItemsIcons.column[SELF_TO_FLEX.end] },
+            { value: 'stretch', title: 'Stretch', icon: alignItemsIcons.column[SELF_TO_FLEX.stretch] },
+        ],
+        justifyItems,
+        'stretch',
+        (value) => updateAttribute('justifyItems', value)
+    );
 
     return (
         <Fragment>
@@ -235,46 +247,20 @@ export default function GridControls({ attributes, setAttributes }: GridControls
                 </ToolsPanel>
             </InspectorControls>
 
-            <InspectorControls group="settings">
-                <ToolsPanel
-                    label="Cell alignment"
-                    resetAll={() => {
-                        updateAttribute('alignItems', GRID_DEFAULTS.alignItems);
-                        updateAttribute('justifyItems', GRID_DEFAULTS.justifyItems);
-                    }}
-                    panelId="grid-alignment-panel"
-                >
-                    {/* Vertical alignment of cells within their row (align-items) */}
-                    {createToolsPanelItem(
-                        'alignItems',
-                        () => hasNonDefaultValue('alignItems', GRID_DEFAULTS.alignItems),
-                        () => updateAttribute('alignItems', GRID_DEFAULTS.alignItems),
-                        'Vertical',
-                        createToggleGroup(
-                            alignItems,
-                            (value) => updateAttribute('alignItems', value),
-                            ALIGN_ITEMS_OPTIONS,
-                            'Vertical'
-                        ),
-                        true
-                    )}
-
-                    {/* Horizontal alignment of cells within their column (justify-items) */}
-                    {createToolsPanelItem(
-                        'justifyItems',
-                        () => hasNonDefaultValue('justifyItems', GRID_DEFAULTS.justifyItems),
-                        () => updateAttribute('justifyItems', GRID_DEFAULTS.justifyItems),
-                        'Horizontal',
-                        createToggleGroup(
-                            justifyItems,
-                            (value) => updateAttribute('justifyItems', value),
-                            JUSTIFY_ITEMS_OPTIONS,
-                            'Horizontal'
-                        ),
-                        true
-                    )}
-                </ToolsPanel>
-            </InspectorControls>
+            <BlockControls group="block">
+                <ToolbarGroup>
+                    <ToolbarDropdownMenu
+                        label="Cell vertical alignment"
+                        icon={verticalControls.find((c) => c.isActive)?.icon || alignItemsIcons.row.stretch}
+                        controls={verticalControls}
+                    />
+                    <ToolbarDropdownMenu
+                        label="Cell horizontal alignment"
+                        icon={horizontalControls.find((c) => c.isActive)?.icon || alignItemsIcons.column.stretch}
+                        controls={horizontalControls}
+                    />
+                </ToolbarGroup>
+            </BlockControls>
         </Fragment>
     );
 }

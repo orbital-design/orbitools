@@ -21,8 +21,9 @@ import { BlockControls } from '@wordpress/block-editor';
 import { ToolbarGroup, ToolbarDropdownMenu } from '@wordpress/components';
 import { alignItemsIcons, justifyContentIcons } from '../utils/flex-icons';
 
-// Stored value → flex CSS key used by the icon maps.
-const SELF_TO_FLEX: Record<string, string> = {
+// Stored value → flex CSS key used by the icon maps. Shared with the grid
+// container's alignment toolbar.
+export const SELF_TO_FLEX: Record<string, string> = {
     start: 'flex-start',
     center: 'center',
     end: 'flex-end',
@@ -50,7 +51,7 @@ export function getCellAlignClasses(alignSelf: string, justifySelf: string, cont
     return classes.join(' ');
 }
 
-interface DropdownControl {
+export interface DropdownControl {
     icon: JSX.Element;
     title: string;
     isActive: boolean;
@@ -61,7 +62,7 @@ interface DropdownControl {
  * Build a dropdown's control list. Clicking the active option returns it to the
  * default (so self-alignment can fall back to "inherit the grid").
  */
-function buildControls(
+export function buildControls(
     options: Array<{ value: string; title: string; icon: JSX.Element }>,
     current: string,
     defaultValue: string,
