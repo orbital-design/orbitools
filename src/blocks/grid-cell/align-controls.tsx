@@ -1,45 +1,39 @@
 /**
- * Grid Cell Alignment Controls
+ * Grid Cell Alignment Toolbar
  *
- * Per-cell alignment: how the cell sits within its grid track — align-self
- * (vertical) and justify-self (horizontal), "Auto" inheriting the grid's Cell
- * alignment — plus how the cell's own content sits vertically inside it
- * (justify-content on the cell's flex column), e.g. pin a button to the bottom
- * of a card. Not responsive (a single value each).
+ * Block-toolbar alignment controls for a grid cell, reusing the same icon set
+ * and dropdown pattern as the Row Layout block:
+ *
+ * - Vertical (align-self)   — how the cell sits in its track, top/middle/
+ *   bottom/stretch. Auto (inherit the grid) by clicking the active option off.
+ * - Horizontal (justify-self) — left/center/right/stretch.
+ * - Content (justify-content) — where the cell's own content sits vertically
+ *   (the cell is a flex column), top/middle/bottom/space-between. Pins e.g. a
+ *   button to the bottom of a card.
+ *
+ * Not responsive (a single value each).
  *
  * @file blocks/grid-cell/align-controls.tsx
  * @since 1.0.0
  */
 
-import { InspectorControls } from '@wordpress/block-editor';
-import {
-    __experimentalToolsPanel as ToolsPanel,
-    __experimentalToolsPanelItem as ToolsPanelItem,
-    SelectControl,
-} from '@wordpress/components';
+import { BlockControls } from '@wordpress/block-editor';
+import { ToolbarGroup, ToolbarDropdownMenu } from '@wordpress/components';
+import { alignItemsIcons, justifyContentIcons } from '../utils/flex-icons';
 
-const ALIGN_SELF_OPTIONS = [
-    { label: 'Auto', value: 'auto' },
-    { label: 'Top', value: 'start' },
-    { label: 'Middle', value: 'center' },
-    { label: 'Bottom', value: 'end' },
-    { label: 'Stretch', value: 'stretch' },
-];
-
-const JUSTIFY_SELF_OPTIONS = [
-    { label: 'Auto', value: 'auto' },
-    { label: 'Left', value: 'start' },
-    { label: 'Center', value: 'center' },
-    { label: 'Right', value: 'end' },
-    { label: 'Stretch', value: 'stretch' },
-];
-
-const CONTENT_ALIGN_OPTIONS = [
-    { label: 'Top', value: 'top' },
-    { label: 'Middle', value: 'middle' },
-    { label: 'Bottom', value: 'bottom' },
-    { label: 'Space between', value: 'between' },
-];
+// Stored value → flex CSS key used by the icon maps.
+const SELF_TO_FLEX: Record<string, string> = {
+    start: 'flex-start',
+    center: 'center',
+    end: 'flex-end',
+    stretch: 'stretch',
+};
+const CONTENT_TO_FLEX: Record<string, string> = {
+    top: 'flex-start',
+    middle: 'center',
+    bottom: 'flex-end',
+    between: 'space-between',
+};
 
 /** Cell alignment classes ('' for inherit/default values). */
 export function getCellAlignClasses(alignSelf: string, justifySelf: string, contentAlign: string): string {
@@ -54,6 +48,31 @@ export function getCellAlignClasses(alignSelf: string, justifySelf: string, cont
         classes.push(`orb-grid-cell--content-${contentAlign}`);
     }
     return classes.join(' ');
+}
+
+interface DropdownControl {
+    icon: JSX.Element;
+    title: string;
+    isActive: boolean;
+    onClick: () => void;
+}
+
+/**
+ * Build a dropdown's control list. Clicking the active option returns it to the
+ * default (so self-alignment can fall back to "inherit the grid").
+ */
+function buildControls(
+    options: Array<{ value: string; title: string; icon: JSX.Element }>,
+    current: string,
+    defaultValue: string,
+    onChange: (value: string) => void
+): DropdownControl[] {
+    return options.map((o) => ({
+        icon: o.icon,
+        title: o.title,
+        isActive: current === o.value,
+        onClick: () => onChange(current === o.value ? defaultValue : o.value),
+    }));
 }
 
 export interface CellAlignControlsProps {
@@ -73,72 +92,67 @@ export default function CellAlignControls({
     onJustifySelfChange,
     onContentAlignChange,
 }: CellAlignControlsProps) {
-    const panelId = 'grid-cell-align-panel';
+    // Vertical alignment of the cell in its track (align-self) — the vertical
+    // (row cross-axis) icons.
+    const verticalControls = buildControls(
+        [
+            { value: 'start', title: 'Top', icon: alignItemsIcons.row[SELF_TO_FLEX.start] },
+            { value: 'center', title: 'Middle', icon: alignItemsIcons.row[SELF_TO_FLEX.center] },
+            { value: 'end', title: 'Bottom', icon: alignItemsIcons.row[SELF_TO_FLEX.end] },
+            { value: 'stretch', title: 'Stretch', icon: alignItemsIcons.row[SELF_TO_FLEX.stretch] },
+        ],
+        alignSelf,
+        'auto',
+        onAlignSelfChange
+    );
+
+    // Horizontal alignment of the cell in its track (justify-self) — the
+    // horizontal (column cross-axis) icons.
+    const horizontalControls = buildControls(
+        [
+            { value: 'start', title: 'Left', icon: alignItemsIcons.column[SELF_TO_FLEX.start] },
+            { value: 'center', title: 'Center', icon: alignItemsIcons.column[SELF_TO_FLEX.center] },
+            { value: 'end', title: 'Right', icon: alignItemsIcons.column[SELF_TO_FLEX.end] },
+            { value: 'stretch', title: 'Stretch', icon: alignItemsIcons.column[SELF_TO_FLEX.stretch] },
+        ],
+        justifySelf,
+        'auto',
+        onJustifySelfChange
+    );
+
+    // Vertical content distribution inside the cell (justify-content of the
+    // cell's flex column) — the vertical (column main-axis) icons.
+    const contentControls = buildControls(
+        [
+            { value: 'top', title: 'Top', icon: justifyContentIcons.column[CONTENT_TO_FLEX.top] },
+            { value: 'middle', title: 'Middle', icon: justifyContentIcons.column[CONTENT_TO_FLEX.middle] },
+            { value: 'bottom', title: 'Bottom', icon: justifyContentIcons.column[CONTENT_TO_FLEX.bottom] },
+            { value: 'between', title: 'Space between', icon: justifyContentIcons.column[CONTENT_TO_FLEX.between] },
+        ],
+        contentAlign,
+        'top',
+        onContentAlignChange
+    );
 
     return (
-        <InspectorControls group="settings">
-            <ToolsPanel
-                label="Alignment"
-                resetAll={() => {
-                    onAlignSelfChange('auto');
-                    onJustifySelfChange('auto');
-                    onContentAlignChange('top');
-                }}
-                panelId={panelId}
-            >
-                <ToolsPanelItem
-                    hasValue={() => alignSelf !== 'auto'}
-                    label="Cell vertical"
-                    onDeselect={() => onAlignSelfChange('auto')}
-                    isShownByDefault={true}
-                    panelId={panelId}
-                >
-                    <SelectControl
-                        label="Cell vertical"
-                        help="How this cell sits in its track (overrides the grid)."
-                        value={alignSelf}
-                        options={ALIGN_SELF_OPTIONS}
-                        onChange={(value) => onAlignSelfChange(value)}
-                        __next40pxDefaultSize={true}
-                        __nextHasNoMarginBottom={true}
-                    />
-                </ToolsPanelItem>
-
-                <ToolsPanelItem
-                    hasValue={() => justifySelf !== 'auto'}
-                    label="Cell horizontal"
-                    onDeselect={() => onJustifySelfChange('auto')}
-                    isShownByDefault={true}
-                    panelId={panelId}
-                >
-                    <SelectControl
-                        label="Cell horizontal"
-                        value={justifySelf}
-                        options={JUSTIFY_SELF_OPTIONS}
-                        onChange={(value) => onJustifySelfChange(value)}
-                        __next40pxDefaultSize={true}
-                        __nextHasNoMarginBottom={true}
-                    />
-                </ToolsPanelItem>
-
-                <ToolsPanelItem
-                    hasValue={() => contentAlign !== 'top'}
-                    label="Content"
-                    onDeselect={() => onContentAlignChange('top')}
-                    isShownByDefault={true}
-                    panelId={panelId}
-                >
-                    <SelectControl
-                        label="Content"
-                        help="Vertical position of this cell's content (needs spare height)."
-                        value={contentAlign}
-                        options={CONTENT_ALIGN_OPTIONS}
-                        onChange={(value) => onContentAlignChange(value)}
-                        __next40pxDefaultSize={true}
-                        __nextHasNoMarginBottom={true}
-                    />
-                </ToolsPanelItem>
-            </ToolsPanel>
-        </InspectorControls>
+        <BlockControls group="block">
+            <ToolbarGroup>
+                <ToolbarDropdownMenu
+                    label="Cell vertical alignment"
+                    icon={verticalControls.find((c) => c.isActive)?.icon || alignItemsIcons.row.stretch}
+                    controls={verticalControls}
+                />
+                <ToolbarDropdownMenu
+                    label="Cell horizontal alignment"
+                    icon={horizontalControls.find((c) => c.isActive)?.icon || alignItemsIcons.column.stretch}
+                    controls={horizontalControls}
+                />
+                <ToolbarDropdownMenu
+                    label="Content position"
+                    icon={contentControls.find((c) => c.isActive)?.icon || justifyContentIcons.column['flex-start']}
+                    controls={contentControls}
+                />
+            </ToolbarGroup>
+        </BlockControls>
     );
 }
