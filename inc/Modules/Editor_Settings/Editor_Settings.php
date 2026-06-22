@@ -354,6 +354,12 @@ final class Editor_Settings extends Module_Base
             return $theme_json;
         }
 
+        // WP 7.0 note: the `default*: false` flags below stop the editor from
+        // *offering* core's presets, but they no longer drop the default-origin
+        // preset values from the emitted CSS variables — `palette.default` etc.
+        // still resolve and print. So we also empty each default-origin preset
+        // array. This is surgical (only the preset arrays, via update_with's
+        // merge), so the rest of core's baseline theme.json is left intact.
         return $theme_json->update_with([
             'version'  => 3,
             'settings' => [
@@ -361,18 +367,28 @@ final class Editor_Settings extends Module_Base
                     'defaultPalette'   => false,
                     'defaultGradients' => false,
                     'defaultDuotone'   => false,
+                    'palette'   => ['default' => []],
+                    'gradients' => ['default' => []],
+                    'duotone'   => ['default' => []],
                 ],
                 'shadow' => [
                     'defaultPresets' => false,
+                    'presets'        => ['default' => []],
                 ],
                 'typography' => [
                     'defaultFontSizes' => false,
+                    'fontSizes'        => ['default' => []],
                 ],
                 'dimensions' => [
                     'defaultAspectRatios' => false,
+                    'aspectRatios'        => ['default' => []],
                 ],
                 'spacing' => [
                     'defaultSpacingSizes' => false,
+                    'spacingSizes'        => ['default' => []],
+                    // Core's default spacing scale auto-generates the 20–80
+                    // sizes; zero the steps so nothing is generated.
+                    'spacingScale'        => ['steps' => 0],
                 ],
             ],
         ]);
