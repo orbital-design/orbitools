@@ -136,15 +136,66 @@ class Preset_Manager
     }
 
     /**
-     * Load presets from config/orbitools.json only
+     * Load presets, theme.json first then config/orbitools.json.
      *
-     * This module exclusively uses config/orbitools.json for preset definitions.
+     * Sources are tried in priority order — the first that yields presets wins:
+     *   1. theme.json  → settings.custom.typographyPresets (WordPress-native;
+     *      respects child-theme / global-styles overrides via wp_get_global_settings)
+     *   2. config/orbitools.json → modules.typographyPresets (legacy fallback)
      *
      * @since 1.0.0
      */
     private function load_presets(): void
     {
+        if ($this->load_presets_from_theme_json()) {
+            return;
+        }
+
         $this->load_presets_from_config();
+    }
+
+    /**
+     * Load presets from theme.json settings.custom.typographyPresets.
+     *
+     * Same shape as the config/orbitools.json `modules.typographyPresets`
+     * block ({ items: { id: { label, description, properties, group } },
+     * groups: {…} }), so it reuses the same parser.
+     *
+     * @since 1.0.0
+     * @return bool True when presets were loaded from theme.json.
+     */
+    private function load_presets_from_theme_json(): bool
+    {
+        if (!function_exists('wp_get_global_settings')) {
+            return false;
+        }
+
+        $custom = \wp_get_global_settings(array('custom'));
+        if (empty($custom) || !is_array($custom)) {
+            return false;
+        }
+
+        // wp_get_global_settings preserves the key as written, but be tolerant
+        // of the kebab-cased form WordPress uses for the matching CSS variable.
+        $data = null;
+        foreach (array('typographyPresets', 'typography-presets', 'typographypresets') as $key) {
+            if (!empty($custom[$key]) && is_array($custom[$key]) && !empty($custom[$key]['items'])) {
+                $data = $custom[$key];
+                break;
+            }
+        }
+
+        if (!$data) {
+            return false;
+        }
+
+        $presets = $this->parse_config_presets($data);
+        if (empty($presets)) {
+            return false;
+        }
+
+        $this->presets = $presets;
+        return true;
     }
 
     /**
