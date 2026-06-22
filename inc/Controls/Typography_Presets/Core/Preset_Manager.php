@@ -53,6 +53,34 @@ class Preset_Manager
     public function __construct()
     {
         $this->load_settings();
+        // Presets are loaded lazily on first access — NOT here. The theme.json
+        // source calls wp_get_global_settings(), which resolves (and caches)
+        // the merged theme.json; doing that during module boot can happen
+        // before the Editor Settings module registers its
+        // wp_theme_json_data_default strip filter, freezing WordPress's core
+        // defaults into the cache. Deferring to first access (a late hook —
+        // enqueue / wp_head) lets that filter be in place first.
+    }
+
+    /**
+     * Whether presets have been loaded yet.
+     *
+     * @since 1.0.0
+     * @var bool
+     */
+    private $presets_loaded = false;
+
+    /**
+     * Load presets on first access.
+     *
+     * @since 1.0.0
+     */
+    private function ensure_presets_loaded(): void
+    {
+        if ($this->presets_loaded) {
+            return;
+        }
+        $this->presets_loaded = true;
         $this->load_presets();
     }
 
@@ -64,6 +92,7 @@ class Preset_Manager
      */
     public function get_presets(): array
     {
+        $this->ensure_presets_loaded();
         return $this->presets;
     }
 
@@ -76,6 +105,7 @@ class Preset_Manager
      */
     public function get_preset(string $preset_id): ?array
     {
+        $this->ensure_presets_loaded();
         return $this->presets[$preset_id] ?? null;
     }
 
@@ -87,6 +117,7 @@ class Preset_Manager
      */
     public function has_presets(): bool
     {
+        $this->ensure_presets_loaded();
         return !empty($this->presets);
     }
 
@@ -98,8 +129,9 @@ class Preset_Manager
      */
     public function get_presets_by_group(): array
     {
+        $this->ensure_presets_loaded();
         $grouped = array();
-        
+
         foreach ($this->presets as $preset_id => $preset) {
             $group_id = $preset['group'] ?? 'default';
             if (!isset($grouped[$group_id])) {
