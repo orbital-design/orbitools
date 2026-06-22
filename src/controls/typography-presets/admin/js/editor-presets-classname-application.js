@@ -1,46 +1,67 @@
 /**
  * Typography Presets - Class Application
  *
- * Applies preset CSS classes to blocks in both editor and frontend
+ * Applies preset CSS classes to blocks in both editor and frontend.
+ *
+ * The preset attribute is responsive — an object keyed by breakpoint slug
+ * ({ base, tablet, mobile }) — with back-compat for the legacy bare-string
+ * value (treated as the base preset). For a base-only value the output is
+ * identical to the pre-responsive class, so existing saved blocks stay valid.
  */
 
 (function() {
     const { addFilter } = wp.hooks;
     const { createHigherOrderComponent } = wp.compose;
 
+    /**
+     * Build the preset class list from a responsive (or legacy string) value.
+     * base → has-type-preset-{id}; other slugs → {slug}:has-type-preset-{id}.
+     */
+    function getPresetClasses(value) {
+        if (!value) {
+            return '';
+        }
+
+        // Normalise: legacy string → { base: string }.
+        const bySlug = (typeof value === 'object') ? value : { base: value };
+
+        const modifiers = [];
+        Object.keys(bySlug).forEach(function(slug) {
+            const preset = bySlug[slug];
+            if (!preset) {
+                return;
+            }
+            modifiers.push(
+                slug === 'base'
+                    ? 'has-type-preset-' + preset
+                    : slug + ':has-type-preset-' + preset
+            );
+        });
+
+        return modifiers.length ? 'has-type-preset ' + modifiers.join(' ') : '';
+    }
+
+    function isAllowedBlock(blockName) {
+        const { settings: moduleSettings } = window.orbitoolsTypographyPresets || {};
+        const allowedBlocks = moduleSettings && moduleSettings.typography_allowed_blocks;
+        return Array.isArray(allowedBlocks) && allowedBlocks.indexOf(blockName) !== -1;
+    }
+
     // Add preset classes to editor blocks
     const addPresetClassToEditor = createHigherOrderComponent(function(BlockListBlock) {
         return function(props) {
-            // Get data from localized script
-            const { settings: moduleSettings } = window.orbitoolsTypographyPresets || {};
-
-            if (!moduleSettings) {
+            if (!isAllowedBlock(props.name)) {
                 return wp.element.createElement(BlockListBlock, props);
             }
 
-            // Get allowed blocks from settings  
-            const allowedBlocks = moduleSettings.typography_allowed_blocks;
-            
-            if (!Array.isArray(allowedBlocks) || allowedBlocks.length === 0) {
-                return wp.element.createElement(BlockListBlock, props);
-            }
+            const presetClasses = getPresetClasses(props.attributes.orbitoolsTypographyPreset);
 
-            if (!allowedBlocks.includes(props.name)) {
-                return wp.element.createElement(BlockListBlock, props);
-            }
-
-            const { orbitoolsTypographyPreset } = props.attributes;
-
-            if (orbitoolsTypographyPreset) {
+            if (presetClasses) {
                 const existingClasses = props.className || '';
-                const presetClasses = `has-type-preset has-type-preset-${orbitoolsTypographyPreset}`;
-                const newClassName = (existingClasses + ' ' + presetClasses).trim();
-
                 const newProps = {
                     ...props,
-                    className: newClassName
+                    className: (existingClasses + ' ' + presetClasses).trim()
                 };
-
                 return wp.element.createElement(BlockListBlock, newProps);
             }
 
@@ -50,29 +71,14 @@
 
     // Add preset classes to block wrapper for frontend
     function addPresetClassToSave(props, blockType, attributes) {
-        // Get data from localized script
-        const { settings: moduleSettings } = window.orbitoolsTypographyPresets || {};
-
-        if (!moduleSettings) {
+        if (!isAllowedBlock(blockType.name)) {
             return props;
         }
 
-        // Get allowed blocks from settings
-        const allowedBlocks = moduleSettings.typography_allowed_blocks;
-        
-        if (!Array.isArray(allowedBlocks) || allowedBlocks.length === 0) {
-            return props;
-        }
+        const presetClasses = getPresetClasses(attributes.orbitoolsTypographyPreset);
 
-        if (!allowedBlocks.includes(blockType.name)) {
-            return props;
-        }
-
-        const { orbitoolsTypographyPreset } = attributes;
-
-        if (orbitoolsTypographyPreset) {
+        if (presetClasses) {
             const existingClasses = props.className || '';
-            const presetClasses = `has-type-preset has-type-preset-${orbitoolsTypographyPreset}`;
             props.className = (existingClasses + ' ' + presetClasses).trim();
         }
 

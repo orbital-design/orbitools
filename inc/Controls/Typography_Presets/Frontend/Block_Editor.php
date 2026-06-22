@@ -171,6 +171,8 @@ class Block_Editor
                 'wp-element',
                 'wp-components',
                 'wp-block-editor',
+                'wp-compose',
+                'wp-data',
                 'orbitools-typography-attribute-registration'
             ),
             self::VERSION,
@@ -244,6 +246,8 @@ class Block_Editor
                 'wp-element',
                 'wp-components',
                 'wp-block-editor',
+                'wp-compose',
+                'wp-data',
                 'orbitools-typography-attribute-registration'
             ),
             self::VERSION,

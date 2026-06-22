@@ -86,12 +86,77 @@ class CSS_Generator
 
         $css_rules = array();
 
+        // Base rules — .has-type-preset-{id}
         foreach ($presets as $preset_id => $preset) {
             $css_rules[] = $this->generate_preset_css($preset_id, $preset);
         }
 
+        // Responsive variants — .{slug}\:has-type-preset-{id} under media queries
+        // so a preset can differ per viewport (matches the editor's device
+        // preview widths via the shared breakpoint config).
+        $css_rules[] = $this->generate_responsive_css($presets);
+
         $this->cached_css = implode("\n\n", array_filter($css_rules));
         return $this->cached_css;
+    }
+
+    /**
+     * Generate the responsive (per-breakpoint) preset rules.
+     *
+     * @since 1.0.0
+     * @param array $presets All presets.
+     * @return string Media-query CSS, or '' when there are no breakpoints.
+     */
+    private function generate_responsive_css(array $presets): string
+    {
+        if (!class_exists('Orbitools\\Core\\Helpers\\Spacing_Utils')) {
+            return '';
+        }
+
+        $breakpoints = \Orbitools\Core\Helpers\Spacing_Utils::get_breakpoints();
+        if (empty($breakpoints)) {
+            return '';
+        }
+
+        $blocks = array();
+
+        foreach ($breakpoints as $breakpoint) {
+            $slug  = $breakpoint['slug'] ?? '';
+            $value = $breakpoint['value'] ?? '';
+            if ($slug === '' || $slug === 'base' || $value === '') {
+                continue;
+            }
+            $query = $breakpoint['query'] ?? 'max-width';
+
+            $rules = array();
+            foreach ($presets as $preset_id => $preset) {
+                if (!isset($preset['properties']) || !is_array($preset['properties'])) {
+                    continue;
+                }
+                $properties = $this->format_css_properties($preset['properties']);
+                if ($properties === '') {
+                    continue;
+                }
+                // Escaped class selector for "{slug}:has-type-preset-{id}".
+                $rules[] = sprintf(
+                    ".%s\\:has-type-preset-%s {\n%s\n}",
+                    esc_attr($slug),
+                    esc_attr($preset_id),
+                    $properties
+                );
+            }
+
+            if (!empty($rules)) {
+                $blocks[] = sprintf(
+                    "@media (%s: %s) {\n%s\n}",
+                    $query,
+                    $value,
+                    implode("\n\n", $rules)
+                );
+            }
+        }
+
+        return implode("\n\n", $blocks);
     }
 
     /**
@@ -298,7 +363,13 @@ class CSS_Generator
      */
     private function get_cached_css(): string
     {
-        $cache_key = 'orbitools_typography_css_' . md5(serialize($this->preset_manager->get_presets()));
+        // The leading schema version busts stale transients when the generated
+        // CSS shape changes (2 = responsive variants added); the breakpoints are
+        // in the key so a breakpoint change regenerates too.
+        $breakpoints = class_exists('Orbitools\\Core\\Helpers\\Spacing_Utils')
+            ? \Orbitools\Core\Helpers\Spacing_Utils::get_breakpoints()
+            : array();
+        $cache_key = 'orbitools_typography_css_' . md5(serialize(array(2, $this->preset_manager->get_presets(), $breakpoints)));
         $cached_css = get_transient($cache_key);
 
         if ($cached_css !== false) {

@@ -27,7 +27,12 @@ wp.hooks.addFilter(
             settings.attributes = {
                 ...settings.attributes,
                 orbitoolsTypographyPreset: {
-                    type: 'string',
+                    // Responsive: an object keyed by breakpoint slug
+                    // ({ base, tablet, mobile }). Legacy values are a bare
+                    // string (the base preset); both shapes are read by the
+                    // control and class application, so old content keeps
+                    // working with no migration.
+                    type: ['string', 'object'],
                     default: ''
                 }
             };
