@@ -171,8 +171,7 @@ class Preset_Manager
      * Load presets, theme.json first then config/orbitools.json.
      *
      * Sources are tried in priority order — the first that yields presets wins:
-     *   1. theme.json  → settings.custom.typographyPresets (WordPress-native;
-     *      respects child-theme / global-styles overrides via wp_get_global_settings)
+     *   1. theme.json  → a top-level "orbitools.typographyPresets" key
      *   2. config/orbitools.json → modules.typographyPresets (legacy fallback)
      *
      * @since 1.0.0
@@ -187,47 +186,50 @@ class Preset_Manager
     }
 
     /**
-     * Load presets from theme.json settings.custom.typographyPresets.
+     * Load presets from a top-level "orbitools.typographyPresets" key in
+     * theme.json.
      *
-     * Same shape as the config/orbitools.json `modules.typographyPresets`
-     * block ({ items: { id: { label, description, properties, group } },
-     * groups: {…} }), so it reuses the same parser.
+     * Read from the raw theme.json file (active theme, then parent) rather than
+     * settings.custom: a top-level key WordPress doesn't recognise is ignored
+     * by core, so — unlike settings.custom — it generates NO --wp--custom--*
+     * CSS variables. Same shape as config/orbitools.json's
+     * `modules.typographyPresets` ({ items: {…}, groups: {…} }), so it reuses
+     * the same parser.
      *
      * @since 1.0.0
      * @return bool True when presets were loaded from theme.json.
      */
     private function load_presets_from_theme_json(): bool
     {
-        if (!function_exists('wp_get_global_settings')) {
-            return false;
-        }
+        $dirs = array_unique(array(
+            \get_stylesheet_directory(),
+            \get_template_directory(),
+        ));
 
-        $custom = \wp_get_global_settings(array('custom'));
-        if (empty($custom) || !is_array($custom)) {
-            return false;
-        }
+        foreach ($dirs as $dir) {
+            $path = $dir . '/theme.json';
+            if (!file_exists($path)) {
+                continue;
+            }
 
-        // wp_get_global_settings preserves the key as written, but be tolerant
-        // of the kebab-cased form WordPress uses for the matching CSS variable.
-        $data = null;
-        foreach (array('typographyPresets', 'typography-presets', 'typographypresets') as $key) {
-            if (!empty($custom[$key]) && is_array($custom[$key]) && !empty($custom[$key]['items'])) {
-                $data = $custom[$key];
-                break;
+            $json = json_decode(file_get_contents($path), true);
+            if (!is_array($json) || JSON_ERROR_NONE !== json_last_error()) {
+                continue;
+            }
+
+            $data = $json['orbitools']['typographyPresets'] ?? null;
+            if (!is_array($data) || empty($data['items'])) {
+                continue;
+            }
+
+            $presets = $this->parse_config_presets($data);
+            if (!empty($presets)) {
+                $this->presets = $presets;
+                return true;
             }
         }
 
-        if (!$data) {
-            return false;
-        }
-
-        $presets = $this->parse_config_presets($data);
-        if (empty($presets)) {
-            return false;
-        }
-
-        $this->presets = $presets;
-        return true;
+        return false;
     }
 
     /**
