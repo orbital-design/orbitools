@@ -220,10 +220,8 @@ class Gaps_CSS_Generator
         $css = self::generate_gaps_css();
         if (!empty($css)) {
             if (empty($handle)) {
-                // Create our own handle if none provided
-                \wp_register_style('orbitools-gaps-frontend', false);
-                \wp_enqueue_style('orbitools-gaps-frontend');
-                \wp_add_inline_style('orbitools-gaps-frontend', $css);
+                // Fold into the consolidated frontend block (global-styles).
+                Inline_CSS::add_frontend($css);
             } else {
                 \wp_add_inline_style($handle, $css);
             }

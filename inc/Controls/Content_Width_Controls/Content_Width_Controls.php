@@ -51,11 +51,15 @@ class Content_Width_Controls extends Module_Base
     {
         add_action('enqueue_block_editor_assets', [$this, 'enqueue_editor_assets']);
 
-        // The constraint CSS is generic ([data-constrain="standard|wide"]), so
-        // it ships once for both contexts. enqueue_block_assets fires on the
-        // frontend AND inside the editor canvas iframe (where blocks render),
-        // so a single hook covers both without an is_admin() split.
-        add_action('enqueue_block_assets', [$this, 'enqueue_constraint_css']);
+        // Frontend: fold the constraint CSS into the consolidated global-styles
+        // block (Inline_CSS), on wp_enqueue_scripts so global-styles is already
+        // registered.
+        add_action('wp_enqueue_scripts', [$this, 'enqueue_frontend_constraint_css']);
+
+        // Editor: keep a dedicated handle on enqueue_block_assets — that's the
+        // hook WordPress injects into the canvas iframe (where blocks render);
+        // is_admin() keeps it from doubling up on the frontend.
+        add_action('enqueue_block_assets', [$this, 'enqueue_editor_constraint_css']);
     }
 
     public function enqueue_editor_assets(): void
@@ -82,13 +86,13 @@ class Content_Width_Controls extends Module_Base
     }
 
     /**
-     * Ship the generic constraint CSS (frontend + editor canvas iframe).
+     * Build the generic constraint CSS.
      *
      * Any element carrying data-constrain="standard|wide" is capped at the
      * matching theme width and centred. Blocks emit that attribute on their
      * inner (constrained) wrapper; the outer wrapper bleeds full-width.
      */
-    public function enqueue_constraint_css(): void
+    private function build_constraint_css(): string
     {
         // Resolve the theme's real content / wide sizes. WordPress only exposes
         // --wp--style--global--content-size as a usable custom property inside
@@ -120,12 +124,32 @@ class Content_Width_Controls extends Module_Base
         $content_size = $clean($content_size, '1200px');
         $wide_size    = $clean($wide_size, '1280px');
 
-        $css = '[data-constrain="standard"]{max-width:var(--wp--style--global--content-size,' . $content_size . ');margin-left:auto;margin-right:auto}'
+        return '[data-constrain="standard"]{max-width:var(--wp--style--global--content-size,' . $content_size . ');margin-left:auto;margin-right:auto}'
              . '[data-constrain="wide"]{max-width:var(--wp--style--global--wide-size,' . $wide_size . ');margin-left:auto;margin-right:auto}';
+    }
+
+    /**
+     * Frontend: fold the constraint CSS into the consolidated global-styles
+     * block.
+     */
+    public function enqueue_frontend_constraint_css(): void
+    {
+        \Orbitools\Core\Helpers\Inline_CSS::add_frontend($this->build_constraint_css());
+    }
+
+    /**
+     * Editor: dedicated handle on enqueue_block_assets so the CSS reaches the
+     * canvas iframe. is_admin() prevents this from doubling up on the frontend.
+     */
+    public function enqueue_editor_constraint_css(): void
+    {
+        if (!\is_admin()) {
+            return;
+        }
 
         \wp_register_style('orbitools-content-width', false);
         \wp_enqueue_style('orbitools-content-width');
-        \wp_add_inline_style('orbitools-content-width', $css);
+        \wp_add_inline_style('orbitools-content-width', $this->build_constraint_css());
     }
 
     public function get_default_settings(): array

@@ -143,9 +143,8 @@ class AspectRatio_CSS_Generator
 
         $css = self::generate_aspect_ratio_css();
         if (!empty($css)) {
-            \wp_register_style('orbitools-aspect-ratio-frontend', false);
-            \wp_enqueue_style('orbitools-aspect-ratio-frontend');
-            \wp_add_inline_style('orbitools-aspect-ratio-frontend', $css);
+            // Fold into the consolidated frontend block (global-styles).
+            Inline_CSS::add_frontend($css);
         }
     }
 
