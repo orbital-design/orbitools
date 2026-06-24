@@ -30,6 +30,14 @@
 			"type": "string",
 			"default": "x"
 		},
+		"animationMode": {
+			"type": "string",
+			"enum": [
+				"auto",
+				"scroll"
+			],
+			"default": "auto"
+		},
 		"direction": {
 			"type": "string",
 			"enum": [

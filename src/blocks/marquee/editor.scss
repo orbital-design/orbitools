@@ -17,7 +17,13 @@
 // Base class for Marquee block in editor
 $elem_base: 'orb-marquee';
 
-.wp-block-#{$elem_base}
+// Match both the default block class (`wp-block-orb-marquee`, standalone) and
+// the stripped class (`orb-marquee`). The plugin removes the `wp-block-` prefix
+// from the marquee wrapper on the frontend (Marquee.php), and the active theme
+// strips it in the editor too — so without the second selector none of these
+// editor rules apply and the block renders as a plain vertical block list.
+.wp-block-#{$elem_base},
+.#{$elem_base}
 {
     // Editor-specific overrides for marquee animation
 
@@ -46,7 +52,9 @@ $elem_base: 'orb-marquee';
         display: flex;
         flex-direction: row;
         flex-wrap: nowrap;
-        gap: inherit;
+        // Match the frontend spacing between items so the editor preview
+        // reads as a marquee strip rather than run-together text.
+        gap: var(--gutter, var(--wp--style--block-gap, 20px));
         // Ensure content is visible during editing
         min-width: max-content;
         justify-content: center;

@@ -95,11 +95,14 @@ const Edit: React.FC<BlockEditProps<MarqueeAttributes>> = ({
     // Extract attributes with fallbacks to defaults
     const {
         orientation = MARQUEE_DEFAULTS.orientation,
+		animationMode = MARQUEE_DEFAULTS.animationMode,
 		direction = MARQUEE_DEFAULTS.direction,
 		hoverState = MARQUEE_DEFAULTS.hoverState,
 		speed = MARQUEE_DEFAULTS.speed,
 		overlayColor,
     } = attributes;
+
+	const isScrollDriven = animationMode === 'scroll';
 
     // Generate CSS custom properties for styling
     const marqueeStyles = getMarqueeStyles(attributes);
@@ -109,6 +112,7 @@ const Edit: React.FC<BlockEditProps<MarqueeAttributes>> = ({
             overlayColor && 'has-overlay-color'
         ].filter(Boolean).join(' '),
         'data-orientation': orientation,
+        'data-animation': animationMode,
         'data-direction': direction,
         'data-hover': hoverState,
         'data-speed': speed,
@@ -136,6 +140,12 @@ const Edit: React.FC<BlockEditProps<MarqueeAttributes>> = ({
 	const setOrientation = (newValue: string | number | undefined) => {
 		if (newValue === 'x' || newValue === 'y') {
 			setAttributes({ orientation: newValue });
+		}
+	};
+
+	const setAnimationMode = (newValue: string | number | undefined) => {
+		if (newValue === 'auto' || newValue === 'scroll') {
+			setAttributes({ animationMode: newValue });
 		}
 	};
 
@@ -179,6 +189,7 @@ const Edit: React.FC<BlockEditProps<MarqueeAttributes>> = ({
 					resetAll={() => {
 						setAttributes({
 							orientation: MARQUEE_DEFAULTS.orientation,
+							animationMode: MARQUEE_DEFAULTS.animationMode,
 							direction: MARQUEE_DEFAULTS.direction,
 							hoverState: MARQUEE_DEFAULTS.hoverState,
 							speed: MARQUEE_DEFAULTS.speed,
@@ -186,6 +197,37 @@ const Edit: React.FC<BlockEditProps<MarqueeAttributes>> = ({
 					}}
 					panelId="marquee-settings-panel"
 				>
+					{/* Animation Mode Control */}
+					<ToolsPanelItem
+						hasValue={() => hasNonDefaultValue('animationMode', MARQUEE_DEFAULTS.animationMode)}
+						label={__('Animation', 'orbitools')}
+						onDeselect={() => setAnimationMode(MARQUEE_DEFAULTS.animationMode)}
+						isShownByDefault={true}
+						panelId="marquee-settings-panel"
+					>
+						<ToggleGroupControl
+							label={__('Animation', 'orbitools')}
+							value={animationMode}
+							onChange={setAnimationMode}
+							isBlock
+							help={
+								isScrollDriven
+									? __('Content scrubs across as the block scrolls through the viewport.', 'orbitools')
+									: __('Content scrolls continuously on its own.', 'orbitools')
+							}
+							__nextHasNoMarginBottom={true}
+						>
+							<ToggleGroupControlOption
+								value="auto"
+								label={__('Continuous', 'orbitools')}
+							/>
+							<ToggleGroupControlOption
+								value="scroll"
+								label={__('On scroll', 'orbitools')}
+							/>
+						</ToggleGroupControl>
+					</ToolsPanelItem>
+
 					{/* Orientation Control */}
 					<ToolsPanelItem
 						hasValue={() => hasNonDefaultValue('orientation', MARQUEE_DEFAULTS.orientation)}
@@ -280,7 +322,10 @@ const Edit: React.FC<BlockEditProps<MarqueeAttributes>> = ({
 					</ToggleGroupControl>
 					</ToolsPanelItem>
 
-					{/* Hover Animation State Control */}
+					{/* Hover Animation State Control — only meaningful for the
+					    continuous animation; the scroll-driven mode is paused
+					    inherently when the user stops scrolling. */}
+					{!isScrollDriven && (
 					<ToolsPanelItem
 						hasValue={() => hasNonDefaultValue('hoverState', MARQUEE_DEFAULTS.hoverState)}
 						label={__('Hover Behavior', 'orbitools')}
@@ -306,6 +351,7 @@ const Edit: React.FC<BlockEditProps<MarqueeAttributes>> = ({
 						/>
 					</ToggleGroupControl>
 					</ToolsPanelItem>
+					)}
 
 					{/* Animation Speed Control */}
 					<ToolsPanelItem
@@ -317,10 +363,10 @@ const Edit: React.FC<BlockEditProps<MarqueeAttributes>> = ({
 					>
 						<div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
 							<span style={{ fontSize: '11px', fontWeight: 500, textTransform: 'uppercase', color: '#1e1e1e' }}>
-								{__('Animation Speed', 'orbitools')}
+								{isScrollDriven ? __('Scroll Distance', 'orbitools') : __('Animation Speed', 'orbitools')}
 							</span>
 							<span style={{ fontSize: '11px', color: '#757575' }}>
-								{currentSpeedValue}s
+								{isScrollDriven ? `${currentSpeedValue}` : `${currentSpeedValue}s`}
 							</span>
 						</div>
 						<RangeControl
@@ -329,14 +375,19 @@ const Edit: React.FC<BlockEditProps<MarqueeAttributes>> = ({
 							min={SPEED_MIN}
 							max={SPEED_MAX}
 							step={SPEED_STEP}
-							help={__('Time to scroll 50 pixels (in seconds)', 'orbitools')}
+							help={
+								isScrollDriven
+									? __('How far the content travels as the block crosses the viewport (higher = further).', 'orbitools')
+									: __('Time to scroll 50 pixels (in seconds)', 'orbitools')
+							}
 							hideLabelFromVision={true}
 							withInputField={false}
 							__nextHasNoMarginBottom={true}
 						/>
-						
-						{/* Speed Preview Box */}
-						<div style={{ 
+
+						{/* Speed Preview Box — continuous mode only */}
+						{!isScrollDriven && (
+						<div style={{
 							marginTop: '12px',
 							padding: '12px',
 							backgroundColor: '#f0f0f0',
@@ -364,6 +415,7 @@ const Edit: React.FC<BlockEditProps<MarqueeAttributes>> = ({
 								`
 							}} />
 						</div>
+						)}
 					</ToolsPanelItem>
 				</ToolsPanel>
 			</InspectorControls>

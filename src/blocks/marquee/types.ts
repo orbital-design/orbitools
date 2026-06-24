@@ -24,6 +24,12 @@ export interface MarqueeAttributes {
     orientation?: 'x' | 'y';
 
     /**
+     * Animation driver - 'auto' is the continuous time-based scroll;
+     * 'scroll' scrubs the content as the block moves through the viewport.
+     */
+    animationMode?: 'auto' | 'scroll';
+
+    /**
      * Animation direction - normal (left-to-right/top-to-bottom) or reverse
      */
     direction?: 'normal' | 'reverse';
@@ -61,6 +67,7 @@ export interface MarqueeEditProps {
  */
 export const MARQUEE_DEFAULTS = {
     orientation: 'x' as const,
+    animationMode: 'auto' as const,
     direction: 'normal' as const,
     hoverState: 'paused' as const,
     speed: '10s',

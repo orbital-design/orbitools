@@ -106,8 +106,9 @@
                 // Calculate animation speed
                 this.setupAnimationSpeed(contentSize);
 
-                // Set up hover behavior
-                if (this.config.hoverState === 'paused') {
+                // Set up hover behavior (continuous mode only — the
+                // scroll-driven mode already stops when the user stops scrolling)
+                if (this.config.hoverState === 'paused' && this.config.animationMode !== 'scroll') {
                     this.setupHoverBehavior();
                 }
 
@@ -126,8 +127,12 @@
                 // Mark as initialized
                 this.element.dataset.marqueeInitialized = 'true';
 
-                // Start animation
-                this.start();
+                // Start the chosen driver
+                if (this.config.animationMode === 'scroll') {
+                    this.setupScrollDriven();
+                } else {
+                    this.start();
+                }
 
             } catch (error) {
                 console.error('Marquee initialization failed:', error);
@@ -144,6 +149,7 @@
 
             return {
                 orientation: dataset.orientation || DEFAULT_CONFIG.orientation,
+                animationMode: dataset.animation === 'scroll' ? 'scroll' : 'auto',
                 direction: dataset.direction || DEFAULT_CONFIG.direction,
                 hoverState: dataset.hover || DEFAULT_CONFIG.hoverState,
                 speed: dataset.speed || DEFAULT_CONFIG.speed
@@ -276,6 +282,15 @@
                     entries.forEach(entry => {
                         this.isVisible = entry.isIntersecting;
 
+                        // Scroll-driven mode is positioned by the scroll
+                        // handler, not the rAF loop — just refresh on enter.
+                        if (this.config.animationMode === 'scroll') {
+                            if (this.isVisible) {
+                                this.updateScrollPositions();
+                            }
+                            return;
+                        }
+
                         if (this.isVisible && !this.animationID) {
                             this.start();
                         } else if (!this.isVisible && this.animationID) {
@@ -403,6 +418,102 @@
                 cancelAnimationFrame(this.animationID);
                 this.animationID = null;
             }
+        }
+
+        /**
+         * Set up scroll-linked driving: the content offset is scrubbed from the
+         * block's progress through the viewport instead of the time-based loop.
+         * Reuses the same duplicated items; positions are computed statelessly
+         * (modulo tiling) so the loop stays seamless scrubbing either way.
+         */
+        setupScrollDriven() {
+            const isHorizontal = this.config.orientation === 'x';
+
+            // One content copy's size along the scroll axis, and the recycle
+            // period (the whole duplicated set).
+            this.scrollItemSize = isHorizontal
+                ? this.marqueeConfig.contentWidth
+                : this.marqueeConfig.contentHeight;
+            this.scrollLoopLength = this.items.length * this.scrollItemSize;
+
+            let ticking = false;
+            const onScroll = () => {
+                // Only do work while in view; rAF-throttle to one update a frame.
+                if (ticking || !this.isVisible) return;
+                ticking = true;
+                requestAnimationFrame(() => {
+                    ticking = false;
+                    this.updateScrollPositions();
+                });
+            };
+
+            window.addEventListener('scroll', onScroll, { passive: true });
+            window.addEventListener('resize', onScroll, { passive: true });
+            this.cleanupFunctions.push(() => {
+                window.removeEventListener('scroll', onScroll);
+                window.removeEventListener('resize', onScroll);
+            });
+
+            // Position correctly on load, before the observer first fires.
+            this.updateScrollPositions();
+        }
+
+        /**
+         * Parse the numeric seconds from the speed config ("10s" -> 10). In
+         * scroll mode it's reused as a travel-distance multiplier.
+         *
+         * @returns {number}
+         */
+        parseSpeedNumber() {
+            const match = (this.config.speed || '').match(/^(\d+(?:\.\d+)?)s$/);
+            return match ? parseFloat(match[1]) : 10;
+        }
+
+        /**
+         * The block's progress through the viewport: 0 as its top reaches the
+         * bottom of the viewport, 1 as its bottom leaves the top.
+         *
+         * @returns {number} Clamped to 0..1
+         */
+        getViewProgress() {
+            const rect = this.element.getBoundingClientRect();
+            const viewport = window.innerHeight || document.documentElement.clientHeight;
+            const total = viewport + rect.height;
+            if (total <= 0) return 0;
+            return Math.min(1, Math.max(0, (viewport - rect.top) / total));
+        }
+
+        /**
+         * Scrub item positions from the current view progress (scroll mode).
+         */
+        updateScrollPositions() {
+            if (!this.scrollItemSize) return;
+
+            const isHorizontal = this.config.orientation === 'x';
+            const isReverse = this.config.direction === 'reverse';
+            const loop = this.scrollLoopLength;
+            const size = this.scrollItemSize;
+
+            // Travel across one full in-view traversal, relative to the visible
+            // container (re-read each time so it tracks resize); speed multiplies.
+            const dims = this.cachedDimensions || {};
+            const containerSize = (isHorizontal ? dims.contentWidth : dims.contentHeight) || size;
+            const travel = containerSize * Math.max(0.1, this.parseSpeedNumber() / 5);
+
+            let offset = this.getViewProgress() * travel;
+            if (isReverse) offset = -offset;
+
+            this.items.forEach((item, i) => {
+                // Tiled base position, shifted by the scroll offset, wrapped into
+                // a continuous range so items recycle seamlessly in either direction.
+                let pos = ((i * size - offset) % loop + loop) % loop;
+                if (pos > loop - size) {
+                    pos -= loop;
+                }
+                item.style.transform = isHorizontal
+                    ? `translateX(${pos}px)`
+                    : `translateY(${pos}px)`;
+            });
         }
 
         /**
