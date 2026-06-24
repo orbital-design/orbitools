@@ -149,10 +149,21 @@ class AspectRatio_CSS_Generator
     }
 
     /**
-     * Enqueue aspect ratio CSS for block editor
+     * Enqueue aspect ratio CSS for the block editor.
+     *
+     * Runs on `enqueue_block_assets` (not `enqueue_block_editor_assets`) — that's
+     * the hook WordPress injects into the editor canvas iframe, where the blocks
+     * actually render. The latter only reaches the editor's outer chrome, so the
+     * aspect-ratio classes wouldn't apply to block previews. `enqueue_block_assets`
+     * also fires on the frontend, where the wp_enqueue_scripts handler owns this
+     * CSS, so bail when not in admin.
      */
     public static function enqueue_editor_aspect_ratio_css(): void
     {
+        if (!\is_admin()) {
+            return;
+        }
+
         if (!\apply_filters('orbitools_aspect_ratio_editor_css', true)) {
             return;
         }
@@ -171,7 +182,9 @@ class AspectRatio_CSS_Generator
     public static function init(): void
     {
         \add_action('wp_enqueue_scripts', [self::class, 'enqueue_frontend_aspect_ratio_css']);
-        \add_action('enqueue_block_editor_assets', [self::class, 'enqueue_editor_aspect_ratio_css']);
+        // enqueue_block_assets (not enqueue_block_editor_assets) is the hook that
+        // reaches the editor canvas iframe; the handler bails on the frontend.
+        \add_action('enqueue_block_assets', [self::class, 'enqueue_editor_aspect_ratio_css']);
 
         \add_action('switch_theme', [self::class, 'clear_cache']);
         \add_action('customize_save_after', [self::class, 'clear_cache']);

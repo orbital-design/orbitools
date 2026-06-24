@@ -4,6 +4,7 @@ namespace Orbitools\Controls\Spacings_Controls;
 use Orbitools\Core\Abstracts\Module_Base;
 use Orbitools\Core\SpacingConfig;
 use Orbitools\Core\Helpers\Gaps_CSS_Generator;
+use Orbitools\Core\Helpers\Spacing_Classes_CSS_Generator;
 
 /**
  * Spacings Controls Module
@@ -62,6 +63,7 @@ class Spacings_Controls extends Module_Base {
         // this module — they only run when Spacings_Controls is enabled.
         SpacingConfig::init();
         Gaps_CSS_Generator::init();
+        Spacing_Classes_CSS_Generator::init();
 
         add_action('enqueue_block_editor_assets', [$this, 'enqueue_editor_assets']);
     }

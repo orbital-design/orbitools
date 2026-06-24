@@ -52,7 +52,7 @@ class Gaps_CSS_Generator
         // Build cache key from config data. The leading schema version
         // busts stale transients whenever the generated CSS shape changes
         // (the config inputs alone wouldn't) — bump it on any edit below.
-        $cache_key = self::TRANSIENT_KEY . '_' . md5(\wp_json_encode([3, $spacing_sizes, $breakpoints]));
+        $cache_key = self::TRANSIENT_KEY . '_' . md5(\wp_json_encode([4, $spacing_sizes, $breakpoints]));
 
         // Check transient cache
         $cached = \get_transient($cache_key);
@@ -71,10 +71,12 @@ class Gaps_CSS_Generator
         $css .= "    gap: 0;\n";
         $css .= "}\n\n";
 
-        // Generate spacing size gap classes. No `, {$size}` fallback:
-        // WordPress emits --wp--preset--spacing--{slug} for every preset and
-        // this CSS only exists when those presets do, so the var is always
-        // defined. Slug 0 is the special-cased zero above.
+        // Generate spacing size gap classes. The literal size is kept as a
+        // var fallback: `var(--wp--preset--spacing--{slug}, {size})`. The var
+        // wins on the frontend (preset vars sit on :root in global-styles), but
+        // inside the editor canvas iframe those preset vars aren't reliably in
+        // scope for these classes, so the fallback is what actually paints the
+        // gap there. Slug 0 is the special-cased zero above.
         foreach ($spacing_sizes as $spacing) {
             $slug = $spacing['slug'];
 
@@ -82,14 +84,18 @@ class Gaps_CSS_Generator
                 continue;
             }
 
+            $size = $spacing['size'] ?? '';
+            $value = $size !== '' ? "var(--wp--preset--spacing--{$slug}, {$size})" : "var(--wp--preset--spacing--{$slug})";
+
             $css .= ".has-gap.has-gap--{$slug} {\n";
-            $css .= "    gap: var(--wp--preset--spacing--{$slug});\n";
+            $css .= "    gap: {$value};\n";
             $css .= "}\n\n";
         }
 
         // Axis-specific gap classes (row-gap / column-gap) for split gaps.
         // Same conventions as the shorthand above: zero is special-cased,
-        // slug 0 is skipped in the loop, and there's no var fallback.
+        // slug 0 is skipped in the loop, and the literal size is kept as a
+        // var fallback so the gap paints inside the editor iframe.
         $css .= ".has-gap.has-row-gap--0 {\n";
         $css .= "    row-gap: 0;\n";
         $css .= "}\n\n";
@@ -104,12 +110,15 @@ class Gaps_CSS_Generator
                 continue;
             }
 
+            $size = $spacing['size'] ?? '';
+            $value = $size !== '' ? "var(--wp--preset--spacing--{$slug}, {$size})" : "var(--wp--preset--spacing--{$slug})";
+
             $css .= ".has-gap.has-row-gap--{$slug} {\n";
-            $css .= "    row-gap: var(--wp--preset--spacing--{$slug});\n";
+            $css .= "    row-gap: {$value};\n";
             $css .= "}\n\n";
 
             $css .= ".has-gap.has-column-gap--{$slug} {\n";
-            $css .= "    column-gap: var(--wp--preset--spacing--{$slug});\n";
+            $css .= "    column-gap: {$value};\n";
             $css .= "}\n\n";
         }
 
@@ -129,8 +138,8 @@ class Gaps_CSS_Generator
             $css .= "        gap: 0;\n";
             $css .= "    }\n\n";
             
-            // Spacing sizes for this breakpoint (no fallback; slug 0 is
-            // special-cased above).
+            // Spacing sizes for this breakpoint (literal size kept as a var
+            // fallback; slug 0 is special-cased above).
             foreach ($spacing_sizes as $spacing) {
                 $slug = $spacing['slug'];
 
@@ -138,8 +147,11 @@ class Gaps_CSS_Generator
                     continue;
                 }
 
+                $size = $spacing['size'] ?? '';
+                $value = $size !== '' ? "var(--wp--preset--spacing--{$slug}, {$size})" : "var(--wp--preset--spacing--{$slug})";
+
                 $css .= "    .has-gap.{$breakpoint_slug}\:has-gap--{$slug} {\n";
-                $css .= "        gap: var(--wp--preset--spacing--{$slug});\n";
+                $css .= "        gap: {$value};\n";
                 $css .= "    }\n\n";
             }
 
@@ -151,7 +163,8 @@ class Gaps_CSS_Generator
             $css .= "        column-gap: 0;\n";
             $css .= "    }\n\n";
 
-            // Axis-specific spacing sizes for this breakpoint.
+            // Axis-specific spacing sizes for this breakpoint (literal size
+            // kept as a var fallback).
             foreach ($spacing_sizes as $spacing) {
                 $slug = $spacing['slug'];
 
@@ -159,12 +172,15 @@ class Gaps_CSS_Generator
                     continue;
                 }
 
+                $size = $spacing['size'] ?? '';
+                $value = $size !== '' ? "var(--wp--preset--spacing--{$slug}, {$size})" : "var(--wp--preset--spacing--{$slug})";
+
                 $css .= "    .has-gap.{$breakpoint_slug}\:has-row-gap--{$slug} {\n";
-                $css .= "        row-gap: var(--wp--preset--spacing--{$slug});\n";
+                $css .= "        row-gap: {$value};\n";
                 $css .= "    }\n\n";
 
                 $css .= "    .has-gap.{$breakpoint_slug}\:has-column-gap--{$slug} {\n";
-                $css .= "        column-gap: var(--wp--preset--spacing--{$slug});\n";
+                $css .= "        column-gap: {$value};\n";
                 $css .= "    }\n\n";
             }
 
