@@ -81,7 +81,7 @@ class Settings_Helper
      */
     public static function show_groups_in_dropdown(): bool
     {
-        return self::get_setting('typography_show_groups_in_dropdown', false);
+        return self::get_setting('typography-presets_show_groups_in_dropdown', false);
     }
 
     /**
@@ -92,6 +92,6 @@ class Settings_Helper
      */
     public static function output_preset_css(): bool
     {
-        return self::get_setting('typography_output_preset_css', true);
+        return self::get_setting('typography-presets_output_preset_css', true);
     }
 }

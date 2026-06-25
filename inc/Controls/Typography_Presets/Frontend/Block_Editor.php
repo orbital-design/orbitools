@@ -79,16 +79,18 @@ class Block_Editor
         $settings_manager = new \Orbitools\Core\Helpers\Settings_Manager();
         $all_settings = $settings_manager->get_all_settings();
 
-        // FIXED: Access settings directly by their field ID, not module-prefixed
-        $allowed_blocks = $all_settings['typography_allowed_blocks'] ?? array();
+        // Stored option keys are slug-prefixed ({slug}_{field_id}); the module
+        // slug is `typography-presets`. (The legacy `typography_*` keys are dead
+        // — they predate the v3 React admin and never matched what it saves.)
+        $allowed_blocks = $all_settings['typography-presets_allowed_blocks'] ?? array();
 
         // If setting is empty (not configured yet), use sensible defaults
         if (empty($allowed_blocks)) {
             $allowed_blocks = \Orbitools\Controls\Typography_Presets\Typography_Presets::DEFAULT_ALLOWED_BLOCKS;
         }
 
-        // FIXED: Access the setting directly by its field ID (not module-prefixed)
-        $show_groups_raw = $all_settings['typography_show_groups_in_dropdown'] ?? false;
+        // Slug-prefixed stored key (see allowed_blocks note above).
+        $show_groups_raw = $all_settings['typography-presets_show_groups_in_dropdown'] ?? false;
 
         // Normalize the setting value - AdminKit stores checkboxes as '1' or '' (empty string)
         $show_groups_setting = !empty($show_groups_raw) && $show_groups_raw !== '0';

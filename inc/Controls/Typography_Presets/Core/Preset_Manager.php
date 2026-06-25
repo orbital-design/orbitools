@@ -155,16 +155,17 @@ class Preset_Manager
     {
         $admin_settings = get_option('orbitools_settings', array());
 
-        $defaults = array(
-            'typography_show_groups_in_dropdown' => false,
-            'typography_output_preset_css' => true,
-        );
+        // Stored option keys are slug-prefixed ({slug}_{field_id}); the module
+        // slug is `typography-presets`. Read those, but keep the internal
+        // `typography_*` keys this class exposes.
+        $show_groups = $admin_settings['typography-presets_show_groups_in_dropdown'] ?? false;
+        $output_css  = $admin_settings['typography-presets_output_preset_css'] ?? true;
 
-        $this->settings = wp_parse_args($admin_settings, $defaults);
-        
-        // Normalize checkbox values (AdminKit stores as '1' or empty string)
-        $this->settings['typography_show_groups_in_dropdown'] = !empty($this->settings['typography_show_groups_in_dropdown']) && $this->settings['typography_show_groups_in_dropdown'] !== '0';
-        $this->settings['typography_output_preset_css'] = !empty($this->settings['typography_output_preset_css']) && $this->settings['typography_output_preset_css'] !== '0';
+        // Normalize checkbox values (stored as '1' or empty string).
+        $this->settings = array(
+            'typography_show_groups_in_dropdown' => !empty($show_groups) && $show_groups !== '0',
+            'typography_output_preset_css' => !empty($output_css) && $output_css !== '0',
+        );
     }
 
     /**
