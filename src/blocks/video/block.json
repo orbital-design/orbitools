@@ -44,7 +44,7 @@
         "inserter": true,
         "multiple": true,
         "reusable": true,
-        "border": { "radius": true },
+        "__experimentalBorder": { "radius": true },
         "shadow": true
     },
     "editorScript": "file:./index.js",
