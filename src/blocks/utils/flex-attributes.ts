@@ -9,6 +9,7 @@
  */
 
 import type { LayoutAttributes } from '../types';
+import { resolveContentWidth, constrainAttr } from '../../core/utils/content-width.js';
 
 /**
  * Default flex control values - these should match block.json defaults
@@ -77,7 +78,6 @@ export function generateFlexAttributes(
     const flexWrap = attributes.flexWrap || FLEX_DEFAULTS.flexWrap;
     const alignItems = attributes.alignItems || FLEX_DEFAULTS.alignItems;
     const justifyContent = attributes.justifyContent || FLEX_DEFAULTS.justifyContent;
-    const restrictContentWidth = attributes.restrictContentWidth || FLEX_DEFAULTS.restrictContentWidth;
     const stackOnMobile = attributes.stackOnMobile !== false; // Default true unless explicitly false
     const itemWidth = attributes.itemWidth || FLEX_DEFAULTS.itemWidth;
     const columnSystem = attributes.columnSystem || FLEX_DEFAULTS.columnSystem;
@@ -100,10 +100,13 @@ export function generateFlexAttributes(
         dataAttrs['data-justify'] = VALUE_MAPPINGS.justifyContent[justifyContent] || justifyContent;
     }
 
-    // Content constraint: Only for full-width blocks with constraint enabled
+    // Content constraint: only for full-width blocks constrained to a specific
+    // width. The value ('standard' | 'wide') comes from the global Content
+    // Width control (with legacy restrictContentWidth back-compat).
     const isFullWidth = blockProps?.className?.includes('alignfull') || false;
-    if (restrictContentWidth && isFullWidth) {
-        dataAttrs['data-constrain'] = 'true';
+    const constrainVal = constrainAttr(resolveContentWidth(attributes));
+    if (constrainVal && isFullWidth) {
+        dataAttrs['data-constrain'] = constrainVal;
     }
 
     // Mobile stacking: Only add if enabled (which is default)

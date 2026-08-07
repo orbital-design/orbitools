@@ -1,0 +1,30 @@
+{
+  "$schema": "https://orbitools/schemas/module.v1.json",
+  "slug": "orbital-colour-scheme",
+  "name": "Orbital Colour Scheme",
+  "description": "Register an Orbital admin colour scheme (navy + Orbital blue) and apply it to all users.",
+  "version": "1.0.0",
+  "category": "modules",
+  "class": "\\Orbitools\\Modules\\Orbital_Colour_Scheme\\Orbital_Colour_Scheme",
+  "default_enabled": false,
+  "requires": {
+    "php": ">=7.4",
+    "wp": ">=5.0"
+  },
+  "settings": [
+    {
+      "id": "force_for_all_users",
+      "type": "toggle",
+      "label": "Force Orbital scheme for all users",
+      "description": "Override each user's admin colour preference with the Orbital scheme. Disable this to register the scheme but let users opt in via their profile.",
+      "default": true
+    },
+    {
+      "id": "hide_picker",
+      "type": "toggle",
+      "label": "Hide the colour scheme picker on user profiles",
+      "description": "Remove the colour scheme chooser from Users → Profile so users can't switch away.",
+      "default": true
+    }
+  ]
+}

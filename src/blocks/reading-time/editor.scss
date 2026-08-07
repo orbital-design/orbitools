@@ -1,0 +1,17 @@
+/**
+ * Reading Time block — editor styles.
+ *
+ * Nothing custom right now — the server-side render preview shares
+ * the frontend chrome via index.scss. This file exists so the
+ * webpack `editor.css` slot in block.json has something to emit.
+ */
+// Match both the default block class and the stripped one: the plugin removes
+// the `wp-block-` prefix on the frontend and the active theme strips it in the
+// editor, so editor rules scoped only to `.wp-block-orb-reading-time` would
+// never apply. (No rules here yet — this keeps the selector correct for when
+// there are.)
+.wp-block-orb-reading-time,
+.orb-reading-time {
+    // Reserved for editor-specific tweaks if the preview ever needs
+    // chrome the frontend shouldn't carry.
+}

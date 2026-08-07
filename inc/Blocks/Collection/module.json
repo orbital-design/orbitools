@@ -1,8 +1,8 @@
 {
   "$schema": "https://orbitools/schemas/module.v1.json",
   "slug": "collection-block",
-  "name": "Collection",
-  "description": "Flexible layout container block for organizing content",
+  "name": "Row Layout",
+  "description": "Lay out columns in a flexible row or grid.",
   "version": "1.0.0",
   "category": "blocks",
   "class": "\\Orbitools\\Blocks\\Collection\\Collection",

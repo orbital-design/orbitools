@@ -59,8 +59,16 @@ See `CLAUDE.md` § "Theme pages" for the full registration shape.
 - **User Avatars** — local avatar uploads, optional Gravatar disable
 - **Menu Dividers** — visual dividers in WP nav menus
 - **Menu Groups** — grouped menu items
-- **Toolbar FAB** — floating action button toolbar
+- **Toolbar Reveal** — hide the admin toolbar on the frontend until the cursor reaches the top of the page
+- **Post Templates** — auto-load synced block patterns for configured CPTs and per-taxonomy archive templates (themes wire pairs via the `orbitools/post_templates/configs` filter)
+- **Upload Guard** — block theme `.zip` uploads on `local` environments so a stray drag-and-drop can't clobber in-progress theme work
+- **External Rewrites** — per-rule exclusion + 301 engine for CPT posts whose canonical home has moved off WordPress (Yoast sitemap exclusions + single-post / term-archive redirects)
+- **Editor Settings** *(Editor tab)* — trim down the block editor: kill marketplace surfaces (Block Directory, remote patterns, Openverse, Font Library), tighten defaults, drop the wp-elements-* classes + core-block-supports inline CSS we don't use
+- **Reading Time** *(Editor tab)* — calculate a post's reading time on save, expose it as an `orb/reading-time` block and a static `Reading_Time::get_reading_time()` accessor
+- **Font Awesome** *(Integrations tab)* — load a Font Awesome kit on the frontend, optional ACF Font Awesome plugin bridge
+- **Block Manager** *(Editor tab)* — toggle which blocks appear in the editor inserter
 - **Core Overrides** — hide built-in WP admin pages (Settings → Connectors / Site Health / etc.) the site doesn't need
+- **Head Cleanup** — strip the legacy clutter WP emits in `<head>` (feed / RSD / oEmbed discovery, generator tag, s.w.org DNS-prefetch, stylesheet boilerplate)
 
 ## Project structure
 

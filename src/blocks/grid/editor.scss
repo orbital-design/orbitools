@@ -1,0 +1,83 @@
+/**
+ * Block: Grid - Editor Styles
+ *
+ * Block editor specific styles for the Grid block. Handles editor-only
+ * styling and block editor interface integration. The frontend grid layout
+ * lives in index.scss; this file adds the editor UI cues.
+ *
+ * @file        blocks/grid
+ * @subpackage  orbitools/blocks
+ * @author      Adam Cullen, Orbital Tech Team
+ * @since       1.0.0
+ *
+ * @see         blocks/grid/index.scss - Frontend styles
+ */
+
+%before {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    background: rgba(0, 124, 186, 0);
+    border: 0px dashed #32a3e2;
+    border-radius: 6px;
+    transition: all 0.25s ease;
+}
+
+.orb-grid {
+    position: relative;
+
+    // UI Cues
+    &::before {
+        @extend %before;
+    }
+
+    // The grid container drives the layout; the inner blocks wrapper must be
+    // transparent to it so the cells become direct grid items.
+    > .block-editor-inner-blocks {
+        display: contents;
+
+        > .block-editor-block-list__layout {
+            display: contents;
+        }
+    }
+
+    &:hover {
+        &:before {
+            background: rgba(0, 124, 186, 0.05);
+            top: -10px;
+            right: -10px;
+            bottom: -10px;
+            left: -10px;
+            border-width: 1px;
+        }
+    }
+
+    &.is-selected,
+    &.has-child-selected {
+        &:before {
+            background: rgba(0, 124, 186, 0.05);
+            top: -10px;
+            right: -10px;
+            bottom: -10px;
+            left: -10px;
+            border-width: 1px;
+            border-style: solid;
+        }
+    }
+}
+
+// Constrained full-width mode: the editor auto-stamps the base orb-grid class
+// onto the block wrapper as well, but there it's the full-bleed outer div, not
+// the grid. Neutralise the grid layout and UI cues on it so only the inner
+// constrained .orb-grid renders the tracks. Editor-only — the frontend wrapper
+// (composed in PHP) never carries the class.
+.orb-grid.orb-grid--bleed {
+    display: block;
+
+    &::before {
+        content: none;
+    }
+}

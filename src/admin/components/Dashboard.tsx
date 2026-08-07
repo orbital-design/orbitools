@@ -22,11 +22,14 @@ import { LoadingState } from './LoadingState';
 import { routes } from '../lib/router';
 import { STORE_KEY } from '../store';
 import { categoryIcon } from './category-icons';
+import { BlockIcon } from './BlockIcon';
 import type { Module, ModuleCategory } from '../types';
 
 const CATEGORIES: { id: ModuleCategory; label: string }[] = [
     { id: 'blocks', label: 'Blocks' },
+    { id: 'editor', label: 'Editor' },
     { id: 'controls', label: 'Controls' },
+    { id: 'integrations', label: 'Integrations' },
     { id: 'modules', label: 'Modules' },
 ];
 
@@ -126,21 +129,32 @@ interface ItemCardProps {
 
 function ItemCard({ module: mod, onToggle }: ItemCardProps): JSX.Element {
     const hasSettings = mod.settings_schema.length > 0;
+    // Block-category items navigate into the Blocks tab so the
+    // sidebar (vertical tabs) stays visible — the standalone
+    // #settings/{slug} route renders the panel without it.
+    const settingsHref = routes.categoryItem(mod.category, mod.slug);
     return (
         <li className="orbitools-item-grid__cell">
             <div className="orbitools-item-card">
                 <div className="orbitools-item-card__head">
-                    <ToggleControl
-                        label=""
-                        checked={mod.enabled}
-                        onChange={onToggle}
-                        __nextHasNoMarginBottom
-                    />
+                    {mod.category === 'blocks' && (
+                        <span className="orbitools-item-card__icon" aria-hidden="true">
+                            <BlockIcon icon={mod.icon} />
+                        </span>
+                    )}
                     <h3 className="orbitools-item-card__title">{mod.name}</h3>
+                    <span className="orbitools-item-card__toggle">
+                        <ToggleControl
+                            label=""
+                            checked={mod.enabled}
+                            onChange={onToggle}
+                            __nextHasNoMarginBottom
+                        />
+                    </span>
                 </div>
                 <p className="orbitools-item-card__description">{mod.description}</p>
                 {hasSettings && (
-                    <a className="orbitools-item-card__settings" href={routes.settings(mod.slug)}>
+                    <a className="orbitools-item-card__settings" href={settingsHref}>
                         Settings →
                     </a>
                 )}

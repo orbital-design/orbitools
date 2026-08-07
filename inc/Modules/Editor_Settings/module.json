@@ -1,0 +1,114 @@
+{
+  "$schema": "https://orbitools/schemas/module.v1.json",
+  "slug": "editor-settings",
+  "name": "Editor Settings",
+  "description": "Trim down WP's block editor — strip marketplace surfaces (Block Directory, remote patterns, Openverse, Font Library), tighten editor defaults, and drop the bits of block output we don't use (wp-elements-* classes, the core-block-supports inline stylesheet).",
+  "version": "1.0.0",
+  "category": "editor",
+  "class": "\\Orbitools\\Modules\\Editor_Settings\\Editor_Settings",
+  "default_enabled": false,
+  "section_layout": "stacked",
+  "requires": {
+    "php": ">=7.4",
+    "wp": ">=5.0"
+  },
+  "sections": [
+    {
+      "id": "marketplace",
+      "title": "Marketplace surfaces",
+      "description": "Removes the wp.org / wp.com / third-party content surfaces baked into the editor."
+    },
+    {
+      "id": "behaviour",
+      "title": "Editor behaviour",
+      "description": "Tweak how the editor sets defaults for new content."
+    },
+    {
+      "id": "frontend_output",
+      "title": "Frontend output",
+      "description": "Strip block output we don't use before it reaches the wire."
+    }
+  ],
+  "settings": [
+    {
+      "id": "disable_block_directory",
+      "type": "toggle",
+      "label": "Disable the Block Directory",
+      "description": "Stops the editor from loading the wp.org marketplace assets (search-and-install third-party blocks panel). Equivalent to removing `wp_enqueue_editor_block_directory_assets`.",
+      "default": true,
+      "section": "marketplace"
+    },
+    {
+      "id": "disable_remote_patterns",
+      "type": "toggle",
+      "label": "Disable remote block patterns",
+      "description": "Stops the editor from fetching the wp.com pattern directory. Filters `should_load_remote_block_patterns` to false.",
+      "default": true,
+      "section": "marketplace"
+    },
+    {
+      "id": "disable_openverse",
+      "type": "toggle",
+      "label": "Disable the Openverse media tab",
+      "description": "Hides the Openverse category in the media inserter. Sets `enableOpenverseMediaCategory` to false on editor settings.",
+      "default": true,
+      "section": "marketplace"
+    },
+    {
+      "id": "disable_font_library",
+      "type": "toggle",
+      "label": "Disable the Font Library",
+      "description": "Hides the Font Library UI from Site Editor → Styles. Sets `fontLibraryEnabled` to false on editor settings. Theme-defined fonts in theme.json are unaffected.",
+      "default": true,
+      "section": "marketplace"
+    },
+    {
+      "id": "force_post_image_full",
+      "type": "toggle",
+      "label": "Force full-size images on posts",
+      "description": "Makes the editor default to inserting images at their full uploaded size on the built-in `post` post type. Doesn't apply to pages or custom post types.",
+      "default": true,
+      "section": "behaviour"
+    },
+    {
+      "id": "strip_core_theme_json_defaults",
+      "type": "toggle",
+      "label": "Strip core's default theme.json presets",
+      "description": "Wipes WP's built-in color palette / gradients / duotone / shadow presets, default font sizes, default aspect ratios, and the default spacing scale (set to 0 steps) on the `wp_theme_json_data_default` filter. The editor then only shows what the theme declares explicitly in its own theme.json. Recommended for Orbital sites where the theme owns the design tokens end-to-end.",
+      "default": true,
+      "section": "behaviour"
+    },
+    {
+      "id": "strip_wp_elements_classes",
+      "type": "toggle",
+      "label": "Strip wp-elements-* classes",
+      "description": "Removes the `wp-elements-{hash}` classes WordPress adds to blocks that use the Elements API for per-instance styling. Frontend only — leaves the editor alone so React's reconciliation keeps stable class lists.",
+      "default": true,
+      "section": "frontend_output"
+    },
+    {
+      "id": "dequeue_core_block_supports",
+      "type": "toggle",
+      "label": "Drop the core-block-supports inline stylesheet",
+      "description": "Dequeues the `core-block-supports` stylesheet on the frontend — the inline CSS WP builds from block supports (typography, spacing, etc.). Only flip this on for themes that already cover supports in theme.json or their own CSS.",
+      "default": true,
+      "section": "frontend_output"
+    },
+    {
+      "id": "disable_layout_styles",
+      "type": "toggle",
+      "label": "Strip layout & default styles from global CSS",
+      "description": "Rebuilds WP's `global-styles` inline CSS from just the preset variables + utility classes — dropping the layout scaffolding (`.is-layout-*`, `.wp-site-blocks` alignment, block-gap) and the element / block default styles. Your colour / spacing / font tokens and `.has-*` classes stay; the theme owns all layout + element CSS. Only turn on for themes that handle their own layout.",
+      "default": true,
+      "section": "frontend_output"
+    },
+    {
+      "id": "global_styles_in_head",
+      "type": "toggle",
+      "label": "Print global styles in the head",
+      "description": "WordPress 6.9 defers the global-styles CSS to the footer on classic themes using on-demand asset loading, relying on an output-buffer hoist to move it back into the `<head>` — when that buffer isn't active the CSS renders in the footer (flash of unstyled content). This takes over global-styles printing and emits it in the `<head>` directly, leaving on-demand block-asset loading untouched (per-block CSS still loads only when a block is used).",
+      "default": true,
+      "section": "frontend_output"
+    }
+  ]
+}

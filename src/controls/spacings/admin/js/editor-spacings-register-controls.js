@@ -4,7 +4,7 @@
  * Automatically adds spacing controls to blocks with orbitools.spacings support
  */
 
-import { getBreakpointOptions } from '../../../../core/utils/breakpoints.js';
+import { ResponsiveControl, ResponsiveDots } from '../../../../core/utils/responsive-control.js';
 
 (function() {
     // Configuration functions from spacings-config.js (available globally)
@@ -31,14 +31,13 @@ import { getBreakpointOptions } from '../../../../core/utils/breakpoints.js';
 
     const { addFilter } = wp.hooks;
     const { createHigherOrderComponent } = wp.compose;
-    const { Fragment, useState } = wp.element;
+    const { Fragment } = wp.element;
     const { InspectorControls, useSettings } = wp.blockEditor;
     const {
         __experimentalToolsPanel: ToolsPanel,
         __experimentalToolsPanelItem: ToolsPanelItem,
         RangeControl,
         Button,
-        Tooltip,
         __experimentalVStack: VStack
     } = wp.components;
 
@@ -72,38 +71,13 @@ import { getBreakpointOptions } from '../../../../core/utils/breakpoints.js';
      * Simple Spacings Control Component
      */
     function SpacingsControl({ gap, padding, margin, onGapChange, onPaddingChange, onMarginChange, blockName, supports }) {
-        // Get proper breakpoints and spacing from configuration system
-        const breakpoints = getBreakpointOptions();
+        // Spacing presets from the configuration system (falls back to
+        // theme.json via useSpacingPresets). The responsive behaviour —
+        // which viewport's value is being edited — is owned by the shared
+        // ResponsiveControl framework and driven by the editor's native
+        // screen-size preview toggle, so there's no breakpoint tab bar here.
         const config = getBlockSpacingsConfig(blockName);
         const spacingPresets = config.spacings || useSpacingPresets();
-
-        // Read raw breakpoints from theme config for base entry and icons
-        const themeConfig = window.orbitoolsThemeConfig || {};
-        const rawBreakpoints = (themeConfig.settings && themeConfig.settings.breakpoints) || [];
-        let baseEntry = null;
-        rawBreakpoints.forEach(bp => { if (bp.slug === 'base') baseEntry = bp; });
-
-        // Build all breakpoints with labels and icons from config
-        const allBreakpoints = [{
-            slug: 'base',
-            label: (baseEntry && baseEntry.name) || 'All',
-            menuLabel: (baseEntry && baseEntry.name) || 'All Screens',
-            tooltip: (baseEntry && baseEntry.name) || 'All Screens',
-            icon: (baseEntry && baseEntry.icon) || null
-        }];
-        breakpoints.forEach(bp => {
-            allBreakpoints.push({
-                slug: bp.slug,
-                label: bp.slug.toUpperCase(),
-                menuLabel: bp.name || bp.slug,
-                tooltip: bp.name || bp.slug,
-                icon: bp.icon || null
-            });
-        });
-
-        // Active tab state — default to 'base'
-        const [activeTab, setActiveTab] = useState('base');
-        const effectiveActiveTab = activeTab;
 
         /**
          * Helper to get spacing index by slug
@@ -556,126 +530,189 @@ import { getBreakpointOptions } from '../../../../core/utils/breakpoints.js';
             );
         }
 
-        // Get active tab's label for the nested panel
-        const activeTabData = allBreakpoints.find(bp => bp.slug === effectiveActiveTab);
-        const nestedPanelLabel = activeTabData
-            ? (activeTabData.slug === 'base'
-                ? activeTabData.tooltip
-                : activeTabData.tooltip + '+')
-            : 'Spacings';
+        /**
+         * Create the gap control. When the block opts in via
+         * supports.splitGap, render a link/unlink toggle (mirroring
+         * createBoxControl's all/split toggle): a single "Gap" slider when
+         * linked (value is a string/undefined), or "Row" + "Column" sliders
+         * when unlinked (value is an object { row, column }).
+         *
+         * Without splitGap this is just a single createSpacingControl, i.e.
+         * identical to the previous behaviour.
+         */
+        function createGapControl(spacingSizes, value, onChange) {
+            // Linked = string or undefined; Split = object { row, column }.
+            const isSplit = value && typeof value === 'object';
 
-        // Nested ToolsPanel with ItemGroup for the active tab's gap/padding/margin
-        const activeControls = effectiveActiveTab ? wp.element.createElement('div', {
-            className: 'orbitools-nested-panel'
-        },
-            wp.element.createElement(ToolsPanel, {
-                label: nestedPanelLabel,
-                panelId: `${effectiveActiveTab}-spacings-panel`
-            },
-                wp.element.createElement(VStack, {
-                    spacing: 1,
-                    style: { gridColumn: '1 / -1' }
-                },
-                    supports.gap && wp.element.createElement(ToolsPanelItem, {
-                        hasValue: () => gap?.[effectiveActiveTab] !== undefined,
-                        label: 'Gap',
-                        onDeselect: () => {
-                            const newGap = { ...gap }; delete newGap[effectiveActiveTab]; onGapChange(newGap);
-                        },
-                        isShownByDefault: false,
-                        panelId: `${effectiveActiveTab}-spacings-panel`
-                    },
-                        createSpacingControl(
-                            spacingPresets, 'gap', gap?.[effectiveActiveTab],
-                            (newValue) => { onGapChange({ ...gap, [effectiveActiveTab]: newValue }); }
-                        )
-                    ),
-                    supports.padding && wp.element.createElement(ToolsPanelItem, {
-                        hasValue: () => padding?.[effectiveActiveTab] !== undefined,
-                        label: 'Padding',
-                        onDeselect: () => {
-                            const newPadding = { ...padding }; delete newPadding[effectiveActiveTab]; onPaddingChange(newPadding);
-                        },
-                        isShownByDefault: false,
-                        panelId: `${effectiveActiveTab}-spacings-panel`
-                    },
-                        createBoxControl(
-                            spacingPresets, 'padding', padding?.[effectiveActiveTab] || {},
-                            (newValue) => { onPaddingChange({ ...padding, [effectiveActiveTab]: newValue }); }
-                        )
-                    ),
-                    supports.margin && wp.element.createElement(ToolsPanelItem, {
-                        hasValue: () => margin?.[effectiveActiveTab] !== undefined,
-                        label: 'Margin',
-                        onDeselect: () => {
-                            const newMargin = { ...margin }; delete newMargin[effectiveActiveTab]; onMarginChange(newMargin);
-                        },
-                        isShownByDefault: false,
-                        panelId: `${effectiveActiveTab}-spacings-panel`
-                    },
-                        createBoxControl(
-                            spacingPresets, 'margin', margin?.[effectiveActiveTab] || {},
-                            (newValue) => { onMarginChange({ ...margin, [effectiveActiveTab]: newValue }); }
-                        )
-                    )
-                )
-            )
-        ) : null;
-
-        // PanelBody with tab bar for breakpoints, nested ToolsPanel for spacing types
-        return wp.element.createElement(wp.components.PanelBody, {
-            title: 'Spacings',
-            initialOpen: true
-        },
-            // Tab bar — all breakpoints always visible
-            wp.element.createElement('div', {
-                style: {
-                    display: 'flex',
-                    gap: '4px',
-                    marginBottom: '12px',
-                    padding: '4px',
-                    background: '#F3F5F7',
-                    borderRadius: '6px'
+            const toggleMode = () => {
+                if (isSplit) {
+                    // Split -> linked: take row, fall back to column.
+                    const linked = (value.row !== undefined && value.row !== '')
+                        ? value.row
+                        : value.column;
+                    onChange(linked === undefined ? undefined : linked);
+                } else {
+                    // Linked -> split: seed both axes with the current value.
+                    onChange({ row: value, column: value });
                 }
-            },
-                allBreakpoints.map((bp) => {
-                    const isActive = effectiveActiveTab === bp.slug;
-                    return wp.element.createElement(Tooltip, {
-                        key: bp.slug,
-                        text: bp.tooltip
+            };
+
+            // Reuse the box-control's split icons for the axis sliders and the
+            // box-control's toggle icon for the link/unlink button.
+            const rowIcon = wp.element.createElement('svg', { width: "16", height: "16", viewBox: "0 0 640 640", fill: "none" },
+                wp.element.createElement('path', { fill: "#32A3E2", d: "M160 256c0 17.7-14.3 32-32 32s-32-14.3-32-32 14.3-32 32-32 32 14.3 32 32Zm0 128c0 17.7-14.3 32-32 32s-32-14.3-32-32 14.3-32 32-32 32 14.3 32 32Zm384-128c0 17.7-14.3 32-32 32s-32-14.3-32-32 14.3-32 32-32 32 14.3 32 32Zm0 128c0 17.7-14.3 32-32 32s-32-14.3-32-32 14.3-32 32-32 32 14.3 32 32Z" }),
+                wp.element.createElement('path', { fill: "#1D303A", d: "M544 512c0 17.7-14.3 32-32 32H128c-17.7 0-32-14.3-32-32s14.3-32 32-32h384c17.7 0 32 14.3 32 32ZM96 128c0-17.7 14.3-32 32-32h384c17.7 0 32 14.3 32 32s-14.3 32-32 32H128c-17.7 0-32-14.3-32-32Z" })
+            );
+            const columnIcon = wp.element.createElement('svg', { width: "16", height: "16", viewBox: "0 0 640 640", fill: "none" },
+                wp.element.createElement('path', { fill: "#32A3E2", d: "M224 128c0 17.7 14.3 32 32 32s32-14.3 32-32-14.3-32-32-32-32 14.3-32 32Zm0 384c0 17.7 14.3 32 32 32s32-14.3 32-32-14.3-32-32-32-32 14.3-32 32Zm128-384c0 17.7 14.3 32 32 32s32-14.3 32-32-14.3-32-32-32-32 14.3-32 32Zm0 384c0 17.7 14.3 32 32 32s32-14.3 32-32-14.3-32-32-32-32 14.3-32 32Z" }),
+                wp.element.createElement('path', { fill: "#1D303A", d: "M128 544c-17.7 0-32-14.3-32-32V128c0-17.7 14.3-32 32-32s32 14.3 32 32v384c0 17.7-14.3 32-32 32ZM512 96c17.7 0 32 14.3 32 32v384c0 17.7-14.3 32-32 32s-32-14.3-32-32V128c0-17.7 14.3-32 32-32Z" })
+            );
+            const toggleIcon = wp.element.createElement('svg', { xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 640 640", width: "16", height: "16" },
+                wp.element.createElement('path', { fill: "#1d303a", d: "M64 224c0 17.7 14.3 32 32 32h293.5c-3.5-10-5.5-20.8-5.5-32s1.9-22 5.5-32H96c-17.7 0-32 14.3-32 32zm186.5 160c3.5 10 5.5 20.8 5.5 32s-1.9 22-5.5 32H544c17.7 0 32-14.3 32-32s-14.3-32-32-32H250.5z" }),
+                wp.element.createElement('path', { fill: "#32a3e2", d: "M480 256c-17.7 0-32-14.3-32-32s14.3-32 32-32 32 14.3 32 32-14.3 32-32 32zm0-128c-53 0-96 43-96 96s43 96 96 96 96-43 96-96-43-96-96-96zM160 448c-17.7 0-32-14.3-32-32s14.3-32 32-32 32 14.3 32 32-14.3 32-32 32zm0-128c-53 0-96 43-96 96s43 96 96 96 96-43 96-96-43-96-96-96z" })
+            );
+
+            const axisRow = (icon, axisValue, onAxisChange) =>
+                wp.element.createElement('div', {
+                    style: { display: 'flex', alignItems: 'center', gap: '8px' }
+                },
+                    wp.element.createElement('div', {
+                        style: {
+                            width: '20px', height: '20px', display: 'flex',
+                            alignItems: 'center', justifyContent: 'center',
+                            color: '#757575', flexShrink: 0
+                        }
+                    }, icon),
+                    wp.element.createElement('div', { style: { flex: 1 } },
+                        createSpacingControl(spacingSizes, 'gap', axisValue, onAxisChange, true)
+                    )
+                );
+
+            return wp.element.createElement('div', null,
+                // Header: "Gap" label + link/unlink toggle button.
+                wp.element.createElement('div', {
+                    style: {
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center'
+                    }
+                },
+                    wp.element.createElement('label', {
+                        style: {
+                            fontSize: '11px',
+                            fontWeight: '500',
+                            color: '#757575',
+                            margin: 0
+                        }
+                    }, 'Gap'),
+                    wp.element.createElement(Button, {
+                        size: 'small',
+                        variant: 'tertiary',
+                        onClick: toggleMode,
+                        style: { minWidth: 'auto', padding: '6px', background: 'transparent' }
+                    }, toggleIcon)
+                ),
+
+                isSplit ? (
+                    wp.element.createElement('div', { style: { display: 'grid', gap: '12px' } },
+                        axisRow(rowIcon, value.row, (newValue) =>
+                            onChange({ ...value, row: newValue })),
+                        axisRow(columnIcon, value.column, (newValue) =>
+                            onChange({ ...value, column: newValue }))
+                    )
+                ) : (
+                    // Linked: a single slider with no internal label (the
+                    // header above already carries "Gap").
+                    createSpacingControl(spacingSizes, 'gap', value, onChange, true)
+                )
+            );
+        }
+
+        // Combined responsive indicator: a viewport counts as "set" when
+        // any of gap / padding / margin has a value for that slug.
+        function spacingsSetForSlug(slug) {
+            function has(obj) {
+                var v = obj && obj[slug];
+                if (v === undefined || v === null || v === '') return false;
+                if (typeof v === 'object') return Object.keys(v).length > 0;
+                return true;
+            }
+            return has(gap) || has(padding) || has(margin);
+        }
+
+        // The active device (slug) comes from the ResponsiveControl
+        // framework, driven by the editor's screen-size preview toggle.
+        // Each device gets its own nested ToolsPanel of gap/padding/margin
+        // bound to that slug's slice of the attribute object.
+        return wp.element.createElement(ResponsiveControl, {
+            blockName: blockName,
+            wrap: false,
+            render: function(ctx) {
+                const slug = ctx.slug;
+                const panelId = slug + '-spacings-panel';
+
+                // No PanelBody wrapper — the ToolsPanel is the panel. The
+                // dots sit inline right after the "Spacings" label.
+                return wp.element.createElement(ToolsPanel, {
+                        label: wp.element.createElement('span', { className: 'orbitools-responsive-label' },
+                            'Spacings',
+                            wp.element.createElement(ResponsiveDots, { isSet: spacingsSetForSlug })
+                        ),
+                        panelId: panelId
                     },
-                        wp.element.createElement('button', {
-                            onClick: () => setActiveTab(bp.slug),
-                            style: {
-                                flex: 1,
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                padding: '6px 4px',
-                                border: 'none',
-                                borderRadius: '4px',
-                                background: isActive ? '#fff' : 'transparent',
-                                boxShadow: isActive ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
-                                color: isActive ? '#1e1e1e' : '#757575',
-                                cursor: 'pointer',
-                                fontSize: '11px',
-                                fontWeight: isActive ? 600 : 400,
-                                lineHeight: '1'
-                            }
+                        wp.element.createElement(VStack, {
+                            spacing: 1,
+                            style: { gridColumn: '1 / -1' }
                         },
-                            bp.icon
-                                ? wp.element.createElement('span', {
-                                    dangerouslySetInnerHTML: { __html: bp.icon },
-                                    style: { display: 'flex', alignItems: 'center', width: '20px', height: '20px' }
-                                })
-                                : bp.label
+                            supports.gap && wp.element.createElement(ToolsPanelItem, {
+                                hasValue: () => gap?.[slug] !== undefined,
+                                label: 'Gap',
+                                onDeselect: () => {
+                                    const newGap = { ...gap }; delete newGap[slug]; onGapChange(newGap);
+                                },
+                                isShownByDefault: false,
+                                panelId: panelId
+                            },
+                                supports.splitGap ? createGapControl(
+                                    spacingPresets, gap?.[slug],
+                                    (newValue) => { onGapChange({ ...gap, [slug]: newValue }); }
+                                ) : createSpacingControl(
+                                    spacingPresets, 'gap', gap?.[slug],
+                                    (newValue) => { onGapChange({ ...gap, [slug]: newValue }); }
+                                )
+                            ),
+                            supports.padding && wp.element.createElement(ToolsPanelItem, {
+                                hasValue: () => padding?.[slug] !== undefined,
+                                label: 'Padding',
+                                onDeselect: () => {
+                                    const newPadding = { ...padding }; delete newPadding[slug]; onPaddingChange(newPadding);
+                                },
+                                isShownByDefault: false,
+                                panelId: panelId
+                            },
+                                createBoxControl(
+                                    spacingPresets, 'padding', padding?.[slug] || {},
+                                    (newValue) => { onPaddingChange({ ...padding, [slug]: newValue }); }
+                                )
+                            ),
+                            supports.margin && wp.element.createElement(ToolsPanelItem, {
+                                hasValue: () => margin?.[slug] !== undefined,
+                                label: 'Margin',
+                                onDeselect: () => {
+                                    const newMargin = { ...margin }; delete newMargin[slug]; onMarginChange(newMargin);
+                                },
+                                isShownByDefault: false,
+                                panelId: panelId
+                            },
+                                createBoxControl(
+                                    spacingPresets, 'margin', margin?.[slug] || {},
+                                    (newValue) => { onMarginChange({ ...margin, [slug]: newValue }); }
+                                )
+                            )
                         )
                     );
-                })
-            ),
-            // Active tab's spacing controls
-            activeControls
-        );
+            }
+        });
     }
 
     // Add automatic spacing controls
@@ -705,7 +742,7 @@ import { getBreakpointOptions } from '../../../../core/utils/breakpoints.js';
 
             return wp.element.createElement(Fragment, {},
                 wp.element.createElement(BlockEdit, props),
-                wp.element.createElement(InspectorControls, {},
+                wp.element.createElement(InspectorControls, { group: 'styles' },
                     wp.element.createElement(SpacingsControl, {
                         gap: orbGap,
                         padding: orbPadding,

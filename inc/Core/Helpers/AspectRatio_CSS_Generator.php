@@ -71,12 +71,18 @@ class AspectRatio_CSS_Generator
             $css .= "}\n\n";
         }
 
-        // Responsive aspect ratio classes per breakpoint
+        // Responsive aspect ratio classes per breakpoint. Breakpoints
+        // are emitted in array order (desktop-first cascade: tablet
+        // then mobile), each honouring its own `query` direction
+        // (defaults to max-width) so the tablet override applies at
+        // <=781px and the mobile override (later in source) wins at
+        // <=479px — matching WordPress's device-preview canvas widths.
         foreach ($breakpoints as $breakpoint) {
-            $bp_slug = $breakpoint['slug'];
+            $bp_slug  = $breakpoint['slug'];
             $bp_value = $breakpoint['value'];
+            $bp_query = $breakpoint['query'] ?? 'max-width';
 
-            $css .= "@media (min-width: {$bp_value}) {\n";
+            $css .= "@media ({$bp_query}: {$bp_value}) {\n";
 
             foreach ($ratios as $ratio) {
                 $slug = $ratio['slug'];
@@ -119,7 +125,15 @@ class AspectRatio_CSS_Generator
     }
 
     /**
-     * Enqueue aspect ratio CSS for frontend
+     * Enqueue the frontend aspect-ratio CSS (inline) in <head>.
+     *
+     * The `has-aspect-ratio` class is added server-side at render time
+     * (by AspectRatioRenderer), so it isn't in the stored post content —
+     * there's no cheap way to detect usage up front, and the previous
+     * render_block late-enqueue relied on print_late_styles() firing in
+     * the footer, which doesn't happen reliably in block themes (the
+     * style silently never printed). Enqueue directly, same as
+     * Gaps_CSS_Generator. The inline CSS is small.
      */
     public static function enqueue_frontend_aspect_ratio_css(): void
     {
@@ -129,17 +143,27 @@ class AspectRatio_CSS_Generator
 
         $css = self::generate_aspect_ratio_css();
         if (!empty($css)) {
-            \wp_register_style('orbitools-aspect-ratio-frontend', false);
-            \wp_enqueue_style('orbitools-aspect-ratio-frontend');
-            \wp_add_inline_style('orbitools-aspect-ratio-frontend', $css);
+            // Fold into the consolidated frontend block (global-styles).
+            Inline_CSS::add_frontend($css);
         }
     }
 
     /**
-     * Enqueue aspect ratio CSS for block editor
+     * Enqueue aspect ratio CSS for the block editor.
+     *
+     * Runs on `enqueue_block_assets` (not `enqueue_block_editor_assets`) — that's
+     * the hook WordPress injects into the editor canvas iframe, where the blocks
+     * actually render. The latter only reaches the editor's outer chrome, so the
+     * aspect-ratio classes wouldn't apply to block previews. `enqueue_block_assets`
+     * also fires on the frontend, where the wp_enqueue_scripts handler owns this
+     * CSS, so bail when not in admin.
      */
     public static function enqueue_editor_aspect_ratio_css(): void
     {
+        if (!\is_admin()) {
+            return;
+        }
+
         if (!\apply_filters('orbitools_aspect_ratio_editor_css', true)) {
             return;
         }
@@ -158,7 +182,9 @@ class AspectRatio_CSS_Generator
     public static function init(): void
     {
         \add_action('wp_enqueue_scripts', [self::class, 'enqueue_frontend_aspect_ratio_css']);
-        \add_action('enqueue_block_editor_assets', [self::class, 'enqueue_editor_aspect_ratio_css']);
+        // enqueue_block_assets (not enqueue_block_editor_assets) is the hook that
+        // reaches the editor canvas iframe; the handler bails on the frontend.
+        \add_action('enqueue_block_assets', [self::class, 'enqueue_editor_aspect_ratio_css']);
 
         \add_action('switch_theme', [self::class, 'clear_cache']);
         \add_action('customize_save_after', [self::class, 'clear_cache']);

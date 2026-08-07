@@ -1,0 +1,74 @@
+{
+  "$schema": "https://orbitools/schemas/module.v1.json",
+  "slug": "font-awesome",
+  "name": "Font Awesome",
+  "description": "Load a Font Awesome kit on the frontend. Optional integration with the ACF Font Awesome plugin (forwards API key + kit token via filters, fixes a PHP 8 repeater bug). Tokens can come from the settings here or from wp-config constants (`FONT_AWESOME_KIT_TOKEN`, `FONT_AWESOME_API_KEY`) — saved settings win when both are set.",
+  "version": "1.0.0",
+  "category": "integrations",
+  "class": "\\Orbitools\\Integrations\\Font_Awesome\\Font_Awesome",
+  "default_enabled": false,
+  "section_layout": "stacked",
+  "requires": {
+    "php": ">=7.4",
+    "wp": ">=5.0"
+  },
+  "sections": [
+    {
+      "id": "credentials",
+      "title": "Credentials",
+      "description": "Kit token + API key. Both fall back to wp-config constants when blank — `FONT_AWESOME_KIT_TOKEN` and `FONT_AWESOME_API_KEY` respectively."
+    },
+    {
+      "id": "loading",
+      "title": "Frontend loading",
+      "description": "How the kit script gets onto the page."
+    },
+    {
+      "id": "acf_bridge",
+      "title": "ACF Font Awesome",
+      "description": "Only relevant when the ACF Font Awesome plugin is active — these filters no-op when it isn't."
+    }
+  ],
+  "settings": [
+    {
+      "id": "kit_token",
+      "type": "text",
+      "label": "Kit token",
+      "description": "The unique slug at the end of your kit's URL (kit.fontawesome.com/{token}.js). Leave blank to fall back to the FONT_AWESOME_KIT_TOKEN constant.",
+      "default": "",
+      "section": "credentials"
+    },
+    {
+      "id": "api_key",
+      "type": "text",
+      "label": "API key",
+      "description": "Used by the ACF Font Awesome plugin to fetch the icon catalogue. Leave blank to fall back to the FONT_AWESOME_API_KEY constant. Not needed if you're only using the frontend kit.",
+      "default": "",
+      "section": "credentials"
+    },
+    {
+      "id": "preconnect",
+      "type": "toggle",
+      "label": "Preconnect to kit.fontawesome.com",
+      "description": "Emits an early `<link rel=preconnect>` so the browser completes DNS + TCP + TLS before encountering the kit script tag.",
+      "default": true,
+      "section": "loading"
+    },
+    {
+      "id": "pseudo_elements",
+      "type": "toggle",
+      "label": "Enable pseudo-element icons",
+      "description": "Adds `data-search-pseudo-elements` to the kit script so Font Awesome scans for icons declared via `::before` / `::after` rules. Off by default — it costs DOM-mutation overhead and isn't needed when you only use `<i>` tags.",
+      "default": false,
+      "section": "loading"
+    },
+    {
+      "id": "fix_acf_repeater_value",
+      "type": "toggle",
+      "label": "Fix ACF Font Awesome repeater fatal on PHP 8+",
+      "description": "Re-encodes already-decoded array values back to JSON before the plugin's render_field calls `json_decode` on them. Works around a long-standing bug that only bites when a Font Awesome field is inside an ACF repeater. Leave on unless the plugin author ships their own fix.",
+      "default": true,
+      "section": "acf_bridge"
+    }
+  ]
+}

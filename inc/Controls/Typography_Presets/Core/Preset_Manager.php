@@ -53,6 +53,34 @@ class Preset_Manager
     public function __construct()
     {
         $this->load_settings();
+        // Presets are loaded lazily on first access — NOT here. The theme.json
+        // source calls wp_get_global_settings(), which resolves (and caches)
+        // the merged theme.json; doing that during module boot can happen
+        // before the Editor Settings module registers its
+        // wp_theme_json_data_default strip filter, freezing WordPress's core
+        // defaults into the cache. Deferring to first access (a late hook —
+        // enqueue / wp_head) lets that filter be in place first.
+    }
+
+    /**
+     * Whether presets have been loaded yet.
+     *
+     * @since 1.0.0
+     * @var bool
+     */
+    private $presets_loaded = false;
+
+    /**
+     * Load presets on first access.
+     *
+     * @since 1.0.0
+     */
+    private function ensure_presets_loaded(): void
+    {
+        if ($this->presets_loaded) {
+            return;
+        }
+        $this->presets_loaded = true;
         $this->load_presets();
     }
 
@@ -64,6 +92,7 @@ class Preset_Manager
      */
     public function get_presets(): array
     {
+        $this->ensure_presets_loaded();
         return $this->presets;
     }
 
@@ -76,6 +105,7 @@ class Preset_Manager
      */
     public function get_preset(string $preset_id): ?array
     {
+        $this->ensure_presets_loaded();
         return $this->presets[$preset_id] ?? null;
     }
 
@@ -87,6 +117,7 @@ class Preset_Manager
      */
     public function has_presets(): bool
     {
+        $this->ensure_presets_loaded();
         return !empty($this->presets);
     }
 
@@ -98,8 +129,9 @@ class Preset_Manager
      */
     public function get_presets_by_group(): array
     {
+        $this->ensure_presets_loaded();
         $grouped = array();
-        
+
         foreach ($this->presets as $preset_id => $preset) {
             $group_id = $preset['group'] ?? 'default';
             if (!isset($grouped[$group_id])) {
@@ -123,28 +155,82 @@ class Preset_Manager
     {
         $admin_settings = get_option('orbitools_settings', array());
 
-        $defaults = array(
-            'typography_show_groups_in_dropdown' => false,
-            'typography_output_preset_css' => true,
-        );
+        // Stored option keys are slug-prefixed ({slug}_{field_id}); the module
+        // slug is `typography-presets`. Read those, but keep the internal
+        // `typography_*` keys this class exposes.
+        $show_groups = $admin_settings['typography-presets_show_groups_in_dropdown'] ?? false;
+        $output_css  = $admin_settings['typography-presets_output_preset_css'] ?? true;
 
-        $this->settings = wp_parse_args($admin_settings, $defaults);
-        
-        // Normalize checkbox values (AdminKit stores as '1' or empty string)
-        $this->settings['typography_show_groups_in_dropdown'] = !empty($this->settings['typography_show_groups_in_dropdown']) && $this->settings['typography_show_groups_in_dropdown'] !== '0';
-        $this->settings['typography_output_preset_css'] = !empty($this->settings['typography_output_preset_css']) && $this->settings['typography_output_preset_css'] !== '0';
+        // Normalize checkbox values (stored as '1' or empty string).
+        $this->settings = array(
+            'typography_show_groups_in_dropdown' => !empty($show_groups) && $show_groups !== '0',
+            'typography_output_preset_css' => !empty($output_css) && $output_css !== '0',
+        );
     }
 
     /**
-     * Load presets from config/orbitools.json only
+     * Load presets, theme.json first then config/orbitools.json.
      *
-     * This module exclusively uses config/orbitools.json for preset definitions.
+     * Sources are tried in priority order — the first that yields presets wins:
+     *   1. theme.json  → a top-level "orbitools.typographyPresets" key
+     *   2. config/orbitools.json → modules.typographyPresets (legacy fallback)
      *
      * @since 1.0.0
      */
     private function load_presets(): void
     {
+        if ($this->load_presets_from_theme_json()) {
+            return;
+        }
+
         $this->load_presets_from_config();
+    }
+
+    /**
+     * Load presets from a top-level "orbitools.typographyPresets" key in
+     * theme.json.
+     *
+     * Read from the raw theme.json file (active theme, then parent) rather than
+     * settings.custom: a top-level key WordPress doesn't recognise is ignored
+     * by core, so — unlike settings.custom — it generates NO --wp--custom--*
+     * CSS variables. Same shape as config/orbitools.json's
+     * `modules.typographyPresets` ({ items: {…}, groups: {…} }), so it reuses
+     * the same parser.
+     *
+     * @since 1.0.0
+     * @return bool True when presets were loaded from theme.json.
+     */
+    private function load_presets_from_theme_json(): bool
+    {
+        $dirs = array_unique(array(
+            \get_stylesheet_directory(),
+            \get_template_directory(),
+        ));
+
+        foreach ($dirs as $dir) {
+            $path = $dir . '/theme.json';
+            if (!file_exists($path)) {
+                continue;
+            }
+
+            $json = json_decode(file_get_contents($path), true);
+            if (!is_array($json) || JSON_ERROR_NONE !== json_last_error()) {
+                continue;
+            }
+
+            $data = $json['orbitools']['typographyPresets'] ?? null;
+            if (!is_array($data) || empty($data['items'])) {
+                continue;
+            }
+
+            $presets = $this->parse_config_presets($data);
+            if (!empty($presets)) {
+                $this->presets = $presets;
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**

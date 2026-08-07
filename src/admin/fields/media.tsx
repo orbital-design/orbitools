@@ -7,6 +7,7 @@
  * its id. The preview thumbnail uses the URL the modal hands back;
  * we cache it on a ref so it survives re-renders without re-fetching.
  */
+import apiFetch from '@wordpress/api-fetch';
 import { useEffect, useRef, useState } from '@wordpress/element';
 import { BaseControl, Button } from '@wordpress/components';
 import { registerFieldType, type FieldProps } from './registry';
@@ -19,10 +20,20 @@ interface WpMediaAttachment {
     type?: string;
 }
 
+// `first()` returns a Backbone Model — *not* a plain object. We must
+// call `.toJSON()` before reading attributes, otherwise `model.url`
+// resolves to Backbone's REST-URL method (a function), and passing
+// that function into a React state setter triggers the functional-
+// updater pattern, which then *invokes* the Backbone url() and
+// throws "A 'url' property or function must be specified".
+interface WpMediaBackboneModel {
+    toJSON: () => WpMediaAttachment;
+}
+
 interface WpMediaFrame {
     open: () => void;
     on: (event: string, handler: () => void) => void;
-    state: () => { get: (key: 'selection') => { first: () => WpMediaAttachment | undefined } };
+    state: () => { get: (key: 'selection') => { first: () => WpMediaBackboneModel | undefined } };
 }
 
 interface WpMediaGlobal {
@@ -41,7 +52,14 @@ declare global {
 }
 
 function MediaField({ field, value, onChange }: FieldProps): JSX.Element {
-    const attachmentId = typeof value === 'number' ? value : undefined;
+    // Accept either a number or a numeric string — `site_logo` and
+    // friends come back from get_option() as strings, and we don't
+    // want the typeguard to drop them on the floor (which would
+    // nuke the preview via the effect below).
+    const numericValue = Number(value);
+    const attachmentId = Number.isInteger(numericValue) && numericValue > 0
+        ? numericValue
+        : undefined;
     const [previewUrl, setPreviewUrl] = useState<string | undefined>(undefined);
     const frameRef = useRef<WpMediaFrame | null>(null);
 
@@ -55,40 +73,29 @@ function MediaField({ field, value, onChange }: FieldProps): JSX.Element {
         if (previewUrl !== undefined) {
             return;
         }
-        const bootstrap = window.orbitools;
-        if (bootstrap === undefined) {
-            return;
-        }
         let cancelled = false;
-        const url = bootstrap.adminUrl.replace(/\/?$/, '/') + 'admin-ajax.php';
-        // Use the REST media endpoint — wp-api-fetch already has the
-        // root URL + nonce wired in lib/api.ts. Inline import keeps
-        // the field component focused; it's the only field that
-        // needs WP REST data outside of orbitools/v1.
-        import('@wordpress/api-fetch').then((mod) => {
-            mod.default<{ source_url?: string; media_details?: { sizes?: Record<string, { source_url: string }> } }>({
-                path: `wp/v2/media/${attachmentId}`,
+        apiFetch<{
+            source_url?: string;
+            media_details?: { sizes?: Record<string, { source_url: string }> };
+        }>({
+            path: `wp/v2/media/${attachmentId}`,
+        })
+            .then((attachment) => {
+                if (cancelled) {
+                    return;
+                }
+                const thumb =
+                    attachment.media_details?.sizes?.thumbnail?.source_url ??
+                    attachment.source_url;
+                if (thumb !== undefined) {
+                    setPreviewUrl(thumb);
+                }
             })
-                .then((attachment) => {
-                    if (cancelled) {
-                        return;
-                    }
-                    const thumb =
-                        attachment.media_details?.sizes?.thumbnail?.source_url ??
-                        attachment.source_url;
-                    if (thumb !== undefined) {
-                        setPreviewUrl(thumb);
-                    }
-                })
-                .catch(() => {
-                    if (!cancelled) {
-                        setPreviewUrl(undefined);
-                    }
-                });
-        });
-        // url unused — wp-api-fetch handles its own root. Variable
-        // kept named so the inline ref above stays explanatory.
-        void url;
+            .catch(() => {
+                if (!cancelled) {
+                    setPreviewUrl(undefined);
+                }
+            });
         return () => {
             cancelled = true;
         };
@@ -107,11 +114,14 @@ function MediaField({ field, value, onChange }: FieldProps): JSX.Element {
                 library: { type: typeof field.libraryType === 'string' ? field.libraryType : 'image' },
             });
             frameRef.current.on('select', () => {
-                const attachment = frameRef.current?.state().get('selection').first();
-                if (attachment === undefined) {
+                const model = frameRef.current?.state().get('selection').first();
+                if (model === undefined) {
                     return;
                 }
-                onChange(attachment.id);
+                const attachment = model.toJSON();
+                // Coerce to number so the parent always sees the
+                // attachment id in a consistent shape.
+                onChange(Number(attachment.id));
                 setPreviewUrl(
                     attachment.sizes?.thumbnail?.url ?? attachment.url,
                 );
@@ -121,7 +131,11 @@ function MediaField({ field, value, onChange }: FieldProps): JSX.Element {
     };
 
     const clear = (): void => {
-        onChange(undefined);
+        // Send explicit null so the key survives JSON serialisation
+        // (undefined would be silently dropped, leaving the server-
+        // side option untouched). The controller treats null as
+        // "delete this option" for wp_option-bound fields.
+        onChange(null);
         setPreviewUrl(undefined);
     };
 

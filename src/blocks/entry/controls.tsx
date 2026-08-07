@@ -174,7 +174,7 @@ export default function EntryControls({ attributes, setAttributes, context }: En
         <Fragment>
             <InspectorControls group="settings">
                 <ToolsPanel
-                    label="Entry Settings"
+                    label="Column Settings"
                     resetAll={() => {
                         resetWidth();
                     }}

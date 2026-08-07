@@ -31,6 +31,108 @@ final class Site_Settings_Page
     public function __construct()
     {
         \add_filter('orbitools/register_theme_pages', [$this, 'register'], 5);
+
+        // WP auto-syncs custom_logo (theme_mod) → site_logo
+        // (option) via _sync_custom_logo_to_site_logo on
+        // pre_set_theme_mod_custom_logo, but does NOT sync the
+        // other direction. When the React admin writes to the
+        // site_logo option, the Customizer's Site Identity panel
+        // (which reads the custom_logo theme_mod) stays empty.
+        // Mirror in our direction so both surfaces stay in step.
+        \add_action('update_option_site_logo', [$this, 'mirror_site_logo_to_theme_mod'], 10, 2);
+        \add_action('add_option_site_logo', [$this, 'mirror_added_site_logo_to_theme_mod'], 10, 2);
+        \add_action('delete_option_site_logo', [$this, 'remove_custom_logo_theme_mod']);
+
+        // Bootstrap: catch any site_logo value that was saved
+        // before the actions above were registered (or after a
+        // value-unchanged short-circuit in update_option). Runs
+        // once per request at init priority 20; a no-op when the
+        // two surfaces are already in sync.
+        \add_action('init', [$this, 'bootstrap_site_logo_sync'], 20);
+
+        // Make sure the Customizer's Site Identity panel actually
+        // exposes the Logo control. Themes are responsible for
+        // calling add_theme_support('custom-logo') themselves;
+        // some don't, in which case the Customizer never registers
+        // the control at all and the user has nowhere to manage
+        // the logo outside our admin. Priority 99 runs after any
+        // theme-declared support so we don't trample on args
+        // (height, width, CSS classes) themes care about.
+        \add_action('after_setup_theme', [$this, 'ensure_custom_logo_support'], 99);
+    }
+
+    public function ensure_custom_logo_support(): void
+    {
+        if (\current_theme_supports('custom-logo')) {
+            return;
+        }
+        \add_theme_support('custom-logo');
+    }
+
+    /**
+     * One-shot reconciliation of site_logo → custom_logo theme_mod.
+     * Reads the raw `theme_mods_{theme}` option so we compare the
+     * actual stored value (not the filtered one — WP's
+     * `theme_mod_custom_logo` filter would always make site_logo
+     * look like the current custom_logo and hide the mismatch).
+     */
+    public function bootstrap_site_logo_sync(): void
+    {
+        $site_logo = (int) \get_option('site_logo');
+        if ($site_logo <= 0) {
+            return;
+        }
+        $stylesheet = \get_stylesheet();
+        $mods       = \get_option('theme_mods_' . $stylesheet, []);
+        $raw        = is_array($mods) && isset($mods['custom_logo']) ? (int) $mods['custom_logo'] : 0;
+        if ($raw === $site_logo) {
+            return;
+        }
+        \set_theme_mod('custom_logo', $site_logo);
+    }
+
+    /**
+     * @param mixed $old_value
+     * @param mixed $new_value
+     */
+    public function mirror_site_logo_to_theme_mod($old_value, $new_value): void
+    {
+        if ((int) $old_value === (int) $new_value) {
+            return;
+        }
+        $this->set_or_remove_custom_logo($new_value);
+    }
+
+    /**
+     * @param string $option
+     * @param mixed  $value
+     */
+    public function mirror_added_site_logo_to_theme_mod($option, $value): void
+    {
+        $this->set_or_remove_custom_logo($value);
+    }
+
+    public function remove_custom_logo_theme_mod(): void
+    {
+        \remove_theme_mod('custom_logo');
+    }
+
+    /**
+     * @param mixed $value
+     */
+    private function set_or_remove_custom_logo($value): void
+    {
+        $id = (int) $value;
+        if ($id <= 0) {
+            \remove_theme_mod('custom_logo');
+            return;
+        }
+        // set_theme_mod triggers `pre_set_theme_mod_custom_logo` →
+        // `_sync_custom_logo_to_site_logo` → `update_option('site_logo')`.
+        // No loop: update_option short-circuits when the value
+        // hasn't changed (we just set it to this same value), so
+        // our update_option_site_logo hook above doesn't re-fire.
+        \set_theme_mod('custom_logo', $id);
     }
 
     /**
@@ -238,11 +340,13 @@ final class Site_Settings_Page
                 'options' => $this->network_options(),
             ],
             [
-                'id'          => 'label',
-                'type'        => 'text',
-                'label'       => \__('Label override', 'orbitools'),
-                'description' => \__('Optional. Leave blank to use the network\'s default label.', 'orbitools'),
-                'default'     => '',
+                'id'           => 'label',
+                'type'         => 'text',
+                'label'        => \__('Share button text', 'orbitools'),
+                'description'  => \__('Displayed on the share button. Auto-fills from the chosen network — edit to customise.', 'orbitools'),
+                'default'      => '',
+                'default_from' => 'network',
+                'default_map'  => $this->share_link_defaults(),
             ],
             [
                 'id'      => 'enabled',
@@ -250,6 +354,31 @@ final class Site_Settings_Page
                 'label'   => \__('Enabled', 'orbitools'),
                 'default' => true,
             ],
+        ];
+    }
+
+    /**
+     * Per-network default text for the Share Links "Share button text"
+     * field. Each entry overrides the auto-fill that would otherwise
+     * resolve to the network's option label.
+     *
+     * @return array<string,string>
+     */
+    private function share_link_defaults(): array
+    {
+        return [
+            'facebook'  => \__('Share on Facebook', 'orbitools'),
+            'twitter'   => \__('Share on X', 'orbitools'),
+            'linkedin'  => \__('Share on LinkedIn', 'orbitools'),
+            'instagram' => \__('Share on Instagram', 'orbitools'),
+            'youtube'   => \__('Share on YouTube', 'orbitools'),
+            'tiktok'    => \__('Share on TikTok', 'orbitools'),
+            'pinterest' => \__('Share on Pinterest', 'orbitools'),
+            'mastodon'  => \__('Share on Mastodon', 'orbitools'),
+            'threads'   => \__('Share on Threads', 'orbitools'),
+            'whatsapp'  => \__('Share on WhatsApp', 'orbitools'),
+            'email'     => \__('Share via Email', 'orbitools'),
+            'copy-link' => \__('Copy link', 'orbitools'),
         ];
     }
 
@@ -275,12 +404,42 @@ final class Site_Settings_Page
                 'placeholder' => 'https://',
             ],
             [
-                'id'          => 'label',
-                'type'        => 'text',
-                'label'       => \__('Link title', 'orbitools'),
-                'description' => \__('Used for aria-label / title attributes. e.g. "Connect with us on LinkedIn".', 'orbitools'),
-                'default'     => '',
+                'id'           => 'label',
+                'type'         => 'text',
+                'label'        => \__('Link title', 'orbitools'),
+                'description'  => \__('Used for aria-label / title attributes on the social icon link. Auto-fills from the chosen network — edit to customise.', 'orbitools'),
+                'default'      => '',
+                'default_from' => 'network',
+                'default_map'  => $this->social_link_defaults(),
             ],
+        ];
+    }
+
+    /**
+     * Per-network default text for the Social Links "Link title"
+     * field. Phrasing differs from the share-link defaults: a Social
+     * Link is a profile pointer, so we want "Follow us on …" rather
+     * than "Share on …" — and Email / Copy link don't really apply
+     * to the social-profile use case, but we cover them anyway in
+     * case the user enables one.
+     *
+     * @return array<string,string>
+     */
+    private function social_link_defaults(): array
+    {
+        return [
+            'facebook'  => \__('Follow us on Facebook', 'orbitools'),
+            'twitter'   => \__('Follow us on X', 'orbitools'),
+            'linkedin'  => \__('Connect with us on LinkedIn', 'orbitools'),
+            'instagram' => \__('Follow us on Instagram', 'orbitools'),
+            'youtube'   => \__('Subscribe to us on YouTube', 'orbitools'),
+            'tiktok'    => \__('Follow us on TikTok', 'orbitools'),
+            'pinterest' => \__('Follow us on Pinterest', 'orbitools'),
+            'mastodon'  => \__('Follow us on Mastodon', 'orbitools'),
+            'threads'   => \__('Follow us on Threads', 'orbitools'),
+            'whatsapp'  => \__('Message us on WhatsApp', 'orbitools'),
+            'email'     => \__('Email us', 'orbitools'),
+            'copy-link' => \__('Copy link', 'orbitools'),
         ];
     }
 

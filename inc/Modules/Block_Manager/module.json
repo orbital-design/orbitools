@@ -1,0 +1,14 @@
+{
+  "$schema": "https://orbitools/schemas/module.v1.json",
+  "slug": "block-manager",
+  "name": "Block Manager",
+  "description": "List every block registered on the site (core, theme, plugins) and toggle which ones appear in the editor inserter. Orbital blocks are excluded — each one has its own settings page in the Blocks tab.",
+  "version": "1.0.0",
+  "category": "editor",
+  "class": "\\Orbitools\\Modules\\Block_Manager\\Block_Manager",
+  "default_enabled": true,
+  "requires": {
+    "php": ">=7.4",
+    "wp": ">=5.0"
+  }
+}

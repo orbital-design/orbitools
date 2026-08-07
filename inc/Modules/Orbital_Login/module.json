@@ -1,0 +1,23 @@
+{
+  "$schema": "https://orbitools/schemas/module.v1.json",
+  "slug": "orbital-login",
+  "name": "Orbital Login",
+  "description": "Restyle wp-login.php with the Orbital brand. The visual treatment is fixed so every Orbital site looks the same; only behavioural shortcuts are configurable.",
+  "version": "1.0.0",
+  "category": "modules",
+  "class": "\\Orbitools\\Modules\\Orbital_Login\\Orbital_Login",
+  "default_enabled": false,
+  "requires": {
+    "php": ">=7.4",
+    "wp": ">=5.0"
+  },
+  "settings": [
+    {
+      "id": "remember_last_user",
+      "type": "toggle",
+      "label": "Remember the last user on this device",
+      "description": "After a successful login, store the username in a per-device cookie (30 days). On the next visit to wp-login.php, greet the user by name, hide the username field, and ask only for the password. Tradeoff: anyone with access to the browser learns a valid username. A 'Not you?' link clears the cookie. Password is always required — this is purely a UX shortcut.",
+      "default": false
+    }
+  ]
+}

@@ -1,0 +1,198 @@
+/**
+ * Video Block — frontend styles.
+ *
+ * Theme-agnostic — no theme.json `--wp--preset--*` references. Any
+ * colour / typography / radius / shadow that's expected to come
+ * from the theme is either set via the editor (border-radius,
+ * shadow via block supports) or left alone for the theme to style.
+ */
+
+// Main video block container
+.orb-video {
+    position: relative;
+    display: block;
+    width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+    overflow: hidden;
+
+    // Default aspect ratio (will be overridden by JS when video loads)
+    aspect-ratio: 16 / 9;
+
+    @supports not (aspect-ratio: auto) {
+        // Fallback for very old browsers — padding-top hack.
+        &::before {
+            content: '';
+            display: block;
+            padding-top: 56.25%; // 16:9
+        }
+    }
+
+    // When JS calculates the actual aspect ratio
+    &.has-auto-aspect-ratio {
+        // JS will set aspect-ratio inline style
+        // Remove padding-based fallback since we have real dimensions
+        @supports (aspect-ratio: auto) {
+            padding-top: 0 !important;
+            height: auto !important;
+        }
+    }
+
+    // Fallback when using default platform ratio
+    &.has-default-aspect-ratio,
+    &.has-video-platform-aspect-ratio {
+        // These get inline aspect-ratio from JS
+        transition: aspect-ratio 0.3s ease;
+    }
+
+    // YouTube / Vimeo privacy facade (thumbnail + play button)
+    &__facade {
+        display: block;
+        position: absolute;
+        inset: 0;
+        background: #000;
+        cursor: pointer;
+        text-decoration: none;
+
+        &.is-loading .orb-video__play {
+            animation: orb-video-pulse 0.6s ease infinite alternate;
+        }
+
+        &:focus-visible {
+            outline: 3px solid #fff;
+            outline-offset: -3px;
+        }
+    }
+
+    @keyframes orb-video-pulse {
+        from { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+        to   { transform: translate(-50%, -50%) scale(1.15); opacity: 0.6; }
+    }
+
+    &__thumb {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    &__play {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 68px;
+        height: 48px;
+        transition: opacity 0.2s ease;
+        pointer-events: none;
+
+        svg {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        .orb-video__facade:hover &,
+        .orb-video__facade:focus-visible & {
+            opacity: 0.85;
+        }
+    }
+
+    // Iframe injected after facade click
+    > iframe {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        border: 0;
+    }
+
+    // Embed container (YouTube, Vimeo, etc.)
+    .orb-video__embed {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+
+        background: #f0f0f0;
+
+        // Embed (YouTube, Vimeo, etc.)
+        iframe,
+        object,
+        embed,
+        video {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: 0;
+        }
+
+        // URL fallback styling
+        &--url {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #f0f0f0;
+            padding: 1rem;
+
+            p {
+                margin: 0;
+                text-align: center;
+            }
+
+            a {
+                color: #1d303a; // Orbital navy
+                text-decoration: underline;
+
+                &:hover {
+                    text-decoration: none;
+                }
+            }
+        }
+    }
+
+    // Self-hosted video player
+    .orb-video__player {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border: 0;
+
+        background: #1d303a; // Orbital navy
+
+        // Ensure controls are accessible
+        &[controls] {
+            object-fit: contain;
+            background: #1d303a;
+        }
+    }
+
+    &__placeholder {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        background: #f0f0f0;
+        color: rgba(29, 48, 58, 0.4); // Orbital navy @ 40%
+
+        i {
+            font-size: 2.5rem;
+        }
+
+        p {
+            margin: 0;
+            font-size: clamp(1rem, 0.9511rem + 0.2174vw, 1.125rem);
+            line-height: 1.45;
+        }
+    }
+}

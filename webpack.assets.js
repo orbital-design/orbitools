@@ -12,16 +12,24 @@ module.exports = {
         'admin/css/editor': path.resolve(process.cwd(), 'src', 'admin', 'scss', 'editor.scss'),
         // - SCSS ~ Module ~ Layout Guides
         'frontend/css/modules/layout-guides/base': path.resolve(process.cwd(), 'src', 'modules', 'layout-guides','frontend', 'scss','base.scss'),
+        // - SCSS ~ Module ~ Toolbar Reveal (slide-in admin bar on the frontend)
+        'frontend/css/modules/toolbar-reveal/base': path.resolve(process.cwd(), 'src', 'modules', 'toolbar-reveal','frontend', 'scss','base.scss'),
         // - SCSS ~ Module ~ Menu Dividers
         'admin/css/modules/menu-dividers/admin': path.resolve(process.cwd(), 'src', 'modules', 'menu-dividers','admin', 'scss','admin.scss'),
         // - SCSS ~ Module ~ Menu Groups
         'admin/css/modules/menu-groups/admin': path.resolve(process.cwd(), 'src', 'modules', 'menu-groups','admin', 'scss','admin.scss'),
+        // - SCSS ~ Module ~ Orbital Login (wp-login.php restyle)
+        'admin/css/modules/orbital-login/login': path.resolve(process.cwd(), 'src', 'modules', 'orbital-login','admin', 'scss','login.scss'),
+        // - SCSS ~ Module ~ Orbital Colour Scheme (admin colour scheme; pre-compiled CSS wrapped in .scss so webpack just re-emits it)
+        'admin/css/modules/orbital-colour-scheme/orbital': path.resolve(process.cwd(), 'src', 'modules', 'orbital-colour-scheme','admin', 'scss','orbital.scss'),
         // - SCSS ~ Controls ~ Typography Presets
         'admin/css/controls/typography-presets/admin': path.resolve(process.cwd(), 'src', 'controls', 'typography-presets','admin', 'scss','admin.scss'),
 
         // JS entries for JavaScript compilation
         // - JS ~ Module ~ Layout Guides
         'frontend/js/modules/layout-guides/base': path.resolve(process.cwd(), 'src', 'modules', 'layout-guides','frontend', 'js','base.js'),
+        // - JS ~ Module ~ Toolbar Reveal
+        'frontend/js/modules/toolbar-reveal/base': path.resolve(process.cwd(), 'src', 'modules', 'toolbar-reveal','frontend', 'js','base.js'),
         // - JS ~ Module ~ Menu Dividers
         'admin/js/modules/menu-dividers/admin': path.resolve(process.cwd(), 'src', 'modules', 'menu-dividers','admin', 'js','admin.js'),
         'admin/js/modules/menu-dividers/processor': path.resolve(process.cwd(), 'src', 'modules', 'menu-dividers','admin', 'js','processor.js'),
@@ -41,6 +49,9 @@ module.exports = {
         'admin/js/controls/aspect-ratio/editor-aspect-ratio-attribute-registration': path.resolve(process.cwd(), 'src', 'controls', 'aspect-ratio','admin', 'js','editor-aspect-ratio-attribute-registration.js'),
         'admin/js/controls/aspect-ratio/editor-aspect-ratio-classname-application': path.resolve(process.cwd(), 'src', 'controls', 'aspect-ratio','admin', 'js','editor-aspect-ratio-classname-application.js'),
         'admin/js/controls/aspect-ratio/editor-aspect-ratio-register-controls': path.resolve(process.cwd(), 'src', 'controls', 'aspect-ratio','admin', 'js','editor-aspect-ratio-register-controls.js'),
+        // - JS ~ Controls ~ Content Width
+        'admin/js/controls/content-width/editor-content-width-attribute-registration': path.resolve(process.cwd(), 'src', 'controls', 'content-width','admin', 'js','editor-content-width-attribute-registration.js'),
+        'admin/js/controls/content-width/editor-content-width-register-controls': path.resolve(process.cwd(), 'src', 'controls', 'content-width','admin', 'js','editor-content-width-register-controls.js'),
 
     },
     output: {

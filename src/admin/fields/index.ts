@@ -15,4 +15,6 @@ import './color';
 import './range';
 import './media';
 import './page';
+import './post-type';
+import './taxonomy';
 import './repeater';

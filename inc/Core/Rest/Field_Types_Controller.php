@@ -87,6 +87,8 @@ final class Field_Types_Controller extends WP_REST_Controller
             'range'          => \__('Range', 'orbitools'),
             'media'          => \__('Media', 'orbitools'),
             'page'           => \__('Page picker', 'orbitools'),
+            'post-type'      => \__('Post type picker', 'orbitools'),
+            'taxonomy'       => \__('Taxonomy picker', 'orbitools'),
             'repeater'       => \__('Repeater', 'orbitools'),
         ];
         return $labels[$type] ?? $type;

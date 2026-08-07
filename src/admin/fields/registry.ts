@@ -15,6 +15,17 @@ export interface FieldProps {
     field: FieldSchema;
     value: unknown;
     onChange: (value: unknown) => void;
+    /**
+     * Set by the Repeater when rendering sub-fields, so a sub-field
+     * component can look up its siblings' current values + schema.
+     * Used by e.g. the `text` field to resolve a `placeholder_from`
+     * pointer to another sub-field's value (or that value's option
+     * label when the sibling is a select).
+     */
+    rowContext?: {
+        row: Record<string, unknown>;
+        subFields: FieldSchema[];
+    };
 }
 
 const registry = new Map<string, ComponentType<FieldProps>>();

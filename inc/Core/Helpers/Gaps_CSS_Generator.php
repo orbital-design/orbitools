@@ -49,8 +49,10 @@ class Gaps_CSS_Generator
             return '';
         }
 
-        // Build cache key from config data
-        $cache_key = self::TRANSIENT_KEY . '_' . md5(\wp_json_encode([$spacing_sizes, $breakpoints]));
+        // Build cache key from config data. The leading schema version
+        // busts stale transients whenever the generated CSS shape changes
+        // (the config inputs alone wouldn't) — bump it on any edit below.
+        $cache_key = self::TRANSIENT_KEY . '_' . md5(\wp_json_encode([4, $spacing_sizes, $breakpoints]));
 
         // Check transient cache
         $cached = \get_transient($cache_key);
@@ -69,38 +71,119 @@ class Gaps_CSS_Generator
         $css .= "    gap: 0;\n";
         $css .= "}\n\n";
 
-        // Generate spacing size gap classes
+        // Generate spacing size gap classes. The literal size is kept as a
+        // var fallback: `var(--wp--preset--spacing--{slug}, {size})`. The var
+        // wins on the frontend (preset vars sit on :root in global-styles), but
+        // inside the editor canvas iframe those preset vars aren't reliably in
+        // scope for these classes, so the fallback is what actually paints the
+        // gap there. Slug 0 is the special-cased zero above.
         foreach ($spacing_sizes as $spacing) {
             $slug = $spacing['slug'];
-            $size = $spacing['size'];
-            
+
+            if ((string) $slug === '0') {
+                continue;
+            }
+
+            $size = $spacing['size'] ?? '';
+            $value = $size !== '' ? "var(--wp--preset--spacing--{$slug}, {$size})" : "var(--wp--preset--spacing--{$slug})";
+
             $css .= ".has-gap.has-gap--{$slug} {\n";
-            $css .= "    gap: var(--wp--preset--spacing--{$slug}, {$size});\n";
+            $css .= "    gap: {$value};\n";
             $css .= "}\n\n";
         }
 
-        // Generate responsive gap classes for all breakpoints
+        // Axis-specific gap classes (row-gap / column-gap) for split gaps.
+        // Same conventions as the shorthand above: zero is special-cased,
+        // slug 0 is skipped in the loop, and the literal size is kept as a
+        // var fallback so the gap paints inside the editor iframe.
+        $css .= ".has-gap.has-row-gap--0 {\n";
+        $css .= "    row-gap: 0;\n";
+        $css .= "}\n\n";
+        $css .= ".has-gap.has-column-gap--0 {\n";
+        $css .= "    column-gap: 0;\n";
+        $css .= "}\n\n";
+
+        foreach ($spacing_sizes as $spacing) {
+            $slug = $spacing['slug'];
+
+            if ((string) $slug === '0') {
+                continue;
+            }
+
+            $size = $spacing['size'] ?? '';
+            $value = $size !== '' ? "var(--wp--preset--spacing--{$slug}, {$size})" : "var(--wp--preset--spacing--{$slug})";
+
+            $css .= ".has-gap.has-row-gap--{$slug} {\n";
+            $css .= "    row-gap: {$value};\n";
+            $css .= "}\n\n";
+
+            $css .= ".has-gap.has-column-gap--{$slug} {\n";
+            $css .= "    column-gap: {$value};\n";
+            $css .= "}\n\n";
+        }
+
+        // Generate responsive gap classes for all breakpoints.
+        // Desktop-first cascade (tablet then mobile), each honouring
+        // its own `query` direction (defaults to max-width) so the
+        // queries line up with WordPress's device-preview widths.
         foreach ($breakpoints as $breakpoint) {
             $breakpoint_slug = $breakpoint['slug'];
             $breakpoint_value = $breakpoint['value'];
-            
-            $css .= "@media (min-width: {$breakpoint_value}) {\n";
+            $breakpoint_query = $breakpoint['query'] ?? 'max-width';
+
+            $css .= "@media ({$breakpoint_query}: {$breakpoint_value}) {\n";
             
             // Zero gap for this breakpoint
             $css .= "    .has-gap.{$breakpoint_slug}\:has-gap--0 {\n";
             $css .= "        gap: 0;\n";
             $css .= "    }\n\n";
             
-            // Spacing sizes for this breakpoint
+            // Spacing sizes for this breakpoint (literal size kept as a var
+            // fallback; slug 0 is special-cased above).
             foreach ($spacing_sizes as $spacing) {
                 $slug = $spacing['slug'];
-                $size = $spacing['size'];
-                
+
+                if ((string) $slug === '0') {
+                    continue;
+                }
+
+                $size = $spacing['size'] ?? '';
+                $value = $size !== '' ? "var(--wp--preset--spacing--{$slug}, {$size})" : "var(--wp--preset--spacing--{$slug})";
+
                 $css .= "    .has-gap.{$breakpoint_slug}\:has-gap--{$slug} {\n";
-                $css .= "        gap: var(--wp--preset--spacing--{$slug}, {$size});\n";
+                $css .= "        gap: {$value};\n";
                 $css .= "    }\n\n";
             }
-            
+
+            // Axis-specific zero for this breakpoint.
+            $css .= "    .has-gap.{$breakpoint_slug}\:has-row-gap--0 {\n";
+            $css .= "        row-gap: 0;\n";
+            $css .= "    }\n\n";
+            $css .= "    .has-gap.{$breakpoint_slug}\:has-column-gap--0 {\n";
+            $css .= "        column-gap: 0;\n";
+            $css .= "    }\n\n";
+
+            // Axis-specific spacing sizes for this breakpoint (literal size
+            // kept as a var fallback).
+            foreach ($spacing_sizes as $spacing) {
+                $slug = $spacing['slug'];
+
+                if ((string) $slug === '0') {
+                    continue;
+                }
+
+                $size = $spacing['size'] ?? '';
+                $value = $size !== '' ? "var(--wp--preset--spacing--{$slug}, {$size})" : "var(--wp--preset--spacing--{$slug})";
+
+                $css .= "    .has-gap.{$breakpoint_slug}\:has-row-gap--{$slug} {\n";
+                $css .= "        row-gap: {$value};\n";
+                $css .= "    }\n\n";
+
+                $css .= "    .has-gap.{$breakpoint_slug}\:has-column-gap--{$slug} {\n";
+                $css .= "        column-gap: {$value};\n";
+                $css .= "    }\n\n";
+            }
+
             $css .= "}\n\n";
         }
 
@@ -153,10 +236,8 @@ class Gaps_CSS_Generator
         $css = self::generate_gaps_css();
         if (!empty($css)) {
             if (empty($handle)) {
-                // Create our own handle if none provided
-                \wp_register_style('orbitools-gaps-frontend', false);
-                \wp_enqueue_style('orbitools-gaps-frontend');
-                \wp_add_inline_style('orbitools-gaps-frontend', $css);
+                // Fold into the consolidated frontend block (global-styles).
+                Inline_CSS::add_frontend($css);
             } else {
                 \wp_add_inline_style($handle, $css);
             }
@@ -170,6 +251,13 @@ class Gaps_CSS_Generator
      */
     public static function enqueue_editor_gaps_css(string $handle = ''): void
     {
+        // Only inside the editor. This runs on `enqueue_block_assets`, which
+        // also fires on the frontend — there the frontend handler on
+        // `wp_enqueue_scripts` owns gap CSS, so bail when not in admin.
+        if (!\is_admin()) {
+            return;
+        }
+
         // Filter to allow themes to disable editor gaps CSS generation
         if (!\apply_filters('orbitools_gaps_editor_css', true)) {
             return;
@@ -197,8 +285,12 @@ class Gaps_CSS_Generator
         // Add inline styles for frontend
         \add_action('wp_enqueue_scripts', [self::class, 'enqueue_frontend_gaps_css']);
 
-        // Add inline styles for block editor
-        \add_action('enqueue_block_editor_assets', [self::class, 'enqueue_editor_gaps_css']);
+        // Add inline styles for the block editor. `enqueue_block_assets` (not
+        // `enqueue_block_editor_assets`) is the hook WordPress injects into the
+        // editor canvas iframe, where the blocks actually render — the latter
+        // only reaches the editor's outer chrome, so gap classes wouldn't apply
+        // to block previews. The handler bails on the frontend via is_admin().
+        \add_action('enqueue_block_assets', [self::class, 'enqueue_editor_gaps_css']);
 
         // Clear CSS cache when theme settings change
         \add_action('switch_theme', [self::class, 'clear_cache']);

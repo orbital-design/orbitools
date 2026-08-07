@@ -1,0 +1,107 @@
+{
+    "apiVersion": 3,
+    "name": "orb/grid",
+    "version": "1.0.0",
+    "title": "Grid",
+    "category": "layout",
+    "icon": "grid-view",
+    "description": "Lay out cells on a responsive CSS grid.",
+    "supports": {
+        "html": false,
+        "align": [
+            "wide",
+            "full"
+        ],
+        "background": {
+            "backgroundImage": true,
+            "backgroundSize": true,
+            "__experimentalDefaultControls": {
+                "backgroundImage": true
+            }
+        },
+        "color": {
+            "background": true,
+            "text": true
+        },
+        "__experimentalBorder": {
+            "radius": true
+        },
+        "orbitools": {
+            "spacings": {
+                "breakpoints": true,
+                "gap": true,
+                "splitGap": true,
+                "margin": false,
+                "padding": true
+            },
+            "contentWidth": true
+        }
+    },
+    "attributes": {
+        "gridType": {
+            "type": "string",
+            "default": "fixed",
+            "enum": [
+                "fixed",
+                "auto"
+            ]
+        },
+        "columnSystem": {
+            "type": "number",
+            "default": 12,
+            "enum": [
+                5,
+                12
+            ]
+        },
+        "minColWidth": {
+            "type": "string",
+            "default": "250px"
+        },
+        "rowHeight": {
+            "type": "string",
+            "default": "auto",
+            "enum": [
+                "auto",
+                "equal",
+                "min"
+            ]
+        },
+        "minRowHeight": {
+            "type": "string",
+            "default": "200px"
+        },
+        "alignItems": {
+            "type": "string",
+            "default": "stretch",
+            "enum": [
+                "stretch",
+                "start",
+                "center",
+                "end"
+            ]
+        },
+        "justifyItems": {
+            "type": "string",
+            "default": "stretch",
+            "enum": [
+                "stretch",
+                "start",
+                "center",
+                "end"
+            ]
+        },
+        "stackOnMobile": {
+            "type": "boolean",
+            "default": true
+        }
+    },
+    "providesContext": {
+        "orb/columnSystem": "columnSystem",
+        "orb/stackOnMobile": "stackOnMobile"
+    },
+    "textdomain": "orbitools",
+    "editorScript": "file:./index.js",
+    "editorStyle": "file:./editor.css",
+    "style": "file:./index.css"
+}

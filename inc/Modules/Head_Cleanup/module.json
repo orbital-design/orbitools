@@ -1,0 +1,101 @@
+{
+  "$schema": "https://orbitools/schemas/module.v1.json",
+  "slug": "head-cleanup",
+  "name": "Head Cleanup",
+  "description": "Trim WordPress's default `<head>` to what modern sites actually use — drop feed / oEmbed / shortlink discovery tags, strip stylesheet boilerplate, kill the s.w.org DNS-prefetch hint.",
+  "version": "1.0.0",
+  "category": "modules",
+  "class": "\\Orbitools\\Modules\\Head_Cleanup\\Head_Cleanup",
+  "default_enabled": false,
+  "section_layout": "stacked",
+  "requires": {
+    "php": ">=7.4",
+    "wp": ">=5.0"
+  },
+  "sections": [
+    {
+      "id": "head_bloat",
+      "title": "<head> bloat",
+      "description": "Remove the `wp_head` actions WordPress hangs on for legacy clients (feed readers, RSD, oEmbed clients) that nobody actually uses anymore."
+    },
+    {
+      "id": "frontend_assets",
+      "title": "Frontend assets",
+      "description": "Drop the JS / CSS / HTTP headers WordPress ships for features Orbital sites don't use — emoji, oEmbed-in (other sites embedding yours), pingbacks."
+    }
+  ],
+  "settings": [
+    {
+      "id": "disable_feed_links",
+      "type": "toggle",
+      "label": "Disable feed discovery",
+      "description": "Removes the `<link rel=alternate>` RSS / Atom feed tags from every page. Site feeds still work directly; they just aren't advertised.",
+      "default": true,
+      "section": "head_bloat"
+    },
+    {
+      "id": "disable_editor_discovery",
+      "type": "toggle",
+      "label": "Disable RSD / WLW manifest",
+      "description": "Drops the Really Simple Discovery + Windows Live Writer endpoint tags. Both are 2005-era remote-editing protocols.",
+      "default": true,
+      "section": "head_bloat"
+    },
+    {
+      "id": "disable_relational_links",
+      "type": "toggle",
+      "label": "Disable relational link tags",
+      "description": "Removes the `<link rel=index / parent / start / prev / next>` post-relation tags. Useful only to a handful of feed crawlers.",
+      "default": true,
+      "section": "head_bloat"
+    },
+    {
+      "id": "disable_wp_identity",
+      "type": "toggle",
+      "label": "Hide WordPress identity",
+      "description": "Removes the `<meta name=generator>` (your WP version), the `<link rel=shortlink>`, and the `<link rel=https://api.w.org/>` REST discovery link. Drops a small fingerprinting surface.",
+      "default": true,
+      "section": "head_bloat"
+    },
+    {
+      "id": "disable_oembed_discovery",
+      "type": "toggle",
+      "label": "Disable oEmbed discovery",
+      "description": "Removes the oEmbed discovery `<link>` + host JS WordPress adds so other sites can embed your posts. Disabling doesn't stop you embedding *other* sites' content.",
+      "default": true,
+      "section": "head_bloat"
+    },
+    {
+      "id": "disable_recent_comments_css",
+      "type": "toggle",
+      "label": "Disable Recent Comments widget CSS",
+      "description": "Removes the inline `<style>` block the Recent Comments widget injects. Safe to leave on even if the widget isn't used.",
+      "default": true,
+      "section": "head_bloat"
+    },
+    {
+      "id": "disable_emoji",
+      "type": "toggle",
+      "label": "Disable Emoji",
+      "description": "Stops WordPress shipping its emoji detection script + inline stylesheet on every page (~3KB pre-gzip, render-blocking) plus the s.w.org DNS-prefetch hint that exists only to support it. Modern OSes render emoji natively; the polyfill is dead weight.",
+      "default": true,
+      "section": "frontend_assets"
+    },
+    {
+      "id": "disable_wp_embed_script",
+      "type": "toggle",
+      "label": "Disable wp-embed.min.js",
+      "description": "Dequeues the ~2.5KB script WordPress loads on every page so *other* sites can embed your posts via oEmbed. Separate from the discovery-link toggle above — that stops you advertising, this stops you serving. Almost no Orbital site cares about being embedded.",
+      "default": true,
+      "section": "frontend_assets"
+    },
+    {
+      "id": "disable_pingback",
+      "type": "toggle",
+      "label": "Disable pingback",
+      "description": "Drops the `X-Pingback` HTTP header and removes the `pingback.ping` + `pingback.extensions.getPingbacks` XML-RPC methods. XML-RPC pingback is a known DDoS reflection vector and almost no site actively uses pingbacks anymore.",
+      "default": true,
+      "section": "frontend_assets"
+    }
+  ]
+}

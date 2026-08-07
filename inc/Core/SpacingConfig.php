@@ -42,7 +42,11 @@ class SpacingConfig {
      * Initialize the spacing config system
      */
     public static function init() {
-        self::$defaults_file = \plugin_dir_path(dirname(__FILE__)) . 'config/defaults.json';
+        // Plugin root is three levels up from inc/Core/SpacingConfig.php.
+        // (The old `plugin_dir_path(dirname(__FILE__))` resolved to inc/,
+        // so it read a non-existent inc/config/defaults.json and every
+        // plugin default — breakpoints included — silently came back empty.)
+        self::$defaults_file = (defined('ORBITOOLS_DIR') ? \constant('ORBITOOLS_DIR') : \trailingslashit(\dirname(__FILE__, 3))) . 'config/defaults.json';
         
         // Clear cache when theme.json might change
         \add_action('after_switch_theme', [self::class, 'clear_cache']);
@@ -288,22 +292,37 @@ class SpacingConfig {
      * @return array|null Theme breakpoints or null if not found
      */
     private static function get_theme_breakpoints() {
+        // 1. theme.json → settings.custom.breakpoints — the WP-native
+        //    home for shared design tokens. Preferred so the theme's
+        //    own SCSS (compiled from theme.json) and the plugin share
+        //    one breakpoint declaration. Each entry is
+        //    { value, slug, name, query? } in desktop-first cascade
+        //    order (tablet then mobile); `query` defaults to max-width.
+        if (\function_exists('wp_get_global_settings')) {
+            $custom = \wp_get_global_settings(['custom']);
+            $tj_breakpoints = $custom['breakpoints'] ?? null;
+            if (!empty($tj_breakpoints) && is_array($tj_breakpoints)) {
+                return $tj_breakpoints;
+            }
+        }
+
+        // 2. Legacy theme override — config/orbitools.json.
         $theme_orbitools_file = \get_template_directory() . '/config/orbitools.json';
-        
+
         if (!file_exists($theme_orbitools_file)) {
             return null;
         }
-        
+
         $contents = file_get_contents($theme_orbitools_file);
         if ($contents === false) {
             return null;
         }
-        
+
         $decoded = json_decode($contents, true);
         if (json_last_error() !== JSON_ERROR_NONE) {
             return null;
         }
-        
+
         return $decoded['settings']['breakpoints'] ?? null;
     }
 

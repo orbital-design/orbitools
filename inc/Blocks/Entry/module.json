@@ -1,8 +1,8 @@
 {
   "$schema": "https://orbitools/schemas/module.v1.json",
   "slug": "entry-block",
-  "name": "Entry",
-  "description": "Individual content item block for use within collections",
+  "name": "Column",
+  "description": "A column within a Row Layout.",
   "version": "1.0.0",
   "category": "blocks",
   "class": "\\Orbitools\\Blocks\\Entry\\Entry",

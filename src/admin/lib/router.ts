@@ -27,12 +27,17 @@ export type Route =
     | { name: 'dashboard' }
     | { name: 'category'; category: ModuleCategory; slug?: string }
     | { name: 'page'; slug: string }
-    | { name: 'settings'; slug: string };
+    | { name: 'settings'; slug: string }
+    | { name: 'tools' };
 
-const CATEGORY_SLUGS: ModuleCategory[] = ['blocks', 'controls', 'modules'];
+const CATEGORY_SLUGS: ModuleCategory[] = ['blocks', 'controls', 'modules', 'editor', 'integrations'];
 
 export function parseHash(hash: string): Route {
     const cleaned = hash.replace(/^#\/?/, '');
+
+    if (cleaned === 'tools') {
+        return { name: 'tools' };
+    }
 
     if (cleaned.startsWith('settings/')) {
         const slug = cleaned.slice('settings/'.length).split(/[?&]/)[0];
@@ -84,4 +89,5 @@ export const routes = {
     categoryItem: (category: ModuleCategory, slug: string): string => `#${category}/${slug}`,
     page: (slug: string): string => `#pages/${slug}`,
     settings: (slug: string): string => `#settings/${slug}`,
+    tools: (): string => '#tools',
 };

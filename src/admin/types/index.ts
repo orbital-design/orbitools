@@ -3,7 +3,7 @@
  * mirror the shapes documented in inc/Core/Rest/README.md.
  */
 
-export type ModuleCategory = 'blocks' | 'controls' | 'modules';
+export type ModuleCategory = 'blocks' | 'controls' | 'modules' | 'editor' | 'integrations';
 
 export type FieldType =
     | 'text'
@@ -60,7 +60,7 @@ export interface SectionDescriptor {
  *   - 'stacked' — each section as its own collapsible card.
  * Single-section pages ignore this and render flat.
  */
-export type SectionLayout = 'sidebar' | 'stacked';
+export type SectionLayout = 'sidebar' | 'stacked' | 'flat';
 
 export interface Module {
     slug: string;
@@ -70,6 +70,13 @@ export interface Module {
     category: ModuleCategory;
     default_enabled: boolean;
     enabled: boolean;
+    /**
+     * Dashicon slug ("format-image") or inline SVG markup
+     * ("<svg…>…</svg>"). Populated only for category='blocks'
+     * modules — the controller resolves it from the registered
+     * block's icon. Null when no icon is available.
+     */
+    icon: string | null;
     has_custom_page: boolean;
     has_dashboard_card: boolean;
     requires: Record<string, string>;
@@ -112,7 +119,16 @@ export interface ModuleExtension {
     Fills?: () => JSX.Element | null;
 }
 
-export type ModulePage = (props: { slug: string }) => JSX.Element;
+export type ModulePage = (props: {
+    slug: string;
+    /**
+     * Optional layout hint passed by the caller — currently used by
+     * the Editor tab's aggregate-panel render path to ask custom
+     * Pages to render `flat` (no inner cards / collapsibles). Custom
+     * Pages can ignore it if they don't want the hint to apply.
+     */
+    sectionLayoutOverride?: SectionLayout;
+}) => JSX.Element;
 
 /**
  * Theme-registered top-level page metadata, delivered via the

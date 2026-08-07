@@ -1,0 +1,240 @@
+/**
+ * Block Manager — admin extension entry.
+ *
+ * Custom Page that fetches every registered block via
+ * /orbitools/v1/blocks, groups by WP category, and lets the user
+ * toggle which appear in the editor inserter. The on/off state is
+ * stored in `block-manager` module settings as `disabled: string[]`;
+ * the PHP side subtracts that from `allowed_block_types_all`.
+ */
+import { useEffect, useMemo, useState } from '@wordpress/element';
+import { useDispatch, useSelect } from '@wordpress/data';
+import {
+    Notice,
+    Panel,
+    PanelBody,
+    SearchControl,
+    ToggleControl,
+} from '@wordpress/components';
+import apiFetch from '@wordpress/api-fetch';
+import { STORE_KEY } from '../../store';
+import { BlockIcon } from '../../components/BlockIcon';
+import type {
+    ModuleExtension,
+    ModulePage,
+    ModuleSettings,
+} from '../../types';
+
+interface BlockInfo {
+    name: string;
+    title: string;
+    category: string;
+    description: string;
+    icon: string | null;
+}
+
+interface BlocksResponse {
+    blocks: BlockInfo[];
+    cache_populated: boolean;
+}
+
+interface StoreShape {
+    getSettings: (slug: string) => ModuleSettings | undefined;
+}
+
+interface StoreDispatch {
+    updateSetting: (slug: string, key: string, value: unknown) => void;
+}
+
+const CATEGORY_LABELS: Record<string, string> = {
+    text: 'Text',
+    media: 'Media',
+    design: 'Design',
+    widgets: 'Widgets',
+    theme: 'Theme',
+    embed: 'Embeds',
+    reusable: 'Reusable',
+    uncategorized: 'Uncategorized',
+};
+
+const Page: ModulePage = ({ slug }) => {
+    const [blocks, setBlocks] = useState<BlockInfo[] | null>(null);
+    const [fetchError, setFetchError] = useState<string | null>(null);
+    const [search, setSearch] = useState<string>('');
+    const [cachePopulated, setCachePopulated] = useState<boolean>(true);
+
+    const settings = useSelect(
+        (select) => (select(STORE_KEY) as unknown as StoreShape).getSettings(slug),
+        [slug],
+    );
+
+    const disabled = useMemo<string[]>(() => {
+        const raw = settings?.disabled;
+        return Array.isArray(raw)
+            ? raw.filter((v): v is string => typeof v === 'string')
+            : [];
+    }, [settings]);
+
+    const { updateSetting } = useDispatch(STORE_KEY) as unknown as StoreDispatch;
+
+    useEffect(() => {
+        let cancelled = false;
+        apiFetch<BlocksResponse>({ path: 'orbitools/v1/blocks' })
+            .then((res) => {
+                if (!cancelled) {
+                    setBlocks(res.blocks);
+                    setCachePopulated(res.cache_populated);
+                }
+            })
+            .catch((err: unknown) => {
+                if (!cancelled) {
+                    const message = err instanceof Error ? err.message : String(err);
+                    setFetchError(message);
+                }
+            });
+        return () => {
+            cancelled = true;
+        };
+    }, []);
+
+    const toggle = (name: string, enabled: boolean): void => {
+        const next = enabled
+            ? disabled.filter((b) => b !== name)
+            : Array.from(new Set([...disabled, name]));
+        updateSetting(slug, 'disabled', next);
+    };
+
+    const filtered = useMemo<BlockInfo[]>(() => {
+        if (blocks === null) {
+            return [];
+        }
+        if (search === '') {
+            return blocks;
+        }
+        const q = search.toLowerCase();
+        return blocks.filter(
+            (b) =>
+                b.title.toLowerCase().includes(q) ||
+                b.name.toLowerCase().includes(q) ||
+                b.description.toLowerCase().includes(q),
+        );
+    }, [blocks, search]);
+
+    const grouped = useMemo<Record<string, BlockInfo[]>>(() => {
+        const out: Record<string, BlockInfo[]> = {};
+        for (const b of filtered) {
+            const list = out[b.category] ?? [];
+            list.push(b);
+            out[b.category] = list;
+        }
+        return out;
+    }, [filtered]);
+
+    if (fetchError !== null) {
+        return (
+            <Notice status="error" isDismissible={false}>
+                Failed to load blocks: {fetchError}
+            </Notice>
+        );
+    }
+
+    if (blocks === null) {
+        return (
+            <Notice status="info" isDismissible={false}>
+                Loading blocks…
+            </Notice>
+        );
+    }
+
+    const categoryOrder = Object.keys(grouped).sort();
+    const total = blocks.length;
+    const disabledCount = disabled.length;
+
+    return (
+        <div className="orbitools-block-manager">
+            <div className="orbitools-block-manager__title-panel">
+                <p className="orbitools-block-manager__summary">
+                    <strong>{total}</strong> blocks registered ·{' '}
+                    <strong>{disabledCount}</strong> disabled
+                </p>
+                <SearchControl
+                    label="Filter blocks"
+                    value={search}
+                    onChange={setSearch}
+                    __nextHasNoMarginBottom
+                />
+            </div>
+            {!cachePopulated && (
+                <Notice status="info" isDismissible={false}>
+                    Most block icons live only in JavaScript and aren't visible
+                    to PHP. Open the post / page editor on this site once and
+                    they'll be cached for use here.
+                </Notice>
+            )}
+            {categoryOrder.length === 0 ? (
+                <Notice status="info" isDismissible={false}>
+                    No blocks match the current filter.
+                </Notice>
+            ) : (
+                <Panel className="orbitools-section-stack">
+                    {categoryOrder.map((category) => (
+                        <PanelBody
+                            key={category}
+                            title={`${CATEGORY_LABELS[category] ?? category} (${grouped[category].length})`}
+                            initialOpen
+                        >
+                            <ul className="orbitools-item-grid">
+                                {grouped[category].map((block) => (
+                                    <BlockRow
+                                        key={block.name}
+                                        block={block}
+                                        enabled={!disabled.includes(block.name)}
+                                        onChange={(next) => toggle(block.name, next)}
+                                    />
+                                ))}
+                            </ul>
+                        </PanelBody>
+                    ))}
+                </Panel>
+            )}
+        </div>
+    );
+};
+
+interface BlockRowProps {
+    block: BlockInfo;
+    enabled: boolean;
+    onChange: (enabled: boolean) => void;
+}
+
+function BlockRow({ block, enabled, onChange }: BlockRowProps): JSX.Element {
+    return (
+        <li className="orbitools-item-grid__cell">
+            <div className="orbitools-item-card">
+                <div className="orbitools-item-card__head">
+                    <span className="orbitools-item-card__icon" aria-hidden="true">
+                        <BlockIcon icon={block.icon} />
+                    </span>
+                    <h3 className="orbitools-item-card__title">{block.title}</h3>
+                    <span className="orbitools-item-card__toggle">
+                        <ToggleControl
+                            label=""
+                            checked={enabled}
+                            onChange={onChange}
+                            __nextHasNoMarginBottom
+                        />
+                    </span>
+                </div>
+                <p className="orbitools-item-card__name">
+                    <code>{block.name}</code>
+                </p>
+                {block.description !== '' && (
+                    <p className="orbitools-item-card__description">{block.description}</p>
+                )}
+            </div>
+        </li>
+    );
+}
+
+const extension: ModuleExtension = { Page };
+export default extension;

@@ -1,0 +1,770 @@
+/**
+ * Orbital Login — wp-login.php restyle.
+ *
+ * Two-column layout: hero photo on the left, white card with the
+ * Orbital wordmark + form on the right. All colours come from the
+ * Orbital brand palette; copy + hero image are driven by module
+ * settings exposed as CSS variables on `:root` from PHP.
+ *
+ *   #1d303a — navy base (hero gradient, headings, labels)
+ *   #32a3e2 — Orbital blue (primary button, focus ring, links)
+ *   #ffffff — card surface
+ */
+
+$orb-navy:        #1d303a;
+$orb-navy-dark:   #111c22;
+$orb-blue:        #32a3e2;
+$orb-blue-hover:  #1f98db;
+$orb-text-muted:  #6b7a85;
+$orb-border:      #d3dade;
+$orb-card-bg:     #ffffff;
+
+// Width of the right-hand form card. The hero takes the rest.
+$card-width: 480px;
+
+// Breakpoint below which we collapse to one column.
+$bp-single-col: 880px;
+
+// Defaults for the CSS variables PHP sets per-site. Keeps the page
+// usable even if PHP forgets to emit them.
+:root {
+    --orb-login-wordmark: none;
+    --orb-login-hero: linear-gradient(135deg, #{$orb-navy} 0%, #{$orb-blue} 100%);
+}
+
+// -----------------------------------------------------------------
+// Reset
+// -----------------------------------------------------------------
+//
+// The PHP side dequeues WP's `login` / `forms` / `buttons` /
+// `wp-admin` / `colors` stylesheets, so this file owns every
+// visible style. Everything below scopes to `.login` (or html/body)
+// to stay confined to the login screen — we don't want this reset
+// leaking into the wider admin via the colour-scheme stylesheet.
+
+html,
+body.login {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+body.login {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+        Oxygen, Ubuntu, Cantarell, "Helvetica Neue", Arial, sans-serif;
+    font-size: 14px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+body.login *,
+body.login *::before,
+body.login *::after {
+    box-sizing: border-box;
+}
+
+body.login h1,
+body.login h2,
+body.login h3,
+body.login h4,
+body.login h5,
+body.login h6,
+body.login p {
+    margin: 0;
+    font-weight: normal;
+}
+
+body.login a {
+    color: $orb-blue;
+    text-decoration: none;
+
+    &:hover,
+    &:focus {
+        color: $orb-blue-hover;
+    }
+}
+
+body.login form {
+    margin: 0;
+}
+
+body.login input,
+body.login button,
+body.login select,
+body.login textarea {
+    color: inherit;
+    font: inherit;
+    margin: 0;
+}
+
+body.login button {
+    background: transparent;
+    border: 0;
+    padding: 0;
+    cursor: pointer;
+}
+
+// Replicate WP's .hide-if-no-js / .hide-if-js helpers — WP's
+// no-js → js body class swap relies on these to hide JS-only
+// chrome before scripts boot. We lose them when the login
+// stylesheet is dequeued, so re-declare them here.
+body.no-js .hide-if-no-js,
+body.login.no-js .hide-if-no-js {
+    display: none;
+}
+
+body.js .hide-if-js,
+body.login.js .hide-if-js {
+    display: none;
+}
+
+// Visually-hidden helper, used by WP for screen-reader-only text
+// (e.g. on the show/hide password button).
+body.login .screen-reader-text {
+    border: 0;
+    clip: rect(1px, 1px, 1px, 1px);
+    -webkit-clip-path: inset(50%);
+    clip-path: inset(50%);
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    padding: 0;
+    position: absolute;
+    width: 1px;
+    word-wrap: normal !important;
+}
+
+// -----------------------------------------------------------------
+// Layout
+// -----------------------------------------------------------------
+
+body.login {
+    background: $orb-card-bg;
+    color: $orb-navy;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) $card-width;
+    min-height: 100vh;
+}
+
+// Hero column. background-image is a CSS var so PHP can swap it to
+// whatever the user uploaded without rebuilding the stylesheet.
+body.login::before {
+    content: '';
+    grid-column: 1;
+    background-color: $orb-navy;
+    background-image: var(--orb-login-hero);
+    background-size: cover;
+    background-position: left center;
+    background-repeat: no-repeat;
+}
+
+// Right column: WP's standard #login wrapper, repurposed as the
+// form card. A flex column at full viewport height so notices can
+// hug the top of the card while the rest of the form gets vertically
+// centered in the remaining space (via the two auto margins below).
+#login {
+    grid-column: 2;
+    width: 100%;
+    max-width: none;
+    min-height: 100vh;
+    padding: 32px 48px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+}
+
+// Notices stay in their natural DOM position — WP renders them
+// between the wordmark and the form, which puts them inside the
+// auto-margin-centred group along with the rest of the form
+// chrome (rather than floating alone at the top of the card).
+
+// Auto-margin pair that vertically centres everything between
+// the (notice) top edge of the card and the very last child
+// (.privacy-policy-page-link / #backtoblog). The notices stay at
+// the top because their `order: -1` puts them before the
+// auto-margin gap; .language-switcher is a sibling of #login (not
+// a child), so :last-child here is always a real visible element.
+#login > h1 {
+    margin-top: auto;
+}
+#login > *:last-child {
+    margin-bottom: auto;
+}
+
+@media (max-width: $bp-single-col) {
+    body.login {
+        grid-template-columns: 1fr;
+    }
+    body.login::before {
+        display: none;
+    }
+    #login {
+        grid-column: 1;
+        padding: 40px 24px;
+    }
+}
+
+// -----------------------------------------------------------------
+// Wordmark (h1 logo)
+// -----------------------------------------------------------------
+
+#login h1,
+.login h1 {
+    text-align: center;
+}
+
+// Wordmark is drawn as a CSS mask rather than a background-image
+// so its fill colour comes from `background-color` — the SVG's
+// own `fill="#1D303A"` becomes irrelevant. Default to the Orbital
+// blue (matches the primary button); override
+// `--orb-login-wordmark-color` to re-theme.
+#login h1 a,
+.login h1 a {
+    background-color: var(--orb-login-wordmark-color, #{$orb-blue});
+    // Force alpha masking — `match-source` defaults to luminance
+    // for SVGs in some engines, which would hide the dark-fill
+    // wordmark entirely.
+    mask-image: var(--orb-login-wordmark);
+    mask-mode: alpha;
+    mask-size: contain;
+    mask-position: center;
+    mask-repeat: no-repeat;
+    -webkit-mask-image: var(--orb-login-wordmark);
+    -webkit-mask-size: contain;
+    -webkit-mask-position: center;
+    -webkit-mask-repeat: no-repeat;
+    // Preserve the wordmark's native 324:88 aspect ratio.
+    width: 260px;
+    height: 71px;
+    display: block;
+    margin: 0 auto 40px;
+    text-indent: -9999px;
+    outline: none;
+}
+
+// -----------------------------------------------------------------
+// Form card
+// -----------------------------------------------------------------
+
+#loginform,
+#registerform,
+#lostpasswordform {
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    padding: 0;
+    margin: 0;
+}
+
+// Vertical rhythm between form rows. With WP's stylesheet dequeued
+// every `<p>` and `<div>` row defaults to margin: 0 (from our
+// reset), so we declare the gap explicitly here. .forgetmenot and
+// .submit own their own margins below.
+#loginform > p,
+#loginform > .user-pass-wrap,
+#registerform > p,
+#lostpasswordform > p {
+    margin-bottom: 14px;
+}
+
+#loginform > p.submit,
+#loginform > p:last-child,
+#registerform > p:last-child,
+#lostpasswordform > p:last-child {
+    margin-bottom: 0;
+}
+
+// Show form labels (WP visually hides them by default).
+.login form label[for="user_login"],
+.login form label[for="user_pass"],
+.login form .user-pass-wrap label[for="user_pass"] {
+    color: $orb-navy;
+    display: block;
+    font-size: 13px;
+    font-weight: 500;
+    margin-bottom: 6px;
+}
+
+// Hide Edge / legacy IE reveal + clear buttons inside the password
+// input — they'd otherwise collide with our styled `.wp-hide-pw`
+// button. WP normally suppresses these in forms.css; we lose the
+// rule when we dequeue.
+.login input::-ms-reveal,
+.login input::-ms-clear {
+    display: none;
+}
+
+// Padding so the typed password doesn't slide under the eye button.
+.login .wp-pwd input[type="text"],
+.login .wp-pwd input[type="password"] {
+    padding-right: 2.5rem;
+}
+
+// Use a monospace font on the password field so visually-similar
+// characters are easier to distinguish when shown.
+.login input.password-input {
+    font-family: Consolas, Monaco, "Courier New", monospace;
+}
+
+// Dashicon sizing inside the show/hide button — without WP's
+// forms.css the dashicon defaults to the font's 20px glyph but
+// loses its layout box, which throws off centring.
+.login .wp-hide-pw .dashicons {
+    width: 20px;
+    height: 20px;
+    font-size: 20px;
+    line-height: 1;
+    vertical-align: middle;
+}
+
+// Caps Lock warning. `wp-admin/js/user-profile.js`
+// (enqueued on wp-login.php since WP 6.x) injects
+//   <div id="caps-warning" class="caps-warning">…</div>
+// into `.wp-pwd` and toggles visibility via jQuery .show()/.hide()
+// on keydown. WP relies on a `display: none` rule in forms.css to
+// keep it hidden until needed; we lose that when we dequeue, so
+// the arrow icon sits visible until the field is interacted with.
+// Re-declare hide-by-default + lightly branded shown state.
+.wp-pwd #caps-warning,
+.wp-pwd .caps-warning {
+    display: none; // jQuery .show() will override with inline display
+    position: relative;
+    background: #fff7d6;
+    border: 1px solid #f0c33c;
+    border-radius: 4px;
+    color: $orb-navy;
+    font-size: 12px;
+    line-height: 1.4;
+    padding: 6px 10px;
+    margin-top: 8px;
+}
+
+.wp-pwd .caps-icon {
+    display: inline-flex;
+    justify-content: center;
+    width: 16px;
+    height: 16px;
+    margin-right: 6px;
+    vertical-align: middle;
+}
+
+.wp-pwd .caps-warning-text {
+    vertical-align: middle;
+}
+
+// Shake animation on a failed login (`form.shake` is added by
+// inline JS in wp-login.php on auth errors). Match the WP feel
+// but with a tighter amplitude.
+.login form.shake {
+    animation: orbital-login-shake 0.2s cubic-bezier(.19, .49, .38, .79) both;
+    animation-iteration-count: 3;
+    transform: translateX(0);
+}
+
+@keyframes orbital-login-shake {
+    25%  { transform: translateX(-10px); }
+    75%  { transform: translateX( 10px); }
+    100% { transform: translateX( 0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .login form.shake {
+        animation: none;
+        transform: none;
+    }
+}
+
+// Inputs.
+.login form .input,
+.login input[type="text"],
+.login input[type="password"],
+.login input[type="email"] {
+    background: #f7f9fa;
+    border: 1px solid $orb-border;
+    border-radius: 6px;
+    color: $orb-navy;
+    font-size: 15px;
+    line-height: 1.4;
+    padding: 10px 12px;
+    width: 100%;
+    box-sizing: border-box;
+    box-shadow: none;
+    transition: border-color 120ms ease, box-shadow 120ms ease;
+
+    &::placeholder {
+        color: $orb-text-muted;
+    }
+
+    &:focus {
+        border-color: $orb-blue;
+        box-shadow: 0 0 0 3px rgba(50, 163, 226, 0.18);
+        outline: none;
+    }
+}
+
+// Password wrapper — WP nests the input + show/hide button in
+// .wp-pwd. Keep them stacked horizontally, eye on the right.
+.login .wp-pwd {
+    position: relative;
+}
+
+.login .wp-pwd .button.wp-hide-pw {
+    background: none;
+    border: none;
+    color: $orb-text-muted;
+    padding: 0;
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    height: 32px;
+    width: 32px;
+    min-width: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: none;
+
+    &:hover,
+    &:focus {
+        color: $orb-blue;
+        background: none;
+        box-shadow: none;
+    }
+
+    &:focus-visible {
+        outline: 2px solid $orb-blue;
+        outline-offset: 2px;
+    }
+}
+
+// -----------------------------------------------------------------
+// Remember Me as a toggle switch, with Forgot Password inline
+// -----------------------------------------------------------------
+
+.login .forgetmenot {
+    align-items: center;
+    display: flex;
+    justify-content: flex-start;
+    gap: 16px;
+    margin: 0 0 20px;
+    font-size: 13px;
+    color: $orb-navy;
+
+    // "Lost your password?" link, reparented into this row by
+    // login_footer JS. Stays left-aligned next to the toggle with
+    // the flex gap providing the spacing.
+    a {
+        color: $orb-blue;
+        text-decoration: none;
+
+        &:hover,
+        &:focus {
+            color: $orb-blue-hover;
+            text-decoration: underline;
+        }
+    }
+
+    label {
+        align-items: center;
+        cursor: pointer;
+        display: inline-flex;
+        flex: 1;
+        gap: 10px;
+        font-size: 13px;
+    }
+
+    // Hide the native checkbox; restyle via the label.
+    input[type="checkbox"] {
+        appearance: none;
+        background: #e3e8eb;
+        border: none;
+        border-radius: 999px;
+        cursor: pointer;
+        flex-shrink: 0;
+        height: 20px;
+        margin: 0;
+        position: relative;
+        transition: background 120ms ease;
+        width: 36px;
+
+        &::before {
+            background: #fff;
+            border-radius: 50%;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+            content: '';
+            height: 16px;
+            left: 2px;
+            position: absolute;
+            top: 2px;
+            transition: transform 120ms ease;
+            width: 16px;
+        }
+
+        &:checked {
+            background: $orb-blue;
+        }
+
+        &:checked::before {
+            transform: translateX(16px);
+        }
+
+        &:focus-visible {
+            outline: 2px solid $orb-blue;
+            outline-offset: 2px;
+        }
+    }
+}
+
+// `#nav` is the WP wrapper that originally held the "Lost your
+// password?" link; we move the link into the .forgetmenot row via
+// JS (see render_dom_tweaks in PHP), so the empty `<p>` left
+// behind gets hidden.
+.login #nav {
+    display: none;
+}
+
+// "← Go to {site}" link.
+.login #backtoblog {
+    margin-top: 24px;
+    text-align: center;
+    padding: 0;
+
+    a {
+        color: $orb-text-muted;
+        text-shadow: none;
+
+        &:hover,
+        &:focus {
+            color: $orb-blue;
+        }
+    }
+}
+
+// -----------------------------------------------------------------
+// Primary button
+// -----------------------------------------------------------------
+
+.wp-core-ui .button-primary,
+.login .button-primary {
+    background: $orb-blue;
+    border: none;
+    border-radius: 6px;
+    box-shadow: none;
+    color: #fff;
+    font-size: 15px;
+    font-weight: 600;
+    height: auto;
+    margin: 0;
+    padding: 12px 16px;
+    text-shadow: none;
+    text-transform: none;
+    transition: background-color 120ms ease, box-shadow 120ms ease;
+    width: 100%;
+
+    &:hover,
+    &:focus {
+        background: $orb-blue-hover;
+        box-shadow: 0 4px 12px rgba(50, 163, 226, 0.25);
+        color: #fff;
+        outline: none;
+    }
+
+    &:active {
+        background: $orb-blue-hover;
+    }
+
+    &:focus-visible {
+        outline: 2px solid $orb-blue;
+        outline-offset: 2px;
+    }
+}
+
+// Submit row wrapper — kill WP's float layout.
+.login form .submit {
+    margin: 0;
+    padding: 0;
+}
+
+// -----------------------------------------------------------------
+// Messages (errors, notices)
+// -----------------------------------------------------------------
+
+.login .message,
+.login .notice,
+.login #login_error {
+    background: #f7f9fa;
+    border-left: 3px solid $orb-blue;
+    border-radius: 4px;
+    box-shadow: none;
+    color: $orb-navy;
+    font-size: 13px;
+    line-height: 1.45;
+    margin: 0 0 16px;
+    padding: 10px 14px;
+}
+
+.login #login_error {
+    background: #fef0f0;
+    border-left-color: #d63638;
+}
+
+// -----------------------------------------------------------------
+// Language switcher / privacy link
+// -----------------------------------------------------------------
+
+.login .language-switcher {
+    display: none;
+}
+
+.login .privacy-policy-page-link {
+    margin-top: 16px;
+    text-align: center;
+
+    a {
+        color: $orb-text-muted;
+
+        &:hover,
+        &:focus {
+            color: $orb-blue;
+        }
+    }
+}
+
+// -----------------------------------------------------------------
+// Hero photo credit (absolute over the left column)
+// -----------------------------------------------------------------
+
+.orbital-login__hero-credit {
+    color: rgba(255, 255, 255, 0.75);
+    font-size: 11px;
+    left: 24px;
+    letter-spacing: 0.02em;
+    position: fixed;
+    bottom: 20px;
+    z-index: 1;
+
+    a {
+        color: rgba(255, 255, 255, 0.85);
+        text-decoration: underline;
+        text-decoration-color: rgba(255, 255, 255, 0.4);
+
+        &:hover,
+        &:focus {
+            color: #fff;
+            text-decoration-color: #fff;
+        }
+    }
+
+    @media (max-width: $bp-single-col) {
+        display: none;
+    }
+}
+
+// -----------------------------------------------------------------
+// Form card footer (absolute over the right column)
+// -----------------------------------------------------------------
+
+.orbital-login__card-footer {
+    align-items: center;
+    bottom: 20px;
+    box-sizing: border-box;
+    color: $orb-text-muted;
+    display: flex;
+    font-size: 12px;
+    justify-content: space-between;
+    padding: 0 48px;
+    position: fixed;
+    right: 0;
+    width: $card-width;
+    z-index: 1;
+
+    @media (max-width: $bp-single-col) {
+        padding: 0 24px;
+        position: static;
+        width: auto;
+        margin-top: 32px;
+    }
+}
+
+.orbital-login__card-footer-left,
+.orbital-login__card-footer-right {
+    color: $orb-text-muted;
+    text-decoration: none;
+    transition: color 120ms ease;
+
+    &:hover,
+    &:focus {
+        color: $orb-blue;
+        text-decoration: underline;
+    }
+}
+
+// -----------------------------------------------------------------
+// "Welcome back, {name}" banner (remember-last-user feature)
+// -----------------------------------------------------------------
+
+.orbital-login__welcome {
+    align-items: center;
+    background: none;
+    border: 0;
+    display: flex;
+    flex-direction: row;
+    gap: 14px;
+    margin: 0 0 20px;
+    padding: 0;
+    text-align: left;
+}
+
+.orbital-login__welcome-avatar {
+    border-radius: 50%;
+    display: block;
+    flex-shrink: 0;
+    height: 64px;
+    object-fit: cover;
+    width: 64px;
+}
+
+.orbital-login__welcome-text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    // Allow the text column to shrink so long names don't blow out
+    // the banner; the greeting can ellipsis if needed.
+    min-width: 0;
+}
+
+.orbital-login__welcome-greeting {
+    color: $orb-navy;
+    font-size: 17px;
+    font-weight: 500;
+    line-height: 1.3;
+    margin: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+
+    strong {
+        color: $orb-blue;
+        font-weight: 600;
+    }
+}
+
+.orbital-login__not-you {
+    align-self: flex-start;
+    background: none;
+    border: 0;
+    color: $orb-text-muted;
+    cursor: pointer;
+    font-size: 12px;
+    padding: 0;
+    text-align: left;
+    text-decoration: underline;
+
+    &:hover,
+    &:focus {
+        color: $orb-blue;
+        outline: none;
+    }
+}

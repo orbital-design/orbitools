@@ -57,6 +57,51 @@ export function ControlsIcon({ size = 20 }: IconProps = {}): JSX.Element {
     );
 }
 
+export function EditorIcon({ size = 20 }: IconProps = {}): JSX.Element {
+    return (
+        <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width={size}
+            height={size}
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.75"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
+            focusable="false"
+        >
+            <path d="M12 20h9" />
+            <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z" />
+        </svg>
+    );
+}
+
+export function IntegrationsIcon({ size = 20 }: IconProps = {}): JSX.Element {
+    // Lucide-style "plug" — universally read as "connect external service".
+    return (
+        <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width={size}
+            height={size}
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.75"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
+            focusable="false"
+        >
+            <path d="M12 22v-5" />
+            <path d="M9 8V2" />
+            <path d="M15 8V2" />
+            <path d="M18 8v5a4 4 0 0 1-4 4h-4a4 4 0 0 1-4-4V8z" />
+        </svg>
+    );
+}
+
 export function ModulesIcon({ size = 20 }: IconProps = {}): JSX.Element {
     return (
         <svg
@@ -82,5 +127,7 @@ export function ModulesIcon({ size = 20 }: IconProps = {}): JSX.Element {
 export const categoryIcon: Record<ModuleCategory, (props?: IconProps) => JSX.Element> = {
     blocks: BlocksIcon,
     controls: ControlsIcon,
+    editor: EditorIcon,
+    integrations: IntegrationsIcon,
     modules: ModulesIcon,
 };

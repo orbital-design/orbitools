@@ -1,0 +1,132 @@
+/**
+ * Block: Grid Cell - Frontend Styles
+ *
+ * Frontend styles for the Grid Cell block, shipped by the plugin via
+ * block.json `style` so the block is self-contained (no theme dependency).
+ *
+ * Cells span columns via the responsive class scheme that mirrors the rest of
+ * the plugin: `orb-grid-cell--span-{n}` (base), `tablet:orb-grid-cell--span-{n}`,
+ * `mobile:orb-grid-cell--span-{n}` (the `:` escaped as `\:`). A cell with no
+ * span class defaults to a single grid track.
+ *
+ * Breakpoints follow the 3-tier desktop-first scheme (tablet 781px = 48.8125rem
+ * / mobile 479px = 29.9375rem) that matches the editor's device preview.
+ *
+ * @file        blocks/grid-cell/index.scss
+ * @subpackage  orbitools/blocks
+ * @author      Adam Cullen, Orbital Tech Team
+ *
+ * @see         blocks/grid-cell/editor.scss - Editor styles
+ */
+
+$elem_base: 'orb-grid-cell';
+$max_cols: 12;
+
+.#{$elem_base} {
+    display: flex;
+    flex-direction: column;
+    min-width: 0; // Prevent grid track blowout
+    box-sizing: border-box;
+
+    // Default gap (per-size gaps come from the has-gap system).
+    gap: var(--gutter, var(--wp--style--block-gap, 20px));
+}
+
+// Base span classes (desktop / no media query)
+@for $n from 1 through $max_cols {
+    .#{$elem_base}--span-#{$n} {
+        grid-column-end: span #{$n};
+    }
+}
+
+// Tablet span overrides — 781px
+@media (max-width: 48.8125rem) {
+    @for $n from 1 through $max_cols {
+        .tablet\:#{$elem_base}--span-#{$n} {
+            grid-column-end: span #{$n};
+        }
+    }
+}
+
+// Mobile span overrides — 479px
+@media (max-width: 29.9375rem) {
+    @for $n from 1 through $max_cols {
+        .mobile\:#{$elem_base}--span-#{$n} {
+            grid-column-end: span #{$n};
+        }
+    }
+}
+
+// Column start — place a cell at an explicit column line (offsets, asymmetric
+// layouts). Composes with the span above because span sets grid-column-end
+// (not the grid-column shorthand), leaving grid-column-start free.
+@for $n from 1 through $max_cols {
+    .#{$elem_base}--col-start-#{$n} {
+        grid-column-start: #{$n};
+    }
+}
+
+// Tablet column-start overrides — 781px
+@media (max-width: 48.8125rem) {
+    @for $n from 1 through $max_cols {
+        .tablet\:#{$elem_base}--col-start-#{$n} {
+            grid-column-start: #{$n};
+        }
+    }
+}
+
+// Mobile column-start overrides — 479px
+@media (max-width: 29.9375rem) {
+    @for $n from 1 through $max_cols {
+        .mobile\:#{$elem_base}--col-start-#{$n} {
+            grid-column-start: #{$n};
+        }
+    }
+}
+
+// Self-alignment — a cell overriding the grid's own Cell alignment.
+// align-self = vertical (block axis); justify-self = horizontal (inline axis).
+.#{$elem_base}--align-self-start   { align-self: start; }
+.#{$elem_base}--align-self-center  { align-self: center; }
+.#{$elem_base}--align-self-end     { align-self: end; }
+.#{$elem_base}--align-self-stretch { align-self: stretch; }
+
+.#{$elem_base}--justify-self-start   { justify-self: start; }
+.#{$elem_base}--justify-self-center  { justify-self: center; }
+.#{$elem_base}--justify-self-end     { justify-self: end; }
+.#{$elem_base}--justify-self-stretch { justify-self: stretch; }
+
+// Content vertical alignment — distributes the cell's own content within its
+// height (the cell is a flex column). Needs spare height to be visible
+// (stretched cell, taller row, row span). "Top" is the default flow.
+.#{$elem_base}--content-middle  { justify-content: center; }
+.#{$elem_base}--content-bottom  { justify-content: flex-end; }
+.#{$elem_base}--content-between { justify-content: space-between; }
+
+// Row span — a cell can occupy multiple grid rows (feature tiles, mosaics).
+// Implicit rows are created as needed by the grid.
+$max_rows: 6;
+
+@for $n from 1 through $max_rows {
+    .#{$elem_base}--row-span-#{$n} {
+        grid-row: span #{$n};
+    }
+}
+
+// Tablet row-span overrides — 781px
+@media (max-width: 48.8125rem) {
+    @for $n from 1 through $max_rows {
+        .tablet\:#{$elem_base}--row-span-#{$n} {
+            grid-row: span #{$n};
+        }
+    }
+}
+
+// Mobile row-span overrides — 479px
+@media (max-width: 29.9375rem) {
+    @for $n from 1 through $max_rows {
+        .mobile\:#{$elem_base}--row-span-#{$n} {
+            grid-row: span #{$n};
+        }
+    }
+}

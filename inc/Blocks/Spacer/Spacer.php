@@ -110,7 +110,12 @@ class Spacer extends Module_Base
      */
     public function setup_css_generation(): void
     {
-        // Add inline styles for frontend
+        // Enqueue the frontend style on wp_enqueue_scripts so it prints
+        // in <head>. The previous render_block-based late enqueue relied
+        // on print_late_styles() firing in the footer, which doesn't
+        // happen reliably in block themes — the style silently never
+        // printed and spacer heights had no CSS behind them. Same direct
+        // pattern as Gaps_CSS_Generator.
         \add_action('wp_enqueue_scripts', [$this, 'enqueue_frontend_styles']);
 
         // Add inline styles for block editor
@@ -118,7 +123,14 @@ class Spacer extends Module_Base
     }
 
     /**
-     * Enqueue frontend styles with filter
+     * Enqueue the frontend spacer CSS (inline).
+     *
+     * Conditional where we can verify it cheaply: on singular views we
+     * skip the CSS when the queried post doesn't contain an orb/spacer.
+     * On template-driven views (archives, FSE templates) a spacer may
+     * live in a template part we can't cheaply inspect here, so we load
+     * unconditionally rather than risk missing it — correctness over a
+     * few KB of inline CSS.
      */
     public function enqueue_frontend_styles(): void
     {
@@ -127,9 +139,15 @@ class Spacer extends Module_Base
             return;
         }
 
+        if (\is_singular()) {
+            $post = \get_queried_object();
+            if ($post instanceof \WP_Post && !\has_block('orb/spacer', $post)) {
+                return;
+            }
+        }
+
         $css = $this->generate_spacer_css();
         if (!empty($css)) {
-            // Create a dummy stylesheet handle and enqueue with inline CSS
             \wp_register_style('orbitools-spacer-frontend', false);
             \wp_enqueue_style('orbitools-spacer-frontend');
             \wp_add_inline_style('orbitools-spacer-frontend', $css);
@@ -186,22 +204,33 @@ class Spacer extends Module_Base
         $css .= "    flex: 1;\n";
         $css .= "}\n\n";
 
-        // Generate spacing size classes
+        // Generate spacing size classes. No `, {$size}` fallback: WordPress
+        // emits --wp--preset--spacing--{slug} for every preset, and this CSS
+        // is only generated when those same presets exist — so the var is
+        // always defined and the fallback is dead weight. Slug 0 is
+        // special-cased above (there's no preset var for it).
         foreach ($spacing_sizes as $spacing) {
             $slug = $spacing['slug'];
-            $size = $spacing['size'];
+
+            if ((string) $slug === '0') {
+                continue;
+            }
 
             $css .= ".orb-spacer--{$slug} {\n";
-            $css .= "    min-height: var(--wp--preset--spacing--{$slug}, {$size});\n";
+            $css .= "    min-height: var(--wp--preset--spacing--{$slug});\n";
             $css .= "}\n\n";
         }
 
-        // Generate responsive classes for all breakpoints
+        // Generate responsive classes for all breakpoints. Desktop-
+        // first cascade (tablet then mobile), each honouring its own
+        // `query` direction (defaults to max-width) so they line up
+        // with WordPress's device-preview canvas widths.
         foreach ($breakpoints as $breakpoint) {
             $breakpoint_slug = $breakpoint['slug'];
             $breakpoint_value = $breakpoint['value'];
+            $breakpoint_query = $breakpoint['query'] ?? 'max-width';
 
-            $css .= "@media (min-width: {$breakpoint_value}) {\n";
+            $css .= "@media ({$breakpoint_query}: {$breakpoint_value}) {\n";
 
             // Zero height for this breakpoint
             $css .= "    .{$breakpoint_slug}\:orb-spacer--0 {\n";
@@ -214,13 +243,17 @@ class Spacer extends Module_Base
             $css .= "        flex: 1;\n";
             $css .= "    }\n\n";
 
-            // Spacing sizes for this breakpoint
+            // Spacing sizes for this breakpoint (no fallback; slug 0 is
+            // special-cased above).
             foreach ($spacing_sizes as $spacing) {
                 $slug = $spacing['slug'];
-                $size = $spacing['size'];
+
+                if ((string) $slug === '0') {
+                    continue;
+                }
 
                 $css .= "    .{$breakpoint_slug}\:orb-spacer--{$slug} {\n";
-                $css .= "        min-height: var(--wp--preset--spacing--{$slug}, {$size});\n";
+                $css .= "        min-height: var(--wp--preset--spacing--{$slug});\n";
                 $css .= "    }\n\n";
             }
 

@@ -210,59 +210,58 @@
 // left and a Remove button on the right. Add button sits at the
 // bottom, outside the rows.
 
+// Repeater layout: a plain header card with title + description,
+// then a Panel whose PanelBody children are each their own bordered
+// row card, then a naked Add button. The PanelBody-as-card chrome
+// lives in the unified rule (`.orbitools-section-stack,
+// .orbitools-aggregate-panel, .orbitools-repeater__rows`); this
+// block only owns the repeater-specific bits.
+
 .orbitools-repeater {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
+    // Header card: title + description, sits on the gray surface
+    // via the parent SettingsRenderer's bare-section rendering.
 
-    &__empty {
-        margin: 0;
-        padding: 12px 16px;
-        font-size: 12px;
-        color: #757575;
-        background: #f6f7f7;
-        border: 1px dashed #c3c4c7;
-        border-radius: 4px;
-    }
-
-    &__rows {
-        margin: 0;
-        padding: 0;
-        list-style: none;
+    // Container for the row cards + Add button. The left border + left
+    // padding visually mark this stack as belonging to the header card
+    // above, without putting the whole thing in a panel.
+    &__children {
         display: flex;
         flex-direction: column;
         gap: 12px;
+        margin-left: 20px;
+        padding-left: 20px;
+        border-left: 2px solid #c3c4c7;
     }
 
-    &__row {
-        background: #f6f7f7;
-        border: 1px solid #dcdcde;
-        border-radius: 6px;
-        overflow: hidden;
-    }
-
-    &__row-head {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 12px;
-        padding: 8px 12px 8px 16px;
-        background: #fff;
-        border-bottom: 1px solid #dcdcde;
-    }
-
-    &__row-heading {
-        font-size: 13px;
+    &__title {
+        margin: 0;
+        font-size: 14px;
         font-weight: 600;
         color: #1d2327;
     }
 
-    &__row-fields {
+    &__description {
+        margin: 6px 0 0;
+        font-size: 13px;
+        color: #50575e;
+        line-height: 1.5;
+    }
+
+    // When two repeaters stack directly next to each other (e.g.
+    // Socials → Share Links + Social Links), draw a thin divider
+    // between them so they don't read as one continuous list.
+    & + & {
+        border-top: 1px solid var(--orbitools-card-border-color);
+        padding-top: var(--orbitools-section-gap);
+    }
+
+    // Remove button sits at the bottom of an expanded row's content.
+    &__row-actions {
         display: flex;
-        flex-direction: column;
-        gap: 12px;
-        padding: 16px;
-        background: #fff;
+        justify-content: flex-end;
+        margin-top: 8px;
+        padding-top: 16px;
+        border-top: 1px solid #f0f0f1;
     }
 
     &__footer {
@@ -494,12 +493,54 @@
         gap: 12px;
     }
 
+    &__icon {
+        align-items: center;
+        color: #1d2327;
+        display: flex;
+        flex-shrink: 0;
+        height: 24px;
+        justify-content: center;
+        width: 24px;
+
+        .dashicon,
+        .dashicons {
+            font-size: 22px;
+            height: 22px;
+            width: 22px;
+        }
+
+        svg {
+            display: block;
+            height: 22px;
+            width: 22px;
+        }
+    }
+
     &__title {
         margin: 0;
+        flex: 1;
         font-size: 14px;
         font-weight: 600;
         color: #1d2327;
         line-height: 1.3;
+        min-width: 0;
+    }
+
+    &__toggle {
+        flex-shrink: 0;
+    }
+
+    &__name {
+        color: #646970;
+        font-size: 11px;
+        margin: -4px 0 0;
+
+        code {
+            background: none;
+            color: inherit;
+            font-size: inherit;
+            padding: 0;
+        }
     }
 
     &__description {
@@ -558,57 +599,189 @@
 // settings) both consume this.
 :root {
     --orbitools-sidebar-width: 260px;
+
+    // Card primitive — every white-on-gray "card" surface uses these
+    // tokens. Tweaking them changes every settings card in one place.
+    --orbitools-card-bg: #fff;
+    --orbitools-card-border-color: #dcdcde;
+    --orbitools-card-border: 1px solid var(--orbitools-card-border-color);
+    --orbitools-card-radius: 6px;
+    --orbitools-card-padding: 16px 20px;
+
+    // Standard gap between stacked sections.
+    --orbitools-section-gap: 16px;
 }
 
-/* ---------- Multi-section settings: stacked collapsible cards ---------- */
+// Shared card chrome. Apply directly via `.orbitools-card`, or pull
+// the underlying tokens via the variables above. The PanelBody-based
+// containers (section stack / aggregate panel / repeater rows) get
+// the same chrome through dedicated selectors below — they can't
+// just use the class because the PanelBody markup is owned by WP.
 //
-// Opt-in via `"section_layout": "stacked"` on the module manifest
-// or theme page. Each section renders as its own card stacked on
-// the gray admin background, RunCache-style — not collapsible
-// regions within a shared white container.
-//
-// When the stack is rendered inside CategoryPage's content pane
-// (which is normally a white bordered card), `:has()` drops that
-// outer chrome so the inner cards aren't sitting on white.
-
-// When the right-pane content uses the stacked layout, drop the
-// pane's own white chrome so each section card reads as its own
-// container. The item's name + description header gets its OWN
-// card so it doesn't sit naked on the gray; it's spaced apart
-// from the first accordion below.
-.orbitools-category-split__content:has(.orbitools-section-stack) {
-    background: transparent;
-    border: 0;
-    border-radius: 0;
-    padding: 0;
-
-    .orbitools-category-split__content-header {
-        background: #fff;
-        border: 1px solid #dcdcde;
-        border-radius: 6px;
-        padding: 16px 20px;
-        margin-bottom: 16px;
-        border-bottom: 1px solid #dcdcde;
-    }
+// The doubled `.components-card.orbitools-card` selector overrides
+// WP's default Card box-shadow / border — same trick the
+// SettingsSection rule uses — so a `<Card className="orbitools-card">`
+// reads the same as a plain bordered card on the gray.
+.orbitools-card,
+.components-card.orbitools-card {
+    background: var(--orbitools-card-bg);
+    border: var(--orbitools-card-border);
+    border-radius: var(--orbitools-card-radius);
+    box-shadow: none;
 }
 
-.orbitools-section-stack {
+// SettingsSection wraps a WP `<Card>`. Pin its chrome to the same
+// tokens so flat-layout sections sit alongside PanelBody-based ones
+// without visual drift.
+.orbitools-settings-section.components-card {
+    background: var(--orbitools-card-bg);
+    border: var(--orbitools-card-border);
+    border-radius: var(--orbitools-card-radius);
+    box-shadow: none;
+}
+
+/* ---------- Unified PanelBody-as-card rule ---------- */
+//
+// The three contexts that stack PanelBody-based cards on the gray
+// background (Stacked sections, Aggregate panel for Editor tab,
+// Repeater rows) all share the same chrome via this single rule.
+// Each Panel container is just a transparent flex layout; the
+// PanelBody children pick up the card chrome through the same
+// tokens SettingsSection / content-header use.
+
+.orbitools-section-stack,
+.orbitools-aggregate-panel,
+.orbitools-repeater__rows {
     background: transparent;
     border: 0;
 
-    // Each PanelBody is its own self-contained card.
-    .components-panel__body {
-        background: #fff;
-        border: 1px solid #dcdcde;
-        border-radius: 6px;
-        margin-bottom: 16px;
+    // Direct PanelBody children only — a child Panel rendered
+    // by an embedded module's stacked layout (or a custom Page)
+    // shouldn't also have its inner PanelBodies promoted to
+    // cards; that would nest visually inside the outer card.
+    > .components-panel__body {
+        background: var(--orbitools-card-bg);
+        border: var(--orbitools-card-border);
+        border-radius: var(--orbitools-card-radius);
+        margin-bottom: var(--orbitools-section-gap);
         overflow: hidden;
 
         &:last-child {
             margin-bottom: 0;
         }
     }
+}
 
+/* ---------- Tools page ---------- */
+//
+// Export / Import cards. Both share the same internal layout:
+// description paragraph, optional file/textarea, checkbox list of
+// what's in the bundle, action buttons. Nothing exotic — the cards
+// themselves use the shared chrome.
+
+.orbitools-tools-card {
+    &__title {
+        margin: 0;
+        font-size: 14px;
+        font-weight: 600;
+        color: #1d2327;
+    }
+
+    &__description {
+        margin: 0 0 16px;
+        font-size: 13px;
+        color: #50575e;
+        line-height: 1.5;
+    }
+
+    &__list {
+        margin: 12px 0;
+        padding-left: 0;
+        list-style: none;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+
+        li {
+            margin: 0;
+        }
+    }
+
+    &__actions {
+        display: flex;
+        gap: 8px;
+        margin-top: 16px;
+    }
+
+    &__file-row {
+        margin-bottom: 12px;
+    }
+}
+
+.orbitools-tools-body__hint {
+    margin: 0;
+    font-size: 13px;
+    color: #50575e;
+    line-height: 1.5;
+
+    code {
+        padding: 1px 6px;
+        background: #f0f0f1;
+        border-radius: 3px;
+        font-size: 12px;
+    }
+}
+
+/* ---------- Flat section (aggregate-panel inner) ---------- */
+//
+// One row per section in `flat` SectionLayout. Just an optional
+// description paragraph and the fields beneath — no title, no card.
+
+.orbitools-flat-section {
+    &__description {
+        margin: 0 0 12px;
+        font-size: 13px;
+        color: #50575e;
+        line-height: 1.5;
+    }
+}
+
+/* ---------- Bare section (repeater-only groups) ---------- */
+//
+// A section whose fields are all repeaters renders its title +
+// description as a plain heading instead of in a SettingsSection
+// Card — the repeaters provide their own card structure below
+// and a wrapping Card would nest them.
+
+.orbitools-bare-section {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+
+    &__header {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    &__title {
+        margin: 0;
+        font-size: 14px;
+        font-weight: 600;
+        color: #1d2327;
+    }
+
+    &__description {
+        margin: 0;
+        font-size: 13px;
+        color: #50575e;
+        line-height: 1.5;
+    }
+}
+
+.orbitools-section-stack {
+    // Card chrome lives on the unified rule above. Only the
+    // description-paragraph typography is owned here.
     &__description {
         margin: 0 0 16px;
         font-size: 13px;
@@ -617,6 +790,11 @@
     }
 }
 
+// Two-column section layout (used by SectionSidebarLayout when a
+// module declares 2+ sections without `section_layout: stacked`).
+// The sidebar is naturally a card; the right pane is a transparent
+// surface so its inner content cards (SettingsSection, repeater
+// header card, etc.) sit directly on the gray.
 .orbitools-section-split {
     display: grid;
     grid-template-columns: var(--orbitools-sidebar-width) 1fr;
@@ -628,24 +806,29 @@
     }
 
     &__sidebar {
-        background: #fff;
-        border: 1px solid #dcdcde;
-        border-radius: 6px;
+        background: var(--orbitools-card-bg);
+        border: var(--orbitools-card-border);
+        border-radius: var(--orbitools-card-radius);
         overflow: hidden;
     }
 
     &__content {
-        background: #fff;
-        border: 1px solid #dcdcde;
-        border-radius: 6px;
-        padding: 24px 28px 32px;
+        // Transparent surface. Inner cards (content-header,
+        // SettingsSection, repeater header) provide the chrome.
+        background: transparent;
+        border: 0;
+        padding: 0;
         min-width: 0;
+        display: flex;
+        flex-direction: column;
+        gap: var(--orbitools-section-gap);
     }
 
     &__content-header {
-        margin: 0 0 20px;
-        padding-bottom: 16px;
-        border-bottom: 1px solid #f0f0f1;
+        background: var(--orbitools-card-bg);
+        border: var(--orbitools-card-border);
+        border-radius: var(--orbitools-card-radius);
+        padding: var(--orbitools-card-padding);
     }
 
     &__content-title {
@@ -666,6 +849,10 @@
 
 /* ---------- Category Settings page (two-column) ---------- */
 
+// CategoryPage two-column layout. Same grammar as section-split:
+// sidebar is a card, right pane is a transparent surface, inner
+// content cards (content-header, SettingsSection, repeater header,
+// PanelBody stacks) provide their own chrome.
 .orbitools-category-split {
     display: grid;
     grid-template-columns: var(--orbitools-sidebar-width) 1fr;
@@ -677,24 +864,27 @@
     }
 
     &__sidebar {
-        background: #fff;
-        border: 1px solid #dcdcde;
-        border-radius: 6px;
+        background: var(--orbitools-card-bg);
+        border: var(--orbitools-card-border);
+        border-radius: var(--orbitools-card-radius);
         overflow: hidden;
     }
 
     &__content {
-        background: #fff;
-        border: 1px solid #dcdcde;
-        border-radius: 6px;
-        padding: 24px 28px 32px;
+        background: transparent;
+        border: 0;
+        padding: 0;
         min-width: 0; // let inner content shrink instead of pushing the grid wide
+        display: flex;
+        flex-direction: column;
+        gap: var(--orbitools-section-gap);
     }
 
     &__content-header {
-        margin: 0;
-        padding-bottom: 16px;
-        border-bottom: 1px solid #f0f0f1;
+        background: var(--orbitools-card-bg);
+        border: var(--orbitools-card-border);
+        border-radius: var(--orbitools-card-radius);
+        padding: var(--orbitools-card-padding);
     }
 
     &__content-title {
@@ -713,6 +903,9 @@
     }
 
     &__empty {
+        background: var(--orbitools-card-bg);
+        border: var(--orbitools-card-border);
+        border-radius: var(--orbitools-card-radius);
         display: flex;
         align-items: center;
         justify-content: center;
@@ -735,6 +928,43 @@
 
     &__item {
         margin: 0;
+    }
+
+    &__label {
+        align-items: center;
+        display: flex;
+        flex: 1;
+        gap: 10px;
+        min-width: 0;
+    }
+
+    &__icon {
+        align-items: center;
+        color: #1d2327;
+        display: flex;
+        flex-shrink: 0;
+        height: 20px;
+        justify-content: center;
+        width: 20px;
+
+        .dashicon,
+        .dashicons {
+            font-size: 16px;
+            height: 16px;
+            width: 16px;
+        }
+
+        svg {
+            display: block;
+            height: 16px;
+            width: 16px;
+        }
+    }
+
+    &__label-text {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
     }
 
     &__link {
@@ -892,4 +1122,53 @@
         padding: 2px 6px;
         border-radius: 2px;
     }
+}
+
+// -----------------------------------------------------------------
+// Block Manager (custom Page for inc/Modules/Block_Manager)
+// -----------------------------------------------------------------
+
+.orbitools-block-manager {
+    &__title-panel {
+        align-items: center;
+        background: #fff;
+        border: 1px solid #dcdcde;
+        border-radius: 4px;
+        display: flex;
+        gap: 16px;
+        justify-content: space-between;
+        margin-bottom: 16px;
+        padding: 12px 16px;
+
+        // SearchControl carries its own block-level wrapper; pin it
+        // to the right and let it grow within the row.
+        .components-search-control {
+            flex: 1;
+            max-width: 360px;
+        }
+    }
+
+    &__summary {
+        margin: 0;
+        font-size: 13px;
+        color: #50575e;
+        white-space: nowrap;
+
+        strong {
+            color: #1d2327;
+        }
+    }
+
+    // Card chrome lives on .orbitools-item-card (shared with the
+    // dashboard). The block-manager-specific styling is just the
+    // title-panel header above this comment.
+}
+
+// Shared block-icon container — used inside .orbitools-item-card,
+// the sidebar list, and anywhere else BlockIcon is rendered.
+// Inline SVG icons sometimes carry their own width/height attrs;
+// scale them to the container box.
+.orbitools-block-icon--svg svg {
+    height: 100%;
+    width: 100%;
 }

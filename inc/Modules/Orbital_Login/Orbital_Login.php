@@ -1,0 +1,355 @@
+<?php
+
+namespace Orbitools\Modules\Orbital_Login;
+
+use Orbitools\Core\Abstracts\Module_Base;
+use Orbitools\Core\Helpers\Settings_Manager;
+
+/**
+ * Orbital Login module.
+ *
+ * Restyles wp-login.php as a two-column Orbital-branded screen: the
+ * bundled background photo on the left, white card with the Orbital
+ * wordmark + form + headline + copyright on the right. The visual
+ * treatment is fixed — every Orbital site looks the same — so none
+ * of it is exposed as a setting.
+ *
+ * The one configurable bit is a UX shortcut:
+ *   - remember_last_user → drop a per-device cookie after a
+ *     successful login so the next wp-login.php render greets the
+ *     user by name and only asks for the password.
+ *
+ * @package Orbitools
+ * @since 3.2.0
+ */
+final class Orbital_Login extends Module_Base
+{
+    // Brand constants — hardcoded on purpose so every Orbital site
+    // renders the same login screen. If you find yourself wanting
+    // to vary one of these per-site, add a setting instead.
+    private const LOGO_URL           = 'https://orbital.co.uk';
+    private const LOGO_TITLE         = 'Orbital';
+    private const FOOTER_LEFT_LABEL  = 'Built by Orbital';
+    private const FOOTER_LEFT_URL    = 'https://orbital.co.uk';
+    private const FOOTER_RIGHT_LABEL = 'Powered by WordPress';
+    private const FOOTER_RIGHT_URL   = 'https://wordpress.org';
+
+    /**
+     * Cookie name prefix for the "remember last user" feature. The
+     * full name appends COOKIEHASH so the cookie is multisite-safe.
+     */
+    private const REMEMBER_COOKIE_PREFIX = 'orbitools_last_user_';
+
+    /**
+     * Lifetime for the remember-last-user cookie, in seconds. 30
+     * days mirrors the WP "Remember Me" auth cookie lifetime so the
+     * two features decay at the same pace. Spelled out as a literal
+     * because class constants can't reference WP's DAY_IN_SECONDS
+     * (only resolved at runtime via the global namespace).
+     */
+    private const REMEMBER_COOKIE_LIFETIME = 30 * 24 * 60 * 60;
+
+    public function get_slug(): string
+    {
+        return 'orbital-login';
+    }
+
+    public function get_name(): string
+    {
+        return \__('Orbital Login', 'orbitools');
+    }
+
+    public function get_description(): string
+    {
+        return \__('Restyle the wp-login.php screen with the Orbital brand.', 'orbitools');
+    }
+
+    public function init(): void
+    {
+        // Priority 100 so we run *after* WP enqueues its own login
+        // stylesheets — gives us a real handle to dequeue.
+        \add_action('login_enqueue_scripts', [$this, 'enqueue_login_styles'], 100);
+        // Brand chrome — fixed across all Orbital sites.
+        \add_action('login_head', [$this, 'render_inline_vars']);
+        \add_action('login_footer', [$this, 'render_static_chrome']);
+        \add_filter('login_headerurl', [$this, 'filter_login_headerurl']);
+        \add_filter('login_headertext', [$this, 'filter_login_headertext']);
+
+        // Per-site UX shortcut.
+        $settings = new Settings_Manager();
+        if ($settings->get_module_setting($this->get_slug(), 'remember_last_user', false)) {
+            \add_action('wp_login', [$this, 'remember_last_user'], 10, 2);
+            // login_footer fires after the form, so the DOM the
+            // script targets already exists.
+            \add_action('login_footer', [$this, 'render_welcome_back']);
+        }
+    }
+
+    public function enqueue_login_styles(): void
+    {
+        // Strip WP's default login stylesheets so we render from a
+        // blank slate. Dequeueing dependencies (forms/buttons) too,
+        // because they bleed into the form chrome (input widths,
+        // button paddings, focus rings) and force us into a
+        // specificity arms race. Dashicons stays — we use it for
+        // the show/hide password glyph.
+        \wp_dequeue_style('login');
+        \wp_dequeue_style('forms');
+        \wp_dequeue_style('buttons');
+        \wp_dequeue_style('wp-admin');
+        \wp_dequeue_style('colors');
+
+        \wp_enqueue_style(
+            'orbitools-orbital-login',
+            ORBITOOLS_URL . 'build/admin/css/modules/orbital-login/login.css',
+            ['dashicons'],
+            ORBITOOLS_VERSION
+        );
+    }
+
+    /**
+     * Emit `:root` CSS variables for the hero image and wordmark.
+     * Kept inline (rather than in the static stylesheet) so the
+     * plugin URL — which only PHP can resolve at runtime — drives
+     * the asset paths without baking the host into login.css.
+     */
+    public function render_inline_vars(): void
+    {
+        $hero_url = ORBITOOLS_URL . 'build/media/orbital-login-background.jpg';
+        $wordmark = ORBITOOLS_URL . 'build/media/orbital-wordmark.svg';
+
+        $vars = [
+            "--orb-login-wordmark: url('" . \esc_url($wordmark) . "');",
+            "--orb-login-hero: url('" . \esc_url($hero_url) . "');",
+        ];
+
+        echo "<style id=\"orbitools-orbital-login-vars\">:root{" . implode(' ', $vars) . "}</style>\n";
+    }
+
+    /**
+     * Render the form-card footer (two attribution links pinned to
+     * the bottom of the right column) and a tiny DOM tweak that
+     * reparents the "Lost your password?" link into the Remember-Me
+     * row so flex gap spaces them as one inline group.
+     *
+     * Both bits live on login_footer because the form has to be in
+     * the DOM by then.
+     */
+    public function render_static_chrome(): void
+    {
+        echo '<div class="orbital-login__card-footer">';
+        echo '<a class="orbital-login__card-footer-left" href="' . \esc_url(self::FOOTER_LEFT_URL) . '" target="_blank" rel="noopener noreferrer">' . \esc_html(self::FOOTER_LEFT_LABEL) . '</a>';
+        echo '<a class="orbital-login__card-footer-right" href="' . \esc_url(self::FOOTER_RIGHT_URL) . '" target="_blank" rel="noopener noreferrer">' . \esc_html(self::FOOTER_RIGHT_LABEL) . '</a>';
+        echo "</div>\n";
+
+        // Move the lost-password link inline with the Remember-Me
+        // row. CSS hides the empty #nav `<p>` left behind.
+        ?>
+<script>
+(function () {
+    var forgetmenot = document.querySelector('.login .forgetmenot');
+    var nav         = document.getElementById('nav');
+    var navLink     = nav ? nav.querySelector('a') : null;
+    if (forgetmenot && navLink) {
+        forgetmenot.appendChild(navLink);
+    }
+}());
+</script>
+        <?php
+    }
+
+    public function filter_login_headerurl(): string
+    {
+        return \esc_url_raw(self::LOGO_URL);
+    }
+
+    public function filter_login_headertext(): string
+    {
+        return self::LOGO_TITLE;
+    }
+
+    /**
+     * Store the just-logged-in user's login name in a per-device
+     * cookie so the next wp-login.php render can greet them by
+     * name. The cookie holds only `user_login`; no auth material,
+     * no display name (we look that up server-side from the user
+     * record so we don't widen the recon surface).
+     *
+     * @param string   $user_login The user's login name.
+     * @param \WP_User $user       The WP_User object of the logged-in user.
+     */
+    public function remember_last_user(string $user_login, $user): void
+    {
+        if (\headers_sent()) {
+            return;
+        }
+
+        \setcookie(
+            $this->get_remember_cookie_name(),
+            $user_login,
+            [
+                'expires'  => \time() + self::REMEMBER_COOKIE_LIFETIME,
+                'path'     => \SITECOOKIEPATH,
+                'domain'   => \COOKIE_DOMAIN,
+                'secure'   => \is_ssl(),
+                // HttpOnly off — JS needs to clear it from the
+                // "Not you?" link without a server round-trip.
+                'httponly' => false,
+                'samesite' => 'Lax',
+            ]
+        );
+    }
+
+    /**
+     * Render the welcome-back UI on wp-login.php. Only shows on the
+     * default login action (not lost-password / register), only
+     * when the cookie names a user who still exists, and only on
+     * GET (so a failed POST keeps the normal form with its error).
+     */
+    public function render_welcome_back(): void
+    {
+        // Skip on non-default actions (lostpassword, register, etc.).
+        $action = isset($_REQUEST['action']) ? \sanitize_key((string) $_REQUEST['action']) : 'login';
+        if ($action !== 'login') {
+            return;
+        }
+
+        // Skip on form submissions — let WP show its own error
+        // alongside the user's typed value.
+        if (($_SERVER['REQUEST_METHOD'] ?? 'GET') !== 'GET') {
+            return;
+        }
+
+        $cookie_name = $this->get_remember_cookie_name();
+        if (!isset($_COOKIE[$cookie_name]) || $_COOKIE[$cookie_name] === '') {
+            return;
+        }
+
+        $login = \sanitize_user(\wp_unslash((string) $_COOKIE[$cookie_name]), true);
+        if ($login === '') {
+            return;
+        }
+
+        $user = \get_user_by('login', $login);
+        if (!$user) {
+            // Cookie names a user who no longer exists — clear it.
+            \setcookie(
+                $cookie_name,
+                '',
+                [
+                    'expires'  => \time() - 3600,
+                    'path'     => \SITECOOKIEPATH,
+                    'domain'   => \COOKIE_DOMAIN,
+                    'secure'   => \is_ssl(),
+                    'httponly' => false,
+                    'samesite' => 'Lax',
+                ]
+            );
+            return;
+        }
+
+        $display    = $user->display_name !== '' ? $user->display_name : $user->user_login;
+        $first_name = \trim((string) \get_user_meta($user->ID, 'first_name', true));
+        $greeting   = $first_name !== '' ? $first_name : $display;
+
+        // 2× the rendered size for HiDPI. Routes through
+        // pre_get_avatar_data so the User_Avatars module (if
+        // enabled) returns the user's local upload; otherwise
+        // Gravatar / mystery-person.
+        $avatar_url = \get_avatar_url($user->ID, ['size' => 112]);
+
+        $payload = [
+            'login'   => $user->user_login,
+            'name'    => $greeting,
+            'avatar'  => is_string($avatar_url) ? $avatar_url : '',
+            'cookie'  => $cookie_name,
+            'path'    => \SITECOOKIEPATH,
+            'domain'  => \COOKIE_DOMAIN,
+            'secure'  => \is_ssl(),
+        ];
+        ?>
+<script>
+(function () {
+    var data = <?php echo \wp_json_encode($payload); ?>;
+    var userField = document.getElementById('user_login');
+    var passField = document.getElementById('user_pass');
+    var form      = document.getElementById('loginform');
+    if (!userField || !passField || !form) {
+        return;
+    }
+
+    // Pre-fill the username and hide its row.
+    userField.value = data.login;
+    userField.setAttribute('readonly', 'readonly');
+    var userRow = userField.closest('p') || userField.parentNode;
+    if (userRow) {
+        userRow.style.display = 'none';
+    }
+    form.classList.add('orbital-login--welcome-back');
+
+    // Prepend the welcome banner.
+    var banner = document.createElement('div');
+    banner.className = 'orbital-login__welcome';
+
+    if (data.avatar) {
+        var avatar = document.createElement('img');
+        avatar.className = 'orbital-login__welcome-avatar';
+        avatar.src = data.avatar;
+        avatar.alt = '';
+        avatar.width = 64;
+        avatar.height = 64;
+        banner.appendChild(avatar);
+    }
+
+    // Right column: greeting + "Not you?" stacked.
+    var textCol = document.createElement('div');
+    textCol.className = 'orbital-login__welcome-text';
+
+    var hi = document.createElement('p');
+    hi.className = 'orbital-login__welcome-greeting';
+    hi.appendChild(document.createTextNode('Welcome back, '));
+    var strong = document.createElement('strong');
+    strong.textContent = data.name;
+    hi.appendChild(strong);
+    textCol.appendChild(hi);
+
+    var notYou = document.createElement('button');
+    notYou.type = 'button';
+    notYou.className = 'orbital-login__not-you';
+    notYou.textContent = 'Not you? Sign in as someone else';
+    notYou.addEventListener('click', function () {
+        var parts = [
+            data.cookie + '=',
+            'path=' + data.path,
+            'max-age=0',
+            'SameSite=Lax'
+        ];
+        if (data.domain) {
+            parts.push('domain=' + data.domain);
+        }
+        if (data.secure) {
+            parts.push('Secure');
+        }
+        document.cookie = parts.join('; ');
+        // Reload without query string so we re-enter the default
+        // login flow with an empty form.
+        window.location.href = window.location.pathname;
+    });
+    textCol.appendChild(notYou);
+
+    banner.appendChild(textCol);
+
+    form.parentNode.insertBefore(banner, form);
+
+    // Focus password so the user can type and submit straight away.
+    passField.focus();
+}());
+</script>
+        <?php
+    }
+
+    private function get_remember_cookie_name(): string
+    {
+        return self::REMEMBER_COOKIE_PREFIX . \COOKIEHASH;
+    }
+}

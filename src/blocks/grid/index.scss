@@ -1,0 +1,81 @@
+/**
+ * Block: Grid - Frontend Styles
+ *
+ * Frontend styles for the Grid block, shipped by the plugin via block.json
+ * `style` so the block is self-contained (no theme dependency).
+ *
+ * The grid uses native CSS Grid: column tracks are driven by the
+ * `--orb-grid-cols` custom property (set in PHP from columnSystem), and the
+ * gap comes from the Orbitools `has-gap` system (SpacingsRenderer) which
+ * applies to Grid identically — no bespoke gap plumbing here.
+ *
+ * Breakpoints follow the 3-tier desktop-first scheme (tablet 781px / mobile
+ * 479px) that matches the editor's device preview.
+ *
+ * @file        blocks/grid/index.scss
+ * @subpackage  orbitools/blocks
+ * @author      Adam Cullen, Orbital Tech Team
+ *
+ * @see         blocks/grid/editor.scss - Editor styles
+ */
+
+$elem_base: 'orb-grid';
+
+.#{$elem_base} {
+    display: grid;
+    grid-template-columns: repeat(var(--orb-grid-cols, 12), minmax(0, 1fr));
+    width: 100%;
+    box-sizing: border-box;
+
+    // Auto-fit mode: tracks are as wide as possible but never narrower than
+    // --orb-grid-min, wrapping automatically with no manual breakpoints.
+    &[data-grid-mode="auto"] {
+        grid-template-columns: repeat(auto-fit, minmax(var(--orb-grid-min, 250px), 1fr));
+    }
+
+    // Row height (grid-auto-rows). Default (auto) leaves rows content-sized.
+    // Equal makes every implicit row the same height so row-span is exactly
+    // N× a row; Min gives each row a floor that grows with content. Both make
+    // cell row spans predictable.
+    &[data-row-height="equal"] {
+        grid-auto-rows: 1fr;
+    }
+
+    &[data-row-height="min"] {
+        grid-auto-rows: minmax(var(--orb-grid-row-min, 200px), auto);
+    }
+
+    // Cell alignment within each track. Stretch (default) needs no rule.
+    // Vertical = align-items (block axis); horizontal = justify-items (inline).
+    &[data-align-items="start"]  { align-items: start; }
+    &[data-align-items="center"] { align-items: center; }
+    &[data-align-items="end"]    { align-items: end; }
+
+    &[data-justify-items="start"]  { justify-items: start; }
+    &[data-justify-items="center"] { justify-items: center; }
+    &[data-justify-items="end"]    { justify-items: end; }
+
+    // Default gap (per-size gaps come from the has-gap system).
+    gap: var(--gutter, var(--wp--style--block-gap, 20px));
+
+    // Hide overflow if there's a radius set in the core
+    &[style*='border-radius'] {
+        overflow: hidden;
+    }
+
+    // Content constraint (data-constrain="standard|wide") is styled globally
+    // by the Content Width control — the inner grid bleeds otherwise.
+
+    // Stack on mobile — collapse the grid to a single column and let every
+    // cell span the full width. Triggers at the mobile breakpoint (479px).
+    &[data-stacked="true"] {
+        @media (max-width: 29.9375rem) {
+            grid-template-columns: 1fr;
+
+            > .orb-grid-cell {
+                grid-column: 1 / -1 !important;
+                grid-row: auto !important;
+            }
+        }
+    }
+}

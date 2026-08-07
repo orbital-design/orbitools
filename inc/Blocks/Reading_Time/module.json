@@ -1,0 +1,39 @@
+{
+  "$schema": "https://orbitools/schemas/module.v1.json",
+  "slug": "reading-time",
+  "name": "Reading Time",
+  "description": "Estimate the reading time of a post. Calculated on every post save, cached in post meta, and exposed via the `orb/reading-time` block + the `Reading_Time::get_reading_time()` static accessor for themes.",
+  "version": "1.0.0",
+  "category": "editor",
+  "class": "\\Orbitools\\Blocks\\Reading_Time\\Reading_Time",
+  "default_enabled": false,
+  "requires": {
+    "php": ">=7.4",
+    "wp": ">=5.0"
+  },
+  "settings": [
+    {
+      "id": "wpm",
+      "type": "number",
+      "label": "Words per minute",
+      "description": "Reading speed baseline used in the calculation. 200–300 covers most adult readers; 270 is a common middle.",
+      "default": 270,
+      "min": 100,
+      "max": 600
+    },
+    {
+      "id": "suffix",
+      "type": "text",
+      "label": "Suffix",
+      "description": "Appended after the number in the rendered output. Use whichever phrasing matches the rest of your UI (e.g. \"min read\", \"minute read\").",
+      "default": "min read"
+    },
+    {
+      "id": "count_images",
+      "type": "toggle",
+      "label": "Add time for images",
+      "description": "Counts image tags in the rendered content and adds a small reading allowance for each (heaviest for the first 10, lighter for the rest). Turn off for posts where images are decorative and don't slow scanning.",
+      "default": true
+    }
+  ]
+}

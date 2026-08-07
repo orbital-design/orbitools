@@ -1,0 +1,144 @@
+/**
+ * Post Templates — admin styles for the taxonomy list-table columns
+ * (post template + archive template status icons + their tooltip).
+ *
+ * Loaded by Post_Templates::enqueue_admin_styles() on edit-tags.php and
+ * term.php for any configured taxonomy.
+ */
+
+.fixed th.column-orb-template,
+.fixed th.column-orb-archive-template {
+	padding: 0;
+	width: 3em;
+	color: #1d303a;
+}
+
+.fixed th.column-orb-template .orb-pt-tooltip,
+.fixed th.column-orb-archive-template .orb-pt-tooltip {
+	position: relative;
+	display: inline-block;
+	overflow: visible;
+	vertical-align: middle;
+	padding: 8px 11px;
+}
+
+.fixed th.column-orb-template .orb-pt-tooltip:before,
+.fixed th.column-orb-archive-template .orb-pt-tooltip:before {
+	border: 5px solid transparent;
+	border-top-color: rgba(0, 0, 0, 0.8);
+	color: rgba(0, 0, 0, 0.8);
+	content: ' ';
+	display: none;
+	height: 0;
+	opacity: 0;
+	pointer-events: none;
+	position: absolute;
+	width: 0;
+	z-index: 1000001;
+	bottom: auto;
+	margin-right: -5px;
+	right: 50%;
+	top: -5px;
+}
+
+.fixed th.column-orb-template .orb-pt-tooltip:after,
+.fixed th.column-orb-archive-template .orb-pt-tooltip:after {
+	background: rgba(0, 0, 0, 0.8);
+	border-radius: 3px;
+	color: #fff;
+	display: none;
+	font: normal normal 11px / 1.45454545 Helvetica, arial, sans-serif;
+	letter-spacing: normal;
+	opacity: 0;
+	padding: 6px 8px 5px;
+	position: absolute;
+	text-align: center;
+	text-decoration: none;
+	text-shadow: none;
+	text-transform: none;
+	white-space: pre;
+	z-index: 1000000;
+	word-wrap: break-word;
+	content: attr(data-label);
+	pointer-events: none;
+	-webkit-font-smoothing: subpixel-antialiased;
+	bottom: 100%;
+	margin-bottom: 5px;
+	right: 50%;
+	transform: translateX(50%);
+}
+
+.fixed th.column-orb-template .orb-pt-tooltip:hover:before,
+.fixed th.column-orb-template .orb-pt-tooltip:hover:after,
+.fixed th.column-orb-template .orb-pt-tooltip:focus:before,
+.fixed th.column-orb-template .orb-pt-tooltip:focus:after,
+.fixed th.column-orb-template .orb-pt-tooltip:active:before,
+.fixed th.column-orb-template .orb-pt-tooltip:active:after,
+.fixed th.column-orb-archive-template .orb-pt-tooltip:hover:before,
+.fixed th.column-orb-archive-template .orb-pt-tooltip:hover:after,
+.fixed th.column-orb-archive-template .orb-pt-tooltip:focus:before,
+.fixed th.column-orb-archive-template .orb-pt-tooltip:focus:after,
+.fixed th.column-orb-archive-template .orb-pt-tooltip:active:before,
+.fixed th.column-orb-archive-template .orb-pt-tooltip:active:after {
+	animation-duration: 0.1s;
+	animation-fill-mode: forwards;
+	animation-name: orb-pt-tooltip-appear;
+	animation-timing-function: ease-in;
+	display: inline-block;
+	text-decoration: none;
+}
+
+.fixed th.column-orb-template .orb-pt-column-icon,
+.fixed th.column-orb-archive-template .orb-pt-column-icon {
+	position: relative;
+	color: #1d303a;
+	content: '';
+	display: inline-block;
+	height: 20px;
+	padding: 0;
+	text-decoration: none !important;
+	vertical-align: top;
+	width: 20px;
+	background-size: 20px;
+	background-repeat: no-repeat;
+	background-position: 0 0;
+}
+
+.fixed th.column-orb-template .orb-pt-column-icon {
+	background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 640 640'%3E%3Cpath fill='%231d303a' d='M160 96c-35.3 0-64 28.7-64 64v320c0 35.3 28.7 64 64 64h320c35.3 0 64-28.7 64-64V160c0-35.3-28.7-64-64-64zm320 64v64H160v-64zM160 288h64v192h-64zm320 0v192H288V288z'/%3E%3C/svg%3E");
+}
+
+.fixed th.column-orb-archive-template .orb-pt-column-icon {
+	background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 640 640'%3E%3Cpath fill='%231d303a' d='M64 128c0-17.7 14.3-32 32-32h448c17.7 0 32 14.3 32 32v32c0 17.7-14.3 32-32 32H96c-17.7 0-32-14.3-32-32zm32 112h448v240c0 35.3-28.7 64-64 64H160c-35.3 0-64-28.7-64-64zm152 64c-13.3 0-24 10.7-24 24s10.7 24 24 24h144c13.3 0 24-10.7 24-24s-10.7-24-24-24z'/%3E%3C/svg%3E");
+}
+
+.orb-pt-status {
+	display: inline-block;
+	width: 20px;
+	height: 20px;
+	background-size: 20px;
+	background-repeat: no-repeat;
+	background-position: center;
+	vertical-align: middle;
+}
+
+.orb-pt-status--yes {
+	background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 640 640'%3E%3Cpath fill='%231d303a' d='M415.8 80c25.8 0 49.7 13.8 62.5 36.2l96.2 168c12.7 22.2 12.7 49.4 0 71.5l-96.2 168.2c-12.8 22.4-36.7 36.2-62.5 36.2H224.2c-25.8 0-49.7-13.8-62.5-36.2L65.5 355.8c-12.7-22.2-12.7-49.4 0-71.5l96.2-168C174.5 93.8 198.4 80 224.2 80zM438 209.7c-10.7-7.8-25.7-5.4-33.5 5.3L285.1 379.2 233 327.1c-9.4-9.4-24.6-9.4-33.9 0s-9.4 24.6 0 33.9l72 72c5 5 11.9 7.5 18.8 7s13.4-4.1 17.5-9.8l135.9-187c7.8-10.7 5.4-25.7-5.3-33.5'/%3E%3C/svg%3E");
+}
+
+.orb-pt-status--no {
+	background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 640 640'%3E%3Cpath fill='%23c3c4c7' d='M415.8 80c25.8 0 49.7 13.8 62.5 36.2l96.2 168c12.7 22.2 12.7 49.4 0 71.5l-96.2 168.2c-12.8 22.4-36.7 36.2-62.5 36.2H224.2c-25.8 0-49.7-13.8-62.5-36.2L65.5 355.8c-12.7-22.2-12.7-49.4 0-71.5l96.2-168C174.5 93.8 198.4 80 224.2 80zM438 209.7c-10.7-7.8-25.7-5.4-33.5 5.3L285.1 379.2 233 327.1c-9.4-9.4-24.6-9.4-33.9 0s-9.4 24.6 0 33.9l72 72c5 5 11.9 7.5 18.8 7s13.4-4.1 17.5-9.8l135.9-187c7.8-10.7 5.4-25.7-5.3-33.5'/%3E%3C/svg%3E");
+}
+
+a.orb-pt-icon:hover .orb-pt-status--yes {
+	background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 640 640'%3E%3Cpath fill='%231d303a' d='M354.4 83.8c5-12 16.7-19.8 29.6-19.8h160c17.7 0 32 14.3 32 32v160c0 12.9-7.8 24.6-19.8 29.6s-25.7 2.2-34.9-6.9L464 221.3 310.6 374.6c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L418.7 176l-57.3-57.4c-9.2-9.2-11.9-22.9-6.9-34.9zM64 240c0-44.2 35.8-80 80-80h80c17.7 0 32 14.3 32 32s-14.3 32-32 32h-80c-8.8 0-16 7.2-16 16v256c0 8.8 7.2 16 16 16h256c8.8 0 16-7.2 16-16v-80c0-17.7 14.3-32 32-32s32 14.3 32 32v80c0 44.2-35.8 80-80 80H144c-44.2 0-80-35.8-80-80z'/%3E%3C/svg%3E");
+}
+
+@keyframes orb-pt-tooltip-appear {
+	0% {
+		opacity: 0;
+	}
+	100% {
+		opacity: 1;
+	}
+}

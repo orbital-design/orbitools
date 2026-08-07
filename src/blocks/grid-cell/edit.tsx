@@ -1,0 +1,115 @@
+/**
+ * Grid Cell Block Edit Component
+ *
+ * Server-rendered cell. The editor previews the cell's column span (via the
+ * span classes) and hosts arbitrary inner blocks. The wrapper markup/classes
+ * are composed in PHP (Grid_Cell::render_callback).
+ *
+ * @file blocks/grid-cell/edit.tsx
+ * @since 1.0.0
+ */
+
+import React from 'react';
+import {
+    InnerBlocks,
+    useBlockProps,
+    ButtonBlockAppender,
+    InspectorControls,
+} from '@wordpress/block-editor';
+import type { BlockEditProps } from '@wordpress/blocks';
+
+import CellSpanControls, { getSpanClasses, getRowSpanClasses, getColStartClasses, type ResponsiveValue } from './span-control';
+import CellAlignControls, { getCellAlignClasses } from './align-controls';
+
+export interface GridCellAttributes {
+    span: ResponsiveValue<number>;
+    rowSpan: ResponsiveValue<number>;
+    colStart: ResponsiveValue<number>;
+    alignSelf: string;
+    justifySelf: string;
+    contentAlign: string;
+}
+
+interface GridCellContext {
+    'orb/columnSystem'?: number;
+    'orb/stackOnMobile'?: boolean;
+}
+
+const Edit: React.FC<BlockEditProps<GridCellAttributes> & { context: GridCellContext }> = ({
+    attributes,
+    setAttributes,
+    context,
+    clientId,
+}) => {
+    const {
+        span = {},
+        rowSpan = {},
+        colStart = {},
+        alignSelf = 'auto',
+        justifySelf = 'auto',
+        contentAlign = 'top',
+    } = attributes;
+    const {
+        'orb/columnSystem': columnSystem = 12,
+        'orb/stackOnMobile': stackOnMobile = true,
+    } = context;
+
+    const onSpanChange = (newSpan: ResponsiveValue<number>) => {
+        setAttributes({ span: newSpan });
+    };
+
+    const onRowSpanChange = (newRowSpan: ResponsiveValue<number>) => {
+        setAttributes({ rowSpan: newRowSpan });
+    };
+
+    const onColStartChange = (newColStart: ResponsiveValue<number>) => {
+        setAttributes({ colStart: newColStart });
+    };
+
+    // Build span + self-alignment classes for the editor preview so the cell
+    // tracks its configured size/placement/alignment inside the editor's grid.
+    const cellClasses = `orb-grid-cell ${getSpanClasses(span)} ${getColStartClasses(colStart)} ${getRowSpanClasses(rowSpan)} ${getCellAlignClasses(alignSelf, justifySelf, contentAlign)}`
+        .replace(/\s+/g, ' ')
+        .trim();
+
+    const blockProps = useBlockProps({
+        className: cellClasses,
+    });
+
+    return (
+        <>
+            <InspectorControls>
+                <CellSpanControls
+                    span={span}
+                    rowSpan={rowSpan}
+                    colStart={colStart}
+                    onSpanChange={onSpanChange}
+                    onRowSpanChange={onRowSpanChange}
+                    onColStartChange={onColStartChange}
+                    columnSystem={columnSystem}
+                    stackOnMobile={stackOnMobile}
+                    blockName="orb/grid-cell"
+                />
+            </InspectorControls>
+
+            <CellAlignControls
+                alignSelf={alignSelf}
+                justifySelf={justifySelf}
+                contentAlign={contentAlign}
+                onAlignSelfChange={(value) => setAttributes({ alignSelf: value })}
+                onJustifySelfChange={(value) => setAttributes({ justifySelf: value })}
+                onContentAlignChange={(value) => setAttributes({ contentAlign: value })}
+            />
+
+            <div {...blockProps}>
+                <InnerBlocks
+                    template={[]}
+                    templateLock={false}
+                    renderAppender={() => <ButtonBlockAppender rootClientId={clientId} />}
+                />
+            </div>
+        </>
+    );
+};
+
+export default Edit;

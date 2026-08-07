@@ -45,6 +45,13 @@ class Marquee extends Module_Base
     private const VALID_ORIENTATIONS = ['x', 'y'];
 
     /**
+     * Valid animation mode values
+     *
+     * @var array
+     */
+    private const VALID_ANIMATION_MODES = ['auto', 'scroll'];
+
+    /**
      * Valid direction values
      * 
      * @var array
@@ -205,6 +212,11 @@ class Marquee extends Module_Base
                 self::VALID_ORIENTATIONS,
                 'x'
             ),
+            'animationMode' => $this->validate_enum(
+                \sanitize_text_field($attributes['animationMode'] ?? 'auto'),
+                self::VALID_ANIMATION_MODES,
+                'auto'
+            ),
             'direction' => $this->validate_enum(
                 \sanitize_text_field($attributes['direction'] ?? 'normal'),
                 self::VALID_DIRECTIONS,
@@ -252,6 +264,7 @@ class Marquee extends Module_Base
             'class' => \esc_attr($classes_with_spacings),
             'style' => \esc_attr($this->get_inline_styles($marquee_styles)),
             'data-orientation' => \esc_attr($validated_attrs['orientation']),
+            'data-animation' => \esc_attr($validated_attrs['animationMode']),
             'data-direction' => \esc_attr($validated_attrs['direction']),
             'data-hover' => \esc_attr($validated_attrs['hoverState']),
             'data-speed' => \esc_attr($validated_attrs['speed']),

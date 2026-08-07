@@ -215,7 +215,93 @@ export default extension;
 
 ### Routing
 
-Hash-based, no router dependency. See `src/admin/lib/router.ts` for the full table — `#`, `#blocks`, `#controls`, `#modules`, `#settings/{slug}`. `routes.X()` is the single constructor; never hand-build hash strings elsewhere.
+Hash-based, no router dependency. See `src/admin/lib/router.ts` for the full table — `#`, `#blocks`, `#controls`, `#modules`, `#editor`, `#tools`, `#settings/{slug}`. `routes.X()` is the single constructor; never hand-build hash strings elsewhere.
+
+## 🛠 Tools (Import / Export) — **READ THIS BEFORE ADDING / REMOVING THINGS**
+
+The `Tools` top-level tab (`#tools`) lets users dump the plugin's configuration as a JSON bundle and restore it on another install. **Every change to the schema surface has implications for this — when you touch any of the items below, also touch the matching Tools moving part.**
+
+The flow:
+
+```
+   ┌─────────────────────────────────────────────────────────┐
+   │ orbitools_settings = { '{slug}_{field_id}' => value }   │
+   │                                                          │
+   │            ↓ Tools_Controller::export()                  │
+   │            walks every module manifest + theme page,     │
+   │            blanks `page` / `media` field values, ships:  │
+   │                                                          │
+   │      { version, exported_at, source,                     │
+   │        modules: [{slug,name,category}, …],               │
+   │        theme_pages: [{slug,label}, …],                   │
+   │        settings: { … keys filtered by slug … },          │
+   │        stripped_keys: [ … ] }                            │
+   │                                                          │
+   │            ↑ Tools_Controller::import()                  │
+   │            merges incoming `settings` into the option    │
+   │            (slug-whitelist filters first if requested).  │
+   └─────────────────────────────────────────────────────────┘
+```
+
+### When you add things
+
+- **New module (block / control / modules / editor)** — picked up automatically. The export iterates `Module_Manager::get_manifests()` so the slug, category, settings schema, and current values all flow through without manual work. Its `{slug}_enabled` and `{slug}_{field_id}` keys land under the right category on the UI checkbox grid.
+
+- **New theme page** — same deal; the export walks `apply_filters('orbitools/register_theme_pages', [])` so any page registered through the standard filter is already in scope.
+
+- **New field type that stores a WordPress entity ID (page picker, attachment, term, comment, user, etc.)** — **YOU MUST ADD IT TO `Tools_Controller::ENTITY_FIELD_TYPES`**. Otherwise the values get shipped verbatim to the export bundle and break on the destination site. The constant currently holds `['page', 'media']`. The strip walker handles nesting (a `page` field inside a `repeater` sub_field is found recursively), so the only step is the constant addition.
+
+- **New module category** (peer to `blocks` / `controls` / `editor` / `integrations` / `modules`) — three pieces:
+    1. `Module_Manifest::FIELD_TYPES`-style `ALLOWED_CATEGORIES` in `inc/Core/Module/Module_Manifest.php`.
+    2. `ModuleCategory` TS union + the matching `CATEGORY_TITLES` / `CATEGORY_META` / `CATEGORY_SLUGS` / `categoryIcon` records (search `category-icons.tsx`, `App.tsx`, `CategoryPage.tsx`, `router.ts`).
+    3. `SELECTION_LABELS` / `SELECTION_ORDER` in `src/admin/components/ToolsPage.tsx` — the Tools UI hardcodes a `category:<id>` SelectionKey union, **so a new category must be added or its modules will silently be unreachable from the Export / Import checkbox grid**.
+
+### When you remove things
+
+- **Removing a module or theme page** — its `{slug}_*` keys may linger in `orbitools_settings` (orphans). Add a one-shot migration in `inc/Core/Migrations.php` to clean them out (the existing `maybe_drop_toolbar_fab` is a worked example). Otherwise an export will keep shipping dead data and an import will keep restoring it.
+
+- **Renaming a slug** — never rename a `get_slug()` value or a theme page slug. The settings keys are stored against it; existing installs would silently get a new module with no toggle state and the old toggle key would orphan. Same rule as the v2 slug migration described in the module architecture section above.
+
+- **Adding a new migration to `Migrations::run()`** — also add its flag-option name to `Tools_Controller::MIGRATION_FLAG_OPTIONS`. The Reset tool deletes those flags so migrations re-run on the next request; leaving one out means after a Reset the migration silently skips and your defaults aren't seeded.
+
+### What does NOT round-trip
+
+- **Fields with `wp_option` binding** — these write directly to the named WP option (`blogname`, `blogdescription`, `site_logo`) rather than `orbitools_settings`. They are deliberately out of scope for Tools; site identity / branding values aren't expected to transfer. If you ever need them to, the export needs an `options` section keyed by `wp_option` name and the import needs the matching `update_option` loop.
+
+- **Entity IDs (page / media)** — blanked on export by design (page ID 47 on site A is a totally different page on site B). The export payload's `stripped_keys` array surfaces which fields were blanked so the UI can prompt the user to re-pick them on the destination site.
+
+### Breakpoint migration (content rewrite, not a settings round-trip)
+
+The Tools tab also hosts **Migrate breakpoints** — a separate, on-demand
+content migration (not part of export/import/reset, not flag-gated in
+`Migrations.php`). It rewrites `post_content` block attributes, not the
+`orbitools_settings` option.
+
+- Endpoints: `GET /tools/breakpoint-migration` (dry-run scan, read-only) and
+  `POST /tools/breakpoint-migration` with `{ confirm: true }` (apply).
+- It walks `parse_blocks()` over every non-trashed post whose body mentions a
+  responsive attribute (`Tools_Controller::RESPONSIVE_BLOCK_ATTRS` =
+  `orbGap`/`orbPadding`/`orbMargin`/`orbAspectRatio`), drops the legacy
+  `Tools_Controller::LEGACY_BREAKPOINT_KEYS` (`sm`/`md`/`lg`/`xl`) from each,
+  and `wp_update_post()`s the result (so the old content survives as a
+  revision). `base` and all non-orb attrs are preserved; the walker recurses
+  into `innerBlocks`.
+- **If you add a new responsive block attribute, add it to
+  `RESPONSIVE_BLOCK_ATTRS`** or its legacy overrides won't be migrated.
+
+### Process discipline
+
+When you open a PR that touches:
+- `Module_Manifest::ALLOWED_CATEGORIES`
+- `ModuleCategory` TS union
+- A new field type that stores an entity ID
+- A field-schema change that introduces new `sub_fields`
+- A module's `get_slug()` value (don't do this — see above)
+- A theme page's `slug`
+- `Tools_Controller::ENTITY_FIELD_TYPES` or `Tools_Controller::*_index()`
+- `ToolsPage`'s `SelectionKey` / `SELECTION_ORDER` / `SELECTION_LABELS`
+
+…explicitly note in the PR description how you verified the Tools round-trip still works (or why it doesn't apply). Tools is the kind of feature that breaks quietly — an export looks fine until you import it on a fresh site and discover half the modules are missing.
 
 ### Store
 
@@ -268,11 +354,29 @@ const [spacingSizes] = useSettings('spacing.spacingSizes');
 const [spacingSizes] = useSettings(['spacing.spacingSizes']);
 ```
 
-#### Responsive Control Architecture
-- Use `ResponsiveToolsPanel` for breakpoint-specific controls
-- Each breakpoint should be a separate `ToolsPanelItem` 
-- Include visual breakpoint labels for UX clarity
-- Follow ToolsPanel patterns, not custom dropdown menus
+#### Responsive Control Architecture (device-aware, no tab bar)
+Responsive block controls are driven by the **editor's native screen-size
+preview toggle**, not a bespoke breakpoint tab bar. The shared framework lives
+at [`src/core/utils/responsive-control.js`](src/core/utils/responsive-control.js)
+— plain-JS `createElement` because the controls build (`webpack.assets.js`)
+only runs `@babel/preset-env` (no JSX/TS).
+
+- Wrap a control in `ResponsiveControl({ title, blockName, render })`. The
+  `render({ device, slug, breakpoint })` callback returns the input for the
+  active device; the framework owns device detection, the device switcher
+  (which drives the real preview), and the cascade hint.
+- Device → slug mapping is fixed: **Desktop→`base`, Tablet→`tablet`,
+  Mobile→`mobile`**. Attribute storage stays an object keyed by slug
+  (`{ base, tablet, mobile }`), so existing values round-trip.
+- `useDeviceType()` is version-safe across `core/editor` (`getDeviceType`/
+  `setDeviceType`, WP 6.5+) and the legacy `core/edit-post` experimental API.
+- Controls that use it must enqueue `wp-data` + `wp-icons` as script deps.
+- Breakpoints come from theme.json `settings.custom.breakpoints` (3-tier,
+  desktop-first **max-width**: tablet 781px, mobile 479px — aligned to WP's
+  device-preview canvas). The aspect-ratio and spacings controls are the
+  reference conversions.
+- Legacy `sm/md/lg/xl` (mobile-first min-width) content is migrated via the
+  **Tools → Migrate breakpoints** tool (see below), which drops them.
 
 ### 3. Code Quality Standards
 
@@ -361,6 +465,20 @@ When adding new blocks or features:
 3. **Test systematically** - Don't just test the new feature
 4. **Document decisions** - Update this file with new patterns
 5. **Clean as you go** - Remove unused code immediately
+
+### Planned: Grid block
+
+A dedicated `orb/grid` block (separate from the flex-based Row Layout) is
+planned, with **responsive per-breakpoint column spans** (e.g. desktop 8/4 →
+tablet 6/6 → stacked-mobile full). It uses CSS Grid — `grid-template-columns:
+repeat(N, minmax(0,1fr))` + `grid-column: span N` — because flexbox `%` widths
+can't reconcile with `gap`. Reuses the `ResponsiveControl`/`ResponsiveDots`
+framework and the `has-gap` system; "stack on mobile" locks the mobile span to
+full.
+
+- Full design: `GRID-BLOCK-SPEC.md` (local/untracked — `*.md` is gitignored).
+- Working CSS-Grid prototype (built on Row Layout, then reverted): commit
+  `1632f26` — `git show 1632f26` to lift the container + span CSS.
 
 ---
 *Last Updated: 2026-05-26 (v3 React admin layer + AdminKit retirement)*

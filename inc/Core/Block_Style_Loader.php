@@ -31,6 +31,8 @@ final class Block_Style_Loader
         'group',
         'query-loop',
         'read-more',
+        'reading-time',
+        'video',
     ];
 
     /**

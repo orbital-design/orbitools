@@ -11,6 +11,7 @@ import type { LayoutAttributes } from '../types';
 import CollectionControls from './controls';
 import { generateFlexAttributes } from '../utils/flex-attributes';
 import { buildCollectionClasses, COLLECTION_LIMITS } from '../utils/class-builders';
+import { needsConstraint } from '../../core/utils/content-width.js';
 
 const ALLOWED_BLOCKS = ['orb/entry'];
 
@@ -119,10 +120,12 @@ const Edit: React.FC<BlockEditProps<LayoutAttributes>> = ({
         }
     }, [columnSystem, innerBlocks, itemWidth, clientId, replaceInnerBlocks]);
 
-    const { align, restrictContentWidth } = attributes;
+    const { align } = attributes;
 
-    // Check if we need content constraint wrapper in editor
-    const needsWrapper = align === 'full' && restrictContentWidth;
+    // Check if we need content constraint wrapper in editor. Width (full /
+    // wide / standard) comes from the global Content Width control, with
+    // back-compat for the legacy restrictContentWidth boolean.
+    const needsWrapper = needsConstraint(attributes);
 
     // Build semantic class names using utility functions
     const collectionClasses = buildCollectionClasses(layoutType, itemWidth, columnSystem);

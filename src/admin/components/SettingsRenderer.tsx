@@ -72,6 +72,38 @@ export function SettingsRenderer({
             );
         });
 
+    // `flat` short-circuits everything else — no SettingsSection
+    // wrapper, no collapsible PanelBody, no section title. The
+    // section description (if any) renders as a paragraph above the
+    // fields. Used by the Editor tab's aggregate-panel render path,
+    // where the block / control card is already a collapsible
+    // container with its own title, so anything else just nests or
+    // duplicates.
+    if (sectionLayout === 'flat') {
+        return (
+            <>
+                <Slot name={SLOTS.settingsBefore(slug)} />
+                <VStack spacing={4}>
+                    {grouped.map((group) => (
+                        <div
+                            key={group.section?.id ?? '__default__'}
+                            className="orbitools-flat-section"
+                        >
+                            {group.section?.description !== undefined &&
+                                group.section.description !== '' && (
+                                    <p className="orbitools-flat-section__description">
+                                        {group.section.description}
+                                    </p>
+                                )}
+                            <VStack spacing={3}>{renderFields(group.fields)}</VStack>
+                        </div>
+                    ))}
+                </VStack>
+                <Slot name={SLOTS.settingsAfter(slug)} />
+            </>
+        );
+    }
+
     // Stacked layout applies regardless of section count — even one
     // section becomes a collapsible card. Sidebar layout needs 2+
     // sections to make sense and falls back to flat below.
@@ -99,19 +131,57 @@ export function SettingsRenderer({
         <>
             <Slot name={SLOTS.settingsBefore(slug)} />
             <VStack spacing={4}>
-                {grouped.map((group) => (
-                    <SettingsSection
-                        key={group.section?.id ?? '__default__'}
-                        title={group.section?.title}
-                        description={group.section?.description}
-                    >
-                        {renderFields(group.fields)}
-                    </SettingsSection>
-                ))}
+                {grouped.map((group) => {
+                    // Repeater groups render their own header card +
+                    // stacked row cards, so wrapping in a SettingsSection
+                    // (a Card) would nest cards. Render the section
+                    // title / description as a plain heading instead and
+                    // let the repeaters provide their own structure.
+                    if (isStandaloneRepeaterGroup(group)) {
+                        return (
+                            <div
+                                key={group.section?.id ?? '__default__'}
+                                className="orbitools-bare-section"
+                            >
+                                {group.section?.title !== undefined && (
+                                    <header className="orbitools-bare-section__header">
+                                        <h3 className="orbitools-bare-section__title">
+                                            {group.section.title}
+                                        </h3>
+                                        {group.section?.description !== undefined &&
+                                            group.section.description !== '' && (
+                                                <p className="orbitools-bare-section__description">
+                                                    {group.section.description}
+                                                </p>
+                                            )}
+                                    </header>
+                                )}
+                                <VStack spacing={4}>{renderFields(group.fields)}</VStack>
+                            </div>
+                        );
+                    }
+                    return (
+                        <SettingsSection
+                            key={group.section?.id ?? '__default__'}
+                            title={group.section?.title}
+                            description={group.section?.description}
+                        >
+                            {renderFields(group.fields)}
+                        </SettingsSection>
+                    );
+                })}
             </VStack>
             <Slot name={SLOTS.settingsAfter(slug)} />
         </>
     );
+}
+
+function isStandaloneRepeaterGroup(group: FieldGroup): boolean {
+    // True when every field in the group is a repeater. Each repeater
+    // ships its own header card + stacked row cards; wrapping them in
+    // a SettingsSection (a Card) would nest cards regardless of how
+    // many siblings they had.
+    return group.fields.length >= 1 && group.fields.every((f) => String(f.type) === 'repeater');
 }
 
 interface FieldGroup {
@@ -170,7 +240,16 @@ function SectionSidebarLayout({
                         </p>
                     )}
                 </header>
-                <VStack spacing={4}>{renderFields(activeGroup.fields)}</VStack>
+                {/* Render the active group's body. Repeater-only groups
+                 * are self-contained cards already, so wrapping them in
+                 * another SettingsSection would nest. Everything else
+                 * lives in a chrome-providing SettingsSection (without
+                 * title — the content-header already shows it). */}
+                {isStandaloneRepeaterGroup(activeGroup) ? (
+                    <VStack spacing={4}>{renderFields(activeGroup.fields)}</VStack>
+                ) : (
+                    <SettingsSection>{renderFields(activeGroup.fields)}</SettingsSection>
+                )}
             </section>
         </div>
     );
